@@ -1,7 +1,10 @@
 {
+  "type": "module",
   "dependencies": {
+    "@prisma/client": "6.16.2",
     "express": "^5.1.0",
     "pnpm": "^10.16.1",
+    "prisma": "^6.16.2",
     "socket.io": "^4.8.1"
   }
 }
