@@ -1,5 +1,17 @@
 import { createServer } from 'http';
+import pkg from "@prisma/client";
+const { PrismaClient } = pkg;
 
+
+const prisma = new PrismaClient();
+
+try {
+    if (prisma) {
+        console.log('Import Prisma OK');
+    }
+} catch (error) {
+    console.error('Erreur import Prisma:', error);
+}
 
 const httpServer = createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });

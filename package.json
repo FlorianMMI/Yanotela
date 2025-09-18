@@ -1,0 +1,18 @@
+{
+    "type": "module",
+    "name": "yanotela-back",
+    "version": "1.0.0",
+    "description": "Backend de l'application Yanotela",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "nodemon index.js",
+        "prisma": "prisma"
+    },
+    "dependencies": {
+        "@prisma/client": "^6.16.2",
+        "express": "^5.1.0",
+        "prisma": "^6.16.2",
+        "socket.io": "^4.8.1"
+    }
+}
