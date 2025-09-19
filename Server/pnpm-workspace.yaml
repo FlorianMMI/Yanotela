@@ -1,0 +1,5 @@
+packages:
+  - 'Client'
+  - 'Server'
+hoist-pattern:
+  - '*prisma*'
