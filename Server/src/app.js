@@ -8,6 +8,7 @@ import corsConfig from './config/corsConfig.js';
 import authRoutes from './routes/authRoutes.js';
 import { PrismaClient } from '@prisma/client';
 import helmet from 'helmet';
+import googleAuthRoutes from './routes/googleAuthRoutes.js';
 
 const prisma = new PrismaClient();
 const app = express();
@@ -30,6 +31,8 @@ app.set('view engine', 'twig');
 // Routes
 app.use('/', authRoutes);
 
+app.use('/auth', googleAuthRoutes);
+
 app.get('/', (req, res) => {
   if (!req.session.userId) {
     return res.render('index');
@@ -39,6 +42,17 @@ app.get('/', (req, res) => {
       connected: true
     });
   }
+});
+
+// Route pour tester l'authentification Google
+app.get('/google-test', (req, res) => {
+  res.render('google-auth', {
+    user: req.session.userId ? {
+      id: req.session.userId,
+      pseudo: req.session.pseudo,
+      isLoggedIn: true
+    } : null
+  });
 });
 
 export { app, prisma, sessionMiddleware };
