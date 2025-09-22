@@ -9,58 +9,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Export secrets to env
-        run: |
-          echo "Exporting secrets as environment variables..."
-          export SSH_PRIVATE_KEY="${{ secrets.SSH_PRIVATE_KEY }}"
-          export REMOTE_HOST="${{ secrets.REMOTE_HOST }}"
-          export REMOTE_USER="${{ secrets.REMOTE_USER }}"
-          echo "✅ Secrets exported"
-          echo "SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY" >> $GITHUB_ENV
-          echo "REMOTE_HOST=$REMOTE_HOST" >> $GITHUB_ENV
-          echo "REMOTE_USER=$REMOTE_USER" >> $GITHUB_ENV
+    - name: Install dependencies
+      run: npm install
+      working-directory: Server
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: Server
-
-      - name: Debug secrets
-        run: |
-          if [ -z "$SSH_PRIVATE_KEY" ]; then
-            echo "❌ SSH_PRIVATE_KEY is empty"
+    - name: Debug secrets
+      run: |
+        echo "Secrets entries:"
+        for key in SSH_PRIVATE_KEY REMOTE_HOST REMOTE_USER; do
+          value="${{ secrets[format('{0}', key)] }}"
+          if [ -z "$value" ]; then
+            echo "$key: (empty)"
           else
-            echo "✅ SSH_PRIVATE_KEY is set"
+            echo "$key: $value"
           fi
+        done
 
-      - name: Write SSH key to file
-        run: |
-          echo "$SSH_PRIVATE_KEY" > my_key.pem
-          chmod 600 my_key.pem
+    - name: Write SSH key to file
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > my_key.pem
+        chmod 600 my_key.pem
 
-      - name: Deploy to AWS EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ env.REMOTE_HOST }}
-          username: ${{ env.REMOTE_USER }}
-          key_path: my_key.pem
-          source: "./"
-          target: "/var/www/Yanotela"
+    - name: Deploy to AWS EC2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        key_path: my_key.pem
+        source: "./"  # This now correctly points to the current directory
+        target: "/var/www/Yanotela"
 
-      - name: Restart PM2 application
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ env.REMOTE_HOST }}
-          username: ${{ env.REMOTE_USER }}
-          key_path: my_key.pem
-          script: |
-            cd /var/www/Yanotela
-            pm2 reload all
+    - name: Restart PM2 application
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        key_path: my_key.pem
+        script: |
+          cd /var/www/Yanotela
+          pm2 reload all  # This command restarts your application
 
-      - name: Remove temporary SSH key and unset secrets
-        run: |
-          rm -f my_key.pem
-          unset SSH_PRIVATE_KEY
-          unset REMOTE_HOST
-          unset REMOTE_USER
+    - name: Remove temporary SSH key
+      run: rm -f my_key.pem
