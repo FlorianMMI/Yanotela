@@ -2,102 +2,58 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="h-[717px] p-2.5 inline-flex flex-col justify-between items-start">
+      {/* image de fleche */}
+    <div className="w-7 h-7 relative">
+        <div className="w-3.5 h-6 left-[8.53px] top-[3.14px] absolute bg-black" />
+        
     </div>
+
+    {/* Text titre*/}
+    <div className="w-80 h-28 text-center justify-center text-red-900 text-4xl font-bold font-['Geologica']">Quel plaisir de vous revoir !</div>
+    {/* Text titre*/}
+    <div className="self-stretch p-2.5 flex flex-col justify-center items-start gap-2.5 overflow-hidden">
+        <div className="self-stretch justify-center text-black text-sm font-normal font-['Gantari']">Veuillez indiquer votre adresse e-mail et votre mot de passe.</div>
+        <div data-property-1="Mail" className="w-72 p-2.5 bg-white rounded-[10px] inline-flex justify-start items-center gap-2.5 overflow-hidden">
+            <div className="w-5 h-5 relative">
+                <div className="w-3.5 h-4 left-[3.33px] top-[1.67px] absolute bg-zinc-500" />
+            </div>
+            <div className="justify-start text-black text-sm font-normal font-['Gantari']">Votre mail ou pseudonyme</div>
+        </div>
+        <div data-property-1="MDP" className="w-72 p-2.5 bg-white rounded-[10px] inline-flex justify-between items-center overflow-hidden">
+            <div className="flex justify-start items-center gap-2.5">
+                <div className="w-5 h-5 relative">
+                    <div className="w-4 h-4 left-[1.67px] top-[1.67px] absolute bg-zinc-500" />
+                </div>
+                <div className="justify-start text-black text-sm font-normal font-['Gantari']">Votre mot de passe</div>
+            </div>
+            <div data-property-1="Open" className="w-5 h-5 relative">
+                <div className="w-5 h-3 left-[0.83px] top-[3.75px] absolute bg-zinc-500" />
+            </div>
+        </div>
+        <div className="w-52 h-4 justify-center text-red-default text-sm font-normal font-['Gantari']">Mot de passe oublié ?</div>
+    </div>
+    <div className="self-stretch p-2.5 flex flex-col justify-start items-start gap-2.5">
+        <div data-property-1="Connexion - Button" className="self-stretch p-2.5 bg-red-default rounded-[10px] inline-flex justify-between items-center overflow-hidden">
+            <div className="flex-1 text-center justify-center text-white text-xl font-bold font-['Gantari']">Se connecter</div>
+            <div className="w-5 h-5 relative">
+                <div className="w-5 h-3.5 left-[0.67px] top-[2.67px] absolute bg-white" />
+            </div>
+        </div>
+    </div>
+    <div className="p-2.5 flex flex-col justify-start items-center gap-2.5 overflow-hidden">
+        <div className="self-stretch text-center justify-center text-black text-3xl font-normal font-['Gantari']">ou</div>
+        <div data-property-1="Connexion" className="w-72 p-2.5 bg-white rounded-[10px] inline-flex justify-between items-center overflow-hidden">
+            <div className="w-6 h-6 relative">
+                <div className="w-6 h-6 left-0 top-0 absolute bg-sky-600" />
+            </div>
+            <div className="flex-1 self-stretch text-center justify-center text-black text-xs font-normal font-['Gantari']">Se connecter avec Google</div>
+        </div>
+    </div>
+    <div className="self-stretch p-2.5 flex flex-col justify-center items-center gap-2.5 overflow-hidden">
+        <div className="text-center justify-start text-black text-xs font-normal font-['Gantari']">Vous n’avez pas de Compte ?</div>
+        <div className="text-center justify-start text-red-default text-xl font-normal font-['Gantari']">Inscrivez-vous</div>
+    </div>
+</div>
   );
 }
