@@ -3,8 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Yanotela</title>
-  <link rel="stylesheet" href="/style.css" />
-  <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
   <h1>Yanotela</h1>
@@ -15,20 +13,18 @@
       <p class="error">{{ error }}</p>
     {% endif %}
     <form id="login-form" method="POST" action="/login">
-      <input type="text" name="pseudo" id="pseudo" placeholder="Votre pseudo" required />
+      <input type="text" name="identifiant" id="identifiant" placeholder="Votre pseudo ou email" required />
       <input type="password" name="password" id="password" placeholder="Mot de passe" required />
       <button type="submit">Se connecter</button>
     </form>
+    <a href="/forgot-password">Mot de passe oublié ?</a>
     <p>Pas de compte ? <a href="/register">Créer un compte</a></p>
     {% endif %}
   </div>
-  <div id="chat-container">
     {% if connected %}
-    <script defer src="/main.js"></script>
     <form id="logout-form" method="POST" action="/logout">
       <button type="submit">Déconnexion</button>
     </form>
     {% endif %}
-  </div>
 </body>
 </html>
