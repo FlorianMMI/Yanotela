@@ -6,8 +6,11 @@
     "main": "index.js",
     "scripts": {
         "start": "node index.js",
-        "dev": "nodemon index.js",
-        "prisma": "prisma"
+        "prisma": "prisma",
+        "test:routes": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/routes.test.js",
+        "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/session.e2e.test.js",
+        "test:socket": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/socket.test.js",
+        "test": "npm run test:routes && npm run test:socket && npm run test:e2e"
     },
     "dependencies": {
         "@prisma/client": "^6.16.2",
