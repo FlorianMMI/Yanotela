@@ -25,14 +25,16 @@ export default function Login() {
       </Link>
 
       <div className="p-5 flex flex-col justify-center items-start gap-8">
-        <div className="w-full h-fit text-center justify-center text-red-900 text-4xl font-bold font-['Geologica']">
+        <h1 className="w-full h-fit text-center justify-center text-red-900 text-4xl font-bold font-['Geologica']">
           Quel plaisir de vous revoir !
-        </div>
+        </h1>
+
+        <div className="self-stretch h-0 outline-[5px] outline-offset-[-2.50px] outline-red-900" />
         
-        <form onSubmit={handleSubmit} className="flex flex-col justify-center items-start gap-2.5">
-          <div className="justify-center text-black text-sm font-normal font-['Gantari']">
+        <form onSubmit={handleSubmit} className=" w-full flex flex-col justify-center items-start gap-2.5">
+          <p className="justify-center text-black text-sm font-normal font-['Gantari']">
             Veuillez indiquer votre adresse e-mail et votre mot de passe.
-          </div>
+          </p>
           
           <div data-property-1="Mail" className="w-full p-2.5 bg-white rounded-[10px] flex justify-start items-center gap-2.5">
             <Icon name="at" className="text-zinc-500" size={20} />
@@ -70,7 +72,7 @@ export default function Login() {
             </button>
           </div>
           
-          <button type="button" className="w-full justify-start text-start flex text-red-default hover:text-red-hover active:text-red-hover text-sm font-normal font-['Gantari']">
+          <button type="button" className="w-full justify-start text-start flex text-red-default hover:text-red-hover active:text-red-hover text-sm font-normal font-['Gantari'] cursor-pointer">
             Mot de passe oublié ?
           </button>
         
@@ -81,15 +83,36 @@ export default function Login() {
             <Icon name="arrow-barre" className="text-white pointer-events-none" size={32} />
           </button>
         </form>
+
+        {/* Séparateur et connexion Google */}
+        <div className="flex flex-col items-center gap-4 w-full">
+          <div className="flex items-center w-full gap-4">
+            <div className="flex-1 h-px bg-gray-300"></div>
+            <p className="text-gray-500 text-sm font-normal font-['Gantari']">ou</p>
+            <div className="flex-1 h-px bg-gray-300"></div>
+          </div>
+          
+          <button 
+            type="button" 
+            className="w-full p-2.5 bg-white border border-gray-300 rounded-[10px] flex justify-center items-center gap-3 hover:bg-gray-200 active:bg-gray-50 transition-colors cursor-pointer"
+          >
+            <Icon name="google" className="text-red-default" size={20} />
+            <span className="text-gray-700  text-sm font-medium font-['Gantari']">
+              Se connecter avec Google
+            </span>
+          </button>
+        </div>
       </div>
 
+
+{/* inscrivez vous ici */}
       <div className="p-2.5 flex flex-col justify-center items-center gap-2.5">
-        <div className="text-center justify-center text-black text-l font-normal font-['Gantari']">
-          Vous n avez pas de Compte ?
-        </div>
-        <button className="text-center justify-center text-red-default hover:text-red-hover active:text-red-hover text-xl font-normal font-['Gantari']">
+        <p className="text-center justify-center text-black text-l font-normal font-['Gantari']">
+          Vous n'avez pas de Compte ?
+        </p>
+        <Link href="/register" className="text-center justify-center text-red-default hover:text-red-hover active:text-red-hover text-xl font-normal font-['Gantari'] cursor-pointer">
           Inscrivez-vous
-        </button>
+        </Link>
       </div>
     </div>
   );
