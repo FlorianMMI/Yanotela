@@ -80,7 +80,7 @@ export default function Login() {
             <p className="flex-1 text-center justify-center text-white text-xl font-bold font-['Gantari'] pointer-events-none">
               Se connecter
             </p>
-            <Icon name="arrow-barre" className="text-white pointer-events-none" size={32} />
+            <Icon name="arrow-barre" className="text-white pointer-events-none" size={40} />
           </button>
         </form>
 

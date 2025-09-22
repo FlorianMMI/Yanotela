@@ -94,11 +94,11 @@ export default function Register() {
             className="w-full flex flex-col justify-start items-center gap-8 "
           >
             <div className="self-stretch flex flex-col justify-start items-start gap-5">
-              <div className="self-stretch  flex justify-between items-center">
+              <div className="self-stretch  flex justify-between items-start flex-col gap-5">
                 <p className="justify-start text-black text-xl font-bold font-['Gantari']">
                   Prenom
                 </p>
-                <div className="w-52 p-2.5 bg-white rounded-[10px] flex justify-start items-center gap-2.5 overflow-hidden">
+                <div className="w-full p-2.5 bg-white rounded-[10px] flex justify-start items-center gap-2.5 overflow-hidden">
                   <input
                     type="text"
                     name="firstName"
@@ -259,7 +259,7 @@ export default function Register() {
                     ? "text-white pointer-events-none"
                     : "text-stone-300 pointer-events-none"
                 }
-                size={20}
+                size={40}
               />
             </button>
           </form>
