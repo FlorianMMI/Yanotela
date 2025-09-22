@@ -15,6 +15,24 @@
     {% else %}
 		<form method="POST" action="/register">
 			<div>
+				<label for="firstName">Prénom:</label>
+				<input type="text" id="firstName" name="firstName" required>
+				{% for error in errors %}
+					{% if error.path == 'firstName' %}
+						<p class="error">{{ error.msg }}</p>
+					{% endif %}
+				{% endfor %}
+			</div>
+			<div>
+				<label for="lastName">Nom:</label>
+				<input type="text" id="lastName" name="lastName" required>
+				{% for error in errors %}
+					{% if error.path == 'lastName' %}
+						<p class="error">{{ error.msg }}</p>
+					{% endif %}
+				{% endfor %}
+			</div>
+			<div>
 				<label for="pseudo">Pseudo:</label>
 				<input type="text" id="pseudo" name="pseudo" required>
 				{% for error in errors %}

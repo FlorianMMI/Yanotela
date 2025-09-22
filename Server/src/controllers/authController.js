@@ -31,7 +31,7 @@ const register = async (req, res) => {
     });
   }
 
-  const { pseudo, email, password } = req.body;
+  const { firstName, lastName, pseudo, email, password } = req.body;
 
   try {
     let existing = await prisma.user.findUnique({ where: { email } });
@@ -56,8 +56,8 @@ const register = async (req, res) => {
         pseudo,
         email,
         password: hashedPassword,
-        prenom: "", // Champ requis dans votre schéma
-        nom: "", // Champ requis dans votre schéma
+        prenom: firstName,
+        nom: lastName,
         is_verified: false,
         token,
       },

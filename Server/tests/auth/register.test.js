@@ -31,6 +31,8 @@ describe('Tests d\'inscription (Register)', () => {
   test('POST /register avec données valides doit créer un utilisateur', async () => {
     const userData = {
       pseudo: 'testuser',
+      firstName: 'Test',
+      lastName: 'User',
       email: 'test-register@example.com',
       password: 'testpassword123'
     };
@@ -55,6 +57,8 @@ describe('Tests d\'inscription (Register)', () => {
     // Créer d'abord un utilisateur
     const existingUser = {
       pseudo: 'existinguser',
+      firstName: 'Existing',
+      lastName: 'User',
       email: 'test-register@example.com',
       password: 'password123'
     };
@@ -64,6 +68,8 @@ describe('Tests d\'inscription (Register)', () => {
     // Essayer de créer un autre utilisateur avec le même email
     const duplicateUser = {
       pseudo: 'newuser',
+      firstName: 'New',
+      lastName: 'User',
       email: 'test-register@example.com',
       password: 'password456'
     };
@@ -80,6 +86,8 @@ describe('Tests d\'inscription (Register)', () => {
     // Créer d'abord un utilisateur
     const existingUser = {
       pseudo: 'testuser',
+      firstName: 'Test',
+      lastName: 'User',
       email: 'existing@example.com',
       password: 'password123'
     };
@@ -89,6 +97,8 @@ describe('Tests d\'inscription (Register)', () => {
     // Essayer de créer un autre utilisateur avec le même pseudo
     const duplicateUser = {
       pseudo: 'testuser',
+      firstName: 'Another',
+      lastName: 'User',
       email: 'new@example.com',
       password: 'password456'
     };
@@ -104,6 +114,8 @@ describe('Tests d\'inscription (Register)', () => {
   test('POST /register avec données invalides doit échouer', async () => {
     const invalidData = {
       pseudo: 'ab', // Trop court
+      firstName: 'A', // On peut tester aussi des firstNames courts
+      lastName: 'B', // On peut tester aussi des lastNames courts
       email: 'invalid-email', // Email invalide
       password: '12' // Trop court
     };
@@ -119,6 +131,8 @@ describe('Tests d\'inscription (Register)', () => {
   test('POST /register avec pseudo contenant des caractères spéciaux doit échouer', async () => {
     const invalidData = {
       pseudo: 'test@user!',
+      firstName: 'Test',
+      lastName: 'User',
       email: 'test@example.com',
       password: 'password123'
     };

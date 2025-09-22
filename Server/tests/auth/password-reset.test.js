@@ -24,12 +24,16 @@ describe("Tests de réinitialisation de mot de passe (Simplifié)", () => {
         pseudo: "resetuser",
         email: "test-reset@example.com",
         password: hashedPassword,
-        prenom: "Test",
-        nom: "User",
+        prenom: "Test", // firstName
+        nom: "User", // lastName
         is_verified: true,
         token: "original-token",
       },
     });
+    
+    // Ajouter firstName et lastName pour les tests
+    testUser.firstName = testUser.prenom;
+    testUser.lastName = testUser.nom;
 
     resetToken = "reset-token-12345";
   });
@@ -52,6 +56,18 @@ describe("Tests de réinitialisation de mot de passe (Simplifié)", () => {
     expect(res.headers["content-type"]).toContain("text/html");
   });
 
+  test("Utilisateur de test doit avoir firstName et lastName", async () => {
+    // Vérifier que l'utilisateur a bien les champs firstName et lastName
+    expect(testUser.firstName).toBeDefined();
+    expect(testUser.lastName).toBeDefined();
+    expect(testUser.firstName).toBe("Test");
+    expect(testUser.lastName).toBe("User");
+    
+    // Vérifier que les champs de base Prisma sont également présents
+    expect(testUser.prenom).toBe("Test");
+    expect(testUser.nom).toBe("User");
+  });
+
   // Test principal - on garde celui-ci qui envoie 1 email
   test("POST /forgot-password avec email valide doit réussir", async () => {
     const res = await request(app)
@@ -66,6 +82,12 @@ describe("Tests de réinitialisation de mot de passe (Simplifié)", () => {
       where: { email: testUser.email },
     });
     expect(updatedUser.token).not.toBe("original-token");
+    
+    // Vérifier que firstName et lastName sont présents
+    expect(testUser.firstName).toBe("Test");
+    expect(testUser.lastName).toBe("User");
+    expect(updatedUser.prenom).toBe("Test");
+    expect(updatedUser.nom).toBe("User");
   });
 
   // Tests sans envoi d'email - juste validation des formulaires
