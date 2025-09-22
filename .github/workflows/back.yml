@@ -15,18 +15,6 @@ jobs:
       run: npm install
       working-directory: Server
 
-    - name: Debug secrets
-      run: |
-        echo "Secrets entries:"
-        for key in SSH_PRIVATE_KEY REMOTE_HOST REMOTE_USER; do
-          value="${{ secrets[format('{0}', key)] }}"
-          if [ -z "$value" ]; then
-            echo "$key: (empty)"
-          else
-            echo "$key: $value"
-          fi
-        done
-
     - name: Write SSH key to file
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > my_key.pem
