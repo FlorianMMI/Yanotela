@@ -15,17 +15,17 @@ jobs:
       run: npm install
       working-directory: Server
 
-    - name: Debug SSH key
+    - name: Write SSH key to file
       run: |
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n1
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" | tail -n1
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > my_key.pem
+        chmod 600 my_key.pem
 
     - name: Deploy to AWS EC2
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.REMOTE_HOST }}
         username: ${{ secrets.REMOTE_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        key_path: my_key.pem
         source: "./"  # This now correctly points to the current directory
         target: "/var/www/Yanotela"
 
@@ -34,7 +34,10 @@ jobs:
       with:
         host: ${{ secrets.REMOTE_HOST }}
         username: ${{ secrets.REMOTE_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        key_path: my_key.pem
         script: |
           cd /var/www/Yanotela
           pm2 reload all  # This command restarts your application
+
+    - name: Remove temporary SSH key
+      run: rm -f my_key.pem
