@@ -5,13 +5,24 @@ export const noteController = {
 
     createNote: async (req, res) => {
 
-        console.log('Données reçues dans req.body:', req.body);
+        
        
         if (!req.body) {
             return res.status(400).json({ message: 'Aucune donnée reçue dans req.body' });
         }
 
+        if(req.body == {} ||req.body == null || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ message: 'Aucune donnée reçue dans req.body' });
+        }
+
+
+
+
         const { Titre, Content, authorId } = req.body;
+
+        if (!Titre || !Content || !authorId) {
+            return res.status(500).json({ message: 'Champs requis manquants' });
+        }
 
         try {
             
