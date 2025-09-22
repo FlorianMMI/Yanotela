@@ -31,7 +31,9 @@ export default function Login() {
 
         <div className="self-stretch h-0 outline-[5px] outline-offset-[-2.50px] outline-red-900" />
         
-        <form onSubmit={handleSubmit} className=" w-full flex flex-col justify-center items-start gap-2.5">
+    
+
+        <form action="/login" id="login-form" method="Post" className=" w-full flex flex-col justify-center items-start gap-2.5">
           <p className="justify-center text-black text-sm font-normal font-['Gantari']">
             Veuillez indiquer votre adresse e-mail et votre mot de passe.
           </p>
@@ -40,7 +42,8 @@ export default function Login() {
             <Icon name="at" className="text-zinc-500" size={20} />
             <input 
               type="text" 
-              name="email"
+              name="identifiant"
+              id="identifiant"
               placeholder="Votre mail ou pseudonyme"
               required
               className="flex-1 bg-transparent text-black text-sm font-normal font-['Gantari'] outline-none"
@@ -53,6 +56,7 @@ export default function Login() {
               <input 
                 type={showPassword ? "text" : "password"}
                 name="password"
+                id="password"
                 placeholder="Votre mot de passe"
                 required
                 className="flex-1 bg-transparent text-black text-sm font-normal font-['Gantari'] outline-none"
