@@ -1,8 +1,11 @@
+
+
+
 import express from 'express';
 import helmet from 'helmet';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { sessionMiddleware } from './config/sessionConfig.js';
+import sessionMiddleware  from './config/sessionConfig.js';
 import { corsConfig } from './config/corsConfig.js';
 import noteRoutes from './routes/noteRoutes.js';
 

@@ -1,12 +1,19 @@
+// sessionConfig.js
 import session from 'express-session';
 
-export const sessionMiddleware = session({
-  secret: process.env.SESSION_SECRET || 'yanotela-secret-key-change-in-production',
+const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
+
+const sessionMiddleware = session({
+  secret: process.env.SESSION_SECRET || 'super_secret_dev_key', 
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: false, 
   cookie: {
-    secure: false, // true en production avec HTTPS
+    secure: false, 
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 heures
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 3600000, 
   }
 });
+
+export default sessionMiddleware;
