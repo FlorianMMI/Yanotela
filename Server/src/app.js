@@ -22,11 +22,12 @@ const __dirname = dirname(__filename);
 
 // Middleware
 app.set('trust proxy', 1);
+// Apply CORS first, before other middleware
+app.use(corsConfig);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet()); // Sécurité de base
 app.use(sessionMiddleware);
-app.use(corsConfig);
 app.use(express.static(join(__dirname, '../public')));
 
 app.use('/note', noteRoutes);
