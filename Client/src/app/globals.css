@@ -1,23 +1,21 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-red-default: #a50e0e;
+  --color-red-default: var(--red-default);
+  --color-red-hover: var(--red-hover);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
     --background: #e9ebdb;
     --foreground: #ededed;
     --red-default: #882626;
+    --red-hover: #be1515;
   }
 }
 
