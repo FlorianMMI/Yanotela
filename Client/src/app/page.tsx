@@ -10,6 +10,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
 
   // Filtrer et trier les notes
+  const filteredNotes: Note[] = [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -19,7 +20,7 @@ export default function Home() {
         sortBy={sortBy}
         setSortBy={setSortBy}
       />
-      {/* <NoteList notes={filteredNotes} /> */}
+      <NoteList notes={filteredNotes} />
     </div>
   );
 }
