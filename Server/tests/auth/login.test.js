@@ -59,6 +59,7 @@ describe('Tests de connexion (Login)', () => {
 
     const res = await request(app)
       .post('/login')
+      .type('form')
       .send(loginData);
 
     expect(res.statusCode).toBe(302); // Redirection après succès
@@ -73,6 +74,7 @@ describe('Tests de connexion (Login)', () => {
 
     const res = await request(app)
       .post('/login')
+      .type('form')
       .send(loginData);
 
     expect(res.statusCode).toBe(302); // Redirection après succès
@@ -87,6 +89,7 @@ describe('Tests de connexion (Login)', () => {
 
     const res = await request(app)
       .post('/login')
+      .type('form')
       .send(loginData);
 
     expect(res.statusCode).toBe(200);
@@ -101,6 +104,7 @@ describe('Tests de connexion (Login)', () => {
 
     const res = await request(app)
       .post('/login')
+      .type('form')
       .send(loginData);
 
     expect(res.statusCode).toBe(200);
@@ -130,6 +134,7 @@ describe('Tests de connexion (Login)', () => {
 
     const res = await request(app)
       .post('/login')
+      .type('form')
       .send(loginData);
 
     expect(res.statusCode).toBe(200);
@@ -148,6 +153,7 @@ describe('Tests de connexion (Login)', () => {
 
     const res = await request(app)
       .post('/login')
+      .type('form')
       .send(loginData);
 
     expect(res.statusCode).toBe(200);
@@ -161,6 +167,7 @@ describe('Tests de connexion (Login)', () => {
 
     const res = await request(app)
       .post('/login')
+      .type('form')
       .send(loginData);
 
     expect(res.statusCode).toBe(200);

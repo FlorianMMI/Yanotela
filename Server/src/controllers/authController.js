@@ -22,8 +22,28 @@ const validateRegistration = [
 
 const register = async (req, res) => {
   const errors = validationResult(req);
+  
+  // Détection basée sur l'URL de la route
+  const isApiRequest = req.route?.path?.startsWith('/api/') || 
+                      req.headers['content-type']?.includes('application/json') || 
+                      req.headers.accept?.includes('application/json') ||
+                      req.get('Accept')?.includes('application/json');
+  
+  console.log("Type de requête détecté:", {
+    path: req.route?.path,
+    contentType: req.headers['content-type'],
+    accept: req.headers.accept,
+    isApiRequest: isApiRequest
+  });
+  
   if (!errors.isEmpty()) {
     console.log("Erreurs de validation:", errors.array());
+    if (isApiRequest) {
+      return res.status(400).json({
+        errors: errors.array(),
+        message: "Erreurs de validation"
+      });
+    }
     return res.render("register", {
       errors: errors.array(),
       pseudo: req.body.pseudo || "",
@@ -36,19 +56,39 @@ const register = async (req, res) => {
   try {
     let existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
+      if (isApiRequest) {
+        return res.status(409).json({
+          error: "Cet email est déjà utilisé."
+        });
+      }
       return res.render("register", {
         error: "Cet email est déjà utilisé.",
       });
     }
+    
     existing = await prisma.user.findUnique({ where: { pseudo } });
     if (existing) {
+      if (isApiRequest) {
+        return res.status(409).json({
+          error: "Ce pseudo est déjà utilisé."
+        });
+      }
       return res.render("register", {
         error: "Ce pseudo est déjà utilisé.",
       });
     }
 
     const token = crypto.randomBytes(32).toString("hex");
-    await sendValidationEmail(email, token);
+    console.log("Envoi de l'email de validation...");
+    
+    try {
+      await sendValidationEmail(email, token);
+      console.log("Email de validation envoyé avec succès");
+    } catch (emailError) {
+      console.error("Erreur lors de l'envoi de l'email:", emailError);
+      // On continue quand même pour créer l'utilisateur
+    }
+    
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
@@ -63,13 +103,32 @@ const register = async (req, res) => {
       },
     });
 
-    console.log("Utilisateur créé:", user);
+    console.log("Utilisateur créé:", user.pseudo);
+    
+    if (isApiRequest) {
+      console.log("Envoi de la réponse JSON...");
+      return res.status(201).json({
+        success: true,
+        message: "Compte créé avec succès. Veuillez cliquer sur le lien envoyé par mail.",
+        user: {
+          id: user.id,
+          pseudo: user.pseudo,
+          email: user.email
+        }
+      });
+    }
+    
     res.render("register", {
       success:
         "Compte créé avec succès. Veuillez cliquer sur le lien envoyé par mail.",
     });
   } catch (err) {
     console.error("Erreur création compte:", err);
+    if (isApiRequest) {
+      return res.status(500).json({
+        error: "Erreur serveur. Réessayez plus tard."
+      });
+    }
     res.render("register", { error: "Erreur serveur. Réessayez plus tard." });
   }
 };
@@ -77,8 +136,17 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { identifiant, password } = req.body;
   
+  // Déterminer si c'est une requête API (JSON) ou une requête web (Twig)
+  const isApiRequest = req.route?.path?.startsWith('/api/') || 
+                      req.headers['content-type']?.includes('application/json');
+  
   // Vérifier que les données sont présentes
   if (!identifiant || !password) {
+    if (isApiRequest) {
+      return res.status(400).json({
+        error: "Identifiant et mot de passe requis"
+      });
+    }
     return res.render("index", {
       error: "Identifiant et mot de passe requis",
     });
@@ -92,8 +160,14 @@ const login = async (req, res) => {
       where: { email: identifiant },
     });
     const user = userByPseudo || userByEmail;
+    
     if (!user) {
       console.log("Utilisateur non trouvé pour", identifiant);
+      if (isApiRequest) {
+        return res.status(401).json({
+          error: "Utilisateur non trouvé"
+        });
+      }
       return res.render("index", {
         error: "Utilisateur non trouvé",
         identifiant,
@@ -103,6 +177,11 @@ const login = async (req, res) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
       console.log("Mot de passe incorrect pour", identifiant);
+      if (isApiRequest) {
+        return res.status(401).json({
+          error: "Mot de passe incorrect"
+        });
+      }
       return res.render("index", {
         error: "Mot de passe incorrect",
         identifiant,
@@ -111,6 +190,11 @@ const login = async (req, res) => {
 
     if (!user.is_verified) {
       console.log("Compte non activé pour", user.pseudo);
+      if (isApiRequest) {
+        return res.status(401).json({
+          error: "Compte non activé"
+        });
+      }
       return res.render("index", { error: "Compte non activé", pseudo: user.pseudo });
     }
 
@@ -118,9 +202,25 @@ const login = async (req, res) => {
     req.session.pseudo = user.pseudo;
     await req.session.save();
     console.log("Session après login:", req.session);
+    
+    if (isApiRequest) {
+      return res.json({
+        success: true,
+        user: {
+          id: user.id,
+          pseudo: user.pseudo,
+          email: user.email
+        }
+      });
+    }
     return res.redirect("/");
   } catch (err) {
     console.error("Erreur connexion", err);
+    if (isApiRequest) {
+      return res.status(500).json({
+        error: "Erreur serveur"
+      });
+    }
     res.status(500).send("Erreur serveur");
   }
 };

@@ -4,14 +4,49 @@ import Image from "next/image";
 import Icon from "../../components/Icon";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Logique de connexion à implémenter
-    console.log('Formulaire soumis');
+    setIsLoading(true);
+    setError('');
+    
+    const formData = new FormData(e.currentTarget);
+    const loginData = {
+      identifiant: formData.get('identifiant') as string,
+      password: formData.get('password') as string,
+    };
+
+    try {
+      const response = await fetch('http://localhost:3001/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Important pour les sessions
+        body: JSON.stringify(loginData)
+      });
+
+      if (response.ok) {
+        // Connexion réussie, rediriger vers la page d'accueil
+        router.push('/');
+      } else {
+        // Gérer les erreurs
+        const errorData = await response.text();
+        setError('Identifiants incorrects');
+      }
+    } catch (error) {
+      console.error('Erreur de connexion:', error);
+      setError('Erreur de connexion au serveur');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -33,7 +68,13 @@ export default function Login() {
         
     
 
-        <form action="/login" id="login-form" method="Post" className=" w-full flex flex-col justify-center items-start gap-2.5">
+        <form onSubmit={handleSubmit} id="login-form" className=" w-full flex flex-col justify-center items-start gap-2.5">
+          {error && (
+            <div className="w-full p-2.5 bg-red-100 border border-red-400 text-red-700 rounded-[10px] text-sm">
+              {error}
+            </div>
+          )}
+          
           <p className="justify-center text-black text-sm font-normal font-['Gantari']">
             Veuillez indiquer votre adresse e-mail et votre mot de passe.
           </p>
@@ -80,9 +121,13 @@ export default function Login() {
             Mot de passe oublié ?
           </button>
         
-          <button type="submit" className="p-2.5 w-full bg-red-default hover:bg-red-hover active:bg-red-active rounded-[10px] flex justify-between items-center shadow-md cursor-pointer transition-colors">
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className="p-2.5 w-full bg-red-default hover:bg-red-hover active:bg-red-active disabled:bg-gray-400 rounded-[10px] flex justify-between items-center shadow-md cursor-pointer transition-colors"
+          >
             <p className="flex-1 text-center justify-center text-white text-xl font-bold font-['Gantari'] pointer-events-none">
-              Se connecter
+              {isLoading ? 'Connexion...' : 'Se connecter'}
             </p>
             <Icon name="arrow-barre" className="text-white pointer-events-none" size={40} />
           </button>

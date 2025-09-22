@@ -17,7 +17,11 @@ router.get('/forgot-password', (req, res) => {
   res.render('forgotPassword');
 });
 
+// Routes API (pour Next.js)
+router.post('/api/register', register); // Route API sans validation middleware
+router.post('/api/login', login); // Route API sans validation middleware
 
+// Routes classiques (pour Twig)
 router.post('/register', validateRegistration, register);
 router.post('/login', login);
 router.post('/logout', logout);

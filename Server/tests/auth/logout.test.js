@@ -62,6 +62,7 @@ describe('Tests de déconnexion (Logout)', () => {
 
     const loginRes = await agent
       .post('/login')
+      .type('form')
       .send(loginData);
 
     expect(loginRes.statusCode).toBe(302);
