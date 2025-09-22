@@ -3,7 +3,12 @@ import { create } from 'domain';
 
 export async function CreateNote(noteData?: Partial<Note>): Promise<Note | null> {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notes`, {
+        // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        
+        console.log('API URL:', apiUrl); // Pour debug
+        
+        const response = await fetch(`${apiUrl}/note/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
