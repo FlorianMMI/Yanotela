@@ -1,5 +1,6 @@
 import { Note } from '@/type/Note';
 import { create } from 'domain';
+import { ID } from 'yjs';
 
 export async function CreateNote(noteData?: Partial<Note>): Promise<Note | null> {
     try {
@@ -16,7 +17,8 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<Note | null>
             body: JSON.stringify({
                 Titre: "Sans titre",
                 Contenu: "feur",
-                AuthorId: 1,
+                authorId: 1,
+
             })
         });
 
