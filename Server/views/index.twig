@@ -87,6 +87,7 @@
     {% endif %}
   </div>
     {% if connected %}
+    <p>Bienvenue, {{ pseudo }}</p>
     <form id="logout-form" method="POST" action="/logout">
       <button type="submit">Déconnexion</button>
     </form>
