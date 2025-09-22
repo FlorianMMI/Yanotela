@@ -2,7 +2,7 @@ name: Node.js CI/CD on Amazon Linux
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   deploy:
