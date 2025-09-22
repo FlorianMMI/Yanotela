@@ -1,7 +1,7 @@
 // sessionConfig.js
 import session from 'express-session';
 
-const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
+const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3001';
 
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || 'super_secret_dev_key', 
