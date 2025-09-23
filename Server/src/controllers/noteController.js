@@ -3,6 +3,15 @@ const prisma = new PrismaClient();
 
 export const noteController = {
 
+    getNotes: async (req, res) => {
+        try {
+            const notes = await prisma.note.findMany();
+            res.status(200).json(notes);
+        } catch (error) {
+            res.status(500).json({ message: 'Erreur lors de la récupération des notes', error: error.message });
+        }
+    },
+
     createNote: async (req, res) => {
 
         
@@ -39,5 +48,9 @@ export const noteController = {
             res.status(500).json({ message: 'Erreur lors de la création de la note', error: error.message });
         }
     }
+
+    
+    
+
 
 }

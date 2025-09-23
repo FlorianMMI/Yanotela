@@ -3,9 +3,11 @@ import { noteController } from '../controllers/noteController.js';
 
 const router = Router();
 
-// Route GET pour tester (accessible via navigateur)
+
+// Route Get pour récupérer les notes
+router.get('/get', noteController.getNotes);
+
+// Route Post pour créer une note
 router.post('/create', noteController.createNote);
-
-
 
 export default router;
