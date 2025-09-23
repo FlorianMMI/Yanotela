@@ -105,7 +105,7 @@ export default function RegisterForm() {
 
   // Vérification mot de passe (au moins une majuscule, un chiffre et un caractère spécial)
   useEffect(() => {
-    const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_-]).+$/;
+    const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_\-\.]).+$/;
     if (password === "") {
       setPasswordInvalid(false);
       return;
