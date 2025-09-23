@@ -40,7 +40,7 @@ test('devrait créer une note avec succès', async () => {
     expect(response.body).toHaveProperty('note');
     expect(response.body.note).toMatchObject(noteData);
     expect(response.body.note).toHaveProperty('id');
-    expect(response.body.note).toHaveProperty('CreatedAt');
+    expect(response.body.note).toHaveProperty('ModifiedAt');
 });
 
   test('devrait retourner une erreur 400 si aucune donnée n\'est envoyée', async () => {
