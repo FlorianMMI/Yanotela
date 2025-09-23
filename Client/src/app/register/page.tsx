@@ -37,7 +37,7 @@ export default function Register() {
 
       <button
         onClick={() => router.push('/register/form')}
-        className="w-full p-2.5 bg-primary rounded-lg flex items-center gap-3 hover:bg-hover active:bg-hover transition-colors cursor-pointer justify-center"
+        className="w-full p-2.5 bg-primary rounded-lg flex items-center gap-3 hover:bg-primary-hover active:bg-primary-hover transition-colors cursor-pointer justify-center"
       >
         <Icon name="mail" className="text-white" size={20} />
         <span className="text-white text-sm font-medium font-['Gantari']">
@@ -53,7 +53,7 @@ export default function Register() {
         </p>
         <button
           onClick={() => router.push('/login')}
-          className="text-center justify-center text-primary hover:text-hover active:text-hover text-lg font-normal font-gant cursor-pointer"
+          className="text-center justify-center text-primary hover:text-primary-hover active:text-primary-hover text-lg font-normal font-gant cursor-pointer"
         >
           Connectez-vous
         </button>

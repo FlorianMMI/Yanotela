@@ -353,7 +353,7 @@ export default function RegisterForm() {
           type="submit"
           className={`w-full p-2.5 rounded-[10px] flex justify-between items-center overflow-hidden transition-all duration-300 ${
             isFormValid && !isLoading
-              ? "bg-primary hover:bg-red-hover active:bg-red-hover cursor-pointer"
+              ? "bg-primary hover:bg-primary-hover active:bg-primary-hover cursor-pointer"
               : "bg-stone-500 cursor-not-allowed"
           }`}
           disabled={!isFormValid || isLoading}

@@ -116,7 +116,7 @@ export default function Login() {
             </button>
           </div>
           
-          <button type="button" className="w-full justify-start text-start flex text-primary hover:text-red-hover active:text-red-hover text-sm font-normal font-gant cursor-pointer">
+          <button type="button" className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline  text-sm font-normal font-gant cursor-pointer">
             Mot de passe oublié ?
           </button>
         
@@ -158,7 +158,7 @@ export default function Login() {
         <p className="text-center justify-center text-clrprincipal text-xs font-normal font-gant">
           Vous n'avez pas de Compte ?
         </p>
-        <Link href="/register" className="text-center justify-center text-primary hover:text-hover active:text-hover text-xl font-normal font-gant cursor-pointer">
+        <Link href="/register" className="text-center justify-center text-primary hover:text-primary-hover active:text-primary-hover text-xl font-normal font-gant cursor-pointer">
           Inscrivez-vous
         </Link>
       </div>
