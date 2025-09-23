@@ -158,11 +158,10 @@ export default function RegisterForm() {
       <ReturnButton />
 
       <p className="
-        text-center text-red-900 text-4xl font-bold
+        text-center text-red-900 text-3xl font-bold after:content-[''] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8
       ">
         Bienvenue à bord 👋
       </p>
-      <div className="self-stretch h-0 outline-[5px] outline-offset-[-2.50px] outline-red-900" />
 
       <form
         onSubmit={handleSubmit}
@@ -338,7 +337,7 @@ export default function RegisterForm() {
           type="submit"
           className={`w-full p-2.5 rounded-[10px] flex justify-between items-center overflow-hidden transition-all duration-300 ${
             isFormValid && !isLoading
-              ? "bg-red-default hover:bg-red-hover active:bg-red-active cursor-pointer"
+              ? "bg-primary hover:bg-red-hover active:bg-red-hover cursor-pointer"
               : "bg-stone-500 cursor-not-allowed"
           }`}
           disabled={!isFormValid || isLoading}

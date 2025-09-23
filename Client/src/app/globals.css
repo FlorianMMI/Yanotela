@@ -1,4 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
+
 
 :root {
   --background: #E9EBDB;
@@ -16,6 +19,8 @@
   --font-mono: var(--font-geist-mono);
   --color-primary: var(--clr-rouge-fonce);
   --color-element: var(--clr-gris-clair);
+  --font-geo: var(--font-geologica);
+  --font-gant: var(--font-gantari);
 }
 
 /* @media (prefers-color-scheme: dark) {

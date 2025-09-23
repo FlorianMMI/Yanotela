@@ -14,18 +14,18 @@ export default function Register() {
       <div className="flex flex-col justify-center items-center gap-6 mt-4">
 
       <p className="
-        text-center text-red-900 text-4xl font-bold md:min-w-[500px]
+        text-center text-primary text-3xl font-bold md:min-w-[500px] after:content-[''] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8
       ">
         Bienvenue à bord 👋
       </p>
 
-      <div className="self-stretch h-0 outline-[5px] outline-offset-[-2.50px] outline-red-900" />
+      
 
       <button
         type="button"
         className="w-full p-2.5 bg-white rounded-lg flex items-center gap-3 hover:bg-gray-200 active:bg-gray-50 transition-colors cursor-pointer justify-center"
       >
-        <Icon name="google" className="text-red-default" size={20} />
+        <Icon name="google" className="text-primary" size={20} />
         <span className="text-gray-700 text-sm font-medium font-['Gantari']">
           S&apos;inscrire avec Google
         </span>
@@ -37,7 +37,7 @@ export default function Register() {
 
       <button
         onClick={() => router.push('/register/form')}
-        className="w-full p-2.5 bg-red-default rounded-lg flex items-center gap-3 hover:bg-red-hover active:bg-red-hover transition-colors cursor-pointer justify-center"
+        className="w-full p-2.5 bg-primary rounded-lg flex items-center gap-3 hover:bg-hover active:bg-hover transition-colors cursor-pointer justify-center"
       >
         <Icon name="mail" className="text-white" size={20} />
         <span className="text-white text-sm font-medium font-['Gantari']">
@@ -53,7 +53,7 @@ export default function Register() {
         </p>
         <button
           onClick={() => router.push('/login')}
-          className="text-center justify-center text-red-default hover:text-red-hover active:text-red-hover text-lg font-normal font-gant cursor-pointer"
+          className="text-center justify-center text-primary hover:text-hover active:text-hover text-lg font-normal font-gant cursor-pointer"
         >
           Connectez-vous
         </button>
