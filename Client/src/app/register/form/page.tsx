@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import Icon from "@/ui/Icon";
 import ReturnButton from "@/ui/returnButton";
 import ConfirmPassword from "@/ui/confirm-password";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 export default function RegisterForm() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   const [username, setUsername] = useState("");
@@ -32,60 +32,62 @@ export default function RegisterForm() {
 
     // Vérification que les mots de passe correspondent
     if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
+      setError("Les mots de passe ne correspondent pas");
       setIsLoading(false);
       return;
     }
 
     const registerData = {
-      firstName: formData.get('firstName') as string,
-      lastName: formData.get('lastName') as string,
-      email: formData.get('email') as string,
-      pseudo: formData.get('username') as string, // Nom corrigé pour correspondre au backend
+      firstName: formData.get("firstName") as string,
+      lastName: formData.get("lastName") as string,
+      email: formData.get("email") as string,
+      pseudo: formData.get("username") as string, // Nom corrigé pour correspondre au backend
       password: password,
     };
 
     try {
-      const response = await fetch('http://localhost:3001/register', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3001/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
-        body: JSON.stringify(registerData)
+        credentials: "include",
+        body: JSON.stringify(registerData),
       });
 
       // Vérifier si la réponse est du JSON
-      const contentType = response.headers.get('content-type');
+      const contentType = response.headers.get("content-type");
       let responseData;
 
-      if (contentType && contentType.includes('application/json')) {
+      if (contentType && contentType.includes("application/json")) {
         responseData = await response.json();
       } else {
         // Si ce n'est pas du JSON, lire comme texte
         const textResponse = await response.text();
-        console.error('Réponse non-JSON reçue:', textResponse);
-        throw new Error('Le serveur a renvoyé une réponse inattendue');
+        console.error("Réponse non-JSON reçue:", textResponse);
+        throw new Error("Le serveur a renvoyé une réponse inattendue");
       }
 
       if (response.ok) {
         setSuccess(responseData.message);
         // Optionnel : rediriger vers login après quelques secondes
         setTimeout(() => {
-          router.push('/login');
+          router.push("/login");
         }, 3000);
       } else {
         if (responseData.errors) {
           // Gérer les erreurs de validation
-          const errorMessages = responseData.errors.map((err: { errors: string[], msg: string }) => err.msg).join(', ');
+          const errorMessages = responseData.errors
+            .map((err: { errors: string[]; msg: string }) => err.msg)
+            .join(", ");
           setError(errorMessages);
         } else {
-          setError(responseData.error || 'Erreur lors de l\'inscription');
+          setError(responseData.error || "Erreur lors de l'inscription");
         }
       }
     } catch (error) {
-      console.error('Erreur d\'inscription:', error);
-      setError('Erreur de connexion au serveur: ' + (error as Error).message);
+      console.error("Erreur d'inscription:", error);
+      setError("Erreur de connexion au serveur: " + (error as Error).message);
     } finally {
       setIsLoading(false);
     }
@@ -93,11 +95,7 @@ export default function RegisterForm() {
 
   // Vérification de tous les champs pour activer/désactiver le submit
   useEffect(() => {
-    const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_-]).+$/;
-    const isPasswordValid = passwordCriteria.test(password);
-    const isPasswordMatch = password === confirmPassword;
-    
-    console.log('Vérification du formulaire');
+    console.log("Vérification du formulaire");
     if (
       username &&
       email &&
@@ -106,25 +104,29 @@ export default function RegisterForm() {
       password &&
       confirmPassword
     ) {
-      if (isPasswordMatch && isPasswordValid) {
-        setIsFormValid(true);
-        console.log('Formulaire valide');
-      } else {
-        setIsFormValid(false);
-        console.log('Formulaire invalide à cause du mot de passe');
-      }
+      setIsFormValid(true);
+      console.log("Formulaire valide");
     } else {
       setIsFormValid(false);
     }
-  }, [username, email, firstName, lastName, password, confirmPassword]);
+  }, [
+    username,
+    email,
+    firstName,
+    lastName,
+    password,
+    confirmPassword,
+  ]);
 
   return (
-    <div className="h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 text-black">
+    <div className="h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 text-clrprincipal">
       <ReturnButton />
 
-      <p className="
+      <p
+        className="
         text-center text-red-900 text-3xl font-bold after:content-[''] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8
-      ">
+      "
+      >
         Bienvenue à bord 👋
       </p>
 
@@ -146,11 +148,10 @@ export default function RegisterForm() {
 
         {/* Prénom, Nom, Mail */}
         <div className="w-full flex flex-col justify-start items-start gap-5">
-
           {/* Pseudo */}
           <div className="flex w-full justify-between items-center gap-5">
             <div className="flex flex-col">
-              <p className="text-black text-sm font-bold block">
+              <p className="text-clrprincipal text-sm font-bold block">
                 Pseudonyme*
               </p>
               <p className="text-zinc-500 text-xs font-light">
@@ -164,12 +165,12 @@ export default function RegisterForm() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
+              className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500"
             />
           </div>
 
           <div className="flex w-full justify-between items-center gap-5">
-            <p className="justify-start text-black font-bold text-sm">
+            <p className="justify-start text-clrprincipal font-bold text-sm">
               Prénom
             </p>
             <input
@@ -179,12 +180,12 @@ export default function RegisterForm() {
               required
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
+              className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500"
             />
           </div>
 
           <div className="flex w-full justify-between items-center gap-5">
-            <p className="justify-start text-black font-bold text-sm">
+            <p className="justify-start text-clrprincipal font-bold text-sm">
               Nom
             </p>
             <input
@@ -194,12 +195,12 @@ export default function RegisterForm() {
               required
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
+              className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500"
             />
           </div>
 
           <div className="self-stretch  flex flex-col justify-start items-start gap-2.5">
-            <p className="justify-start text-black font-bold text-sm">
+            <p className="justify-start text-clrprincipal font-bold text-sm">
               Mail
             </p>
             <input
@@ -209,7 +210,7 @@ export default function RegisterForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 px-3  text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
+              className="w-full p-2 px-3  text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500"
             />
           </div>
         </div>
@@ -229,7 +230,7 @@ export default function RegisterForm() {
           type="submit"
           className={`w-full p-2.5 rounded-[10px] flex justify-between items-center overflow-hidden transition-all duration-300 ${
             isFormValid && !isLoading
-              ? "bg-red-default hover:bg-red-hover active:bg-red-active cursor-pointer"
+              ? "bg-primary hover:bg-primary-hover active:bg-primary-hover cursor-pointer"
               : "bg-stone-500 cursor-not-allowed"
             }`}
           disabled={!isFormValid || isLoading}
@@ -251,7 +252,6 @@ export default function RegisterForm() {
           />
         </button>
       </form>
-
     </div>
   );
 }

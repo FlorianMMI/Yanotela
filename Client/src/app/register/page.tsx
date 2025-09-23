@@ -8,7 +8,7 @@ export default function Register() {
   const router = useRouter();
 
   return (
-    <div className="h-full p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-black">
+    <div className="h-full p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal">
       <ReturnButton />
 
       <div className="flex flex-col justify-center items-center gap-6 mt-4">
@@ -37,7 +37,7 @@ export default function Register() {
 
       <button
         onClick={() => router.push('/register/form')}
-        className="w-full p-2.5 bg-primary rounded-lg flex items-center gap-3 hover:bg-hover active:bg-hover transition-colors cursor-pointer justify-center"
+        className="w-full p-2.5 bg-primary rounded-lg flex items-center gap-3 hover:bg-primary-hover active:bg-primary-hover transition-colors cursor-pointer justify-center"
       >
         <Icon name="mail" className="text-white" size={20} />
         <span className="text-white text-sm font-medium font-['Gantari']">
@@ -48,12 +48,12 @@ export default function Register() {
       </div>
 
       <div className="flex flex-col justify-center items-center gap-2 mt-4">
-        <p className="text-center justify-center text-black text-xs font-gant font-light">
+        <p className="text-center justify-center text-clrprincipal text-xs font-gant font-light">
           Vous avez déjà un compte ?
         </p>
         <button
           onClick={() => router.push('/login')}
-          className="text-center justify-center text-primary hover:text-hover active:text-hover text-lg font-normal font-gant cursor-pointer"
+          className="text-center justify-center text-primary hover:text-primary-hover active:text-primary-hover text-lg font-normal font-gant cursor-pointer"
         >
           Connectez-vous
         </button>
