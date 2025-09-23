@@ -1,19 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #E9EBDB;
   --foreground: #171717;
-  --clr-rouge-fonce: #882626;
-
-  --font-family: "Gantari", Arial, Helvetica, sans-serif;
-}
-
-:root {
-  --background: #E9EBDB;
-  --foreground: #171717;
-  --clr-gris-clair: #727272;
+  --clr-gris-clair: #272727;
   --clr-rouge-fonce: #882626;
 
   --font-family: "Gantari", Arial, Helvetica, sans-serif;
