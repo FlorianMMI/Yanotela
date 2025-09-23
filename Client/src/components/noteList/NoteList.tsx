@@ -20,6 +20,7 @@ export default function NoteList({ notes }: NoteListProps) {
             alt="Ajouter une note"
             width={48}
             height={48}
+           
             className="group-hover:scale-110 transition-transform"
           />
         </div>

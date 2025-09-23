@@ -2,6 +2,7 @@
 
 "use client";
 
+import SearchBar from "@/ui/searchbar";
 import Image from "next/image";
 
 interface NoteHeaderProps {
@@ -18,7 +19,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
       <div className="block md:hidden">
         <header className="bg-white p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-red-800">Mes Notes</h1>
+            <h1 className="text-2xl font-bold text-primary">Mes Notes</h1>
             <div className="flex items-center gap-4">
               <Image
                 src="/recherche.svg"
@@ -41,32 +42,22 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
 
       {/* Header Desktop */}
       <div className="hidden md:block">
-        <div className="bg-red-800 h-2"></div>
-        <header className="bg-gray-200 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <svg className="w-6 h-6 text-red-800" fill="currentColor" viewBox="0 0 24 24">
+        
+        <header className="bg-gray-200 p-3 border-primary border-b-25">
+          <div className="flex items-center gap-2 ">
+            <svg className="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24">
               <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
             </svg>
             <span className="text-lg font-medium text-gray-800">Mes notes</span>
           </div>
           
-          <div className="flex items-center gap-4 flex-wrap">
+          
+        </header>
+
+        <div className="flex items-center gap-4 flex-wrap p-6">
             <div className="flex-1 min-w-64">
               <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Recherche de notes"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
-                <Image
-                  src="/recherche.svg"
-                  alt="Recherche"
-                  width={20}
-                  height={20}
-                  className="absolute right-3 top-2.5"
-                />
+                <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
               </div>
             </div>
             
@@ -75,7 +66,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
                 onClick={() => setSortBy("recent")}
                 className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                   sortBy === "recent" 
-                    ? "bg-red-700 text-white" 
+                    ? "bg-primary text-white" 
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
               >
@@ -89,7 +80,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
                 onClick={() => setSortBy("creation")}
                 className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                   sortBy === "creation" 
-                    ? "bg-red-700 text-white" 
+                    ? "bg-primary text-white" 
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
               >
@@ -97,7 +88,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
               </button>
             </div>
             
-            <button className="p-2 text-red-800 hover:bg-gray-100 rounded-lg">
+            <button className="p-2 text-primary hover:bg-gray-100 rounded-lg">
               <Image
                 src="/filtre.svg"
                 alt="Filtre"
@@ -106,7 +97,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
               />
             </button>
           </div>
-        </header>
+
       </div>
     </>
   );

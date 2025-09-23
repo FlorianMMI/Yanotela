@@ -13,7 +13,7 @@ export default function Home() {
   const filteredNotes: Note[] = [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <NoteHeader 
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
