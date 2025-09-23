@@ -14,34 +14,30 @@ export default function Home() {
 
   // Charger les notes au montage du composant
   useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        setLoading(true);
-        const fetchedNotes = await GetNotes();
-        console.log('Notes récupérées:', fetchedNotes);
-        setNotes(fetchedNotes);
-      } catch (error) {
-        console.error("Error loading notes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchNotes();
   }, []);
 
-  // Filtrer et trier les notes
+  const fetchNotes = async () => {
+    try {
+      setLoading(true);
+      const fetchedNotes = await GetNotes();
+      setNotes(fetchedNotes);
+    } catch (error) {
+      console.error("Error loading notes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filtrer et trier les notes (utilise les propriétés du serveur)
   const filteredNotes = notes
     .filter(note => 
-      note.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      note.content?.toLowerCase().includes(searchTerm.toLowerCase())
+      note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      note.Content?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
-      if (sortBy === "recent") {
-        return new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime();
-      } else {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
+      // Tri par date de modification (plus récent en premier)
+      return new Date(b.ModifiedAt).getTime() - new Date(a.ModifiedAt).getTime();
     });
 
   return (
@@ -52,7 +48,7 @@ export default function Home() {
         sortBy={sortBy}
         setSortBy={setSortBy}
       />
-      <NoteList notes={filteredNotes} />
+      <NoteList notes={filteredNotes} onNoteCreated={fetchNotes} />
     </div>
   );
 }

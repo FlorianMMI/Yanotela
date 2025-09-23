@@ -54,6 +54,7 @@ export async function GetNotes(): Promise<Note[]> {
         }
 
         const notes = await response.json();
+        console.log('Notes from server:', notes);
         return notes;
     } catch (error) {
         console.error("Error fetching notes:", error);

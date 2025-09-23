@@ -4,6 +4,7 @@
 
 import SearchBar from "@/ui/searchbar";
 import Image from "next/image";
+import { useState } from "react";
 
 interface NoteHeaderProps {
   searchTerm: string;
@@ -13,6 +14,7 @@ interface NoteHeaderProps {
 }
 
 export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortBy }: NoteHeaderProps) {
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   return (
     <>
       {/* Header Mobile */}
@@ -27,6 +29,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
                 width={24}
                 height={24}
                 className="cursor-pointer"
+                onClick={() => setShowMobileSearch(!showMobileSearch)}
               />
               <Image
                 src="/filtre.svg"
@@ -38,12 +41,51 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
             </div>
           </div>
         </header>
+
+        {/* Mobile Search Panel - Appears when search icon is clicked */}
+        {showMobileSearch && (
+          <div className="bg-white border-b border-gray-200 p-4 animate-in slide-in-from-top duration-300">
+            {/* Search Bar */}
+            <div className="mb-4">
+              <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            </div>
+
+            {/* Sort Buttons */}
+            <div className="flex gap-2 mb-2">
+              <button
+                onClick={() => setSortBy("recent")}
+                className={`flex flex-row items-center p-2 gap-2 rounded-lg font-medium text-sm transition-colors flex-1 justify-center ${sortBy === "recent"
+                  ? "bg-primary text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
+              >
+                <Image
+                  src="/recent.svg"
+                  alt="Récents"
+                  width={20}
+                  height={20}
+                />
+                Récents
+              </button>
+
+              <button
+                onClick={() => setSortBy("creation")}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors flex-1 ${sortBy === "creation"
+                  ? "bg-primary text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
+              >
+                Dates de création
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Header Desktop */}
       <div className="hidden md:block">
 
-        <header className="bg-gray-200 p-3 border-primary border-b-25">
+        <header className="bg-gray-200 p-3 border-primary border-b-2">
           <div className="flex items-center gap-2 ">
             <svg className="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24">
               <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
@@ -65,22 +107,26 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
           <div className="flex gap-2">
             <button
               onClick={() => setSortBy("recent")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${sortBy === "recent"
-                  ? "bg-primary text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              className={`flex flex-row p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${sortBy === "recent"
+                ? "bg-primary text-white"
+                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
             >
-              <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.2,16.2L11,13V7H12.5V12.2L17,14.9L16.2,16.2Z" />
-              </svg>
+              <Image
+                src="/recent.svg"
+                alt="Récents"
+                width={24}
+                height={24}
+                color="white"
+              />
               Récents
             </button>
 
             <button
               onClick={() => setSortBy("creation")}
               className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${sortBy === "creation"
-                  ? "bg-primary text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                ? "bg-primary text-white"
+                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
             >
               Dates de création
