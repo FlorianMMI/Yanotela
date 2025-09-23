@@ -1,28 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
+
+:root {
+  --background: #E9EBDB;
+  --foreground: #171717;
+  --clr-gris-clair: #727272;
+  --clr-rouge-fonce: #882626;
+
+  --font-family: "Gantari", Arial, Helvetica, sans-serif;
+}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-red-default: var(--red-default);
-  --color-red-hover: var(--red-hover);
-  --font-geo: var(--font-geologica);
-  --font-gant: var(--font-gantari);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--clr-rouge-fonce);
+  --color-element: var(--clr-gris-clair);
 }
 
-@layer base {
+/* @media (prefers-color-scheme: dark) {
   :root {
-    --background: #e9ebdb;
+    --background: #0a0a0a;
     --foreground: #ededed;
-    --red-default: #882626;
-    --red-hover: #be1515;
-    --font-geologica: 'Geologica', sans-serif;
-    --font-gantari: 'Gantari', sans-serif;
   }
-}
+} */
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
 }
