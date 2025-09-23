@@ -3,27 +3,13 @@ import { register, login, logout, validate, validateRegistration, forgotPassword
 
 const router = express.Router();
 
-router.get('/register', (req, res) => {
-  if (req.session.userId) {
-    return res.redirect('/');
-  }
-  res.render('register');
-});
-
-router.get('/forgot-password', (req, res) => {
-  if (req.session.userId) {
-    return res.redirect('/');
-  }
-  res.render('forgotPassword');
-});
-
-
+// Routes d'authentification
 router.post('/register', validateRegistration, register);
 router.post('/login', login);
 router.post('/logout', logout);
 router.get('/validate/:token', validate);
 router.post('/forgot-password', forgotPassword);
-router.get('/resetPassword/:token', resetPasswordGet);
+router.get('/reset-password/:token', resetPasswordGet);
 router.post('/reset-password', resetPasswordPost);
 
 export default router;
