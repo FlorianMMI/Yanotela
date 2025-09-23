@@ -116,9 +116,9 @@ export default function Login() {
             </button>
           </div>
           
-          <button type="button" className="w-full justify-start text-start flex text-primary  hover:text-hover active:text-hover text-sm font-normal font-gant cursor-pointer">
+          <button type="button" className="w-full justify-start text-start flex text-red-default hover:text-red-hover active:text-red-hover text-sm font-normal font-['Gantari'] cursor-pointer">
             Mot de passe oublié ?
-          </button>
+          </Link>
         
           <button 
             type="submit" 
