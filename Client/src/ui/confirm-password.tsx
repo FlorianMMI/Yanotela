@@ -60,7 +60,7 @@ export default function ConfirmPassword({
       {/* Mot de passe */}
       <div className="self-stretch flex flex-col justify-start items-start gap-2.5">
         <div className="flex flex-col">
-          <p className="text-black text-sm font-bold block">
+          <p className="text-clrprincipal text-sm font-bold block">
             Mot de passe
           </p>
           <p className={`text-zinc-500 text-xs font-light ${!passwordInvalid ? 'hidden' : ''}`}>
@@ -68,7 +68,7 @@ export default function ConfirmPassword({
             majuscule et un caractère spécial.
           </p>
         </div>
-        <div className="self-stretch p-2.5 bg-white rounded-[10px] flex justify-between items-center overflow-hidden">
+        <div className="self-stretch p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center overflow-hidden">
           <input
             type={showPassword ? "text" : "password"}
             name="password"
@@ -77,7 +77,7 @@ export default function ConfirmPassword({
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
             disabled={disabled}
-            className="flex-1 bg-transparent text-black text-sm font-normal outline-none placeholder-zinc-500 disabled:opacity-50"
+            className="flex-1 bg-transparent text-clrprincipal text-sm font-normal outline-none placeholder-zinc-500 disabled:opacity-50"
           />
           <button
             type="button"
@@ -101,13 +101,13 @@ export default function ConfirmPassword({
 
       {/* Confirmation du mot de passe */}
       <div className="self-stretch flex flex-col justify-start items-start gap-2.5">
-        <p className="text-black text-sm font-bold block">
+        <p className="text-clrprincipal text-sm font-bold block">
           Confirmer votre mot de passe
         </p>
         <p className={`text-red-500 text-xs font-light ${!passwordMismatch ? 'hidden' : ''}`}>
           Vos mots de passe ne correspondent pas.
         </p>
-        <div className="self-stretch p-2.5 bg-white rounded-[10px] flex justify-between items-center overflow-hidden">
+        <div className="self-stretch p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center overflow-hidden">
           <input
             type={showConfirmPassword ? "text" : "password"}
             name="confirmPassword"
@@ -116,7 +116,7 @@ export default function ConfirmPassword({
             value={confirmPassword}
             onChange={(e) => onConfirmPasswordChange(e.target.value)}
             disabled={disabled}
-            className="flex-1 bg-transparent text-black text-sm font-normal outline-none placeholder-zinc-500 disabled:opacity-50"
+            className="flex-1 bg-transparent text-clrprincipal text-sm font-normal outline-none placeholder-zinc-500 disabled:opacity-50"
           />
           <button
             type="button"
