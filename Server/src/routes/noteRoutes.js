@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { noteController } from '../controllers/noteController.js';
 
+//** Ce fichier permet de gérer les routes liées aux notes */
+
+
 const router = Router();
 
 
