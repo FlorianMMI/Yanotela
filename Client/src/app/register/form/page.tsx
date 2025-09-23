@@ -154,19 +154,19 @@ export default function RegisterForm() {
   }, [username, email, firstName, lastName, password, confirmPassword, passwordMismatch, passwordInvalid]);
 
   return (
-    <div className="h-full p-2.5 flex flex-col items-center font-geo gap-8 text-black">
+    <div className="h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 text-black">
       <ReturnButton />
 
       <p className="
-        text-center text-red-900 text-3xl font-bold
-        after:content-[''] after:block after:w-full after:h-1 after:bg-red-default after:rounded after:mt-8
+        text-center text-red-900 text-4xl font-bold
       ">
         Bienvenue à bord 👋
       </p>
+      <div className="self-stretch h-0 outline-[5px] outline-offset-[-2.50px] outline-red-900" />
 
       <form
         onSubmit={handleSubmit}
-        className="w-full flex flex-col justify-start items-center gap-8 "
+        className="w-full flex flex-col justify-start items-center gap-5 "
       >
         {error && (
           <div className="w-full p-2.5 bg-red-100 border border-red-400 text-red-700 rounded-[10px] text-sm">
@@ -182,6 +182,27 @@ export default function RegisterForm() {
 
         {/* Prénom, Nom, Mail */}
         <div className="w-full flex flex-col justify-start items-start gap-5">
+
+          {/* Pseudo */}
+        <div className="flex w-full justify-between items-center gap-5">
+          <div className="flex flex-col">
+            <p className="text-black text-sm font-bold block">
+              Pseudonyme*
+            </p>
+            <p className="text-zinc-500 text-xs font-light">
+              *doit être unique
+            </p>
+          </div>
+          <input
+            type="text"
+            name="username"
+            placeholder="MartinJean05"
+            required
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
+          />
+        </div>
 
           <div className="flex w-full justify-between items-center gap-5">
             <p className="justify-start text-black font-bold text-sm">
@@ -213,7 +234,7 @@ export default function RegisterForm() {
             />
           </div>
 
-          <div className="flex w-full justify-between items-center gap-5">
+          <div className="self-stretch  flex flex-col justify-start items-start gap-2.5">
             <p className="justify-start text-black font-bold text-sm">
               Mail
             </p>
@@ -224,31 +245,12 @@ export default function RegisterForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
+              className="w-full p-2 px-3  text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
             />
           </div>
         </div>
 
-        {/* Pseudo */}
-        <div className="self-stretch  flex flex-col justify-start items-start gap-2.5">
-          <div className="flex flex-col">
-            <p className="text-black text-sm font-bold block">
-              Pseudonyme
-            </p>
-            <p className="text-zinc-500 text-xs font-light">
-              Votre Pseudo doit être unique
-            </p>
-          </div>
-          <input
-            type="text"
-            name="username"
-            placeholder="MartinJean05"
-            required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-2 px-3 text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
-          />
-        </div>
+        
 
         {/* Mot de passe et confirmation */}
         <div className="self-stretch flex flex-col justify-start items-start gap-5">
