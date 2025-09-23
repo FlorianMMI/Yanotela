@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 :root {
   --background: #E9EBDB;
   --foreground: #171717;
@@ -16,6 +17,8 @@
   --font-mono: var(--font-geist-mono);
   --color-primary: var(--clr-rouge-fonce);
   --color-element: var(--clr-gris-clair);
+  --font-geo: var(--font-geologica);
+  --font-gant: var(--font-gantari);
 }
 
 /* @media (prefers-color-scheme: dark) {

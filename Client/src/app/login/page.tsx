@@ -59,22 +59,22 @@ export default function Login() {
       </Link>
 
       <div className="p-5 flex flex-col justify-center items-start gap-8">
-        <h1 className="w-full h-fit text-center justify-center text-red-900 text-4xl font-bold font-['Geologica']">
+        <p className="
+          text-center text-primary text-3xl font-bold
+          after:content-[''] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8
+        ">
           Quel plaisir de vous revoir !
-        </h1>
-
-        <div className="self-stretch h-0 outline-[5px] outline-offset-[-2.50px] outline-red-900" />
-        
+        </p>
     
 
         <form onSubmit={handleSubmit} id="login-form" className=" w-full flex flex-col justify-center items-start gap-2.5">
           {error && (
-            <div className="w-full p-2.5 bg-red-100 border border-red-400 text-red-700 rounded-[10px] text-sm">
+            <div className="w-full p-2.5 bg-100 border border-400 text-700 rounded-[10px] text-sm">
               {error}
             </div>
           )}
           
-          <p className="justify-center text-black text-sm font-normal font-['Gantari']">
+          <p className="justify-center text-black text-sm font-normal font-gant">
             Veuillez indiquer votre adresse e-mail et votre mot de passe.
           </p>
           
@@ -86,7 +86,7 @@ export default function Login() {
               id="identifiant"
               placeholder="Votre mail ou pseudonyme"
               required
-              className="flex-1 bg-transparent text-black text-sm font-normal font-['Gantari'] outline-none"
+              className="flex-1 bg-transparent text-black text-sm font-normal font-gant outline-none"
             />
           </div>
           
@@ -99,7 +99,7 @@ export default function Login() {
                 id="password"
                 placeholder="Votre mot de passe"
                 required
-                className="flex-1 bg-transparent text-black text-sm font-normal font-['Gantari'] outline-none"
+                className="flex-1 bg-transparent text-black text-sm font-normal font-gant outline-none"
               />
             </div>
             <button 
@@ -116,16 +116,16 @@ export default function Login() {
             </button>
           </div>
           
-          <Link href="/forgot-password" className="w-full justify-start text-start flex text-red-default hover:text-red-hover active:text-red-hover text-sm font-normal font-['Gantari'] cursor-pointer">
+          <button type="button" className="w-full justify-start text-start flex text-red-default hover:text-red-hover active:text-red-hover text-sm font-normal font-['Gantari'] cursor-pointer">
             Mot de passe oublié ?
-          </Link>
+          </button>
         
           <button 
             type="submit" 
             disabled={isLoading}
-            className="p-2.5 w-full bg-red-default hover:bg-red-hover active:bg-red-active disabled:bg-gray-400 rounded-[10px] flex justify-between items-center shadow-md cursor-pointer transition-colors"
+            className="p-2.5 w-full bg-primary hover:bg-hover active:bg-active disabled:bg-gray-400 rounded-[10px] flex justify-between items-center shadow-md cursor-pointer transition-colors"
           >
-            <p className="flex-1 text-center justify-center text-white text-xl font-bold font-['Gantari'] pointer-events-none">
+            <p className="flex-1 text-center justify-center text-white text-xl font-bold font-gant pointer-events-none">
               {isLoading ? 'Connexion...' : 'Se connecter'}
             </p>
             <Icon name="arrow-barre" className="text-white pointer-events-none" size={40} />
@@ -136,7 +136,7 @@ export default function Login() {
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex items-center w-full gap-4">
             <div className="flex-1 h-px bg-gray-300"></div>
-            <p className="text-gray-500 text-sm font-normal font-['Gantari']">ou</p>
+            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
             <div className="flex-1 h-px bg-gray-300"></div>
           </div>
           
@@ -144,8 +144,8 @@ export default function Login() {
             type="button" 
             className="w-full p-2.5 bg-white border border-gray-300 rounded-[10px] flex justify-center items-center gap-3 hover:bg-gray-200 active:bg-gray-50 transition-colors cursor-pointer"
           >
-            <Icon name="google" className="text-red-default" size={20} />
-            <span className="text-gray-700  text-sm font-medium font-['Gantari']">
+            <Icon name="google" className="text-primary" size={20} />
+            <span className="text-gray-700  text-sm font-medium font-gant">
               Se connecter avec Google
             </span>
           </button>
@@ -155,10 +155,10 @@ export default function Login() {
 
 {/* inscrivez vous ici */}
       <div className="p-2.5 flex flex-col justify-center items-center gap-2.5">
-        <p className="text-center justify-center text-black text-l font-normal font-['Gantari']">
+        <p className="text-center justify-center text-black text-l font-normal font-gant">
           Vous n'avez pas de Compte ?
         </p>
-        <Link href="/register" className="text-center justify-center text-red-default hover:text-red-hover active:text-red-hover text-xl font-normal font-['Gantari'] cursor-pointer">
+        <Link href="/register" className="text-center justify-center text-primary hover:text-hover active:text-hover text-xl font-normal font-gant cursor-pointer">
           Inscrivez-vous
         </Link>
       </div>

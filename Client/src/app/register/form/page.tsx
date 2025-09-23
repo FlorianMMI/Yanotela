@@ -25,18 +25,18 @@ export default function RegisterForm() {
     setIsLoading(true);
     setError('');
     setSuccess('');
-    
+
     const formData = new FormData(e.currentTarget);
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
-    
+
     // Vérification que les mots de passe correspondent
     if (password !== confirmPassword) {
       setError('Les mots de passe ne correspondent pas');
       setIsLoading(false);
       return;
     }
-    
+
     const registerData = {
       firstName: formData.get('firstName') as string,
       lastName: formData.get('lastName') as string,
@@ -58,7 +58,7 @@ export default function RegisterForm() {
       // Vérifier si la réponse est du JSON
       const contentType = response.headers.get('content-type');
       let responseData;
-      
+
       if (contentType && contentType.includes('application/json')) {
         responseData = await response.json();
       } else {
@@ -77,7 +77,7 @@ export default function RegisterForm() {
       } else {
         if (responseData.errors) {
           // Gérer les erreurs de validation
-          const errorMessages = responseData.errors.map((err: {errors: string[], msg: string}) => err.msg).join(', ');
+          const errorMessages = responseData.errors.map((err: { errors: string[], msg: string }) => err.msg).join(', ');
           setError(errorMessages);
         } else {
           setError(responseData.error || 'Erreur lors de l\'inscription');
@@ -123,11 +123,10 @@ export default function RegisterForm() {
       <ReturnButton />
 
       <p className="
-        text-center text-red-900 text-4xl font-bold
+        text-center text-red-900 text-3xl font-bold after:content-[''] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8
       ">
         Bienvenue à bord 👋
       </p>
-      <div className="self-stretch h-0 outline-[5px] outline-offset-[-2.50px] outline-red-900" />
 
       <form
         onSubmit={handleSubmit}
@@ -138,7 +137,7 @@ export default function RegisterForm() {
             {error}
           </div>
         )}
-        
+
         {success && (
           <div className="w-full p-2.5 bg-green-100 border border-green-400 text-green-700 rounded-[10px] text-sm">
             {success}
@@ -149,25 +148,25 @@ export default function RegisterForm() {
         <div className="w-full flex flex-col justify-start items-start gap-5">
 
           {/* Pseudo */}
-        <div className="flex w-full justify-between items-center gap-5">
-          <div className="flex flex-col">
-            <p className="text-black text-sm font-bold block">
-              Pseudonyme*
-            </p>
-            <p className="text-zinc-500 text-xs font-light">
-              *doit être unique
-            </p>
+          <div className="flex w-full justify-between items-center gap-5">
+            <div className="flex flex-col">
+              <p className="text-black text-sm font-bold block">
+                Pseudonyme*
+              </p>
+              <p className="text-zinc-500 text-xs font-light">
+                *doit être unique
+              </p>
+            </div>
+            <input
+              type="text"
+              name="username"
+              placeholder="MartinJean05"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
+            />
           </div>
-          <input
-            type="text"
-            name="username"
-            placeholder="MartinJean05"
-            required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
-          />
-        </div>
 
           <div className="flex w-full justify-between items-center gap-5">
             <p className="justify-start text-black font-bold text-sm">
@@ -182,7 +181,7 @@ export default function RegisterForm() {
               onChange={(e) => setFirstName(e.target.value)}
               className="w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-white text-black font-light outline-none placeholder-zinc-500"
             />
-          </div>  
+          </div>
 
           <div className="flex w-full justify-between items-center gap-5">
             <p className="justify-start text-black font-bold text-sm">
@@ -215,7 +214,7 @@ export default function RegisterForm() {
           </div>
         </div>
 
-        
+
 
         {/* Mot de passe et confirmation */}
         <ConfirmPassword
@@ -232,13 +231,12 @@ export default function RegisterForm() {
             isFormValid && !isLoading
               ? "bg-red-default hover:bg-red-hover active:bg-red-active cursor-pointer"
               : "bg-stone-500 cursor-not-allowed"
-          }`}
+            }`}
           disabled={!isFormValid || isLoading}
         >
           <span
-            className={`flex-1 text-center justify-center text-xl font-bold pointer-events-none ${
-              isFormValid && !isLoading ? "text-white" : "text-stone-300"
-            }`}
+            className={`flex-1 text-center justify-center text-xl font-bold pointer-events-none ${isFormValid && !isLoading ? "text-white" : "text-stone-300"
+              }`}
           >
             {isLoading ? "Inscription..." : "S'inscrire"}
           </span>
