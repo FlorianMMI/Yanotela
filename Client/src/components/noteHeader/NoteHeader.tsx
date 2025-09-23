@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import SearchBar from "@/ui/searchbar";

@@ -10,7 +10,7 @@ interface NoteListProps {
 }
 
 export default function NoteList({ notes, onNoteCreated }: NoteListProps) {
-  
+
   const handleCreateNote = async () => {
     const newNote = await CreateNote();
     if (newNote && onNoteCreated) {
@@ -19,7 +19,9 @@ export default function NoteList({ notes, onNoteCreated }: NoteListProps) {
   };
 
   return (
-    <main className="p-4 md:p-6">
+    <main
+      className="p-4 md:p-6"
+    >
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
 
         {/* Add Note Button */}
@@ -29,7 +31,7 @@ export default function NoteList({ notes, onNoteCreated }: NoteListProps) {
             alt="Ajouter une note"
             width={48}
             height={48}
-           
+
             className="group-hover:scale-110 transition-transform"
           />
         </div>
