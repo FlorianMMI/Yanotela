@@ -48,7 +48,11 @@ export default function Home() {
         sortBy={sortBy}
         setSortBy={setSortBy}
       />
-      <NoteList notes={filteredNotes} onNoteCreated={fetchNotes} />
+      <NoteList 
+        notes={filteredNotes} 
+        onNoteCreated={fetchNotes} 
+        isLoading={loading}
+      />
     </div>
   );
 }

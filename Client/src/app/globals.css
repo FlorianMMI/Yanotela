@@ -31,3 +31,9 @@ body {
   color: var(--foreground);
   font-family: var(--font-family);
 }
+
+@media (min-width: 1024px) {
+  body {
+    background: #D8D8D8;
+  }
+}
