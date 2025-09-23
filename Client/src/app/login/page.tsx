@@ -55,7 +55,7 @@ export default function Login() {
   return (
     <div className="h-screen p-2.5 flex flex-col justify-between items-center">
       <Link href="/" className="w-full items-start flex">
-        <Icon name="arrow-ss-barre" className="text-black hover:scale-75 active:scale-75 transition-transform duration-200" size={40} />
+        <Icon name="arrow-ss-barre" className="text-clrprincipal hover:scale-75 active:scale-75 transition-transform duration-200" size={40} />
       </Link>
 
       <div className="p-5 flex flex-col justify-center items-start gap-8">
@@ -74,11 +74,11 @@ export default function Login() {
             </div>
           )}
           
-          <p className="justify-center text-black text-sm font-normal font-gant">
+          <p className="justify-center text-clrprincipal text-sm font-normal font-gant">
             Veuillez indiquer votre adresse e-mail et votre mot de passe.
           </p>
           
-          <div data-property-1="Mail" className="w-full p-2.5 bg-white rounded-[10px] flex justify-start items-center gap-2.5">
+          <div data-property-1="Mail" className="w-full p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
             <Icon name="at" className="text-zinc-500" size={20} />
             <input 
               type="text" 
@@ -86,11 +86,11 @@ export default function Login() {
               id="identifiant"
               placeholder="Votre mail ou pseudonyme"
               required
-              className="flex-1 bg-transparent text-black text-sm font-normal font-gant outline-none"
+              className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
             />
           </div>
           
-          <div data-property-1="MDP" className="w-full p-2.5 bg-white rounded-[10px] flex justify-between items-center">
+          <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center">
             <div className="flex justify-center items-center gap-2.5">
               <Icon name="keyhole" className="text-zinc-500" size={20} />
               <input 
@@ -99,7 +99,7 @@ export default function Login() {
                 id="password"
                 placeholder="Votre mot de passe"
                 required
-                className="flex-1 bg-transparent text-black text-sm font-normal font-gant outline-none"
+                className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
               />
             </div>
             <button 
@@ -116,14 +116,14 @@ export default function Login() {
             </button>
           </div>
           
-          <button type="button" className="w-full justify-start text-start flex text-red-default hover:text-red-hover active:text-red-hover text-sm font-normal font-['Gantari'] cursor-pointer">
+          <button type="button" className="w-full justify-start text-start flex text-primary hover:text-red-hover active:text-red-hover text-sm font-normal font-gant cursor-pointer">
             Mot de passe oublié ?
           </button>
         
           <button 
             type="submit" 
             disabled={isLoading}
-            className="p-2.5 w-full bg-primary hover:bg-hover active:bg-active disabled:bg-gray-400 rounded-[10px] flex justify-between items-center shadow-md cursor-pointer transition-colors"
+            className="p-2.5 w-full bg-primary hover:bg-primary-hover disabled:bg-gray-400 rounded-[10px] flex justify-between items-center shadow-md cursor-pointer transition-colors"
           >
             <p className="flex-1 text-center justify-center text-white text-xl font-bold font-gant pointer-events-none">
               {isLoading ? 'Connexion...' : 'Se connecter'}
@@ -155,7 +155,7 @@ export default function Login() {
 
 {/* inscrivez vous ici */}
       <div className="p-2.5 flex flex-col justify-center items-center gap-2.5">
-        <p className="text-center justify-center text-black text-l font-normal font-gant">
+        <p className="text-center justify-center text-clrprincipal text-xs font-normal font-gant">
           Vous n'avez pas de Compte ?
         </p>
         <Link href="/register" className="text-center justify-center text-primary hover:text-hover active:text-hover text-xl font-normal font-gant cursor-pointer">

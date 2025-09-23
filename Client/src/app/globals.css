@@ -6,16 +6,11 @@
 :root {
   --background: #E9EBDB;
   --foreground: #171717;
-  --clr-rouge-fonce: #882626;
-
-  --font-family: "Gantari", Arial, Helvetica, sans-serif;
-}
-
-:root {
-  --background: #E9EBDB;
-  --foreground: #171717;
-  --clr-gris-clair: #727272;
-  --clr-rouge-fonce: #882626;
+  --gris-clair: #727272;
+  --rouge-fonce: #882626;
+  --rouge-hover: #ff0000;
+  --light: white;
+  --dark:black;
 
   --font-family: "Gantari", Arial, Helvetica, sans-serif;
 }
@@ -25,18 +20,25 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --color-primary: var(--clr-rouge-fonce);
-  --color-element: var(--clr-gris-clair);
+  
+  --color-primary: var(--rouge-fonce);
+  --color-primary-hover: var(--rouge-hover);
+  --color-element: var(--gris-clair);
+  
   --font-geo: var(--font-geologica);
   --font-gant: var(--font-gantari);
+
+  --color-clrprincipal:var(--dark);
+  --color-clrsecondaire:var(--light);
 }
 
-/* @media (prefers-color-scheme: dark) {
+ @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #171717;
+    --light: black;
+  --dark:white;
   }
-} */
+} 
 
 body {
   background: var(--background);

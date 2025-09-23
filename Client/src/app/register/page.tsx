@@ -8,7 +8,7 @@ export default function Register() {
   const router = useRouter();
 
   return (
-    <div className="h-full p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-black">
+    <div className="h-full p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal">
       <ReturnButton />
 
       <div className="flex flex-col justify-center items-center gap-6 mt-4">
@@ -48,7 +48,7 @@ export default function Register() {
       </div>
 
       <div className="flex flex-col justify-center items-center gap-2 mt-4">
-        <p className="text-center justify-center text-black text-xs font-gant font-light">
+        <p className="text-center justify-center text-clrprincipal text-xs font-gant font-light">
           Vous avez déjà un compte ?
         </p>
         <button
