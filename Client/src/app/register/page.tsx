@@ -177,7 +177,7 @@ export default function Register() {
             )}
             
             <div className="self-stretch flex flex-col justify-start items-start gap-5">
-              <div className="self-stretch  flex justify-between items-start flex-col gap-5">
+              <div className="self-stretch  flex justify-between items-center flex-row  gap-5">
                 <p className="justify-start text-black text-xl font-bold font-['Gantari']">
                   Prenom
                 </p>
