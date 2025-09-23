@@ -63,7 +63,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start h-screen p-4 gap-20">
+    <div className="min-h-screen flex flex-col items-center justify-start h-screen p-2.5 gap-20">
       
         <Logo />
       <div className=' flex flex-col justify-center items-center gap-10'>
