@@ -23,8 +23,7 @@
     "nodemailer": "^6.9.13",
     "prisma": "^6.16.2",
     "socket.io": "^4.8.1",
-    "supertest": "^7.1.4",
-    "twig": "^1.17.1"
+    "supertest": "^7.1.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

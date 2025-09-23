@@ -24,12 +24,12 @@ export default function Login() {
     };
 
     try {
-      const response = await fetch('http://localhost:3001/api/login', {
+      const response = await fetch('http://localhost:3001/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Important pour les sessions
+        credentials: 'include', 
         body: JSON.stringify(loginData)
       });
 
@@ -37,7 +37,6 @@ export default function Login() {
         // Connexion réussie, rediriger vers la page d'accueil
         router.push('/');
       } else {
-        // Gérer les erreurs
         const errorData = await response.text();
         setError('Identifiants incorrects');
       }
