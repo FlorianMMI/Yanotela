@@ -36,7 +36,7 @@ async function sendResetPasswordEmail(to, token) {
     return { success: true, message: 'Email simulé en mode test' };
   }
 
-  const resetUrl = `${FRONT_URL}/resetPassword/${token}`;
+  const resetUrl = `${FRONT_URL}/forgot-password/${token}`;
     // Configure Nodemailer avec Mailtrap depuis les variables d'environnement
     const transport = nodemailer.createTransport({
     host: process.env.MAILTRAP_HOST || 'smtp.mailtrap.io',

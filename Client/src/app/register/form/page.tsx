@@ -3,19 +3,15 @@
 import { useState, useEffect } from "react";
 import Icon from "@/ui/Icon";
 import ReturnButton from "@/ui/returnButton";
+import ConfirmPassword from "@/ui/confirm-password";
 import { useRouter } from 'next/navigation';
 
 export default function RegisterForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
-
-  const [passwordMismatch, setPasswordMismatch] = useState(false);
-  const [passwordInvalid, setPasswordInvalid] = useState(false);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -95,43 +91,12 @@ export default function RegisterForm() {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
-
-  // Vérification mot de passe (au moins une majuscule, un chiffre et un caractère spécial)
-  useEffect(() => {
-    const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_-]).+$/;
-    if (password === "") {
-      setPasswordInvalid(false);
-      return;
-    }
-    if (!passwordCriteria.test(password)) {
-      setPasswordInvalid(true);
-    } else {
-      setPasswordInvalid(false);
-    }
-  }, [password]);
-
-  // Vérification mot de passe/confirmation
-  useEffect(() => {
-    if (password === "" || confirmPassword === "") {
-      setPasswordMismatch(false);
-      return;
-    }
-    if (password !== confirmPassword) {
-      setPasswordMismatch(true);
-    } else {
-      setPasswordMismatch(false);
-    }
-  }, [password, confirmPassword]);
-
   // Vérification de tous les champs pour activer/désactiver le submit
   useEffect(() => {
+    const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_-]).+$/;
+    const isPasswordValid = passwordCriteria.test(password);
+    const isPasswordMatch = password === confirmPassword;
+    
     console.log('Vérification du formulaire');
     if (
       username &&
@@ -141,7 +106,7 @@ export default function RegisterForm() {
       password &&
       confirmPassword
     ) {
-      if (!passwordMismatch && !passwordInvalid) {
+      if (isPasswordMatch && isPasswordValid) {
         setIsFormValid(true);
         console.log('Formulaire valide');
       } else {
@@ -151,7 +116,7 @@ export default function RegisterForm() {
     } else {
       setIsFormValid(false);
     }
-  }, [username, email, firstName, lastName, password, confirmPassword, passwordMismatch, passwordInvalid]);
+  }, [username, email, firstName, lastName, password, confirmPassword]);
 
   return (
     <div className="h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 text-black">
@@ -253,86 +218,13 @@ export default function RegisterForm() {
         
 
         {/* Mot de passe et confirmation */}
-        <div className="self-stretch flex flex-col justify-start items-start gap-5">
-
-          {/* Mot de passe */}
-          <div className="self-stretch  flex flex-col justify-start items-start gap-2.5">
-            <div className="flex flex-col">
-              <p className="text-black text-sm font-bold block">
-                Mot de passe
-              </p>
-              <p className={`text-zinc-500 text-xs font-light ${!passwordInvalid ? 'hidden' : ''}`}>
-                Votre mot de passe doit contenir au moins : un chiffre, une
-                majuscule et un caractère spécial.
-              </p>
-            </div>
-            <div className="self-stretch p-2.5 bg-white rounded-[10px] flex justify-between items-center overflow-hidden">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="**********"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="flex-1 bg-transparent text-black text-sm font-normal outline-none placeholder-zinc-500"
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="w-5 h-5 flex items-center justify-center hover:scale-110 transition-transform"
-                aria-label={
-                  showPassword
-                    ? "Cacher le mot de passe"
-                    : "Afficher le mot de passe"
-                }
-              >
-                <Icon
-                  name={showPassword ? "eye-close" : "eye"}
-                  className="text-zinc-500 hover:text-zinc-700"
-                  size={16}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Confirmation du mot de passe */}
-          <div className="self-stretch flex flex-col justify-start items-start gap-2.5">
-            <p className="text-black text-sm font-bold block">
-              Confirmer votre mot de passe
-            </p>
-            <p className={`text-red-500 text-xs font-light ${!passwordMismatch ? 'hidden' : ''}`}>
-              Vos mots de passe ne correspondent pas.
-            </p>
-            <div className="self-stretch p-2.5 bg-white rounded-[10px] flex justify-between items-center overflow-hidden">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="**********"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="flex-1 bg-transparent text-black text-sm font-normal outline-none placeholder-zinc-500"
-              />
-              <button
-                type="button"
-                onClick={toggleConfirmPasswordVisibility}
-                className="w-5 h-5 flex items-center justify-center hover:scale-110 transition-transform"
-                aria-label={
-                  showConfirmPassword
-                    ? "Cacher le mot de passe"
-                    : "Afficher le mot de passe"
-                }
-              >
-                <Icon
-                  name={showConfirmPassword ? "eye-close" : "eye"}
-                  className="text-zinc-500 hover:text-zinc-700"
-                  size={16}
-                />
-              </button>
-            </div>
-          </div>
-
-        </div>
+        <ConfirmPassword
+          password={password}
+          confirmPassword={confirmPassword}
+          onPasswordChange={setPassword}
+          onConfirmPasswordChange={setConfirmPassword}
+          disabled={isLoading}
+        />
 
         <button
           type="submit"
