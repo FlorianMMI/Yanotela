@@ -35,6 +35,6 @@ model Note {
   Content         String
   authorId        Int
   author          User        @relation(fields: [authorId], references: [id])
-  CreatedAt       DateTime    @default(now())
+  ModifiedAt       DateTime    @default(now())
 
 }

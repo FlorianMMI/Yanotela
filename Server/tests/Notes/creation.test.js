@@ -1,6 +1,23 @@
+/**
+ * @fileoverview
+ * Fichier de tests pour l'endpoint POST /note/create de l'application.
+ * 
+ * Ce fichier utilise Jest et Supertest pour tester la création de notes via l'API.
+ * Il mocke le client Prisma afin d'isoler la logique métier et de ne pas interagir avec la base de données réelle.
+ * 
+ * Les tests vérifient :
+ * - La création réussie d'une note avec des données valides.
+ * - La gestion d'une requête sans données (erreur 400).
+ * - La validation de la présence de tous les champs requis (erreur 500 attendue si des champs manquent).
+ */
+
+
 import request from 'supertest';
 import { jest } from '@jest/globals';
 import app from '../../src/app.js';
+
+
+
 
 // Mock Prisma
 const mockPrismaClient = {
@@ -40,7 +57,7 @@ test('devrait créer une note avec succès', async () => {
     expect(response.body).toHaveProperty('note');
     expect(response.body.note).toMatchObject(noteData);
     expect(response.body.note).toHaveProperty('id');
-    expect(response.body.note).toHaveProperty('CreatedAt');
+    expect(response.body.note).toHaveProperty('ModifiedAt');
 });
 
   test('devrait retourner une erreur 400 si aucune donnée n\'est envoyée', async () => {

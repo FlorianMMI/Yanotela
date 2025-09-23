@@ -1,20 +1,31 @@
 import React from 'react';
 import Image from 'next/image';
 import Note from '@/ui/note/Note';
+import NoteSkeleton from '@/ui/note/NoteSkeleton';
 import { Note as NoteType } from '@/type/Note';
 import { CreateNote } from '@/loader/loader';
 
 interface NoteListProps {
   notes: NoteType[];
+  onNoteCreated?: () => void; // Callback pour refresh après création
+  isLoading?: boolean; // État de chargement
 }
 
-export default function NoteList({ notes }: NoteListProps) {
+export default function NoteList({ notes, onNoteCreated, isLoading = false }: NoteListProps) {
+  
+  const handleCreateNote = async () => {
+    const newNote = await CreateNote();
+    if (newNote && onNoteCreated) {
+      onNoteCreated(); // Déclencher le refresh des notes
+    }
+  };
+
   return (
-    <main className="p-4 md:p-6">
+    <main className="p-4 md:pl-25 md:pr-25 md:pt-8">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
 
         {/* Add Note Button */}
-        <div className="bg-white border-2 border-red-800 border-dashed rounded-xl p-8 flex items-center justify-center hover:bg-red-50 transition-colors cursor-pointer group" onClick={() => CreateNote()}>
+        <div className="bg-white border-2 border-primary border-dashed rounded-xl p-8 flex items-center justify-center hover:bg-red-50 transition-colors cursor-pointer group" onClick={handleCreateNote}>
           <Image
             src="/plus.svg"
             alt="Ajouter une note"
@@ -25,10 +36,28 @@ export default function NoteList({ notes }: NoteListProps) {
           />
         </div>
 
+        {/* Loading Skeletons */}
+        {isLoading && (
+          <>
+            {Array.from({ length: 8 }).map((_, index) => (
+              <NoteSkeleton key={`skeleton-${index}`} />
+            ))}
+          </>
+        )}
+
         {/* Notes Grid */}
-        {notes.map((note) => (
+        {!isLoading && notes.map((note) => (
           <Note key={note.id} note={note} />
         ))}
+
+        {/* Message si aucune note et pas en chargement */}
+        {!isLoading && notes.length === 0 && (
+          <div className="col-span-full text-center py-12">
+            <p className="text-gray-500 text-lg font-gant">
+              Aucune note trouvée. Créez votre première note !
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );
