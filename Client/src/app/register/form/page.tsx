@@ -132,6 +132,7 @@ export default function RegisterForm() {
 
   // Vérification de tous les champs pour activer/désactiver le submit
   useEffect(() => {
+    console.log('Vérification du formulaire');
     if (
       username &&
       email &&
@@ -142,8 +143,10 @@ export default function RegisterForm() {
     ) {
       if (!passwordMismatch && !passwordInvalid) {
         setIsFormValid(true);
+        console.log('Formulaire valide');
       } else {
         setIsFormValid(false);
+        console.log('Formulaire invalide à cause du mot de passe');
       }
     } else {
       setIsFormValid(false);
