@@ -1,5 +1,23 @@
+/**
+ * Contrôleur pour la gestion des notes.
+ * 
+ * Ce fichier fournit les fonctions pour :
+ * - Récupérer toutes les notes depuis la base de données.
+ * - Créer une nouvelle note avec un titre, un contenu et un identifiant d'auteur.
+ * 
+ * Utilise Prisma comme ORM pour interagir avec la base de données.
+ * 
+ * Fonctions exportées :
+ * - getNotes : Récupère toutes les notes.
+ * - createNote : Crée une nouvelle note après validation des champs requis.
+ */
+
+
 import {PrismaClient} from "@prisma/client";
 const prisma = new PrismaClient();
+
+
+
 
 export const noteController = {
 

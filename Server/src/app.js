@@ -10,7 +10,7 @@ import { corsConfig } from './config/corsConfig.js';
 import noteRoutes from './routes/noteRoutes.js';
 
 
-
+//*** Permet de gerer les routes global, erreurs et met en place une sécurité de base  */
 
 
 const app = express();
