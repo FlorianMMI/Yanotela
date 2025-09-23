@@ -16,7 +16,7 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<Note | null>
             },
             body: JSON.stringify({
                 Titre: "Sans titre",
-                Content: "Note Vide",
+                Content: "Sans Contenu",
                 authorId: 1,
             })
         });
