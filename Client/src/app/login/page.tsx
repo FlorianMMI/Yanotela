@@ -116,7 +116,10 @@ export default function Login() {
             </button>
           </div>
           
-          <button type="button" className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline  text-sm font-normal font-gant cursor-pointer">
+          <button 
+            onClick={() => router.push('/forgot-password')}
+            className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline  text-sm font-normal font-gant cursor-pointer"
+          >
             Mot de passe oublié ?
           </button>
         
