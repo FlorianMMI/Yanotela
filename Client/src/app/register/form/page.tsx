@@ -3,11 +3,17 @@
 import { useState, useEffect } from "react";
 import Icon from "@/ui/Icon";
 import ReturnButton from "@/ui/returnButton";
+import { useRouter } from 'next/navigation';
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const router = useRouter();
+
   const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [passwordInvalid, setPasswordInvalid] = useState(false);
 
@@ -18,9 +24,75 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Formulaire inscription soumis");
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+    
+    const formData = new FormData(e.currentTarget);
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+    
+    // Vérification que les mots de passe correspondent
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas');
+      setIsLoading(false);
+      return;
+    }
+    
+    const registerData = {
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      email: formData.get('email') as string,
+      pseudo: formData.get('username') as string, // Nom corrigé pour correspondre au backend
+      password: password,
+    };
+
+    try {
+      const response = await fetch('http://localhost:3001/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(registerData)
+      });
+
+      // Vérifier si la réponse est du JSON
+      const contentType = response.headers.get('content-type');
+      let responseData;
+      
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        // Si ce n'est pas du JSON, lire comme texte
+        const textResponse = await response.text();
+        console.error('Réponse non-JSON reçue:', textResponse);
+        throw new Error('Le serveur a renvoyé une réponse inattendue');
+      }
+
+      if (response.ok) {
+        setSuccess(responseData.message);
+        // Optionnel : rediriger vers login après quelques secondes
+        setTimeout(() => {
+          router.push('/login');
+        }, 3000);
+      } else {
+        if (responseData.errors) {
+          // Gérer les erreurs de validation
+          const errorMessages = responseData.errors.map((err: {errors: string[], msg: string}) => err.msg).join(', ');
+          setError(errorMessages);
+        } else {
+          setError(responseData.error || 'Erreur lors de l\'inscription');
+        }
+      }
+    } catch (error) {
+      console.error('Erreur d\'inscription:', error);
+      setError('Erreur de connexion au serveur: ' + (error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -68,7 +140,7 @@ export default function RegisterForm() {
       password &&
       confirmPassword
     ) {
-      if (!passwordMismatch) {
+      if (!passwordMismatch && !passwordInvalid) {
         setIsFormValid(true);
       } else {
         setIsFormValid(false);
@@ -76,7 +148,7 @@ export default function RegisterForm() {
     } else {
       setIsFormValid(false);
     }
-  }, [username, email, firstName, lastName, password, confirmPassword, passwordMismatch]);
+  }, [username, email, firstName, lastName, password, confirmPassword, passwordMismatch, passwordInvalid]);
 
   return (
     <div className="h-full p-2.5 flex flex-col items-center font-geo gap-8 text-black">
@@ -93,6 +165,17 @@ export default function RegisterForm() {
         onSubmit={handleSubmit}
         className="w-full flex flex-col justify-start items-center gap-8 "
       >
+        {error && (
+          <div className="w-full p-2.5 bg-red-100 border border-red-400 text-red-700 rounded-[10px] text-sm">
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="w-full p-2.5 bg-green-100 border border-green-400 text-green-700 rounded-[10px] text-sm">
+            {success}
+          </div>
+        )}
 
         {/* Prénom, Nom, Mail */}
         <div className="w-full flex flex-col justify-start items-start gap-5">
@@ -249,23 +332,23 @@ export default function RegisterForm() {
         <button
           type="submit"
           className={`w-full p-2.5 rounded-[10px] flex justify-between items-center overflow-hidden transition-all duration-300 ${
-            isFormValid
+            isFormValid && !isLoading
               ? "bg-red-default hover:bg-red-hover active:bg-red-active cursor-pointer"
               : "bg-stone-500 cursor-not-allowed"
           }`}
-          disabled={!isFormValid}
+          disabled={!isFormValid || isLoading}
         >
           <span
             className={`flex-1 text-center justify-center text-xl font-bold pointer-events-none ${
-              isFormValid ? "text-white" : "text-stone-300"
+              isFormValid && !isLoading ? "text-white" : "text-stone-300"
             }`}
           >
-            S&apos;inscrire
+            {isLoading ? "Inscription..." : "S'inscrire"}
           </span>
           <Icon
             name="arrow-barre"
             className={
-              isFormValid
+              isFormValid && !isLoading
                 ? "text-white pointer-events-none"
                 : "text-stone-300 pointer-events-none"
             }
