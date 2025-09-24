@@ -53,7 +53,7 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen p-2.5 flex flex-col justify-between items-center">
+    <div className="h-full p-2.5 flex flex-col justify-between items-center">
       <Link href="/" className="w-full items-start flex">
         <Icon name="arrow-ss-barre" className="text-clrprincipal hover:scale-75 active:scale-75 transition-transform duration-200" size={40} />
       </Link>
@@ -115,13 +115,18 @@ export default function Login() {
               />
             </button>
           </div>
+<<<<<<< HEAD
           
           <button 
             onClick={() => router.push('/forgot-password')}
             className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline  text-sm font-normal font-gant cursor-pointer"
           >
+=======
+
+          <Link href="/forgot-password" className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline  text-sm font-normal font-gant cursor-pointer">
+>>>>>>> 7da732466f60cc19e23eda9a0cadfcbd5b9d132d
             Mot de passe oublié ?
-          </button>
+          </Link>
         
           <button 
             type="submit" 
@@ -158,7 +163,7 @@ export default function Login() {
 
 {/* inscrivez vous ici */}
       <div className="p-2.5 flex flex-col justify-center items-center gap-2.5">
-        <p className="text-center justify-center text-clrprincipal text-xs font-normal font-gant">
+        <p className="text-center justify-center text-clrprincipal text-xs font-gant font-light">
           Vous n'avez pas de Compte ?
         </p>
         <Link href="/register" className="text-center justify-center text-primary hover:text-primary-hover active:text-primary-hover text-xl font-normal font-gant cursor-pointer">

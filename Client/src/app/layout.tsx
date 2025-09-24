@@ -8,7 +8,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className="antialiased px-4 md:py-4 h-screen">
+      <body className="antialiased md:py-4 h-screen bg-motif-bg">
         {children}
       </body>
     </html>

@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import Icons from '@/ui/Icon';
 import "../globals.css";
+import Logo from '@/ui/logo';
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('');
@@ -61,27 +63,23 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <Image
-            src="/logo.svg"
-            alt="Yanotela."
-            width={200}
-            height={200}
-            className="mx-auto"
-          />
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Réinitialisation du mot de passe
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Saisissez votre adresse email pour recevoir un lien de réinitialisation
-          </p>
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-start h-screen p-2.5 gap-20">
+      
+        <Logo />
+      <div className=' flex flex-col justify-center items-center gap-10'>
+        <div className="flex flex-col gap-2 text-center">
+            <h2 className="text-3xl font-extrabold text-clrprincipal">
+              Réinitialisation du mot de passe
+            </h2>
+            <p className="text-sm text-clrprincipal">
+              Saisissez votre adresse email pour recevoir un lien de réinitialisation
+            </p>
+          </div>
+        
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+        <form className="flex flex-col gap-6 w-full" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="email" className="text-sm font-medium text-clrprincipal">
               Adresse email
             </label>
             <input
@@ -93,7 +91,7 @@ export default function ResetPasswordPage() {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 appearance-none relative block w-full px-3 py-2 border bg-white border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+              className="appearance-none w-full px-3 py-2 border bg-clrsecondaire border-gray-300 placeholder-gray-500 text-clrprincipal rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               placeholder="Entrez votre email"
               disabled={status === 'loading'}
             />
@@ -102,65 +100,58 @@ export default function ResetPasswordPage() {
           {/* Messages de statut */}
           {status === 'success' && (
             <div className="rounded-md bg-green-50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-green-800">
-                    {message}
-                  </p>
-                </div>
+              <div className="flex gap-3">
+                <svg className="h-5 w-5 text-green-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm font-medium text-green-800">
+                  {message}
+                </p>
               </div>
             </div>
           )}
 
           {status === 'error' && (
             <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-red-800">
-                    {message}
-                  </p>
-                </div>
+              <div className="flex gap-3">
+                <svg className="h-5 w-5 text-red-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm font-medium text-red-800">
+                  {message}
+                </p>
               </div>
             </div>
           )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {status === 'loading' ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Envoi en cours...
-                </div>
-              ) : (
-                'Envoyer le lien de réinitialisation'
-              )}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={status === 'loading'}
+            className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {status === 'loading' ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-clrsecondaire"></div>
+                Envoi en cours...
+              </>
+            ) : (
+              'Envoyer le lien de réinitialisation'
+            )}
+          </button>
 
-          <div className="text-center">
+          
+        </form>
+        <div className="text-center">
             <Link
               href="/login"
-              className="text-sm text-primary hover:text-primary/80"
+              className="text-sm text-primary hover:text-primary-hover"
             >
               Retour à la connexion
             </Link>
           </div>
-        </form>
-      </div>
+
+          </div>
+      
     </div>
   );
 }

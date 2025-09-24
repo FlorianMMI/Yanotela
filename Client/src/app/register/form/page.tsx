@@ -132,7 +132,7 @@ export default function RegisterForm() {
 
       <form
         onSubmit={handleSubmit}
-        className="w-full flex flex-col justify-start items-center gap-5 "
+        className=" flex flex-col justify-start items-center gap-5 "
       >
         {error && (
           <div className="w-full p-2.5 bg-red-100 border border-red-400 text-red-700 rounded-[10px] text-sm">
