@@ -1,11 +1,9 @@
 import 'dotenv/config';
 import app from './src/app.js';
 
-//** Index du serveur */
+const PORT = process.env.PORT || 3001;
 
-
-const PORT = 3001;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`🚀 Serveur Yanotela démarré sur le port ${PORT}`);
+    console.log(`📧 Système d'authentification avec validation email activé`);
 });
-
