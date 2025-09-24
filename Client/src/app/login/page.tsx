@@ -115,18 +115,13 @@ export default function Login() {
               />
             </button>
           </div>
-<<<<<<< HEAD
           
           <button 
             onClick={() => router.push('/forgot-password')}
             className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline  text-sm font-normal font-gant cursor-pointer"
           >
-=======
-
-          <Link href="/forgot-password" className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline  text-sm font-normal font-gant cursor-pointer">
->>>>>>> 7da732466f60cc19e23eda9a0cadfcbd5b9d132d
             Mot de passe oublié ?
-          </Link>
+          </button>
         
           <button 
             type="submit" 
