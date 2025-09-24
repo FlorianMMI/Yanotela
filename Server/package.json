@@ -8,7 +8,9 @@
     "start": "node index.js",
     "prisma": "prisma",
     "test:auth": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/auth/",
-    "test": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/"
+    "test": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/",
+    "dev": "nodemon index.js",
+    "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -29,6 +31,15 @@
     "@playwright/test": "^1.55.0",
     "@types/node": "^24.5.2",
     "jest": "^30.1.3",
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.0",
+    "supertest": "^7.1.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {},
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "testTimeout": 10000
   }
 }

@@ -6,7 +6,10 @@ import { dirname, join } from 'path';
 import sessionMiddleware from './config/sessionConfig.js';
 import {corsConfig} from './config/corsConfig.js';
 import authRoutes from './routes/authRoutes.js';
+import noteRoutes from './routes/noteRoutes.js';
 import helmet from 'helmet';
+
+
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,6 +25,7 @@ app.use(express.json());
 
 // Routes
 app.use('/', authRoutes);
+app.use('/note', noteRoutes);
 
 // Route de base - API uniquement
 app.get('/', (req, res) => {
@@ -38,4 +42,3 @@ app.get('/', (req, res) => {
 });
 
 export { app, sessionMiddleware };
-export default app;
