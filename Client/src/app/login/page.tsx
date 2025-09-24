@@ -69,7 +69,7 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} id="login-form" className=" w-full flex flex-col justify-center items-start gap-2.5">
           {error && (
-            <div className="w-full p-2.5 bg-100 border border-400 text-700 rounded-[10px] text-sm">
+            <div className="w-full p-2.5 bg-100 border-400 text-700 rounded-[10px] text-sm">
               {error}
             </div>
           )}
