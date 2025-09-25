@@ -78,7 +78,7 @@ export const noteController = {
             if (!note) {
                 return res.status(404).json({ message: 'Note non trouvée' });
             }
-            res.status(200).json({ titre: note.Titre, content: note.Content });
+            res.status(200).json({ Titre: note.Titre, Content: note.Content });
         }
         catch (error) {
             res.status(500).json({ message: 'Erreur lors de la récupération de la note', error: error.message });

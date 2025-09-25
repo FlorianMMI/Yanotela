@@ -7,7 +7,7 @@ export default function Home() {
     
     <>
 
-      <ErrorFetch type="connect" />
+      
       {/* Bouton de redirection vers la page de login */}
       <div className="p-2.5 w-full h-screen flex flex-col gap-4 justify-center items-center">
         <Link href="/login">

@@ -1,7 +1,7 @@
 "use client";
 
 import { $getRoot, EditorState } from "lexical";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -16,6 +16,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { useRouter } from "next/navigation";
 
 import { GetNoteById } from "@/loader/loader";
+import { SaveNote } from "@/loader/loader";
 
 const theme = {
   // Theme styling goes here
@@ -26,37 +27,96 @@ function onError(error: string | Error) {
   console.error(error);
 }
 
-export default function NoteEditor() {
+
+
+function uploadContent(id: number, noteTitle: string, editorContent: string) {
+  SaveNote(id, {
+    Titre: noteTitle,
+    Content: editorContent,
+  });
+}
+
+interface NoteEditorProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export default function NoteEditor({ params }: NoteEditorProps) {
   const [noteTitle, setNoteTitle] = useState("Titre de la note");
   const [editorContent, setEditorContent] = useState("");
+  const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  
+  // Unwrap params using React.use()
+  const { id } = use(params);
 
   useEffect(() => {
     const fetchNote = async () => {
-      // Extract note id from the URL
-      const pathParts = window.location.pathname.split("/");
-      const noteId = parseInt(pathParts[pathParts.length - 1]);
+      // Récupération de l'ID depuis les params unwrappés
+      const noteId = parseInt(id);
+      console.log("Fetching note with ID:", noteId);
 
       if (noteId) {
         const note = await GetNoteById(noteId);
         if (note) {
           setNoteTitle(note.Titre || "Titre de la note");
+          // Si on a du contenu, on le parse pour l'éditeur
+          if (note.Content) {
+            try {
+              // Vérifier si c'est déjà du JSON valide
+              const parsedContent = JSON.parse(note.Content);
+              setInitialEditorState(note.Content);
+            } catch {
+              // Si ce n'est pas du JSON, on crée un état d'éditeur simple avec le texte
+              const simpleState = {
+                root: {
+                  children: [{
+                    children: [{
+                      detail: 0,
+                      format: 0,
+                      mode: "normal",
+                      style: "",
+                      text: note.Content,
+                      type: "text",
+                      version: 1
+                    }],
+                    direction: "ltr",
+                    format: "",
+                    indent: 0,
+                    type: "paragraph",
+                    version: 1
+                  }],
+                  direction: "ltr",
+                  format: "",
+                  indent: 0,
+                  type: "root",
+                  version: 1
+                }
+              };
+              setInitialEditorState(JSON.stringify(simpleState));
+            }
+          }
           setEditorContent(note.Content || "");
         }
         else {
           setError("Note introuvable.");
         }
       }
+      setIsLoading(false);
     };
 
     fetchNote();
-  }, []);
+  }, [id]); // Dépendance sur l'ID unwrappé
 
   const initialConfig = {
     namespace: "Editor",
     theme,
     onError,
+    // Utiliser l'état initial si disponible
+    editorState: initialEditorState ? initialEditorState : undefined,
   };
 
   function OnChangeBehavior() {
@@ -76,6 +136,8 @@ export default function NoteEditor() {
       console.log("Editor State JSON:", editorStateJSON);
       // However, we still have a JavaScript object, so we need to convert it to an actual string with JSON.stringify
       setEditorContent(JSON.stringify(editorStateJSON));
+      uploadContent(parseInt(id), noteTitle, JSON.stringify(editorStateJSON));
+      
     }
 
     useEffect(() => {
@@ -118,11 +180,16 @@ export default function NoteEditor() {
           <div className="text-red-500">
             {error}
           </div>
+        ) : isLoading ? (
+          // Si en chargement :
+          <div className="bg-white p-4 rounded-lg h-full flex items-center justify-center">
+            <p className="text-gray-500">Chargement de la note...</p>
+          </div>
         ) : (
-          // Si pas d'erreur :
+          // Si pas d'erreur et chargement terminé :
           <>
             <div className="relative bg-white p-4 rounded-lg h-full">
-              <LexicalComposer initialConfig={initialConfig}>
+              <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
