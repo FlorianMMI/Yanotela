@@ -65,10 +65,44 @@ export const noteController = {
         catch (error) {
             res.status(500).json({ message: 'Erreur lors de la création de la note', error: error.message });
         }
-    }
+    },
 
-    
-    
+    getNoteById: async (req, res) => {
+        const { id } = req.params;
+        
+        try {
+            const note = await prisma.note.findUnique({
+                where: { id: parseInt(id) },
 
+            });
+            if (!note) {
+                return res.status(404).json({ message: 'Note non trouvée' });
+            }
+            res.status(200).json({ titre: note.Titre, content: note.Content });
+        }
+        catch (error) {
+            res.status(500).json({ message: 'Erreur lors de la récupération de la note', error: error.message });
+        }
+    },
+
+    updateNoteById: async (req, res) => {
+        const { id } = req.params;
+        const { Titre, Content } = req.body;
+        
+        if (!Titre || !Content) {
+            return res.status(400).json({ message: 'Champs requis manquants' });
+        }
+
+        try {
+            const note = await prisma.note.update({
+                where: { id: parseInt(id) },
+                data: { Titre, Content }
+            });
+            res.status(200).json({ message: 'Note mise à jour avec succès', note });
+        }
+        catch (error) {
+            res.status(500).json({ message: 'Erreur lors de la mise à jour de la note', error: error.message });
+        }
+    },
 
 }
