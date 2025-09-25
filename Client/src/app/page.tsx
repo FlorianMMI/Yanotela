@@ -1,10 +1,13 @@
-﻿import Image from "next/image";
+﻿import ErrorFetch from "@/ui/note/errorFetch";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
   return (
     
     <>
+
+      <ErrorFetch type="connect" />
       {/* Bouton de redirection vers la page de login */}
       <div className="p-2.5 w-full h-screen flex flex-col gap-4 justify-center items-center">
         <Link href="/login">
