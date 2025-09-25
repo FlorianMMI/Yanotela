@@ -61,3 +61,26 @@ export async function GetNotes(): Promise<Note[]> {
         return [];
     }
 }
+
+export async function GetNoteById(id: number): Promise<Note | null> {
+    try {
+        // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        console.log('API URL for GetNoteById:', apiUrl); // Pour debug
+        const response = await fetch(`${apiUrl}/note/get/${id}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const note = await response.json();
+        console.log('Note from server:', note);
+        return note;
+    } catch (error) {
+        console.error("Error fetching note by ID:", error);
+        return null;
+    }
+}
