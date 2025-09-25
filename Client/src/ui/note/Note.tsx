@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Note as NoteType } from '@/type/Note';
 
 interface NoteProps {
@@ -7,8 +8,17 @@ interface NoteProps {
 }
 
 export default function Note({ note }: NoteProps) {
+  const router = useRouter();
+
+  const handleNoteClick = () => {
+    router.push(`/notes/${note.id}`);
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group">
+    <div 
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group"
+      onClick={handleNoteClick}
+    >
 
       {/* Header - Titre et collaborateurs avec fond rouge */}
       <div className="flex justify-between m-2 items-center gap-3 rounded-lg bg-primary">

@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 
 import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
+import NoteLoadingSkeleton from "@/components/loading/NoteLoadingSkeleton";
 
 const theme = {
   // Theme styling goes here
