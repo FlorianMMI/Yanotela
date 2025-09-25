@@ -17,8 +17,8 @@ test('UPDATE /note/update/:id devrait mettre à jour une note par son ID', async
         .send(updatedData)
         .expect(200);
 
-    expect(response.body).toHaveProperty('Titre', updatedData.Titre);
-    expect(response.body).toHaveProperty('Content', updatedData.Content);
+    expect(response.body.note).toHaveProperty('Titre', updatedData.Titre);
+    expect(response.body.note).toHaveProperty('Content', updatedData.Content);
 
     await request(app)
         .post('/note/update/1')
