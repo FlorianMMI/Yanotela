@@ -65,7 +65,7 @@ export const noteController = {
 
         try {
             // Générer un UUID plus simple et fiable
-            const UID = crypto.randomUUID();
+            const UID = crypto.randomBytes(8).toString('hex'); // 16 characters
             console.log("Generated UID:", UID);
             const note = await prisma.note.create({
                 data: {
