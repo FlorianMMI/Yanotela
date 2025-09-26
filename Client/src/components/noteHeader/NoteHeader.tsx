@@ -19,8 +19,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
     <>
       {/* Header Mobile */}
       <div className="block md:hidden">
-        
-        <header className="bg-white p-4 border-b border-gray-200">
+        <header className=" p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Mes Notes</h1>
             {/*<div className="flex items-center gap-4">
@@ -44,15 +43,15 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
         </header>
 
         {/* Mobile Search Panel - Appears when search icon is clicked */}
-        {showMobileSearch && (
-          <div className="bg-white border-b border-gray-200 p-4 animate-in slide-in-from-top duration-300">
+        {/* {showMobileSearch && (
+          <div className=" border-b border-gray-200 p-4 animate-in slide-in-from-top duration-300">
             {/* Search Bar */}
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             </div>
 
             {/* Sort Buttons */}
-            <div className="flex gap-2 mb-2">
+            {/* <div className="flex gap-2 mb-2">
               <button
                 onClick={() => setSortBy("recent")}
                 className={`flex flex-row items-center p-2 gap-2 rounded-lg font-medium text-sm transition-colors flex-1 justify-center ${sortBy === "recent"
@@ -79,8 +78,8 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
                 Dates de création
               </button>
             </div>
-          </div>
-        )}
+          </div> 
+        )} */}
       </div>
 
       {/* Header Desktop */}
@@ -94,8 +93,6 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
             </svg>
             <span className="text-2xl font-bold text-primary">Mes notes</span>
           </div>
-
-
         </header>
 
         <div className="flex items-stretch justify-center gap-3 p-6 h-full">

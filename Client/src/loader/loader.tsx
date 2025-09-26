@@ -4,23 +4,18 @@ import { ID } from 'yjs';
 
 const safeApiUrl = 'http://localhost:3001';
 
-export async function CreateNote(noteData?: Partial<Note>): Promise<Note | null> {
+export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note | null; redirectUrl?: string }> {
     try {
-        // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        
-        console.log('API URL:', apiUrl); // Pour debug
-        
         const response = await fetch(`${apiUrl}/note/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            credentials: 'include', // Important pour les sessions
+            credentials: 'include',
             body: JSON.stringify({
                 Titre: "Sans titre",
-                Content: "Sans Contenu",
-                authorId: 1,
+                Content: "Sans Contenu"
             })
         });
 
@@ -28,11 +23,12 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<Note | null>
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const newNote = await response.json();
-        return newNote;
+        const data = await response.json();
+        console.log("Réponse de l'API :", data);
+        return { note: data.note, redirectUrl: data.redirectUrl };
     } catch (error) {
         console.error("Error creating note:", error);
-        return null;
+        return { note: null };
     }
 }
 
@@ -40,17 +36,17 @@ export async function GetNotes(): Promise<Note[]> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        
+
         console.log('API URL for GetNotes:', apiUrl); // Pour debug
-        
+
         const response = await fetch(`${apiUrl}/note/get`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
             },
-            credentials: 'include' 
+            credentials: 'include'
         });
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -78,7 +74,7 @@ export async function GetNotes(): Promise<Note[]> {
     }
 }
 
-export async function GetNoteById(id: number): Promise<Note | null> {
+export async function GetNoteById(id: string): Promise<Note | null> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
@@ -102,7 +98,7 @@ export async function GetNoteById(id: number): Promise<Note | null> {
     }
 }
 
-export async function SaveNote(id: number, noteData: Partial<Note>): Promise<boolean> {
+export async function SaveNote(id: string, noteData: Partial<Note>): Promise<boolean> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
@@ -112,7 +108,8 @@ export async function SaveNote(id: number, noteData: Partial<Note>): Promise<boo
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(noteData)
+            body: JSON.stringify(noteData),
+            credentials: 'include'
         });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
