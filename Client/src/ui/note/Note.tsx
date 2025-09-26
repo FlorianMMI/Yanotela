@@ -15,13 +15,13 @@ export default function Note({ note }: NoteProps) {
   };
 
   return (
-    <div 
+    <div
       className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group"
       onClick={handleNoteClick}
     >
 
       {/* Header - Titre et collaborateurs avec fond rouge */}
-      <div className="flex justify-between m-2 items-center gap-3 rounded-lg bg-primary">
+      <header className="flex justify-between m-2 items-center gap-3 rounded-lg bg-primary">
 
         {/* Note Title */}
         <h3
@@ -43,43 +43,39 @@ export default function Note({ note }: NoteProps) {
             className="filter brightness-0 invert"
           />
         </div>
+      </header>
+
+      {/* Note Content */}
+      <div className="font-gantari text-sm text-gray-600 leading-relaxed mb-auto line-clamp-2 flex-grow p-4 py-2 bg-white flex flex-col h-32 truncate text-wrap">
+        {
+          typeof note.Content === 'string'
+            ? <p>{note.Content}</p>
+            // @ts-expect-error Les notes sont au format attendu par Lexical
+            // eslint-disable-next-line
+            : note.Content.root.children.map((child: any, childIndex: number) => (
+              <div key={`child-${childIndex}`} id={`child-${childIndex}`}>
+                {
+                  // eslint-disable-next-line
+                  child.children.map((grandChild: any, grandChildIndex: number) => (
+                    <p key={`child-${childIndex}-grandChild-${grandChildIndex}`} id={`paragraph-${childIndex}-${grandChildIndex}`}>
+                      {grandChild.text}
+                    </p>
+                  ))
+                }
+              </div>
+            ))
+        }
       </div>
 
-      {/* Content - Titre et contenu de la note */}
-      <div className="p-4 bg-white flex flex-col h-32">
-
-        {/* Note Content */}
-        <div className="font-gantari text-sm text-gray-600 leading-relaxed mb-auto line-clamp-2 flex-grow">
-          {
-            typeof note.Content === 'string'
-              ? <p>{note.Content}</p>
-              // @ts-expect-error Les notes sont au format attendu par Lexical
-              // eslint-disable-next-line
-              : note.Content.root.children.map((child: any, childIndex: number) => (
-                  <div key={`child-${childIndex}`} id={`child-${childIndex}`}>
-                    {
-                      // eslint-disable-next-line
-                      child.children.map((grandChild: any, grandChildIndex: number) => (
-                        <p key={`child-${childIndex}-grandChild-${grandChildIndex}`} id={`paragraph-${childIndex}-${grandChildIndex}`}>
-                          {grandChild.text}
-                        </p>
-                      ))
-                    }
-                  </div>
-                ))
-          }
-        </div>
-
-        {/* Date de modification */}
-        <div className="mt-4 pt-2 border-t border-gray-100">
-          <p className="font-gantari text-xs text-gray-500 italic">
-            Modifé le {new Date(note.ModifiedAt).toLocaleDateString('fr-FR', {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric'
-            })}
-          </p>
-        </div>
+      {/* Date de modification */}
+      <div className="m-1 p-2 border-t border-gray-100">
+        <p className="font-gantari text-xs text-gray-500 italic">
+          Modifé le {new Date(note.ModifiedAt).toLocaleDateString('fr-FR', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          })}
+        </p>
       </div>
     </div>
   );

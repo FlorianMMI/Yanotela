@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import SearchBar from "@/ui/searchbar";
@@ -19,10 +17,11 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
     <>
       {/* Header Mobile */}
       <div className="block md:hidden">
+        
         <header className="bg-white p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Mes Notes</h1>
-            <div className="flex items-center gap-4">
+            {/*<div className="flex items-center gap-4">
               <Image
                 src="/recherche.svg"
                 alt="Recherche"
@@ -38,7 +37,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
                 height={24}
                 className="cursor-pointer"
               />
-            </div>
+            </div>*/}
           </div>
         </header>
 
@@ -85,12 +84,13 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
       {/* Header Desktop */}
       <div className="hidden md:block">
 
-        <header className="bg-background p-3 border-primary border-b-2">
-          <div className="flex items-center gap-2 ">
+        <header className="bg-white p-3 border-primary border-b-2">
+
+          <div className="flex items-center gap-2">
             <svg className="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24">
               <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
             </svg>
-            <span className="text-lg font-medium text-gray-800">Mes notes</span>
+            <span className="text-2xl font-bold text-primary">Mes notes</span>
           </div>
 
 
