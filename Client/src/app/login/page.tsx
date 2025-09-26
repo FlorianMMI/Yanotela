@@ -34,8 +34,8 @@ export default function Login() {
       });
 
       if (response.ok) {
-        // Connexion réussie, rediriger vers la page d'accueil
-        router.push('/');
+        // Connexion réussie, rediriger vers la page des notes
+        router.push('/notes');
       } else {
         const errorData = await response.text();
         setError('Identifiants incorrects');
