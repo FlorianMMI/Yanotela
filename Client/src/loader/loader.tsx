@@ -112,7 +112,8 @@ export async function SaveNote(id: number, noteData: Partial<Note>): Promise<boo
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(noteData)
+            body: JSON.stringify(noteData),
+            credentials: 'include'
         });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
