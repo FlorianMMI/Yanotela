@@ -87,7 +87,8 @@ export async function GetNoteById(id: number): Promise<Note | null> {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
-            }
+            },
+            credentials: 'include'
         });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
