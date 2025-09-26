@@ -96,7 +96,7 @@ export const noteController = {
         try {
             const note = await prisma.note.update({
                 where: { id: parseInt(id) },
-                data: { Titre, Content, ModifiedAt: new Date(now()) },
+                data: { Titre, Content, ModifiedAt: new Date()}
             });
             res.status(200).json({ message: 'Note mise à jour avec succès', note });
         }

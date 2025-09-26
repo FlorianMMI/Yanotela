@@ -16,6 +16,7 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<Note | null>
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: 'include', // Important pour les sessions
             body: JSON.stringify({
                 Titre: "Sans titre",
                 Content: "Sans Contenu",
@@ -46,7 +47,8 @@ export async function GetNotes(): Promise<Note[]> {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
-            }
+            },
+            credentials: 'include' 
         });
         
         if (!response.ok) {
