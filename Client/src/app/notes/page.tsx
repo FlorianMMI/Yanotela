@@ -6,6 +6,7 @@ import NoteHeader from "@/components/noteHeader/NoteHeader";
 import NoteList from "@/components/noteList/NoteList";
 import { GetNotes } from "@/loader/loader";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import NoteNavBarre from "@/components/noteNavBarre/NoteNavBarre";
 
 export default function Home() {
   const { isAuthenticated, loading: authLoading } = useAuthRedirect();
