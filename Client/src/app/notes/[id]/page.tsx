@@ -31,7 +31,7 @@ function onError(error: string | Error) {
   console.error(error);
 }
 
-function uploadContent(id: number, noteTitle: string, editorContent: string) {
+function uploadContent(id: string, noteTitle: string, editorContent: string) {
   SaveNote(id, {
     Titre: noteTitle,
     Content: editorContent,
@@ -58,13 +58,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   
   function updateNoteTitle(newTitle: string) {
     setNoteTitle(newTitle);
-    uploadContent(parseInt(id), newTitle, editorContent);
+    uploadContent(id, newTitle, editorContent);
   }
 
   useEffect(() => {
     const fetchNote = async () => {
-      // Récupération de l'ID depuis les params unwrappés
-      const noteId = parseInt(id);
+      // Récupération de l'ID depuis les params unwrappés (garder comme string)
+      const noteId = id;
       console.log("Fetching note with ID:", noteId);
 
       if (noteId) {
@@ -146,7 +146,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       console.log("Editor State JSON:", editorStateJSON);
       // However, we still have a JavaScript object, so we need to convert it to an actual string with JSON.stringify
       setEditorContent(JSON.stringify(editorStateJSON));
-      uploadContent(parseInt(id), noteTitle, JSON.stringify(editorStateJSON));
+      uploadContent(id, noteTitle, JSON.stringify(editorStateJSON));
       
     }
 

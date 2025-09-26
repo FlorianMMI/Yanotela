@@ -1,5 +1,16 @@
 /**
- * Middleware d'authentification pour vérifier les sessions
+ * Middleware d'authentification pour vé  console.log('=== DEBUGGING OWNERSHIP CHECK ===');
+  console.log('Note ID from params:', id, 'Type:', typeof id);
+  console.log('User ID from session:', req.session.userId, 'Type:', typeof req.session.userId);
+
+  try {
+    const { PrismaClient } = await import('@prisma/client');
+    const prisma = new PrismaClient();
+    
+    // D'abord, vérifions si la note existe
+    const noteExists = await prisma.note.findUnique({
+      where: { id: id }
+    });ssions
  */
 
 /**
@@ -24,6 +35,10 @@ export const requireAuth = (req, res, next) => {
   next();
 };
 
+
+
+
+
 /**
  * Middleware pour vérifier si l'utilisateur possède une note
  * @param {Request} req - Requête Express
@@ -38,22 +53,54 @@ export const requireNoteOwnership = async (req, res, next) => {
      });
   }
 
-  console.log('Vérification de la propriété pour la note ID:', req.session);
+  console.log('=== DEBUGGING OWNERSHIP CHECK ===');
+  console.log('Note ID from params:', id, 'Type:', typeof id);
+  console.log('User ID from session:', req.session.userId, 'Type:', typeof req.session.userId);
+  console.log('Full session:', req.session);
 
   try {
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new PrismaClient();
     
+    // D'abord, vérifions si la note existe
+    const noteExists = await prisma.note.findUnique({
+      where: { id: id }
+    });
+    
+    console.log('Note exists:', noteExists ? 'YES' : 'NO');
+    if (noteExists) {
+      console.log('Note details:', {
+        id: noteExists.id,
+        authorId: noteExists.authorId,
+        authorIdType: typeof noteExists.authorId
+      });
+    }
+    
+    // Ensuite, cherchons avec les critères complets
+    // Convertir userId en Int si c'est une string
+    const sessionUserId = parseInt(req.session.userId);
+    console.log('Converted session userId:', sessionUserId, 'Type:', typeof sessionUserId);
+    
     const note = await prisma.note.findFirst({
       where: {
-        id: parseInt(id),
-        authorId: req.session.userId
+        id: id,
+        authorId: sessionUserId // Utiliser la version convertie
       }
     });
 
+    console.log('Ownership check result:', note ? 'AUTHORIZED' : 'DENIED');
+
     if (!note) {
+      console.log('=== OWNERSHIP DENIED ===');
       return res.status(403).json({ 
-        message: 'Accès refusé : note introuvable ou vous n\'en êtes pas le propriétaire' 
+        message: 'Accès refusé : note introuvable ou vous n\'en êtes pas le propriétaire',
+        debug: {
+          noteId: id,
+          sessionUserId: req.session.userId,
+          convertedUserId: sessionUserId,
+          noteExists: !!noteExists,
+          noteAuthorId: noteExists?.authorId
+        }
       });
     }
 

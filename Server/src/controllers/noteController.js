@@ -57,16 +57,17 @@ export const noteController = {
 
         const { Titre, Content } = req.body;
         // Récupérer l'authorId depuis la session au lieu du body
-        const authorId = req.session.userId;
+        const authorId = parseInt(req.session.userId); // Convertir en Int pour la DB
 
         if (!Titre || !Content) {
             return res.status(400).json({ message: 'Titre et Contenu requis' });
         }
 
         try {
-            const INT4_MAX = 2147483647;
-            const UID = Math.floor(Math.random() * INT4_MAX);
+            // Générer un UUID plus simple et fiable
+            const UID = crypto.randomUUID();
             console.log("Generated UID:", UID);
+
             const note = await prisma.note.create({
                 data: {
                     id: UID,
@@ -75,8 +76,14 @@ export const noteController = {
                     authorId,
                 }
             });
-            res.status(201).json({ message: 'Note créée avec succès', note });
+
+            res.status(201).json({ 
+                message: 'Note créée avec succès', 
+                note, 
+                redirectUrl: `/notes/${note.id}` 
+            });
         }
+
         catch (error) {
             res.status(500).json({ message: 'Erreur lors de la création de la note', error: error.message });
         }
@@ -87,7 +94,7 @@ export const noteController = {
         
         try {
             const note = await prisma.note.findUnique({
-                where: { id: parseInt(id) },
+                where: { id: id },
 
             });
             if (!note) {
@@ -118,7 +125,7 @@ export const noteController = {
 
         try {
             const note = await prisma.note.update({
-                where: { id: parseInt(id) },
+                where: { id: id },
                 data: { Titre, Content, ModifiedAt: new Date() },
             });
             res.status(200).json({ message: 'Note mise à jour avec succès', note });
