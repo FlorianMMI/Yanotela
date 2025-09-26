@@ -17,9 +17,6 @@ import {PrismaClient} from "@prisma/client";
 import crypto from "crypto";
 const prisma = new PrismaClient();
 
-
-
-
 export const noteController = {
 
     getNotes: async (req, res) => {
@@ -61,7 +58,7 @@ export const noteController = {
                     id: UID,
                     Titre,
                     Content,
-                    authorId
+                    authorId,
                 }
             });
             res.status(201).json({ message: 'Note créée avec succès', note });

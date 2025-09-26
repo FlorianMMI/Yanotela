@@ -29,10 +29,6 @@ function onError(error: string | Error) {
   console.error(error);
 }
 
-
-
-
-
 function uploadContent(id: number, noteTitle: string, editorContent: string) {
   SaveNote(id, {
     Titre: noteTitle,

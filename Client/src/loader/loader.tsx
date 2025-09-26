@@ -102,7 +102,6 @@ export async function GetNoteById(id: number): Promise<Note | null> {
     }
 }
 
-
 export async function SaveNote(id: number, noteData: Partial<Note>): Promise<boolean> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie

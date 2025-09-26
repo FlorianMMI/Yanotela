@@ -4,6 +4,7 @@ import Note from '@/ui/note/Note';
 import NoteSkeleton from '@/ui/note/NoteSkeleton';
 import { Note as NoteType } from '@/type/Note';
 import { CreateNote } from '@/loader/loader';
+import { useRouter } from 'next/navigation';
 
 interface NoteListProps {
   notes: NoteType[];
@@ -12,11 +13,13 @@ interface NoteListProps {
 }
 
 export default function NoteList({ notes, onNoteCreated, isLoading = false }: NoteListProps) {
-  
+  const router = useRouter();
+
   const handleCreateNote = async () => {
     const newNote = await CreateNote();
     if (newNote && onNoteCreated) {
       onNoteCreated(); // Déclencher le refresh des notes
+      router.push(`/notes/${newNote.id}`); // Rediriger vers la nouvelle note
     }
   };
 
@@ -31,7 +34,6 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
             alt="Ajouter une note"
             width={48}
             height={48}
-           
             className="group-hover:scale-110 transition-transform"
           />
         </div>
