@@ -41,18 +41,7 @@ export default function Home() {
       return new Date(b.ModifiedAt).getTime() - new Date(a.ModifiedAt).getTime();
     });
 
-  // Afficher un spinner pendant la vérification d'authentification
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+ 
 
   return (
     <div className="min-h-screen">
