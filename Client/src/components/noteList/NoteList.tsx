@@ -13,16 +13,21 @@ interface NoteListProps {
 }
 
 export default function NoteList({ notes, onNoteCreated, isLoading = false }: NoteListProps) {
-  
+
   const router = useRouter();
 
   const handleCreateNote = async () => {
-    const newNote = await CreateNote();
-    if (newNote && onNoteCreated) {
-      onNoteCreated(); // Déclencher le refresh des notes
-      setTimeout(() => {
-        router.push(`/notes/${newNote.id}`); // Rediriger vers la nouvelle note après un délai
-      }, 500); // Délai de 500ms pour laisser le temps de créer l'ID
+    const { note, redirectUrl } = await CreateNote();
+    
+    console.log('Newly created note:', note);
+
+    if (note && redirectUrl) {
+      if (onNoteCreated) {
+        onNoteCreated(); // Déclencher le refresh des notes
+      }
+      router.push(redirectUrl);
+    } else {
+      console.error("Erreur : Impossible de récupérer l'ID de la note créée.");
     }
   };
 

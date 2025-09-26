@@ -66,7 +66,9 @@ export const noteController = {
         try {
             const INT4_MAX = 2147483647;
             const UID = Math.floor(Math.random() * INT4_MAX);
+            
             console.log("Generated UID:", UID);
+
             const note = await prisma.note.create({
                 data: {
                     id: UID,
@@ -75,8 +77,14 @@ export const noteController = {
                     authorId,
                 }
             });
-            res.status(201).json({ message: 'Note créée avec succès', note });
+
+            res.status(201).json({ 
+                message: 'Note créée avec succès', 
+                note, 
+                redirectUrl: `/notes/${note.id}` 
+            });
         }
+
         catch (error) {
             res.status(500).json({ message: 'Erreur lors de la création de la note', error: error.message });
         }
