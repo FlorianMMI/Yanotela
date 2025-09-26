@@ -164,8 +164,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   }
 
   return (
-    <div className="flex flex-col p-2.5 bg-background h-full gap-2.5">
-      <div className="flex rounded-lg p-2.5 items-center bg-primary text-white">
+    <div className="flex flex-col p-2.5 bg-background h-fit min-h-full gap-2.5">
+      <div className="flex rounded-lg p-2.5 items-center bg-primary text-white sticky top-2 z-10">
         <ReturnButton />
         {
           error ?
@@ -176,7 +176,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               value={noteTitle}
               onChange={(e) => setNoteTitle(e.target.value)}
               onBlur={(e) => updateNoteTitle(e.target.value)} //On blur permet de sauvegarder le titre quand on sort du champ
-              className="w-full font-semibold bg-transparent p-1 placeholder:text-gray-300 placeholder:font-medium focus:outline-white"
+              className="w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white"
               placeholder="Titre de la note"
             />
         }
@@ -198,20 +198,21 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               className="flex flex-col items-center gap-3"
             >
               <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-gray-500 font-medium">Chargement de la note...</p>
+              <p className="text-textcardNote font-medium">Chargement de la note...</p>
             </motion.div>
             </div>
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div className="relative bg-white p-4 rounded-lg h-full">
+            <div className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col h-fit min-h-screen">
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <RichTextPlugin
+                
                   contentEditable={
                     <ContentEditable
                       aria-placeholder={"Commencez à écrire..."}
                       placeholder={
-                        <p className="absolute top-4 left-4 text-gray-500">
+                        <p className="absolute top-4 left-4 text-textcardNote select-none pointer-events-none">
                           Commencez à écrire...
                         </p>
                       }

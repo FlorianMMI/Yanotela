@@ -16,25 +16,27 @@ export default function Note({ note }: NoteProps) {
 
   return (
     <div 
-      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group"
+      className="bg-fondcardNote rounded-xl shadow-sm border border-clrsecondaire overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group"
       onClick={handleNoteClick}
     >
 
       {/* Header - Titre et collaborateurs avec fond rouge */}
-      <div className="flex justify-between m-2 items-center gap-3 rounded-lg bg-primary">
+      <div className="flex justify-between m-2 items-center gap-3 rounded-lg bg-primary h-[2rem]">
 
         {/* Note Title */}
         <h3
-          className="font-geologica text-xs md:text-base text-white pl-2 leading-tight line-clamp-2 truncate"
+          className="font-geologica text-xs md:text-base text-white pl-2 h-fit align-middle  "
           title={note.Titre}
         >
           {note.Titre}
         </h3>
 
         {/* Collaborateurs */}
-        <div
+        
+        {/* <div
           className="flex items-center gap-1 p-3 flex-shrink-0"
         >
+          <p className='text-white font-bold'>8</p>
           <Image
             src="/share.svg"
             alt="Participants"
@@ -42,14 +44,14 @@ export default function Note({ note }: NoteProps) {
             height={20}
             className="filter brightness-0 invert"
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Content - Titre et contenu de la note */}
-      <div className="p-4 bg-white flex flex-col h-32">
+      <div className="p-4 bg-fondcardNote flex flex-col h-32">
 
         {/* Note Content */}
-        <div className="font-gantari text-sm text-gray-600 leading-relaxed mb-auto line-clamp-2 flex-grow">
+        <div className="font-gantari text-sm text-textcardNote leading-relaxed mb-auto line-clamp-2 flex-grow">
           {
             typeof note.Content === 'string'
               ? <p>{note.Content}</p>

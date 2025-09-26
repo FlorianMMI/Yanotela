@@ -12,6 +12,8 @@
   --rouge-hover: #ff0000;
   --light: white;
   --dark:black;
+  --lightNote: white;
+  --textlightNote:oklch(55.1% 0.027 264.364);
 
   --font-family: "Gantari", Arial, Helvetica, sans-serif;
   --font-gantari: 'Gantari', sans-serif;
@@ -37,18 +39,22 @@
 
   --color-clrprincipal:var(--dark);
   --color-clrsecondaire:var(--light);
+  --color-fondcardNote:var(--lightNote);
+  --color-textcardNote:var(--textlightNote);
 }
 
-/* 
-@media (prefers-color-scheme: dark) {
+
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #171717;
     --light: black;
     --dark:white;
     --motif-opacity: 0.01;
+    --lightNote: #1e1e1e;
+    --textlightNote: white;
   }
-}  
-*/
+}   */
+
 
 body {
   background: var(--background);
