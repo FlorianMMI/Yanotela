@@ -14,11 +14,13 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 
+
 import { useRouter } from "next/navigation";
 
 import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 import NoteLoadingSkeleton from "@/components/loading/NoteLoadingSkeleton";
+import ErrorFetch from "@/ui/note/errorFetch";
 
 const theme = {
   // Theme styling goes here
@@ -48,7 +50,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
   
   // Unwrap params using React.use()
   const { id } = use(params);
@@ -108,7 +110,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           setEditorContent(note.Content || "");
         }
         else {
-          setError("Note introuvable.");
+          
+          setHasError(true);
         }
       }
       setIsLoading(false);
@@ -168,7 +171,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       <div className="flex rounded-lg p-2.5 items-center bg-primary text-white sticky top-2 z-10">
         <ReturnButton />
         {
-          error ?
+          hasError ?
             <p className="w-full font-semibold bg-transparent p-1">Erreur</p>
           :
             <input
@@ -183,11 +186,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
       </div>
       {
-        error ? (
+        hasError ? (
           // Si erreur :
-          <div className="text-red-500">
-            {error}
-          </div>
+          <ErrorFetch type="fetch" />
         ) : isLoading ? (
           // Si en chargement :
             <div className="bg-white p-4 rounded-lg h-full flex items-center justify-center">
