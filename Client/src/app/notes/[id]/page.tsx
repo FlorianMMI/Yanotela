@@ -12,6 +12,7 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
+import { motion } from "motion/react";
 
 import { useRouter } from "next/navigation";
 
@@ -51,6 +52,12 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   
   // Unwrap params using React.use()
   const { id } = use(params);
+
+  
+  function updateNoteTitle(newTitle: string) {
+    setNoteTitle(newTitle);
+    uploadContent(parseInt(id), newTitle, editorContent);
+  }
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -120,6 +127,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   function OnChangeBehavior() {
     const [editor] = useLexicalComposerContext();
+    
 
     // Debounced callback for logging editor state
     const debouncedLog = useDebouncedCallback(
@@ -167,6 +175,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               type="text"
               value={noteTitle}
               onChange={(e) => setNoteTitle(e.target.value)}
+              onBlur={(e) => updateNoteTitle(e.target.value)} //On blur permet de sauvegarder le titre quand on sort du champ
               className="w-full font-semibold bg-transparent p-1 placeholder:text-gray-300 placeholder:font-medium focus:outline-white"
               placeholder="Titre de la note"
             />
@@ -181,9 +190,17 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           </div>
         ) : isLoading ? (
           // Si en chargement :
-          <div className="bg-white p-4 rounded-lg h-full flex items-center justify-center">
-            <p className="text-gray-500">Chargement de la note...</p>
-          </div>
+            <div className="bg-white p-4 rounded-lg h-full flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="flex flex-col items-center gap-3"
+            >
+              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-gray-500 font-medium">Chargement de la note...</p>
+            </motion.div>
+            </div>
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
