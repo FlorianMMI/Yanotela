@@ -57,6 +57,20 @@ export async function GetNotes(): Promise<Note[]> {
 
         const notes = await response.json();
         console.log('Notes from server:', notes);
+
+        // Transformation du JSON stringifié en objet
+        for (const note of notes) {
+            try {
+                const parsedContent = JSON.parse(note.Content);
+                if (typeof parsedContent === 'object' && parsedContent !== null) {
+                    note.Content = parsedContent;
+                }
+            } catch {
+                // If parsing fails, leave the content as is
+                console.warn(`Invalid JSON content for note ID ${note.id}, leaving content unparsed.`);
+            }
+        }
+
         return notes;
     } catch (error) {
         console.error("Error fetching notes:", error);
