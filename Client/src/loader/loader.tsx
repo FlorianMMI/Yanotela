@@ -16,6 +16,7 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<Note | null>
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: 'include', // Important pour les sessions
             body: JSON.stringify({
                 Titre: "Sans titre",
                 Content: "Sans Contenu",
@@ -46,7 +47,8 @@ export async function GetNotes(): Promise<Note[]> {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
-            }
+            },
+            credentials: 'include' 
         });
         
         if (!response.ok) {
@@ -55,6 +57,20 @@ export async function GetNotes(): Promise<Note[]> {
 
         const notes = await response.json();
         console.log('Notes from server:', notes);
+
+        // Transformation du JSON stringifié en objet
+        for (const note of notes) {
+            try {
+                const parsedContent = JSON.parse(note.Content);
+                if (typeof parsedContent === 'object' && parsedContent !== null) {
+                    note.Content = parsedContent;
+                }
+            } catch {
+                // If parsing fails, leave the content as is
+                console.warn(`Invalid JSON content for note ID ${note.id}, leaving content unparsed.`);
+            }
+        }
+
         return notes;
     } catch (error) {
         console.error("Error fetching notes:", error);

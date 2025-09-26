@@ -49,9 +49,26 @@ export default function Note({ note }: NoteProps) {
       <div className="p-4 bg-white flex flex-col h-32">
 
         {/* Note Content */}
-        <p className="font-gantari text-sm text-gray-600 leading-relaxed mb-auto line-clamp-2 flex-grow">
-          {note.Content}
-        </p>
+        <div className="font-gantari text-sm text-gray-600 leading-relaxed mb-auto line-clamp-2 flex-grow">
+          {
+            typeof note.Content === 'string'
+              ? <p>{note.Content}</p>
+              // @ts-expect-error Les notes sont au format attendu par Lexical
+              // eslint-disable-next-line
+              : note.Content.root.children.map((child: any, childIndex: number) => (
+                  <div key={`child-${childIndex}`} id={`child-${childIndex}`}>
+                    {
+                      // eslint-disable-next-line
+                      child.children.map((grandChild: any, grandChildIndex: number) => (
+                        <p key={`child-${childIndex}-grandChild-${grandChildIndex}`} id={`paragraph-${childIndex}-${grandChildIndex}`}>
+                          {grandChild.text}
+                        </p>
+                      ))
+                    }
+                  </div>
+                ))
+          }
+        </div>
 
         {/* Date de modification */}
         <div className="mt-4 pt-2 border-t border-gray-100">
