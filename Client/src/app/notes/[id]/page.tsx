@@ -14,11 +14,13 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 
+
 import { useRouter } from "next/navigation";
 
 import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 import NoteLoadingSkeleton from "@/components/loading/NoteLoadingSkeleton";
+import ErrorFetch from "@/ui/note/errorFetch";
 
 const theme = {
   // Theme styling goes here
@@ -29,7 +31,7 @@ function onError(error: string | Error) {
   console.error(error);
 }
 
-function uploadContent(id: number, noteTitle: string, editorContent: string) {
+function uploadContent(id: string, noteTitle: string, editorContent: string) {
   SaveNote(id, {
     Titre: noteTitle,
     Content: editorContent,
@@ -48,7 +50,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
   
   // Unwrap params using React.use()
   const { id } = use(params);
@@ -56,13 +58,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   
   function updateNoteTitle(newTitle: string) {
     setNoteTitle(newTitle);
-    uploadContent(parseInt(id), newTitle, editorContent);
+    uploadContent(id, newTitle, editorContent);
   }
 
   useEffect(() => {
     const fetchNote = async () => {
-      // Récupération de l'ID depuis les params unwrappés
-      const noteId = parseInt(id);
+      // Récupération de l'ID depuis les params unwrappés (garder comme string)
+      const noteId = id;
       console.log("Fetching note with ID:", noteId);
 
       if (noteId) {
@@ -108,7 +110,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           setEditorContent(note.Content || "");
         }
         else {
-          setError("Note introuvable.");
+          
+          setHasError(true);
         }
       }
       setIsLoading(false);
@@ -143,7 +146,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       console.log("Editor State JSON:", editorStateJSON);
       // However, we still have a JavaScript object, so we need to convert it to an actual string with JSON.stringify
       setEditorContent(JSON.stringify(editorStateJSON));
-      uploadContent(parseInt(id), noteTitle, JSON.stringify(editorStateJSON));
+      uploadContent(id, noteTitle, JSON.stringify(editorStateJSON));
       
     }
 
@@ -164,11 +167,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   }
 
   return (
-    <div className="flex flex-col p-2.5 bg-background h-full gap-2.5">
-      <div className="flex rounded-lg p-2.5 items-center bg-primary text-white">
+    <div className="flex flex-col p-2.5 bg-background h-fit min-h-full gap-2.5">
+      <div className="flex rounded-lg p-2.5 items-center bg-primary text-white sticky top-2 z-10">
         <ReturnButton />
         {
-          error ?
+          hasError ?
             <p className="w-full font-semibold bg-transparent p-1">Erreur</p>
           :
             <input
@@ -176,18 +179,16 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               value={noteTitle}
               onChange={(e) => setNoteTitle(e.target.value)}
               onBlur={(e) => updateNoteTitle(e.target.value)} //On blur permet de sauvegarder le titre quand on sort du champ
-              className="w-full font-semibold bg-transparent p-1 placeholder:text-gray-300 placeholder:font-medium focus:outline-white"
+              className="w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white"
               placeholder="Titre de la note"
             />
         }
 
       </div>
       {
-        error ? (
+        hasError ? (
           // Si erreur :
-          <div className="text-red-500">
-            {error}
-          </div>
+          <ErrorFetch type="fetch" />
         ) : isLoading ? (
           // Si en chargement :
             <div className="bg-white p-4 rounded-lg h-full flex items-center justify-center">
@@ -198,20 +199,21 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               className="flex flex-col items-center gap-3"
             >
               <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-gray-500 font-medium">Chargement de la note...</p>
+              <p className="text-textcardNote font-medium">Chargement de la note...</p>
             </motion.div>
             </div>
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div className="relative bg-white p-4 rounded-lg h-full">
+            <div className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col h-fit min-h-screen">
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <RichTextPlugin
+                
                   contentEditable={
                     <ContentEditable
                       aria-placeholder={"Commencez à écrire..."}
                       placeholder={
-                        <p className="absolute top-4 left-4 text-gray-500">
+                        <p className="absolute top-4 left-4 text-textcardNote select-none pointer-events-none">
                           Commencez à écrire...
                         </p>
                       }

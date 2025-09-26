@@ -17,8 +17,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
     <>
       {/* Header Mobile */}
       <div className="block md:hidden">
-        
-        <header className="bg-white p-4 border-b border-gray-200">
+        <header className=" p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Mes Notes</h1>
             {/*<div className="flex items-center gap-4">
@@ -42,15 +41,15 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
         </header>
 
         {/* Mobile Search Panel - Appears when search icon is clicked */}
-        {showMobileSearch && (
-          <div className="bg-white border-b border-gray-200 p-4 animate-in slide-in-from-top duration-300">
+        {/* {showMobileSearch && (
+          <div className=" border-b border-gray-200 p-4 animate-in slide-in-from-top duration-300">
             {/* Search Bar */}
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             </div>
 
             {/* Sort Buttons */}
-            <div className="flex gap-2 mb-2">
+            {/* <div className="flex gap-2 mb-2">
               <button
                 onClick={() => setSortBy("recent")}
                 className={`flex flex-row items-center p-2 gap-2 rounded-lg font-medium text-sm transition-colors flex-1 justify-center ${sortBy === "recent"
@@ -77,8 +76,8 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
                 Dates de création
               </button>
             </div>
-          </div>
-        )}
+          </div> 
+        )} */}
       </div>
 
       {/* Header Desktop */}
@@ -92,57 +91,9 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
             </svg>
             <span className="text-2xl font-bold text-primary">Mes notes</span>
           </div>
-
-
         </header>
 
-        <div className="flex items-center justify-center gap-3 p-6">
-
-          {/* Search Bar */}
-          <div className="flex justify-center items-center">
-            <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-          </div>
-
-          {/* Sort Buttons */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setSortBy("recent")}
-              className={`flex flex-row p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${sortBy === "recent"
-                ? "bg-primary text-white"
-                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                }`}
-            >
-              <Image
-                src="/recent.svg"
-                alt="Récents"
-                width={24}
-                height={24}
-                color="white"
-              />
-              Récents
-            </button>
-
-            <button
-              onClick={() => setSortBy("creation")}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${sortBy === "creation"
-                ? "bg-primary text-white"
-                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                }`}
-            >
-              Dates de création
-            </button>
-          </div>
-
-          {/* Filter Button */}
-          <button className="p-2 text-primary hover:bg-gray-100 rounded-lg">
-            <Image
-              src="/filtre.svg"
-              alt="Filtre"
-              width={24}
-              height={24}
-            />
-          </button>
-        </div>
+        
 
       </div>
     </>
