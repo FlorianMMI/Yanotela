@@ -1,6 +1,8 @@
 "use client";
 
+import Icon from "@/ui/Icon";
 import SearchBar from "@/ui/searchbar";
+import { motion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -93,7 +95,56 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
           </div>
         </header>
 
-        
+        <div className="flex items-stretch justify-center gap-3 p-6 h-full">
+
+          {/* Search Bar */}
+          <div className="flex justify-center items-center">
+            <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+          </div>
+
+          {/* Sort Buttons */}
+          <div className="flex gap-2">
+            <motion.button
+              onClick={() => setSortBy("recent")}
+              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
+                sortBy === "recent"
+                  ? "bg-primary text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
+              }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 1 }}
+            >
+              <Icon
+                name="recent"
+                size={20}
+                className={sortBy === "recent" ? "text-white" : "text-gray-700"}
+              />
+              Récents
+            </motion.button>
+
+            <motion.button
+              onClick={() => setSortBy("creation")}
+              className={`px-4 py-2 grow items-center cursor-pointer rounded-lg font-medium text-sm transition-colors ${
+                sortBy === "creation"
+                  ? "bg-primary text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
+              }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 1 }}
+            >
+              Dates de création
+            </motion.button>
+          </div>
+
+          {/* Filter Button */}
+          <motion.button 
+            className="p-2 text-primary hover:border-primary hover:border hover:bg-white rounded-lg cursor-pointer"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 1 }}
+          >
+            <Image src="/filtre.svg" alt="Filtre" width={24} height={24} />
+          </motion.button>
+        </div>
 
       </div>
     </>

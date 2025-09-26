@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Note as NoteType } from '@/type/Note';
+import { motion } from 'framer-motion';
 
 interface NoteProps {
   note: NoteType;
@@ -13,10 +14,17 @@ export default function Note({ note }: NoteProps) {
   const handleNoteClick = () => {
     router.push(`/notes/${note.id}`);
   };
+  const notecontraint = React.useRef(null);
 
   return (
-    <div 
-      className="bg-fondcardNote rounded-xl shadow-sm border border-clrsecondaire overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group"
+    <motion.div ref={notecontraint}>
+    <motion.div 
+    whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)"}}
+    whileTap={{ scale: 1 }}
+    drag
+    dragConstraints={notecontraint}
+    dragElastic={0.025}
+      className="bg-fondcardNote rounded-xl shadow-sm border border-clrsecondaire cursor-pointer group overflow-hidden"
       onClick={handleNoteClick}
     >
 
@@ -83,6 +91,7 @@ export default function Note({ note }: NoteProps) {
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
+    </motion.div>
   );
 }
