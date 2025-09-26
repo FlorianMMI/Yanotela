@@ -2,6 +2,20 @@
 
 Pour démarrer le projet, exécutez:
 
+Pour démarrer le projet en local:
+##  Coté client:
+    ```
+    npm i
+    npm run dev
+    ```
+##  Coté server:
+    ```
+    npm i
+    npx prisma generate
+    node server.js
+    ```
+
+
 ```bash
 ./setup.sh
 ```

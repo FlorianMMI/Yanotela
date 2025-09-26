@@ -10,7 +10,7 @@ type ErrorFetchProps = {
 const errorMessages = {
     fetch: {
         title: "Erreur de Récupération ",
-        message: "Une erreur est survenue lors de la récupération de la note.",
+        message: "Une erreur est survenue lors de la récupération de la note. Ou vous n'avez pas la permission d'y accéder.",
     },
     save: {
         title: "Erreur de Sauvegarde",
