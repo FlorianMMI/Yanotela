@@ -14,10 +14,8 @@
 
 
 import {PrismaClient} from "@prisma/client";
+import crypto from "crypto";
 const prisma = new PrismaClient();
-
-
-
 
 export const noteController = {
 
@@ -52,12 +50,15 @@ export const noteController = {
         }
 
         try {
-            
+            const INT4_MAX = 2147483647;
+            const UID = Math.floor(Math.random() * INT4_MAX);
+            console.log("Generated UID:", UID);
             const note = await prisma.note.create({
                 data: {
+                    id: UID,
                     Titre,
                     Content,
-                    authorId
+                    authorId,
                 }
             });
             res.status(201).json({ message: 'Note créée avec succès', note });
@@ -96,7 +97,7 @@ export const noteController = {
         try {
             const note = await prisma.note.update({
                 where: { id: parseInt(id) },
-                data: { Titre, Content, ModifiedAt: new Date()}
+                data: { Titre, Content, ModifiedAt: new Date() },
             });
             res.status(200).json({ message: 'Note mise à jour avec succès', note });
         }
