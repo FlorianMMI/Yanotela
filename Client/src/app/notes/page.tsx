@@ -55,7 +55,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="h-full">
       <NoteHeader 
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}

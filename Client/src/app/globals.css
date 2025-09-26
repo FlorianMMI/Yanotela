@@ -30,6 +30,7 @@
   
   --color-primary: var(--rouge-fonce);
   --color-primary-hover: var(--rouge-hover);
+  --color-rouge-hover: var(--rouge-hover);
   --color-element: var(--gris-clair);
   
   --font-geo: var(--font-geologica);
@@ -37,6 +38,9 @@
 
   --color-clrprincipal:var(--dark);
   --color-clrsecondaire:var(--light);
+  
+  /* Classes pour la nouvelle structure */
+  --color-motif-bg: var(--background);
 }
 
 /* 

@@ -1,17 +1,14 @@
-'use client';
+"use client";
 
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import ResetPasswordForm from '../../../components/auth/ResetPasswordForm';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import RegisterForm from '@/components/auth/RegisterForm';
 
-
-export default function ResetPasswordTokenPage() {
-  const params = useParams();
+export default function RegisterFormPage() {
   const router = useRouter();
-  const token = params.token as string;
 
-  const handleSuccess = () => {
-    // Rediriger vers login après succès
+  const handleRegisterSuccess = () => {
+    // Afficher un message de succès et rediriger vers login
     setTimeout(() => {
       router.push('/login');
     }, 2000);
@@ -19,30 +16,31 @@ export default function ResetPasswordTokenPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-lg space-y-8">
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-primary mb-2">
-            Nouveau mot de passe
+            Bienvenue à bord 👋
           </h1>
           <p className="text-gray-600">
-            Veuillez saisir votre nouveau mot de passe
+            Créez votre compte Yanotela
           </p>
         </div>
 
-        {/* Reset Password Form */}
+        {/* Register Form */}
         <div className="bg-white p-8 rounded-xl shadow-lg">
-          <ResetPasswordForm
-            token={token}
-            onSuccess={handleSuccess}
+          <RegisterForm
+            onSuccess={handleRegisterSuccess}
             showTitle={false}
+            onSwitchToLogin={() => router.push('/login')}
+            isInline={true} // Version complète
           />
         </div>
 
         {/* Login Link */}
         <div className="text-center">
           <p className="text-gray-600 text-sm">
-            Vous vous souvenez de votre mot de passe ?{' '}
+            Déjà un compte ?{' '}
             <Link 
               href="/login" 
               className="text-primary hover:text-rouge-hover font-medium"
