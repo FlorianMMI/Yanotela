@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function NoteSkeleton() {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+    <div className="bg-fondcardNote rounded-xl shadow-sm border border-fondcardNote overflow-hidden animate-pulse">
       
       {/* Header Skeleton - simule le titre et les collaborateurs */}
       <div className="flex justify-between m-2 items-center gap-3 rounded-lg bg-gray-300 h-12">
@@ -18,7 +18,7 @@ export default function NoteSkeleton() {
       </div>
 
       {/* Content Skeleton */}
-      <div className="p-4 bg-white flex flex-col h-32">
+      <div className="p-4 bg-fondcardNote flex flex-col h-32">
         
         {/* Contenu skeleton - lignes de texte */}
         <div className="flex-grow space-y-2 mb-4">
