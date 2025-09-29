@@ -34,7 +34,7 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
           
 
           {/* Zone de contenu */}
-          <main className="flex-1 overflow-auto bg-background">
+          <main className="flex-1 overflow-auto bg-background md:bg-deskbackground">
             {/* Si déconnecté, zone vide avec message */}
             {!loading && !isAuthenticated ? (
               <div className="h-full flex items-center justify-center">

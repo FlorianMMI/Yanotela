@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="h-full">
-      <body className="antialiased h-screen bg-motif-bg">
+      <body className="antialiased h-screen bg-background">
         <DesktopLayout>
           
           {children}

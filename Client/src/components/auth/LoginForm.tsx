@@ -163,7 +163,7 @@ export default function LoginForm({
               className="w-full p-2.5 bg-white border border-gray-300 rounded-[10px] flex justify-center items-center gap-3 hover:bg-gray-200 active:bg-gray-50 transition-colors cursor-pointer"
             >
               <Icon name="google" className="text-primary" size={20} />
-              <span className="text-gray-700 text-sm font-medium font-gant">
+              <span className="text-clrprincipal text-sm font-medium font-gant">
                 Se connecter avec Google
               </span>
             </button>

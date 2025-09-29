@@ -60,7 +60,7 @@ export default function Breadcrumb() {
 
   return (
     <>
-    <nav className="bg-white p-3">
+    <nav className="bg-background p-3">
       <div className="flex items-center space-x-2 text-sm">
         <Icon name="files" size={24} className="text-primary" />
         {breadcrumbs.map((item, index) => (
@@ -79,7 +79,7 @@ export default function Breadcrumb() {
             {item.href && !item.isActive ? (
               <Link
                 href={item.href}
-                className="text-primary hover:text-rouge-hover text-2xl transition-colors font-bold"
+                className="text-clrprincipal hover:text-rouge-hover text-2xl transition-colors font-bold"
               >
                 {item.label}
               </Link>
@@ -88,7 +88,7 @@ export default function Breadcrumb() {
               <span
                 className={`${
                   item.isActive 
-                    ? 'text-primary text-2xl font-semibold' 
+                    ? 'text-clrprincipal text-2xl font-semibold' 
                     : 'text-gray-500'
                 } `}
               >
