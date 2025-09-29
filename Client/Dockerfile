@@ -1,17 +1,51 @@
-# Étape 1 : Build de l'app
-FROM node:22-alpine AS builder
+# Multi-stage build for Next.js client
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
 WORKDIR /app
+
+# Copy package files
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --only=production
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Next.js collects completely anonymous telemetry data about general usage
+# Learn more here: https://nextjs.org/telemetry
+# Disable telemetry during the build
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Build the application
 RUN npm run build
 
-# Étape 2 : Image légère pour servir l'app
-FROM node:22-alpine
+# Production image, copy all the files and run next
+FROM base AS runner
 WORKDIR /app
-COPY --from=builder /app/.next ./.next
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy the standalone output
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
+
+# Automatically leverage output traces to reduce image size
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
 EXPOSE 3000
-CMD ["npm", "start"]
+
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["node", "server.js"]

@@ -35,7 +35,7 @@ export default function AuthSidebar() {
   const { view: currentView, token } = getCurrentView();
 
   return (
-    <div className="p-6">
+    <div className="p-6 h-full flex flex-col justify-center">
       {currentView === 'login' && (
         <LoginForm
           onSuccess={handleAuthSuccess}

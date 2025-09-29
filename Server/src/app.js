@@ -27,6 +27,16 @@ app.use(express.json());
 app.use('/', authRoutes);
 app.use('/note', noteRoutes);
 
+// Route de health check pour Docker
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Route de base - API uniquement
 app.get('/', (req, res) => {
   res.json({

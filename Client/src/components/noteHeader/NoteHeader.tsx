@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Icon from "@/ui/Icon";
 import SearchBar from "@/ui/searchbar";
 import { motion } from "motion/react";

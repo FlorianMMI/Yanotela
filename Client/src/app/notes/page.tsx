@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 import { useState, useEffect, Suspense } from "react";
 import { Note } from "@/type/Note";
@@ -46,7 +47,6 @@ export default function Home() {
 
   return (
     <div className="h-full">
-      
 
     <NoteHeader
       searchTerm={searchTerm}

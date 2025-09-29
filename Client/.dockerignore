@@ -6,3 +6,7 @@ npm-debug.log
 .gitignore
 README.md
 .dockerignore
+.next
+dist
+coverage
+*.log

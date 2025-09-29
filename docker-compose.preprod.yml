@@ -1,0 +1,84 @@
+# Docker Compose pour développement/test local (Preprod)
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL pour tests
+  db:
+    image: postgres:15-alpine
+    container_name: yanotela-db-local
+    environment:
+      POSTGRES_USER: yanotela_local
+      POSTGRES_PASSWORD: yanotela_local_2024
+      POSTGRES_DB: yanotela_local
+    volumes:
+      - postgres_local_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yanotela_local -d yanotela_local"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # Redis pour les sessions (optionnel en local)
+  redis:
+    image: redis:7-alpine
+    container_name: yanotela-redis-local
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # Backend Node.js/Express
+  backend:
+    build: 
+      context: ./Server
+      dockerfile: Dockerfile
+    container_name: yanotela-backend-local
+    ports:
+      - "8081:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://yanotela_local:yanotela_local_2024@db:5432/yanotela_local
+      - REDIS_URL=redis://redis:6379
+      - SESSION_SECRET=local_session_secret_dev_only
+      - MAIL_SERVICE=gmail
+      - MAIL_USER=test@example.com
+      - MAIL_PASSWORD=test_password
+    volumes:
+      # Mount source code for hot reload
+      - ./Server/src:/app/src:ro
+      - ./Server/prisma:/app/prisma:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+  # Frontend Next.js
+  frontend:
+    build: 
+      context: ./Client
+      dockerfile: Dockerfile
+    container_name: yanotela-frontend-local
+    ports:
+      - "8080:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8081
+    volumes:
+      # Mount source code for hot reload
+      - ./Client/src:/app/src:ro
+      - ./Client/public:/app/public:ro
+    depends_on:
+      - backend
+
+volumes:
+  postgres_local_data:
+    driver: local
+
+# Pas de réseau custom nécessaire en local
