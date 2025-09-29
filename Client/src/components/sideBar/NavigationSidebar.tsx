@@ -94,11 +94,11 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
       <div className="p-4 border-t border-gray-300">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-clrprincipal hover:bg-gray-100 rounded-lg transition-colors hover:text-clrsecondaire"
+          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-clrprincipal hover:bg-gray-100 rounded-lg transition-colors hover:text-clrsecondaire cursor-pointer"
         >
           <Icons
-            name="keyhole"
-            size={20}
+            name="exit"
+            size={40}
           />
           <span className="font-medium">Déconnexion</span>
         </button>

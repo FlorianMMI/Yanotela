@@ -5,6 +5,7 @@ import SideBar from '@/components/sideBar/sideBar';
 import Breadcrumb from '@/components/breadcrumb/Breadcrumb';
 import { useAuth } from '@/hooks/useAuth';
 import NoteHeader from '@/components/noteHeader/NoteHeader';
+import Icon from '@/ui/Icon';
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
@@ -41,9 +42,7 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
                 <div className="text-center space-y-4">
                   <div className="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
                     <div className="w-12 h-12 text-gray-400">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H11V21H5V3H13V9H21Z" />
-                      </svg>
+                      <Icon name="files" size={48} />
                     </div>
                   </div>
                   <div>
