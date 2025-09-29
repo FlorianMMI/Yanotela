@@ -7,43 +7,47 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-    - uses: actions/checkout@v3
-
-    - name: Install dependencies
-      run: npm install
-      working-directory: Server
-
-    - name: Debug SSH Key
-      run: |
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n 5
-        echo "..."
-        echo "${{ secrets.dummy }}" | head -n 5
-
-    - name: Write SSH Key to File
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa  # <-- Très important !
-
-    - name: Deploy to AWS EC2
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.REMOTE_HOST }}
-        username: ${{ secrets.REMOTE_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "./"
-        target: "/var/www/Yanotela"
-
-        
-
-    - name: Restart PM2 application
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.REMOTE_HOST }}
-        username: ${{ secrets.REMOTE_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd /var/www/Yanotela
-          pm2 reload all
+      - uses: actions/checkout@v3
+      
+      - name: Install dependencies
+        run: npm install
+        working-directory: Server
+      
+      # Test si les secrets existent (RETIREZ ce step après vérification)
+      - name: Verify secrets are loaded
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "ERROR: SSH_PRIVATE_KEY is empty!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.REMOTE_HOST }}" ]; then
+            echo "ERROR: REMOTE_HOST is empty!"
+            exit 1
+          fi
+          echo "✓ Secrets are loaded correctly"
+      
+      - name: Deploy to AWS EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "Server/*"  # Copie uniquement le dossier Server
+          target: "/var/www/Yanotela"
+          strip_components: 1  # Retire "Server/" du chemin
+          rm: true  # Supprime les anciens fichiers
+      
+      - name: Restart PM2 application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /var/www/Yanotela
+            npm install --production
+            pm2 reload all
