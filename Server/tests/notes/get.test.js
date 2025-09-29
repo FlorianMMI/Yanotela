@@ -7,7 +7,7 @@
 
 import request from 'supertest';
 import { jest } from '@jest/globals';
-import app from '../../src/app.js';
+import {app} from '../../src/app.js';
 
 
 
@@ -22,3 +22,12 @@ test('GET /note/get devrait récupérer toutes les notes', async () => {
     // Vous pouvez ajouter plus de validations en fonction de la structure de vos notes
 });
 
+
+test('GET /note/get/:id devrait récupérer une note par ID', async () => {
+    const response = await request(app)
+        .get('/note/get/1') // Remplacez '1' par un ID de note valide dans votre base de données de test
+        .expect(200);
+
+    expect(response.body).toHaveProperty('titre');
+    expect(response.body).toHaveProperty('content');
+});

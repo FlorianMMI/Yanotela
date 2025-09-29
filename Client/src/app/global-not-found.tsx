@@ -10,14 +10,14 @@ export default function GlobalNotFound() {
                 <div className="col-span-full flex flex-col items-center justify-center bg-bg border-2 border-primary border-dashed rounded-xl gap-8 p-8">
                     <Image
                         src="/logo.svg"
-                        alt="Yanolela."
+                        alt="Yanotela."
                         width={200}
                         height={200}
                         className="col-span-full mx-auto mb-8"
                     />
-                    <h1 className="text-2xl font-bold mb-4 text-primary">404 - Page Not Found</h1>
-                    <p className="text-foreground">The page you are looking for does not exist.</p>
-                    <Link href="/" className="mt-4 px-4 py-2 bg-primary text-background rounded hover:bg-primary transition">Go to Home</Link>
+                    <h1 className="text-2xl font-bold mb-4 text-primary">404 - Page introuvable</h1>
+                    <p className="text-foreground">On dirait que la page que vous recherchez n&apos;existe pas...</p>
+                    <Link href="/" className="mt-4 px-4 py-2 bg-primary text-background rounded hover:bg-primary transition">Retour à l&apos;accueil</Link>
                 </div>
             </div>
         </main>

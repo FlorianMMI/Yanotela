@@ -14,7 +14,7 @@
 
 import request from 'supertest';
 import { jest } from '@jest/globals';
-import app from '../../src/app.js';
+import {app} from '../../src/app.js';
 
 
 

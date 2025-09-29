@@ -339,5 +339,44 @@ const resetPasswordPost = async (req, res) => {
   }
 };
 
+const checkAuth = async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({
+        authenticated: false
+      });
+    }
 
-export { register, login, logout, validate, validateRegistration, forgotPassword, resetPasswordGet, resetPasswordPost };
+    const user = await prisma.user.findUnique({
+      where: { id: req.session.userId },
+      select: {
+        id: true,
+        pseudo: true,
+        email: true
+      }
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        authenticated: false
+      });
+    }
+
+    return res.json({
+      authenticated: true,
+      user: {
+        id: user.id,
+        pseudo: user.pseudo,
+        email: user.email
+      }
+    });
+  } catch (err) {
+    console.error("Erreur vérification authentification:", err);
+    return res.status(500).json({
+      authenticated: false
+    });
+  }
+};
+
+
+export { register, login, logout, validate, validateRegistration, forgotPassword, resetPasswordGet, resetPasswordPost, checkAuth };
