@@ -1,4 +1,5 @@
-﻿import ErrorFetch from "@/ui/note/errorFetch";
+﻿import React from "react";
+import ErrorFetch from "@/ui/note/errorFetch";
 import Image from "next/image";
 import Link from "next/link";
 
