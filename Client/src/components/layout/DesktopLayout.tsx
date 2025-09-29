@@ -4,6 +4,7 @@ import React from 'react';
 import SideBar from '@/components/sideBar/sideBar';
 import Breadcrumb from '@/components/breadcrumb/Breadcrumb';
 import { useAuth } from '@/hooks/useAuth';
+import NoteHeader from '@/components/noteHeader/NoteHeader';
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,8 @@ interface DesktopLayoutProps {
 
 export default function DesktopLayout({ children }: DesktopLayoutProps) {
   const { isAuthenticated, loading } = useAuth();
+
+
 
   return (
     <>
@@ -28,6 +31,7 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
         <div className="flex-1 flex flex-col ml-80">
           {/* Breadcrumb en haut */}
           <Breadcrumb />
+          
 
           {/* Zone de contenu */}
           <main className="flex-1 overflow-auto bg-background">
@@ -54,10 +58,14 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
               </div>
             ) : (
               // Si connecté, afficher le contenu
+              
               <div className="h-full">
+                
                 {children}
               </div>
             )}
+
+            
           </main>
         </div>
       </div>

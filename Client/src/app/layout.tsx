@@ -16,6 +16,7 @@ export default function RootLayout({
     <html lang="fr" className="h-full">
       <body className="antialiased h-screen bg-motif-bg">
         <DesktopLayout>
+          
           {children}
         </DesktopLayout>
       </body>

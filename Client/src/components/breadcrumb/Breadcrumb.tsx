@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import Icon from '@/ui/Icon';
 
 interface BreadcrumbItem {
   label: string;
@@ -58,34 +59,38 @@ export default function Breadcrumb() {
   const breadcrumbs = generateBreadcrumbs();
 
   return (
-    <nav className="bg-white border-b border-gray-200 px-6 py-3">
+    <>
+    <nav className="bg-white p-3">
       <div className="flex items-center space-x-2 text-sm">
+        <Icon name="files" size={24} className="text-primary" />
         {breadcrumbs.map((item, index) => (
           <React.Fragment key={index}>
             {index > 0 && (
-              <Image
-                src="/arrow-barre.svg"
-                alt=">"
-                width={12}
-                height={12}
+              <p className="text-2xl">/</p>
+              /*<Icon
+                name="arrow-barre"
+                size={24}
                 className="text-gray-400"
-              />
+              />*/
+              
             )}
+            
             
             {item.href && !item.isActive ? (
               <Link
                 href={item.href}
-                className="text-primary hover:text-rouge-hover transition-colors font-medium"
+                className="text-primary hover:text-rouge-hover text-2xl transition-colors font-bold"
               >
                 {item.label}
               </Link>
             ) : (
+              
               <span
                 className={`${
                   item.isActive 
-                    ? 'text-gray-900 font-semibold' 
+                    ? 'text-primary text-2xl font-semibold' 
                     : 'text-gray-500'
-                }`}
+                } `}
               >
                 {item.label}
               </span>
@@ -93,6 +98,10 @@ export default function Breadcrumb() {
           </React.Fragment>
         ))}
       </div>
+      
     </nav>
+    <div className='h-8 bg-primary'>
+    </div>
+    </>
   );
 }

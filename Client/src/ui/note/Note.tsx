@@ -14,16 +14,14 @@ export default function Note({ note }: NoteProps) {
   const handleNoteClick = () => {
     router.push(`/notes/${note.id}`);
   };
-  const notecontraint = React.useRef(null);
+ 
 
   return (
-    <motion.div ref={notecontraint}>
+    
     <motion.div 
     whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)"}}
     whileTap={{ scale: 1 }}
-    drag
-    dragConstraints={notecontraint}
-    dragElastic={0.025}
+    
       className="bg-fondcardNote rounded-xl shadow-sm border border-clrsecondaire cursor-pointer group overflow-hidden"
       onClick={handleNoteClick}
     >
@@ -33,7 +31,7 @@ export default function Note({ note }: NoteProps) {
 
         {/* Note Title */}
         <h3
-          className="font-geologica text-xs md:text-base text-white pl-2 h-fit align-middle  "
+          className="font-geologica text-xs md:text-base text-white pl-2 h-fit w-full align-middle truncate flex-1"
           title={note.Titre}
         >
           {note.Titre}
@@ -41,9 +39,10 @@ export default function Note({ note }: NoteProps) {
 
         {/* Collaborateurs */}
         
-        {/* <div
-          className="flex items-center gap-1 p-3 flex-shrink-0"
-        >
+        
+       <div
+          className="flex items-center min-w-[56px]  h-full gap-1 px-3 flex-shrink-0"
+        >{/*}
           <p className='text-white font-bold'>8</p>
           <Image
             src="/share.svg"
@@ -51,8 +50,8 @@ export default function Note({ note }: NoteProps) {
             width={20}
             height={20}
             className="filter brightness-0 invert"
-          />
-        </div> */}
+          />*/}
+        </div>
       </div>
 
       {/* Content - Titre et contenu de la note */}
@@ -92,6 +91,6 @@ export default function Note({ note }: NoteProps) {
         </div>
       </div>
     </motion.div>
-    </motion.div>
+    
   );
 }
