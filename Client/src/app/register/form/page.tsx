@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useState, useEffect } from "react";
 import Icon from "@/ui/Icon";
 import ReturnButton from "@/ui/returnButton";

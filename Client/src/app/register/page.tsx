@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import React from "react";
 import Icon from "@/ui/Icon";
 import { useRouter } from "next/navigation";
 import ReturnButton from "@/ui/returnButton";
@@ -14,8 +15,8 @@ export default function Register() {
       <div className="flex flex-col justify-center items-center gap-6 mt-4">
         <p
           className="
-        text-center text-primary text-3xl font-bold md:min-w-[500px] after:content-[''] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8
-      "
+            text-center text-primary text-3xl font-bold md:min-w-[500px] after:content-[''] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8
+          "
         >
           Bienvenue à bord 👋
         </p>
