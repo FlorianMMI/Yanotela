@@ -5,3 +5,12 @@ node_modules
 /generated/prisma
 
 /generated/prisma
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+package-lock.json
+!/package-lock.json

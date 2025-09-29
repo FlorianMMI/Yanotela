@@ -1,18 +1,39 @@
 {
-    "type": "module",
-    "name": "yanotela-back",
-    "version": "1.0.0",
-    "description": "Backend de l'application Yanotela",
-    "main": "index.js",
-    "scripts": {
-        "start": "node index.js",
-        "dev": "nodemon index.js",
-        "prisma": "prisma"
-    },
-    "dependencies": {
-        "@prisma/client": "^6.16.2",
-        "express": "^5.1.0",
-        "prisma": "^6.16.2",
-        "socket.io": "^4.8.1"
-    }
+  "type": "module",
+  "name": "yanotela-back",
+  "version": "1.0.0",
+  "description": "Backend de l'application Yanotela",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "prisma": "prisma",
+    "test:auth": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/auth/",
+    "test:notes": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/notes/",
+    "test:bdd": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/bdd/",
+    "test": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/",
+    "dev": "nodemon index.js",
+    "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.2",
+    "bcrypt": "^5.1.1",
+    "connect-redis": "^7.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "express-session": "^1.18.0",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "nodemailer": "^6.9.13",
+    "prisma": "^6.16.2",
+    "socket.io": "^4.8.1",
+    "supertest": "^7.1.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.5.2",
+    "jest": "^30.1.3",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.1.4"
+  }
 }
