@@ -19,7 +19,7 @@ jobs:
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n 5
         echo "..."
-        echo "$ {{ secrets.dummy}}" | head -n 5
+        echo "${{ secrets.dummy }}" | head -n 5
 
     - name: Deploy to AWS EC2
       uses: appleboy/scp-action@master
