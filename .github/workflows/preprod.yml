@@ -2,9 +2,9 @@ name: 🧪 Preprod Verification
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ Develop ]
   pull_request:
-    branches: [ develop ]
+    branches: [ Develop ]
 
 jobs:
   # ===== VERIFICATION SIMPLE =====
