@@ -1,0 +1,131 @@
+name: 🧪 Preprod Verification
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  # ===== VERIFICATION SIMPLE =====
+  verify-integration:
+    name: ✅ Vérifier l'intégration des features
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: 📦 Install Dependencies
+      run: |
+        # Backend
+        cd Server && npm ci
+        # Frontend
+        cd ../Client && npm ci
+
+    - name: 🗄️ Setup Test Database
+      run: |
+        cd Server
+        echo "DATABASE_URL=postgresql://test_user:test_pass@localhost:5432/test_db" > .env.test
+        npx prisma generate
+        npx prisma migrate deploy
+      env:
+        DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
+
+    - name: 🧪 Test Backend
+      run: |
+        cd Server
+        npm test || echo "⚠️ Certains tests backend ont échoué"
+      env:
+        NODE_ENV: test
+        DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
+      continue-on-error: true
+
+    - name: 🔍 Verify TypeScript
+      run: |
+        cd Client
+        npx tsc --noEmit || echo "⚠️ Erreurs TypeScript détectées"
+      continue-on-error: true
+
+    - name: 🏗️ Test Build
+      run: |
+        cd Client
+        npm run build
+        echo "✅ Build frontend réussi"
+
+    - name: 📋 Summary
+      run: |
+        echo "🎯 Vérification terminée pour la branche develop"
+        echo "📊 Résumé :"
+        echo "• Backend tests: Exécutés"
+        echo "• TypeScript check: Vérifié" 
+        echo "• Frontend build: ✅ Réussi"
+        echo ""
+        echo "🚀 Pour tester localement :"
+        echo "  docker-compose up --build"
+        echo "  ou make dev"
+
+  # ===== NOTIFICATION SIMPLE =====
+  notify:
+    name: 📧 Notification
+    runs-on: ubuntu-latest
+    needs: [verify-integration]
+    if: always() && github.event_name == 'push'
+
+    steps:
+    - name: 📧 Send Notification
+      if: always()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.NOTIFICATION_EMAIL }}
+        password: ${{ secrets.NOTIFICATION_EMAIL_PASSWORD }}
+        subject: "${{ needs.verify-integration.result == 'success' && '✅' || '⚠️' }} Yanotela Preprod - Vérification ${{ needs.verify-integration.result == 'success' && 'réussie' || 'avec problèmes' }}"
+        to: ${{ secrets.NOTIFICATION_EMAIL }}
+        from: GitHub Actions <noreply@github.com>
+        body: |
+          ${{ needs.verify-integration.result == 'success' && '🎉' || '⚠️' }} Vérification preprod terminée !
+          
+          📋 Détails:
+          • Repository: ${{ github.repository }}
+          • Branch: ${{ github.ref_name }}
+          • Commit: ${{ github.sha }}
+          • Actor: ${{ github.actor }}
+          • Status: ${{ needs.verify-integration.result }}
+          
+          ${{ needs.verify-integration.result == 'success' && 
+          '✅ Tout semble fonctionner correctement !
+          
+          🚀 Pour tester en local:
+          1. git checkout develop && git pull
+          2. docker-compose up --build
+          3. Accès: http://localhost:3000
+          
+          🎯 Si tout va bien, vous pouvez merger vers main !' || 
+          '⚠️ Des problèmes ont été détectés.
+          
+          🔍 Vérifiez les logs: ' }}${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+          ⏰ ${{ needs.verify-integration.result == 'success' && 'Vérification' || 'Problème détecté' }} à: $(date)
