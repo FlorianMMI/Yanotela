@@ -25,7 +25,7 @@ jobs:
       with:
         host: ${{ secrets.REMOTE_HOST }}
         username: ${{ secrets.REMOTE_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        key_path: ${{ secrets.SSH_PRIVATE_KEY }}
         source: "./"
         target: "/var/www/Yanotela"
 
