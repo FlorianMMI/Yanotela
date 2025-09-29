@@ -121,7 +121,7 @@ export default function ValidatePage() {
                       onClick={() => router.push('/register')}
                       className="mt-2 text-sm text-red-600 hover:text-red-500 underline"
                     >
-                      Retour à l'enregistrement
+                      Retour à l&apos;enregistrement
                     </button>
                   </div>
                 </div>
