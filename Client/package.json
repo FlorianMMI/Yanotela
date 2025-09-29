@@ -15,9 +15,11 @@
     "@babel/preset-typescript": "^7.27.1",
     "@lexical/react": "^0.35.0",
     "lexical": "^0.35.0",
+    "motion": "^12.23.21",
     "next": "^15.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "use-debounce": "^10.0.6",
     "yjs": "^13.6.27"
   },
   "devDependencies": {

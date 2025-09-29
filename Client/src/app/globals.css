@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&family=Geologica:wght@100..900&display=swap');
 @import "tailwindcss";
 
 
@@ -11,12 +12,12 @@
   --rouge-hover: #ff0000;
   --light: white;
   --dark:black;
+  --lightNote: white;
+  --textlightNote:oklch(55.1% 0.027 264.364);
 
   --font-family: "Gantari", Arial, Helvetica, sans-serif;
-  
-  /* Variables pour le fond avec motif */
-  --motif-opacity: 0.05;
-  --motif-image: url('/fond.jpg');
+  --font-gantari: 'Gantari', sans-serif;
+  --font-geologica: 'Geologica', sans-serif;
 }
 
 @theme inline {
@@ -27,6 +28,7 @@
   
   --color-primary: var(--rouge-fonce);
   --color-primary-hover: var(--rouge-hover);
+  --color-rouge-hover: var(--rouge-hover);
   --color-element: var(--gris-clair);
   
   --font-geo: var(--font-geologica);
@@ -34,21 +36,27 @@
 
   --color-clrprincipal:var(--dark);
   --color-clrsecondaire:var(--light);
+  --color-fondcardNote:var(--lightNote);
+  --color-textcardNote:var(--textlightNote);
 }
 
- @media (prefers-color-scheme: dark) {
+
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #171717;
     --light: black;
     --dark:white;
     --motif-opacity: 0.01;
+    --lightNote: #1e1e1e;
+    --textlightNote: white;
   }
-} 
+}   */
+
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-gant);
   position: relative;
 }
 
@@ -59,12 +67,7 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: var(--motif-image);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
   opacity: var(--motif-opacity);
   pointer-events: none;
   z-index: -1;
 }
-
