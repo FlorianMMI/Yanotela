@@ -35,6 +35,7 @@ export const noteController = {
                     ModifiedAt: 'desc' // Plus récent en premier
                 }
             });
+
             res.status(200).json(notes);
         } catch (error) {
             res.status(500).json({ message: 'Erreur lors de la récupération des notes', error: error.message });

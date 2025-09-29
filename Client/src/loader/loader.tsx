@@ -32,9 +32,8 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
     }
 }
 
-export async function GetNotes(): Promise<Note[]> {
+export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
     try {
-        // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
 
         console.log('API URL for GetNotes:', apiUrl); // Pour debug
@@ -54,23 +53,26 @@ export async function GetNotes(): Promise<Note[]> {
         const notes = await response.json();
         console.log('Notes from server:', notes);
 
+        // Calculate total notes based on the length of the notes array
+        const totalNotes = Array.isArray(notes) ? notes.length : 0;
+
         // Transformation du JSON stringifié en objet
         for (const note of notes) {
             try {
                 const parsedContent = JSON.parse(note.Content);
                 if (typeof parsedContent === 'object' && parsedContent !== null) {
-                    note.Content = parsedContent;
+                    note.Content = JSON.stringify(parsedContent); // Ensure Content is a string
                 }
             } catch {
-                // If parsing fails, leave the content as is
-                console.warn(`Invalid JSON content for note ID ${note.id}, leaving content unparsed.`);
+                console.warn(`Invalid JSON content for note ID ${note.id}, converting to string.`);
+                note.Content = String(note.Content);
             }
         }
 
-        return notes;
+        return { notes, totalNotes };
     } catch (error) {
         console.error("Error fetching notes:", error);
-        return [];
+        return { notes: [], totalNotes: 0 };
     }
 }
 

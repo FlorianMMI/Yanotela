@@ -90,7 +90,7 @@ export default function LoginForm({
           </p>
         )}
         
-        <div data-property-1="Mail" className="w-full p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
+        <div data-property-1="Mail" className="w-full p-2.5 bg-background rounded-[10px] flex justify-start items-center gap-2.5">
           <Icon name="at" className="text-zinc-500" size={20} />
           <input 
             type="text" 
@@ -102,7 +102,7 @@ export default function LoginForm({
           />
         </div>
         
-        <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center">
+        <div data-property-1="MDP" className="w-full p-2.5 bg-background rounded-[10px] flex justify-between items-center">
           <div className="flex justify-center items-center gap-2.5">
             <Icon name="keyhole" className="text-zinc-500" size={20} />
             <input 
@@ -132,7 +132,7 @@ export default function LoginForm({
           <button 
             type="button"
             onClick={onSwitchToForgot || (() => router.push('/forgot-password'))}
-            className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline text-sm font-normal font-gant cursor-pointer"
+            className="w-fit justify-start text-start flex text-primary transition-all hover:text-primary-hover hover:underline text-sm font-normal font-gant cursor-pointer"
           >
             Mot de passe oublié ?
           </button>
@@ -178,7 +178,7 @@ export default function LoginForm({
               <button
                 type="button"
                 onClick={onSwitchToRegister || (() => router.push('/register'))}
-                className="text-primary hover:underline"
+                className="text-primary hover:underline hover:text-primary-hover transition-all font-medium cursor-pointer"
               >
                 {isInSidebar ? 'S\'inscrire' : 'Inscrivez-vous'}
               </button>
