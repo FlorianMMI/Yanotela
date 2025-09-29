@@ -5,6 +5,7 @@ import SideBar from '@/components/sideBar/sideBar';
 import Breadcrumb from '@/components/breadcrumb/Breadcrumb';
 import { useAuth } from '@/hooks/useAuth';
 import Icon from '@/ui/Icon';
+import { SwipeNavigationWrapper } from '@/components/navigation/SwipeNavigationWrapper';
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
@@ -15,9 +16,11 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
 
   return (
     <>
-      {/* Mobile: comportement actuel */}
+      {/* Mobile: comportement actuel avec swipe navigation */}
       <div className="md:hidden">
-        {children}
+        <SwipeNavigationWrapper>
+          {children}
+        </SwipeNavigationWrapper>
       </div>
 
       {/* Desktop: nouvelle architecture */}

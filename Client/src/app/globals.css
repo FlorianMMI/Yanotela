@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&family=Geologica:wght@100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Nixie+One&display=swap");
 @import "tailwindcss";
 
+/* Keep @import statements at the very top of this file; do not duplicate @import later in the file. */
 
 :root {
   --background: #E9EBDB;
@@ -15,6 +17,7 @@
   --lightNote: white;
   --textlightNote:oklch(55.1% 0.027 264.364);
 
+  --font-title: 'Nixie One', cursive;
   --font-family: "Gantari", Arial, Helvetica, sans-serif;
   --font-gantari: 'Gantari', sans-serif;
   --font-geologica: 'Geologica', sans-serif;
@@ -33,6 +36,7 @@
   
   --font-geo: var(--font-geologica);
   --font-gant: var(--font-gantari);
+  --font-title: var(--font-title);
 
   --color-clrprincipal:var(--dark);
   --color-clrsecondaire:var(--light);

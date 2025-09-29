@@ -304,3 +304,37 @@ export async function Logout(): Promise<AuthResponse> {
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
+
+
+interface InfoUserResponse {
+    success: boolean;
+    message?: string;
+    error?: string;
+    user?: any;
+}
+
+export async function InfoUser(): Promise<InfoUserResponse> {
+
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        
+        const response = await fetch(`${apiUrl}/user/info`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            return { success: true, message: 'Informations utilisateur récupérées', user: userData };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la récupération des informations utilisateur' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de la récupération des informations utilisateur:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
