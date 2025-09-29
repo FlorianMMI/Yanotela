@@ -1,6 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import React from "react";
+import { useState, useEffect } from "react";
+import Icon from "@/ui/Icon";
+import ReturnButton from "@/ui/returnButton";
+import ConfirmPassword from "@/ui/confirm-password";
 import { useRouter } from "next/navigation";
 import RegisterFormComponent from '@/components/auth/RegisterForm';
 
@@ -41,12 +45,12 @@ export default function RegisterFormPage() {
         <div className="text-center">
           <p className="text-gray-600 text-sm">
             Déjà un compte ?{' '}
-            <Link 
-              href="/login" 
+            <p 
+              onClick={() => router.push('/login')}
               className="text-primary hover:text-rouge-hover font-medium"
             >
               Se connecter
-            </Link>
+            </p>
           </p>
         </div>
       </div>
