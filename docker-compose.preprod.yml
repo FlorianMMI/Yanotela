@@ -35,7 +35,7 @@ services:
   backend:
     build: 
       context: ./Server
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.preprod
     container_name: yanotela-backend-local
     ports:
       - "3001:3001"
@@ -49,20 +49,26 @@ services:
       - MAIL_PASSWORD=test_password
     volumes:
       # Mount source code for hot reload
-      - ./Server/src:/app/src:ro
-      - ./Server/prisma:/app/prisma:ro
+      - ./Server/src:/app/src
+      - ./Server/prisma:/app/prisma
+      - ./Server/package.json:/app/package.json
+      - ./Server/package-lock.json:/app/package-lock.json
+      - ./Server/jest.config.json:/app/jest.config.json
+      - ./Server/index.js:/app/index.js
+      # Exclude node_modules to avoid conflicts
+      - /app/node_modules
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: sh -c "npx prisma migrate deploy && npm run dev"
+    command: sh -c "npx prisma migrate deploy && npx nodemon index.js"
 
   # Frontend Next.js
   frontend:
     build: 
       context: ./Client
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.preprod
     container_name: yanotela-frontend-local
     ports:
       - "3000:3000"
@@ -71,8 +77,19 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:3001
     volumes:
       # Mount source code for hot reload
-      - ./Client/src:/app/src:ro
-      - ./Client/public:/app/public:ro
+      - ./Client/src:/app/src
+      - ./Client/public:/app/public
+      - ./Client/package.json:/app/package.json
+      - ./Client/package-lock.json:/app/package-lock.json
+      - ./Client/next.config.ts:/app/next.config.ts
+      - ./Client/tailwind.config.ts:/app/tailwind.config.ts
+      - ./Client/postcss.config.mjs:/app/postcss.config.mjs
+      - ./Client/tsconfig.json:/app/tsconfig.json
+      - ./Client/eslint.config.mjs:/app/eslint.config.mjs
+      # Exclude node_modules and .next to avoid conflicts
+      - /app/node_modules
+      - /app/.next
+      - /app/.next
     depends_on:
       - backend
 

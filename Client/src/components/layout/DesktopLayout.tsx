@@ -56,7 +56,7 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
                       Bienvenue sur Yanotela
                     </h2>
                     <p className="text-gray-600">
-                      Connectez-vous pour accéder à vos notes
+                      Connectez-vous pour accéder à vos notes.
                     </p>
                   </div>
                 </div>

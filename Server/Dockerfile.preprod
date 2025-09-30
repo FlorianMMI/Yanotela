@@ -1,0 +1,26 @@
+# Dockerfile pour environnement de préproduction (développement)
+FROM node:20-alpine
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de configuration
+COPY package*.json ./
+
+# Installer toutes les dépendances (dev + prod)
+RUN npm install
+
+# Copier tout le code source
+COPY . .
+
+# Générer le client Prisma
+RUN npx prisma generate
+
+# Exposer le port 3001
+EXPOSE 3001
+
+# Variable d'environnement pour le développement
+ENV NODE_ENV=development
+
+# Commande pour démarrer en mode développement avec nodemon
+CMD ["npx", "nodemon", "index.js"]
