@@ -29,6 +29,11 @@ jest.mock('@/loader/loader', () => ({
   ForgotPassword: mockForgotPassword,
 }));
 
+// Reset mocks before each test
+beforeEach(() => {
+  mockForgotPassword.mockReset();
+});
+
 describe("ForgotPasswordPage", () => {
   it("renders the Forgot Password page correctly", async () => {
     await act(async () => {
@@ -122,6 +127,38 @@ describe("ForgotPasswordPage", () => {
     jest.useRealTimers(); // Restore real timers
   });
 
+  it("shows an error when email field is empty", async () => {
+  render(<ForgotPasswordPage />);
+  
+  const form = screen.getByRole("form");
+  
+  // Soumettre sans rien taper
+  await act(async () => {
+    fireEvent.submit(form);
+  });
+  
+  expect(screen.getByText(/Veuillez saisir votre adresse email/i)).toBeInTheDocument();
+});
+
+it("displays connection error when API throws exception", async () => {
+  // Mock pour simuler une exception
+  mockForgotPassword.mockRejectedValueOnce(new Error('Network error'));
+  
+  render(<ForgotPasswordPage />);
+  
+  const emailInput = screen.getByLabelText(/Adresse email/i);
+  const form = screen.getByRole("form");
+  
+  await act(async () => {
+    fireEvent.change(emailInput, { target: { value: "test@test.fr" } });
+    fireEvent.submit(form);
+  });
+  
+  expect(screen.getByText(/Erreur de connexion au serveur/i)).toBeInTheDocument();
+});
+
+
+
   it("displays an error message when the server returns an error", async () => {
     const push = jest.fn();
     (useRouter as jest.Mock).mockReturnValue({ push });
@@ -150,5 +187,92 @@ describe("ForgotPasswordPage", () => {
 
     // Check if the error message is displayed
     expect(screen.getByText(/Erreur de connexion au serveur/i)).toBeInTheDocument();
+  });
+
+  it("handles successful password reset without onSuccess callback", async () => {
+    const push = jest.fn();
+    (useRouter as jest.Mock).mockReturnValue({ push });
+
+    // Mock ForgotPassword to simulate success
+    mockForgotPassword.mockResolvedValueOnce({ success: true });
+
+    await act(async () => {
+      // Render without onSuccess callback to test the branch where onSuccess is undefined
+      render(<ForgotPasswordPage />);
+    });
+
+    // Populate the email field with a valid email
+    const emailInput = screen.getByLabelText(/Adresse email/i);
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test@test.fr" } });
+    });
+
+    // Submit the form
+    const forgotPasswordForm = screen.getByRole("form");
+    await act(async () => {
+      fireEvent.submit(forgotPasswordForm);
+    });
+
+    // Check if the success message is displayed
+    expect(screen.getByText(/Un lien de réinitialisation a été envoyé/i)).toBeInTheDocument();
+    
+    // Verify that mockForgotPassword was called
+    expect(mockForgotPassword).toHaveBeenCalledWith("test@test.fr");
+  });
+
+  it("calls onSuccess callback after timeout on successful reset", async () => {
+    const mockOnSuccess = jest.fn();
+
+    // Mock ForgotPassword to simulate success
+    mockForgotPassword.mockResolvedValueOnce({ success: true });
+
+    jest.useFakeTimers();
+
+    // Import the component directly to test with onSuccess prop
+    const ForgotPasswordForm = require('@/components/auth/ForgotPasswordForm').default;
+
+    await act(async () => {
+      render(<ForgotPasswordForm onSuccess={mockOnSuccess} />);
+    });
+
+    // Populate the email field with a valid email
+    const emailInput = screen.getByLabelText(/Adresse email/i);
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test@test.fr" } });
+    });
+
+    // Submit the form
+    const forgotPasswordForm = screen.getByRole("form");
+    await act(async () => {
+      fireEvent.submit(forgotPasswordForm);
+    });
+
+    // Verify that onSuccess is not called immediately
+    expect(mockOnSuccess).not.toHaveBeenCalled();
+
+    // Fast-forward time by 2 seconds
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    // Verify that onSuccess is called after the timeout
+    expect(mockOnSuccess).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  it("handles form submission with empty email field", async () => {
+    await act(async () => {
+      render(<ForgotPasswordPage />);
+    });
+
+    // Submit the form without entering an email
+    const forgotPasswordForm = screen.getByRole("form");
+    await act(async () => {
+      fireEvent.submit(forgotPasswordForm);
+    });
+
+    // Check if the validation error message is displayed
+    expect(screen.getByText(/Veuillez saisir votre adresse email/i)).toBeInTheDocument();
   });
 });

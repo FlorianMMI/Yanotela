@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ForgotPassword } from '@/loader/loader';
 
 interface ForgotPasswordFormProps {
   onSuccess?: () => void;
@@ -46,6 +45,8 @@ export default function ForgotPasswordForm({
 
     try {
       console.log('Envoi demande de réinitialisation pour:', email);
+      // Import dynamique pour permettre un meilleur mocking dans les tests
+      const { ForgotPassword } = await import('@/loader/loader');
       const result = await ForgotPassword(email);
       
       if (result.success) {
