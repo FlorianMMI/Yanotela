@@ -22,17 +22,18 @@ export default function Home() {
   const fetchNotes = async () => {
     try {
       setLoading(true);
-      const fetchedNotes = await GetNotes();
-      setNotes(fetchedNotes);
+      const response = await GetNotes();
+      setNotes(response.notes || []);
     } catch (error) {
       console.error("Error loading notes:", error);
+      setNotes([]);
     } finally {
       setLoading(false);
     }
   };
 
   // Filtrer et trier les notes (utilise les propriétés du serveur)
-  const filteredNotes = notes
+  const filteredNotes = Array.isArray(notes) ? notes
     .filter(note =>
       note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       note.Content?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -40,7 +41,7 @@ export default function Home() {
     .sort((a, b) => {
       // Tri par date de modification (plus récent en premier)
       return new Date(b.ModifiedAt).getTime() - new Date(a.ModifiedAt).getTime();
-    });
+    }) : [];
 
  
 

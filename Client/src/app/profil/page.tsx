@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { InfoUser} from '@/loader/loader'
 import { useEffect, useState } from 'react'
 import Logout from '@/ui/logout';
+import TotalNotes from '@/ui/note/totalNotes';
 
 interface UserInfo {
     id: number;
@@ -12,6 +13,7 @@ interface UserInfo {
     prenom?: string;
     nom?: string;
     email: string;
+    noteCount?: number;
 }
 
 export default function Profil() {
@@ -79,9 +81,14 @@ export default function Profil() {
                         <InfoProfil 
                             name={displayName}
                             pseudo={userInfo.pseudo} 
-                            email={userInfo.email} 
+                            email={userInfo.email}
                         />
                     )}
+                </div>
+
+                {/* Composant TotalNotes */}
+                <div className="flex justify-center pb-4">
+                    <TotalNotes totalNotes={userInfo?.noteCount} />
                 </div>
 
                 {/* Bouton logout en bas */}

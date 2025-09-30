@@ -32,7 +32,7 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
     }
 }
 
-export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
+export async function GetNotes(): Promise<{ notes: Note[]; }> {
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
 
@@ -53,26 +53,44 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
         const notes = await response.json();
         console.log('Notes from server:', notes);
 
-        // Calculate total notes based on the length of the notes array
-        const totalNotes = Array.isArray(notes) ? notes.length : 0;
+        // // Calculate total notes based on the length of the notes array
+        // const totalNotes = Array.isArray(notes) ? notes.length : 0;
 
-        // Transformation du JSON stringifié en objet
+        // Transformation du JSON stringifié en objet lisible
         for (const note of notes) {
             try {
                 const parsedContent = JSON.parse(note.Content);
                 if (typeof parsedContent === 'object' && parsedContent !== null) {
-                    note.Content = JSON.stringify(parsedContent); // Ensure Content is a string
+                    // Si c'est un objet Lexical, extraire le texte
+                    if (parsedContent.root && parsedContent.root.children) {
+                        // Extraction du texte depuis la structure Lexical
+                        const extractText = (children: any[]): string => {
+                            return children.map((child: any) => {
+                                if (child.type === 'paragraph' && child.children) {
+                                    return extractText(child.children);
+                                } else if (child.type === 'text' && child.text) {
+                                    return child.text;
+                                }
+                                return '';
+                            }).join(' ');
+                        };
+                        note.Content = extractText(parsedContent.root.children) || 'Contenu vide';
+                    } else {
+                        // Si c'est un autre type d'objet, convertir en string lisible
+                        note.Content = JSON.stringify(parsedContent);
+                    }
                 }
             } catch {
-                console.warn(`Invalid JSON content for note ID ${note.id}, converting to string.`);
+                // Si le parsing échoue, garder le contenu tel quel
+                console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
                 note.Content = String(note.Content);
             }
         }
 
-        return { notes, totalNotes };
+        return { notes };
     } catch (error) {
         console.error("Error fetching notes:", error);
-        return { notes: [], totalNotes: 0 };
+        return { notes: [] };
     }
 }
 
@@ -310,13 +328,22 @@ interface InfoUserResponse {
     success: boolean;
     message?: string;
     error?: string;
-    user?: any;
+    user?: {
+        id: number;
+        pseudo: string;
+        prenom?: string;
+        nom?: string;
+        email: string;
+        noteCount?: number; // Nombre de notes de l'utilisateur
+    };
 }
 
 export async function InfoUser(): Promise<InfoUserResponse> {
-
+    console.log('🔍 InfoUser: Début de la requête');
+    
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        console.log('🔍 InfoUser: URL API:', apiUrl);
         
         const response = await fetch(`${apiUrl}/user/info`, {
             method: 'GET',
@@ -326,15 +353,19 @@ export async function InfoUser(): Promise<InfoUserResponse> {
             credentials: 'include',
         });
 
+        console.log('🔍 InfoUser: Statut de la réponse:', response.status);
+
         if (response.ok) {
             const userData = await response.json();
+            console.log('🔍 InfoUser: Données reçues:', userData);
             return { success: true, message: 'Informations utilisateur récupérées', user: userData };
         } else {
             const errorData = await response.json().catch(() => ({}));
+            console.error('🔍 InfoUser: Erreur de réponse:', errorData);
             return { success: false, error: errorData.message || 'Erreur lors de la récupération des informations utilisateur' };
         }
     } catch (error) {
-        console.error('Erreur lors de la récupération des informations utilisateur:', error);
+        console.error('🔍 InfoUser: Erreur de connexion:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
