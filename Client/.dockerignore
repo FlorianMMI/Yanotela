@@ -9,4 +9,4 @@ README.md
 .next
 dist
 coverage
-*.log
+*.log   

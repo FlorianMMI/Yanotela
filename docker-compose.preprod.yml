@@ -1,5 +1,4 @@
 # Docker Compose pour développement/test local (Preprod)
-version: '3.8'
 
 services:
   # Base de données PostgreSQL pour tests
