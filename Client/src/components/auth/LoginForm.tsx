@@ -50,7 +50,6 @@ export default function LoginForm({
           onSuccess();
         } else {
           router.push('/notes');
-          router.refresh();
         }
       } else {
         setError(result.error || 'Identifiants incorrects');
