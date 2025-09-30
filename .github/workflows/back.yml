@@ -30,7 +30,9 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: "./Client/* ./Server/*"
+          source: |
+            ./Client/**
+            ./Server/**
           target: "/var/www/Yanotela"
           rm: true  # Supprime les anciens fichiers
 
