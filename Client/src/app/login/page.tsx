@@ -63,13 +63,13 @@ export default function Login() {
           <h1 className="text-3xl font-bold text-primary mb-2">
             Quel plaisir de vous revoir !
           </h1>
-          <p className="text-gray-600">
+          <p className="text-clrprincipal">
             Connectez-vous à votre compte Yanotela
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white p-8 rounded-xl shadow-lg">
+        <div className="bg-clrsecondaire p-8 rounded-xl shadow-lg">
           <LoginForm
             onSuccess={handleLoginSuccess}
             showTitle={false}

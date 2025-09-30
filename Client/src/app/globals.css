@@ -12,10 +12,12 @@
   --gris-clair: #727272;
   --rouge-fonce: #882626;
   --rouge-hover: #ff0000;
+  --rouge-clair:oklch(63.7% 0.237 25.331);
   --light: white;
   --dark:black;
   --lightNote: white;
   --textlightNote:oklch(55.1% 0.027 264.364);
+
 
   --font-family: "Gantari", Arial, Helvetica, sans-serif;
   --font-gantari: 'Gantari', sans-serif;
@@ -34,6 +36,8 @@
   --color-primary-hover: var(--rouge-hover);
   --color-rouge-hover: var(--rouge-hover);
   --color-element: var(--gris-clair);
+  --color-rouge-clair: var(--rouge-clair);
+
   
   --font-geo: var(--font-geologica);
   --font-gant: var(--font-gantari);

@@ -147,14 +147,13 @@ export default function RegisterForm({
 
   // Version complète pour les pages dédiées
   return (
-    <div className={`${className} ${!isInSidebar ? 'h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 text-clrprincipal' : 'space-y-4'}`}>
-      {!isInSidebar && <ReturnButton />}
-
+    <div className={`${className} ${!isInSidebar ? 'h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 relative text-clrprincipal' : 'space-y-4'}`}>
+      
       {showTitle && (
         <p className={`${isInSidebar ? 'text-2xl' : 'text-3xl'} font-bold text-primary mb-6 ${
           !isInSidebar ? 'text-center after:content-[\'\'] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8' : ''
         }`}>
-          {isInSidebar ? 'Créer un compte' : 'Bienvenue à bord 👋'}
+          {isInSidebar ? 'Créer un compte' : 'Bienvenue à bord'}
         </p>
       )}
 
@@ -195,7 +194,7 @@ export default function RegisterForm({
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className={`${isInSidebar ? 'w-full px-3 py-2 bg-clrsecondaire border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500'}`}
+              className={`${isInSidebar ? 'w-full px-3 py-2 bg-clrsecondaire rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500 border-primary border-2'}`}
             />
           </div>
 
@@ -212,7 +211,7 @@ export default function RegisterForm({
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500'}`}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
               />
             </div>
 
@@ -227,13 +226,13 @@ export default function RegisterForm({
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500'}`}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
               />
             </div>
           </div>
 
           {/* Email */}
-          <div className={`${isInSidebar ? 'w-full' : 'self-stretch flex flex-col justify-start items-start gap-2.5'}`}>
+          <div className={`${isInSidebar ? 'w-full ' : 'self-stretch flex flex-col justify-start items-start gap-2.5 '}`}>
             <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
               Email
             </p>
@@ -244,7 +243,7 @@ export default function RegisterForm({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500'}`}
+              className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
             />
           </div>
         </div>
@@ -265,7 +264,7 @@ export default function RegisterForm({
                 minLength={3}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 text-clrprincipal border bg-clrsecondaire border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 text-clrprincipal  bg-clrsecondaire border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent  "
                 placeholder="••••••••"
               />
               <input type="hidden" name="confirmPassword" value={password} />
@@ -315,7 +314,7 @@ export default function RegisterForm({
             <button
               type="button"
               onClick={onSwitchToLogin}
-              className="text-sm text-primary hover:underline"
+              className="text-sm text-rouge-clair hover:underline"
             >
                Se connecter
             </button>

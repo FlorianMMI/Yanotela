@@ -69,7 +69,7 @@ export default function ConfirmPassword({
             majuscule et un caractère spécial.
           </p>
         </div>
-        <div className="self-stretch p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center overflow-hidden">
+        <div className="self-stretch p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center overflow-hidden border-primary border-2">
           <input
             type={showPassword ? "text" : "password"}
             name="password"
@@ -78,7 +78,7 @@ export default function ConfirmPassword({
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
             disabled={disabled}
-            className="flex-1 bg-transparent text-clrprincipal text-sm font-normal outline-none placeholder-zinc-500 disabled:opacity-50"
+            className="flex-1 bg-transparent text-clrprincipal text-sm font-normal outline-none placeholder-zinc-500 disabled:opacity-50    "
           />
           <button
             type="button"
@@ -108,7 +108,7 @@ export default function ConfirmPassword({
         <p className={`text-red-500 text-xs font-light ${!passwordMismatch ? 'hidden' : ''}`}>
           Vos mots de passe ne correspondent pas.
         </p>
-        <div className="self-stretch p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center overflow-hidden">
+        <div className="self-stretch p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center overflow-hidden border-primary border-2">
           <input
             type={showConfirmPassword ? "text" : "password"}
             name="confirmPassword"
