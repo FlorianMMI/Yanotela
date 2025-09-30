@@ -48,11 +48,7 @@ export default function LoginForm({
       const result = await Login(loginData);
       
       if (result.success) {
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push('/notes');
-        }
+        onSuccess ? onSuccess() : router.push('/notes');
       } else {
         setError(result.error || 'Identifiants incorrects');
       }
@@ -63,9 +59,7 @@ export default function LoginForm({
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   return (
     <div className={className}>
@@ -149,9 +143,9 @@ export default function LoginForm({
           <Icon name="arrow-barre" className="text-white pointer-events-none" size={40} />
         </button>
 
-        {/* Séparateur et connexion Google - seulement sur page complète */}
+        {/* Connexion Google - seulement sur page complète */}
         {!isInSidebar && (
-          <div className="flex flex-col items-center gap-4 w-full">
+          <>
             <div className="flex items-center w-full gap-4">
               <div className="flex-1 h-px bg-gray-300"></div>
               <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
@@ -167,13 +161,13 @@ export default function LoginForm({
                 Se connecter avec Google
               </span>
             </button>
-          </div>
+          </>
         )}
 
         {/* Lien d'inscription */}
         {showRegisterLink && (
-          <div className={`${isInSidebar ? 'text-center mt-4' : 'text-center'}`}>
-            <div className="text-sm text-gray-600">
+          <div className="text-center mt-4">
+            <span className="text-sm text-gray-600">
               {isInSidebar ? 'Pas de compte ?' : 'Vous n\'avez pas de Compte ?'}{' '}
               <button
                 type="button"
@@ -182,7 +176,7 @@ export default function LoginForm({
               >
                 Inscrivez-vous
               </button>
-            </div>
+            </span>
           </div>
         )}
         
