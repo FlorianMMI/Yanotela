@@ -85,11 +85,12 @@ export default function Profil() {
 
     return (
         <>
-            <div className='py-4 flex flex-col items-center content-around h-full gap-20 bg-fondpage'>
+            <div className='py-4 flex flex-col items-center content-around h-full w-full gap-20 bg-fondpage'>
 
                 {/* Boutons settings et déconnexion alignés en haut */}
-                <div className="flex flex-row justify-between items-center w-full px-8 mb-6">
-                    <div className="flex items-center" title='Paramètres du compte'>
+                <div className="flex flex-row justify-end items-center w-full px-8 mb-6">
+
+                    {/* <div className="flex items-center" title='Paramètres du compte'>
                         <Image
                             src="/settings.svg"
                             alt="Logo"
@@ -97,7 +98,7 @@ export default function Profil() {
                             height={35}
                             className='cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
                         />
-                    </div>
+                    </div> */}
 
                     <div className="flex items-center hidden md:block" title='Me déconnecter'>
                         <Logout />
