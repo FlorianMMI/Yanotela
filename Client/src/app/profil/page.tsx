@@ -96,7 +96,7 @@ export default function Profil() {
                             size={35}
                             className='cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
                         />
-                    </div>
+                    </div> 
 
                     <div className=" items-center md:hidden flex" title='Me déconnecter'>
                         <Logout />
