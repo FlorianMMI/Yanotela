@@ -4,6 +4,8 @@ import React from 'react';
 import SideBar from '@/components/sideBar/sideBar';
 import Breadcrumb from '@/components/breadcrumb/Breadcrumb';
 import { useAuth } from '@/hooks/useAuth';
+import NoteHeader from '@/components/noteHeader/NoteHeader';
+import Icon from '@/ui/Icon';
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
@@ -12,11 +14,19 @@ interface DesktopLayoutProps {
 export default function DesktopLayout({ children }: DesktopLayoutProps) {
   const { isAuthenticated, loading } = useAuth();
 
+
+
   return (
     <>
-      {/* Mobile: comportement actuel */}
+      {/* Mobile: comportement actuel avec vérification d'auth */}
       <div className="md:hidden">
-        {children}
+        {loading ? (
+          <div className="h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          children
+        )}
       </div>
 
       {/* Desktop: nouvelle architecture */}
@@ -28,18 +38,17 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
         <div className="flex-1 flex flex-col ml-80">
           {/* Breadcrumb en haut */}
           <Breadcrumb />
+          
 
           {/* Zone de contenu */}
-          <main className="flex-1 overflow-auto bg-background">
+          <main className="flex-1 overflow-auto bg-background md:bg-deskbackground">
             {/* Si déconnecté, zone vide avec message */}
             {!loading && !isAuthenticated ? (
               <div className="h-full flex items-center justify-center">
                 <div className="text-center space-y-4">
                   <div className="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
                     <div className="w-12 h-12 text-gray-400">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H11V21H5V3H13V9H21Z" />
-                      </svg>
+                      <Icon name="files" size={48} />
                     </div>
                   </div>
                   <div>
@@ -54,10 +63,14 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
               </div>
             ) : (
               // Si connecté, afficher le contenu
+              
               <div className="h-full">
+                
                 {children}
               </div>
             )}
+
+            
           </main>
         </div>
       </div>

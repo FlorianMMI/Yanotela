@@ -17,9 +17,11 @@ const validateRegistration = [
   body("email").isEmail().withMessage("Email invalide"),
   body("password")
     .isLength({ min: 3 })
-    .withMessage("Le mot de passe doit avoir au moins 3 caractères"),
-  // .matches(/[0-9]/).withMessage('Le mot de passe doit contenir au moins un chiffre')
-  // .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Le mot de passe doit contenir au moins un caractère spécial')
+    .withMessage("Le mot de passe doit avoir au moins 3 caractères")
+    .matches(/[0-9]/)
+    .withMessage('Le mot de passe doit contenir au moins un chiffre')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/)
+    .withMessage('Le mot de passe doit contenir au moins un caractère spécial')
 ];
 
 const register = async (req, res) => {

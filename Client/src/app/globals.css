@@ -4,16 +4,20 @@
 
 :root {
   --background: #E9EBDB;
+  --deskbackground: #EDEDED;
   --foreground: #171717;
+  --clr-beige-foncer: #d5d7c3;
   --clr-gris-clair: #272727;
   --clr-rouge-fonce: #882626;
   --gris-clair: #727272;
   --rouge-fonce: #882626;
   --rouge-hover: #ff0000;
+  --rouge-clair:oklch(63.7% 0.237 25.331);
   --light: white;
   --dark:black;
   --lightNote: white;
   --textlightNote:oklch(55.1% 0.027 264.364);
+
 
   --font-family: "Gantari", Arial, Helvetica, sans-serif;
   --font-gantari: 'Gantari', sans-serif;
@@ -22,6 +26,8 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-deskbackground: var(--deskbackground);
+  --color-beige-foncer: var(--clr-beige-foncer);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-gantari);
   --font-mono: var(--font-geist-mono);
@@ -30,6 +36,8 @@
   --color-primary-hover: var(--rouge-hover);
   --color-rouge-hover: var(--rouge-hover);
   --color-element: var(--gris-clair);
+  --color-rouge-clair: var(--rouge-clair);
+
   
   --font-geo: var(--font-geologica);
   --font-gant: var(--font-gantari);
@@ -41,20 +49,21 @@
 }
 
 
-/* @media (prefers-color-scheme: dark) {
+ /* @media (prefers-color-scheme: dark) {
   :root {
-    --background: #171717;
+    --background: #2f2f2f;
+    --deskbackground: #474747;
+    --clr-beige-foncer: #1d1d1d;
     --light: black;
     --dark:white;
     --motif-opacity: 0.01;
     --lightNote: #1e1e1e;
     --textlightNote: white;
   }
-}   */
+}    */
 
 
 body {
-  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-gant);
   position: relative;

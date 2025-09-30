@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthState } from '@/hooks/useAuth';
+import Icons from '@/ui/Icon';
 
 interface NavigationSidebarProps {
   user: AuthState['user'];
@@ -34,28 +35,28 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
     {
       href: '/notes',
       label: 'Mes Notes',
-      icon: '/icons.svg',
-      isActive: pathname === '/notes' || pathname.startsWith('/notes/'),
+      icon: 'files',
+      isActive: pathname === '/notes',
     },
   ];
 
   return (
     <div className="h-full flex flex-col">
       {/* Header avec logo et utilisateur */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3 mb-4">
-          <Image
-            src="/logo.svg"
-            alt="Yanotela"
-            width={32}
-            height={32}
-            className="flex-shrink-0"
-          />
-          <span className="font-bold text-xl text-primary">Yanotela</span>
-        </div>
+      <div className="p-4 border-b border-gray-300">
+        <Link className="flex items-center h-24 justify-center" href="/">
+          <Icons
+          name="logo"
+          className="text-clrprincipal stroke-25"
+          size={180}
+          >
+          </Icons>
+
+          
+        </Link>
         
-        <div className="bg-background rounded-lg p-3">
-          <p className="text-sm font-medium text-gray-900">
+        <div className="bg-beige-foncer rounded-lg p-3">
+          <p className="text-sm font-medium text-clrprincipal">
             Bonjour, {user?.pseudo}
           </p>
           <p className="text-xs text-gray-500 truncate">
@@ -74,14 +75,12 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                   item.isActive
                     ? 'bg-primary text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    : 'text-clrprincipal hover:text-black bg-beige-foncer hover:bg-gray-100'
                 }`}
               >
-                <Image
-                  src={item.icon}
-                  alt=""
-                  width={20}
-                  height={20}
+                <Icons
+                  name={item.icon}
+                  size={20}
                   className={item.isActive ? 'filter brightness-0 invert' : ''}
                 />
                 <span className="font-medium">{item.label}</span>
@@ -92,16 +91,14 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
       </nav>
 
       {/* Footer avec déconnexion */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-300">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-clrprincipal hover:bg-gray-100 rounded-lg transition-colors hover:text-black cursor-pointer"
         >
-          <Image
-            src="/keyhole.svg"
-            alt=""
-            width={20}
-            height={20}
+          <Icons
+            name="exit"
+            size={40}
           />
           <span className="font-medium">Déconnexion</span>
         </button>

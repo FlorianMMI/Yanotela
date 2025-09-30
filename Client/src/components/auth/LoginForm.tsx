@@ -40,6 +40,8 @@ export default function LoginForm({
     const loginData = {
       identifiant: formData.get('identifiant') as string,
       password: formData.get('password') as string,
+      error: null as string | null,
+      errors: [] as Array<{ msg: string }>
     };
 
     try {
@@ -50,13 +52,11 @@ export default function LoginForm({
           onSuccess();
         } else {
           router.push('/notes');
-          router.refresh();
         }
       } else {
         setError(result.error || 'Identifiants incorrects');
       }
     } catch (error) {
-      console.error('Erreur de connexion:', error);
       setError('Erreur de connexion au serveur');
     } finally {
       setIsLoading(false);
@@ -77,9 +77,9 @@ export default function LoginForm({
         </p>
       )}
 
-      <form onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
+      <form role="form" onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
         {error && (
-          <div className="w-full p-2.5 bg-red-100 border-red-400 text-red-700 rounded-[10px] text-sm">
+          <div className="w-full p-2.5 bg-red-100 border-red-400 text-red-00 rounded-[10px] text-sm">
             {error}
           </div>
         )}
@@ -90,7 +90,7 @@ export default function LoginForm({
           </p>
         )}
         
-        <div data-property-1="Mail" className="w-full p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
+        <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
           <Icon name="at" className="text-zinc-500" size={20} />
           <input 
             type="text" 
@@ -102,7 +102,7 @@ export default function LoginForm({
           />
         </div>
         
-        <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center">
+        <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire border-primary border-2 rounded-[10px] flex justify-between items-center">
           <div className="flex justify-center items-center gap-2.5">
             <Icon name="keyhole" className="text-zinc-500" size={20} />
             <input 
@@ -132,7 +132,7 @@ export default function LoginForm({
           <button 
             type="button"
             onClick={onSwitchToForgot || (() => router.push('/forgot-password'))}
-            className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline text-sm font-normal font-gant cursor-pointer"
+            className="w-full justify-start text-start flex text-rouge-clair hover:text-primary-hover hover:underline text-sm font-normal font-gant cursor-pointer"
           >
             Mot de passe oublié ?
           </button>
@@ -163,7 +163,7 @@ export default function LoginForm({
               className="w-full p-2.5 bg-white border border-gray-300 rounded-[10px] flex justify-center items-center gap-3 hover:bg-gray-200 active:bg-gray-50 transition-colors cursor-pointer"
             >
               <Icon name="google" className="text-primary" size={20} />
-              <span className="text-gray-700 text-sm font-medium font-gant">
+              <span className="text-black text-sm font-medium font-gant">
                 Se connecter avec Google
               </span>
             </button>
@@ -173,18 +173,19 @@ export default function LoginForm({
         {/* Lien d'inscription */}
         {showRegisterLink && (
           <div className={`${isInSidebar ? 'text-center mt-4' : 'text-center'}`}>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-clrprincipal">
               {isInSidebar ? 'Pas de compte ?' : 'Vous n\'avez pas de Compte ?'}{' '}
               <button
                 type="button"
                 onClick={onSwitchToRegister || (() => router.push('/register'))}
-                className="text-primary hover:underline"
+                className="text-rouge-clair hover:underline"
               >
-                {isInSidebar ? 'S\'inscrire' : 'Inscrivez-vous'}
+                Inscrivez-vous
               </button>
             </div>
           </div>
         )}
+        
       </form>
     </div>
   );
