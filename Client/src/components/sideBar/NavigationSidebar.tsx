@@ -15,23 +15,6 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        router.push('/');
-        router.refresh();
-
-      }
-    } catch (error) {
-      console.error('Erreur de déconnexion:', error);
-    }
-  };
-
   const navItems = [
     {
       href: '/notes',
@@ -43,26 +26,44 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
 
   return (
     <div className="h-full flex flex-col">
+      
       {/* Header avec logo et utilisateur */}
       <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3 mb-4">
+        <div className="flex items-center justify-center space-x-3 mb-4">
           <Image
             src="/logo.svg"
             alt="Yanotela"
             width={180}
             height={80}
-            className="flex-shrink-0"
+            className="flex-shrink-0 cursor-pointer"
+            title='Retour à l`accueil'
           />
         </div>
 
-        <div className="bg-background rounded-lg p-3">
-          <p className="text-sm font-medium text-gray-900">
-            Bonjour, {user?.pseudo}
-          </p>
-          <p className="text-xs text-gray-500 truncate">
-            {user?.email}
-          </p>
-        </div>
+        <Link href="/profil">
+          <div className="bg-background rounded-lg p-3 cursor-pointer hover:bg-gray-100 hover:shadow-md transition-all duration-300 group border border-transparent hover:border-gray-200" title='Accéder à mon profil'>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors duration-300">
+                  Bonjour, {user?.pseudo}
+                </p>
+                <p className="text-xs text-gray-500 truncate group-hover:text-gray-600 transition-colors duration-300">
+                  {user?.email}
+                </p>
+              </div>
+              <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <Image
+                  src="/arrow-barre.svg"
+                  alt="Aller au profil"
+                  width={16}
+                  height={16}
+                  className="text-gray-400"
+                />
+              </div>
+            </div>
+          </div>
+        </Link>
+
       </div>
 
       {/* Navigation */}
@@ -76,6 +77,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
                     ? 'bg-primary text-white'
                     : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
+                title='Accéder à mes notes'
               >
                 <Icon
                   name="docs"
@@ -88,22 +90,6 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
           ))}
         </ul>
       </nav>
-
-      {/* Footer avec déconnexion */}
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-200 hover:shadow-md hover:text-gray-900 rounded-lg transition-all duration-200 cursor-pointer"
-        >
-          <Image
-        src="/keyhole.svg"
-        alt=""
-        width={20}
-        height={20}
-          />
-          <span className="font-medium">Déconnexion</span>
-        </button>
-      </div>
 
     </div>
   );

@@ -2,8 +2,8 @@
 
 import InfoProfil from '@/components/infoprofil/page'
 import Image from 'next/image'
-import { InfoUser} from '@/loader/loader'
-import { useEffect, useState } from 'react'
+import { GetNotes, InfoUser } from '@/loader/loader'
+import { useEffect, useState } from "react";
 import Logout from '@/ui/logout';
 import TotalNotes from '@/ui/note/totalNotes';
 
@@ -20,12 +20,13 @@ export default function Profil() {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [totalNotes, setTotalNotes] = useState<number | undefined>(undefined);
 
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
                 const response = await InfoUser();
-                
+
                 if (response.success && response.user) {
                     setUserInfo(response.user);
                 } else {
@@ -40,6 +41,21 @@ export default function Profil() {
         };
 
         fetchUserInfo();
+    }, []);
+
+    useEffect(() => {
+        async function fetchTotalNotes() {
+            try {
+                const { totalNotes } = await GetNotes();
+                console.log('Total notes fetched in Home page:', totalNotes);
+                setTotalNotes(totalNotes);
+            } catch (error) {
+                console.error('Error fetching total notes in Home page:', error);
+                setTotalNotes(0);
+            }
+        }
+
+        fetchTotalNotes();
     }, []);
 
     if (loading) {
@@ -63,24 +79,31 @@ export default function Profil() {
         );
     }
 
-    const displayName = userInfo?.prenom && userInfo?.nom 
-        ? `${userInfo.prenom} ${userInfo.nom}` 
+    const displayName = userInfo?.prenom && userInfo?.nom
+        ? `${userInfo.prenom} ${userInfo.nom}`
         : userInfo?.pseudo || 'Utilisateur';
 
     return (
         <>
-            <div className='flex justify-center flex-col min-h-screen bg-fondpage pt-4'>
+            <div className=' py-4 flex justify-center flex-col min-h-screen bg-fondpage'>
+
                 {/* Bouton settings aligné à gauche */}
-                <div className="px-8">
-                    <Image src="/settings.svg" alt="Logo" width={24} height={24} className='flex justify-start'/>
+                <div className="px-8" title='Paramètres du compte'>
+                    <Image
+                        src="/settings.svg"
+                        alt="Logo"
+                        width={35}
+                        height={35}
+                        className='flex justify-start cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
+                    />
                 </div>
-                
+
                 {/* Contenu centré */}
                 <div className="flex-1 flex flex-col justify-center">
                     {userInfo && (
-                        <InfoProfil 
+                        <InfoProfil
                             name={displayName}
-                            pseudo={userInfo.pseudo} 
+                            pseudo={userInfo.pseudo}
                             email={userInfo.email}
                         />
                     )}
@@ -88,14 +111,14 @@ export default function Profil() {
 
                 {/* Composant TotalNotes */}
                 <div className="flex justify-center pb-4">
-                    <TotalNotes totalNotes={userInfo?.noteCount} />
+                    <TotalNotes totalNotes={totalNotes} />
                 </div>
 
                 {/* Bouton logout en bas */}
                 <div className="pb-12 px-8">
                     <Logout />
                 </div>
-                
+
             </div>
         </>
     )

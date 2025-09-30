@@ -1,10 +1,29 @@
-﻿import ErrorFetch from "@/ui/note/errorFetch";
+﻿'use client';
+
+import ErrorFetch from "@/ui/note/errorFetch";
 import Image from "next/image";
 import Link from "next/link";
-
-import TotalNotes from "@/ui/note/totalNotes";
+import { useEffect, useState } from "react";
+import { GetNotes } from "@/loader/loader";
 
 export default function Home() {
+  const [totalNotes, setTotalNotes] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    async function fetchTotalNotes() {
+      try {
+        const { totalNotes } = await GetNotes();
+        console.log('Total notes fetched in Home page:', totalNotes);
+        setTotalNotes(totalNotes);
+      } catch (error) {
+        console.error('Error fetching total notes in Home page:', error);
+        setTotalNotes(0);
+      }
+    }
+
+    fetchTotalNotes();
+  }, []);
+
   return (
     
     <>
@@ -20,7 +39,6 @@ export default function Home() {
             Aller à la page d&apos;inscription
           </button>
         </Link>
-        <TotalNotes />
       </div>
     </>
   );

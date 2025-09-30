@@ -20,8 +20,11 @@ const prisma = new PrismaClient();
 export const noteController = {
 
     getNotes: async (req, res) => {
+        console.log('Session data:', req.session); // Debug log
+        
         // Vérifier l'authentification
         if (!req.session.userId) {
+            console.log('User not authenticated - session userId missing');
             return res.status(401).json({ message: 'Utilisateur non authentifié' });
         }
 
@@ -36,7 +39,9 @@ export const noteController = {
                 }
             });
 
-            res.status(200).json(notes);
+            const totalNotes = notes.length;
+
+            res.status(200).json({ notes, totalNotes });
         } catch (error) {
             res.status(500).json({ message: 'Erreur lors de la récupération des notes', error: error.message });
         }
@@ -89,7 +94,7 @@ export const noteController = {
             res.status(500).json({ message: 'Erreur lors de la création de la note', error: error.message });
         }
     },
-
+    
     getNoteById: async (req, res) => {
         const { id } = req.params;
         
@@ -107,7 +112,7 @@ export const noteController = {
             res.status(500).json({ message: 'Erreur lors de la récupération de la note', error: error.message });
         }
     },
-
+    
     updateNoteById: async (req, res) => {
         const { id } = req.params;
         const { Titre, Content } = req.body;

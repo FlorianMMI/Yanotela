@@ -1,41 +1,65 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence } from 'framer-motion';
 import { Logout as LogoutAPI } from '@/loader/loader';
+import LogoutConfirm from './logout-confirm';
 
 export default function Logout(){
     const router = useRouter();
+    const [showConfirm, setShowConfirm] = useState(false);
 
-    const handleLogout = async () => {
+    const handleLogoutClick = () => {
+        setShowConfirm(true);
+    };
+
+    const handleConfirmLogout = async () => {
         try {
             const response = await LogoutAPI();
             
             if (response.success) {
+                setShowConfirm(false);
                 router.push('/');
             } else {
                 console.error('Erreur de déconnexion:', response.error);
+                setShowConfirm(false);
             }
         } catch (error) {
             console.error('Erreur de déconnexion:', error);
+            setShowConfirm(false);
         }
+    };
+
+    const handleCancelLogout = () => {
+        setShowConfirm(false);
     };
 
     return (
         <>
-            <div className="p-2 rounded bg-primary border-gray-200">
+            <div className="w-full" title='Me déconnecter'>                
                 <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center space-x-3 px-4 py-3 text-left text-white hover:bg-gray-100 rounded-lg transition-colors"
+                    onClick={handleLogoutClick}
+                    className="w-full flex items-center justify-center space-x-3 px-6 py-4 bg-white text-gray-700 border border-gray-200 rounded-xl shadow-md hover:bg-red-50 hover:border-red-300 hover:text-red-700 hover:shadow-lg transition-all duration-300 cursor-pointer group"
                 >
                     <Image
                         src="/keyhole.svg"
-                        alt=""
-                        width={20}
-                        height={20}
+                        alt="Déconnexion"
+                        width={22}
+                        height={22}
+                        className="group-hover:filter group-hover:brightness-0 group-hover:sepia group-hover:hue-rotate-[340deg] group-hover:saturate-[2] transition-all duration-300"
                     />
-                    <span className="font-medium">Déconnexion</span>
+                    <span className="font-semibold text-lg">Déconnexion</span>
                 </button>
             </div>
+
+            <AnimatePresence>
+                {showConfirm && (
+                    <LogoutConfirm 
+                        onConfirm={handleConfirmLogout}
+                        onCancel={handleCancelLogout}
+                    />
+                )}
+            </AnimatePresence>
         </>
     );
 }

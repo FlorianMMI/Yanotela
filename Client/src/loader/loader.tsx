@@ -32,7 +32,7 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
     }
 }
 
-export async function GetNotes(): Promise<{ notes: Note[]; }> {
+export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
 
@@ -50,14 +50,16 @@ export async function GetNotes(): Promise<{ notes: Note[]; }> {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const notes = await response.json();
-        console.log('Notes from server:', notes);
+        const data = await response.json();
 
-        // // Calculate total notes based on the length of the notes array
-        // const totalNotes = Array.isArray(notes) ? notes.length : 0;
+        // Vérification que les données attendues sont présentes
+        if (!data.notes || typeof data.totalNotes === 'undefined') {
+            console.error('Invalid response format - missing notes or totalNotes:', data);
+            return { notes: [], totalNotes: 0 };
+        }
 
         // Transformation du JSON stringifié en objet lisible
-        for (const note of notes) {
+        for (const note of data.notes) {
             try {
                 const parsedContent = JSON.parse(note.Content);
                 if (typeof parsedContent === 'object' && parsedContent !== null) {
@@ -87,10 +89,10 @@ export async function GetNotes(): Promise<{ notes: Note[]; }> {
             }
         }
 
-        return { notes };
+        return { notes: data.notes, totalNotes: data.totalNotes };
     } catch (error) {
         console.error("Error fetching notes:", error);
-        return { notes: [] };
+        return { notes: [], totalNotes: 0 };
     }
 }
 
