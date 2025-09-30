@@ -35,9 +35,8 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: "Server/*"  # Copie uniquement le dossier Server
+          source: "/*"
           target: "/var/www/Yanotela"
-          strip_components: 1  # Retire "Server/" du chemin
           rm: true  # Supprime les anciens fichiers
       
       - name: Restart PM2 application
