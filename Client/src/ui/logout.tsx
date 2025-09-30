@@ -20,6 +20,7 @@ export default function Logout(){
             if (response.success) {
                 setShowConfirm(false);
                 router.push('/');
+                router.refresh();
             } else {
                 console.error('Erreur de déconnexion:', response.error);
                 setShowConfirm(false);
@@ -39,7 +40,7 @@ export default function Logout(){
             <div className="w-full" title='Me déconnecter'>                
                 <button
                     onClick={handleLogoutClick}
-                    className="w-full flex items-center justify-center space-x-3 px-6 py-4 bg-white text-gray-700 border border-gray-200 rounded-xl shadow-md hover:bg-red-50 hover:border-red-300 hover:text-red-700 hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                    className="w-full flex items-center justify-center space-x-3 p-4 bg-white text-gray-700 border border-gray-200 rounded-xl shadow-md hover:bg-red-50 hover:border-red-300 hover:text-red-700 hover:shadow-lg transition-all duration-300 cursor-pointer group"
                 >
                     <Image
                         src="/keyhole.svg"
@@ -48,7 +49,7 @@ export default function Logout(){
                         height={22}
                         className="group-hover:filter group-hover:brightness-0 group-hover:sepia group-hover:hue-rotate-[340deg] group-hover:saturate-[2] transition-all duration-300"
                     />
-                    <span className="font-semibold text-lg">Déconnexion</span>
+                    <span className="font-normal text-lg">Déconnexion</span>
                 </button>
             </div>
 

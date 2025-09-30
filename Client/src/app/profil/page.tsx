@@ -85,21 +85,28 @@ export default function Profil() {
 
     return (
         <>
-            <div className=' py-4 flex justify-center flex-col min-h-screen bg-fondpage'>
+            <div className='py-4 flex flex-col items-center content-around h-full gap-20 bg-fondpage'>
 
-                {/* Bouton settings aligné à gauche */}
-                <div className="px-8" title='Paramètres du compte'>
-                    <Image
-                        src="/settings.svg"
-                        alt="Logo"
-                        width={35}
-                        height={35}
-                        className='flex justify-start cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
-                    />
+                {/* Boutons settings et déconnexion alignés en haut */}
+                <div className="flex flex-row justify-between items-center w-full px-8 mb-6">
+                    <div className="flex items-center" title='Paramètres du compte'>
+                        <Image
+                            src="/settings.svg"
+                            alt="Logo"
+                            width={35}
+                            height={35}
+                            className='cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
+                        />
+                    </div>
+
+                    <div className="flex items-center hidden md:block" title='Me déconnecter'>
+                        <Logout />
+                    </div>
+
                 </div>
 
-                {/* Contenu centré */}
-                <div className="flex-1 flex flex-col justify-center">
+                {/* Contenu centré et réparti */}
+                <div className="flex-1 flex flex-col justify-evenly items-center text-center w-full">
                     {userInfo && (
                         <InfoProfil
                             name={displayName}
@@ -107,15 +114,11 @@ export default function Profil() {
                             email={userInfo.email}
                         />
                     )}
-                </div>
-
-                {/* Composant TotalNotes */}
-                <div className="flex justify-center pb-4">
                     <TotalNotes totalNotes={totalNotes} />
                 </div>
 
-                {/* Bouton logout en bas */}
-                <div className="pb-12 px-8">
+                {/* Bouton déconnexion mobile en bas */}
+                <div className="flex items-center md:hidden w-full px-8 mt-auto" title='Me déconnecter'>
                     <Logout />
                 </div>
 
