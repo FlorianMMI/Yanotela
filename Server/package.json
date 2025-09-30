@@ -11,7 +11,7 @@
     "test:notes": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/notes/",
     "test:bdd": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/bdd/",
     "test": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/",
-    "dev": "nodemon index.js",
+    "dev": "node index.js",
     "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch"
   },
   "dependencies": {

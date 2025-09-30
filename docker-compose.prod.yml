@@ -1,5 +1,4 @@
 # Docker Compose pour l'environnement Production
-version: '3.8'
 
 services:
   db-prod:

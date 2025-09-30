@@ -40,6 +40,8 @@ export default function LoginForm({
     const loginData = {
       identifiant: formData.get('identifiant') as string,
       password: formData.get('password') as string,
+      error: null as string | null,
+      errors: [] as Array<{ msg: string }>
     };
 
     try {
@@ -50,13 +52,11 @@ export default function LoginForm({
           onSuccess();
         } else {
           router.push('/notes');
-          router.refresh();
         }
       } else {
         setError(result.error || 'Identifiants incorrects');
       }
     } catch (error) {
-      console.error('Erreur de connexion:', error);
       setError('Erreur de connexion au serveur');
     } finally {
       setIsLoading(false);

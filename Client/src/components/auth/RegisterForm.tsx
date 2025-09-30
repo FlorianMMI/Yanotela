@@ -50,8 +50,10 @@ export default function RegisterForm({
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
 
-    // Vérification que les mots de passe correspondent (seulement si pas dans la sidebar)
-    if (!isInSidebar && password !== confirmPassword) {
+    // Critères de validation du mot de passe
+
+    // Vérification que les mots de passe correspondent
+    if (password !== confirmPassword) {
       setError("Les mots de passe ne correspondent pas");
       setIsLoading(false);
       return;
@@ -90,20 +92,23 @@ export default function RegisterForm({
 
   // Vérification de tous les champs pour activer/désactiver le submit
   useEffect(() => {
-    if (isInSidebar) {
-      // Pour la sidebar, pas besoin de confirmPassword
-      if (username && email && firstName && lastName && password) {
+    if (username && email && firstName && lastName && password && confirmPassword) {
+      const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_\-\.]).+$/;
+
+      // Si les mots de passe ne correspondent pas
+      if (password !== confirmPassword) {
+        setIsFormValid(false);
+        return;
+      }
+
+      // On vérifie les critères du mot de passe
+      if (passwordCriteria.test(password)) {
         setIsFormValid(true);
       } else {
         setIsFormValid(false);
       }
     } else {
-      // Pour la page complète, avec confirmPassword
-      if (username && email && firstName && lastName && password && confirmPassword) {
-        setIsFormValid(true);
-      } else {
-        setIsFormValid(false);
-      }
+      setIsFormValid(false);
     }
   }, [
     username,
@@ -112,7 +117,6 @@ export default function RegisterForm({
     lastName,
     password,
     confirmPassword,
-    isInSidebar,
   ]);
 
   // Version simplifiée pour la sidebar (juste un lien)
@@ -247,39 +251,14 @@ export default function RegisterForm({
             />
           </div>
         </div>
-
-        {/* Mot de passe et confirmation */}
-        {isInSidebar ? (
-          // Version simplifiée pour la sidebar
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-clrprincipal mb-1">
-                Mot de passe
-              </label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                required
-                minLength={3}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 text-clrprincipal  bg-clrsecondaire border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent  "
-                placeholder="••••••••"
-              />
-              <input type="hidden" name="confirmPassword" value={password} />
-            </div>
-          </div>
-        ) : (
-          // Version complète avec ConfirmPassword
-          <ConfirmPassword
-            password={password}
-            confirmPassword={confirmPassword}
-            onPasswordChange={setPassword}
-            onConfirmPasswordChange={setConfirmPassword}
-            disabled={isLoading}
-          />
-        )}
+        
+        <ConfirmPassword
+          password={password}
+          confirmPassword={confirmPassword}
+          onPasswordChange={setPassword}
+          onConfirmPasswordChange={setConfirmPassword}
+          disabled={isLoading}
+        />
 
         <button
           type="submit"
