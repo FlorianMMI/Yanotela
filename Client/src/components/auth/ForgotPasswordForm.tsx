@@ -79,7 +79,7 @@ export default function ForgotPasswordForm({
         </div>
       )}
 
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+      <form className="mt-8 space-y-6" onSubmit={handleSubmit} role="form">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             Adresse email
