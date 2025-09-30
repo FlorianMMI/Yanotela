@@ -34,7 +34,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
           <div className="bg-background rounded-lg p-3 cursor-pointer hover:bg-gray-100 hover:shadow-md transition-all duration-300 group border border-transparent hover:border-gray-200" title='Accéder à mon profil'>
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors duration-300">
+                <p className="text-sm font-medium text-clrprincipal group-hover:text-primary transition-colors duration-300">
                   Bonjour, {user?.pseudo}
                 </p>
                 <p className="text-xs text-gray-500 truncate group-hover:text-gray-600 transition-colors duration-300">
@@ -42,12 +42,10 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
                 </p>
               </div>
               <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <Image
-                  src="/arrow-barre.svg"
-                  alt="Aller au profil"
-                  width={16}
-                  height={16}
-                  className="text-gray-400"
+                <Icon
+                  name="arrow-barre"
+                  size={40}
+                  className="text-clrsecondaire"
                 />
               </div>
             </div>

@@ -6,6 +6,7 @@ import { GetNotes, InfoUser } from '@/loader/loader'
 import { useEffect, useState } from "react";
 import Logout from '@/ui/logout';
 import TotalNotes from '@/ui/note/totalNotes';
+import Icons from '@/ui/Icon';
 
 interface UserInfo {
     id: number;
@@ -85,28 +86,26 @@ export default function Profil() {
 
     return (
         <>
-            <div className='py-4 flex flex-col items-center content-around h-full gap-20 bg-fondpage'>
+            <div className='py-4 flex flex-col items-center justify-start h-full  bg-fondpage'>
 
                 {/* Boutons settings et déconnexion alignés en haut */}
-                <div className="flex flex-row justify-between items-center w-full px-8 mb-6">
-                    <div className="flex items-center" title='Paramètres du compte'>
-                        <Image
-                            src="/settings.svg"
-                            alt="Logo"
-                            width={35}
-                            height={35}
+                <div className="flex flex-row justify-between items-center w-full px-8">
+                    <div className="flex items-center hidden" title='Paramètres du compte'>
+                        <Icons
+                            name="settings"
+                            size={35}
                             className='cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
                         />
                     </div>
 
-                    <div className="flex items-center hidden md:block" title='Me déconnecter'>
+                    <div className=" items-center md:hidden flex" title='Me déconnecter'>
                         <Logout />
                     </div>
 
                 </div>
 
                 {/* Contenu centré et réparti */}
-                <div className="flex-1 flex flex-col justify-evenly items-center text-center w-full">
+                <div className="flex-1 flex flex-col justify-start items-center text-center gap-20 w-full h-full">
                     {userInfo && (
                         <InfoProfil
                             name={displayName}
@@ -118,7 +117,7 @@ export default function Profil() {
                 </div>
 
                 {/* Bouton déconnexion mobile en bas */}
-                <div className="flex items-center md:hidden w-full px-8 mt-auto" title='Me déconnecter'>
+                <div className="flex items-center md:hidden w-full px-8 " title='Me déconnecter'>
                     <Logout />
                 </div>
 
