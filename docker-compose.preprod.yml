@@ -38,7 +38,7 @@ services:
       dockerfile: Dockerfile
     container_name: yanotela-backend-local
     ports:
-      - "8081:3001"
+      - "3001:3001"
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://yanotela_local:yanotela_local_2024@db:5432/yanotela_local
@@ -65,10 +65,10 @@ services:
       dockerfile: Dockerfile
     container_name: yanotela-frontend-local
     ports:
-      - "8080:3000"
+      - "3000:3000"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:8081
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
     volumes:
       # Mount source code for hot reload
       - ./Client/src:/app/src:ro
