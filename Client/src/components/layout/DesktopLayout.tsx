@@ -18,9 +18,15 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
 
   return (
     <>
-      {/* Mobile: comportement actuel */}
+      {/* Mobile: comportement actuel avec vérification d'auth */}
       <div className="md:hidden">
-        {children}
+        {loading ? (
+          <div className="h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          children
+        )}
       </div>
 
       {/* Desktop: nouvelle architecture */}
