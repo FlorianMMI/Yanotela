@@ -76,7 +76,7 @@ export default function LoginForm({
         </p>
       )}
 
-      <form onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
+      <form role="form" onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
         {error && (
           <div className="w-full p-2.5 bg-red-100 border-red-400 text-red-700 rounded-[10px] text-sm">
             {error}
@@ -162,7 +162,7 @@ export default function LoginForm({
               className="w-full p-2.5 bg-white border border-gray-300 rounded-[10px] flex justify-center items-center gap-3 hover:bg-gray-200 active:bg-gray-50 transition-colors cursor-pointer"
             >
               <Icon name="google" className="text-primary" size={20} />
-              <span className="text-gray-700 text-sm font-medium font-gant">
+              <span className="text-clrprincipal text-sm font-medium font-gant">
                 Se connecter avec Google
               </span>
             </button>
@@ -179,11 +179,12 @@ export default function LoginForm({
                 onClick={onSwitchToRegister || (() => router.push('/register'))}
                 className="text-primary hover:underline"
               >
-                {isInSidebar ? 'S\'inscrire' : 'Inscrivez-vous'}
+                Inscrivez-vous
               </button>
             </div>
           </div>
         )}
+        
       </form>
     </div>
   );

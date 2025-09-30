@@ -1,5 +1,6 @@
 ﻿'use client';
 
+import React from "react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import LoginForm from '@/components/auth/LoginForm';
@@ -77,10 +78,12 @@ export default function Login() {
           />
         </div>
 
-        {/* Register Link */}
+        {/* Retiré car invisible sur desktop et en doublon sur mobile */}
+        {/* En plus ça fait bugger les tests */}
+        {/* Register Link
         <div className="text-center">
           <p className="text-gray-600 text-sm">
-            Vous n'avez pas de compte ?{' '}
+            Vous n&apos;avez pas de compte ?{' '}
             <Link
               href="/register"
               className="text-primary hover:text-rouge-hover font-medium"
@@ -88,7 +91,7 @@ export default function Login() {
               Inscrivez-vous
             </Link>
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

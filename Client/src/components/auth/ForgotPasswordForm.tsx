@@ -70,7 +70,7 @@ export default function ForgotPasswordForm({
     <div className={`max-w-md w-full space-y-8 ${className}`}>
       {showTitle && (
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-3xl font-extrabold text-clrprincipal">
             Réinitialisation du mot de passe
           </h2>
           <p className="mt-2 text-sm text-gray-600">
@@ -79,7 +79,7 @@ export default function ForgotPasswordForm({
         </div>
       )}
 
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+      <form className="mt-8 space-y-6" onSubmit={handleSubmit} role="form">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             Adresse email
