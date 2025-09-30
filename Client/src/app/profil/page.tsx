@@ -69,14 +69,14 @@ export default function Profil() {
 
     return (
         <>
-            <div className='flex justify-start flex-col min-h-screen bg-fondpage pt-12'>
+            <div className='flex justify-center flex-col min-h-screen bg-fondpage pt-4'>
                 {/* Bouton settings aligné à gauche */}
-                <div className="px-8 mb-4">
+                <div className="px-8">
                     <Image src="/settings.svg" alt="Logo" width={24} height={24} className='flex justify-start'/>
                 </div>
                 
                 {/* Contenu centré */}
-                <div className="flex-1 flex flex-col items-center justify-center">
+                <div className="flex-1 flex flex-col justify-center">
                     {userInfo && (
                         <InfoProfil 
                             name={displayName}
