@@ -23,6 +23,11 @@ jobs:
           npm install
           npx prisma generate
 
+      - name: Verify build output
+        run: |
+          ls -la Client
+          ls -la Server
+
       - name: Deploy to AWS EC2
         uses: appleboy/scp-action@master
         with:
@@ -31,10 +36,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: |
-            ./Client/**
-            ./Server/**
+            Client/**
+            Server/**
           target: "/var/www/Yanotela"
-          rm: true  # Supprime les anciens fichiers
+          rm: true  # Remove old files before uploading
 
       - name: Restart PM2 application
         uses: appleboy/ssh-action@master
