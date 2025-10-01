@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
@@ -20,7 +21,7 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
           routes: {
             current: '/notes',
             left: '/profil',    // Swipe droite va vers profil
-            right: '/profil'    // Swipe gauche va vers profil aussi (seule autre page)
+            right: '/profil'    // Swipe gauche va vers profil
           }
         };
       case '/profil':
@@ -28,7 +29,7 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
           routes: {
             current: '/profil',
             left: '/notes',     // Swipe droite va vers notes
-            right: '/notes'     // Swipe gauche va vers notes aussi
+            right: '/notes'     // Swipe gauche va vers notes
           }
         };
       default:
@@ -43,6 +44,13 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
       routes: { current: pathname, left: '', right: '' }
     }
   );
+
+  console.log('SwipeNavigationWrapper render:', { 
+    pathname, 
+    swipeConfig: !!swipeConfig, 
+    isMobile, 
+    hasHandlers: Object.keys(swipeHandlers).length > 0 
+  });
 
   // Si pas de configuration de swipe ou pas sur mobile, renvoie juste les children
   if (!swipeConfig || !isMobile) {
@@ -67,8 +75,8 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
       {isMobile && (
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
           <div className="flex items-center gap-3">
-            {/* Bouton Profil */}
-                        <motion.div 
+            {/* Indicateur Profil */}
+            <motion.div 
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 pathname === '/profil' 
                   ? 'bg-primary text-white' 
@@ -81,10 +89,9 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
               }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              
             </motion.div>
             
-            {/* Bouton Notes */}
+            {/* Indicateur Notes */}
             <motion.div 
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 pathname === '/notes' 
@@ -98,19 +105,7 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
               }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-            
             </motion.div>
-            
-            {/* Placeholder pour un 3ème bouton si nécessaire plus tard */}
-            {/* 
-            <div className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              pathname === '/autre' 
-                ? 'bg-rouge-fonce text-white' 
-                : 'bg-rouge-fonce/30 text-rouge-fonce'
-            }`}>
-              Autre
-            </div>
-            */}
           </div>
         </div>
       )}

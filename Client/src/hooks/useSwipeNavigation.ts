@@ -25,18 +25,16 @@ export const useSwipeNavigation = (config: SwipeConfig) => {
   const minSwipeDistance = config.minSwipeDistance || 50;
   const maxVerticalDistance = config.maxVerticalDistance || 100;
 
-  // Détection mobile vs desktop
+  // Détection mobile vs desktop - Version simplifiée pour tester
   useEffect(() => {
     const checkIsMobile = () => {
-      const userAgent = navigator.userAgent;
-      const isTouchDevice = 'ontouchstart' in window;
       const hasSmallScreen = window.innerWidth <= 768;
+      const isTouchDevice = 'ontouchstart' in window;
       
-      // Détection des appareils mobiles par user agent
-      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-      const isMobileUA = mobileRegex.test(userAgent);
-      
-      setIsMobile(isMobileUA || (isTouchDevice && hasSmallScreen));
+      // Pour les tests, on active si écran petit OU device tactile
+      const mobile = hasSmallScreen || isTouchDevice;
+      console.log('Mobile detection:', { hasSmallScreen, isTouchDevice, mobile, width: window.innerWidth });
+      setIsMobile(mobile);
     };
 
     checkIsMobile();
@@ -54,6 +52,7 @@ export const useSwipeNavigation = (config: SwipeConfig) => {
       x: touch.clientX,
       y: touch.clientY
     });
+    console.log('Touch start:', { x: touch.clientX, y: touch.clientY });
   }, [isMobile]);
 
   const onTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
@@ -75,12 +74,25 @@ export const useSwipeNavigation = (config: SwipeConfig) => {
     const isRightSwipe = distanceX < -minSwipeDistance;
     const isValidSwipe = distanceY < maxVerticalDistance;
 
+    console.log('Swipe detection:', {
+      distanceX,
+      distanceY,
+      isLeftSwipe,
+      isRightSwipe,
+      isValidSwipe,
+      minSwipeDistance,
+      maxVerticalDistance,
+      routes: config.routes
+    });
+
     if (isValidSwipe) {
       if (isLeftSwipe && config.routes.right) {
         // Swipe vers la gauche -> aller à la route de droite
+        console.log('Navigating right to:', config.routes.right);
         router.push(config.routes.right);
       } else if (isRightSwipe && config.routes.left) {
         // Swipe vers la droite -> aller à la route de gauche
+        console.log('Navigating left to:', config.routes.left);
         router.push(config.routes.left);
       }
     }
@@ -96,6 +108,8 @@ export const useSwipeNavigation = (config: SwipeConfig) => {
     onTouchMove,
     onTouchEnd
   } : {};
+
+  console.log('Swipe handlers:', { isMobile, hasHandlers: Object.keys(swipeHandlers).length > 0 });
 
   return {
     isMobile,

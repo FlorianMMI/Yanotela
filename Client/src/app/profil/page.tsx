@@ -1,5 +1,5 @@
 'use client';
-
+import React from 'react';
 import InfoProfil from '@/components/infoprofil/page'
 import Image from 'next/image'
 import { GetNotes, InfoUser } from '@/loader/loader'
