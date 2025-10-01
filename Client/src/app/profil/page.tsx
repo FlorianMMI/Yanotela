@@ -86,19 +86,20 @@ export default function Profil() {
 
     return (
         <>
-            <div className='py-4 flex flex-col items-center justify-start h-full  bg-fondpage'>
+            <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
 
                 {/* Boutons settings et déconnexion alignés en haut */}
                 <div className="flex flex-row justify-between items-center w-full px-8">
-                    <div className="flex items-center hidden" title='Paramètres du compte'>
+
+                    <div className="flex items-center" title='Paramètres du compte'>
                         <Icons
                             name="settings"
                             size={35}
                             className='cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
                         />
-                    </div> 
+                    </div>
 
-                    <div className=" items-center md:hidden flex" title='Me déconnecter'>
+                    <div className=" items-center hidden md:flex" title='Me déconnecter'>
                         <Logout />
                     </div>
 
@@ -114,12 +115,14 @@ export default function Profil() {
                         />
                     )}
                     <TotalNotes totalNotes={totalNotes} />
+
+                    {/* Bouton déconnexion mobile en bas */}
+                    <div className="flex items-center md:hidden w-full px-8 " title='Me déconnecter'>
+                        <Logout />
+                    </div>
                 </div>
 
-                {/* Bouton déconnexion mobile en bas */}
-                <div className="flex items-center md:hidden w-full px-8 " title='Me déconnecter'>
-                    <Logout />
-                </div>
+
 
             </div>
         </>

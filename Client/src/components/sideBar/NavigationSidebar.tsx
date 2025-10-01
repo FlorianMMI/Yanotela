@@ -86,17 +86,16 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
       </nav>
 
 
-      <div className="flex items-center justify-center space-x-3 mb-4">
-        <Image
-          src="/logo.svg"
-          alt="Yanotela"
-          width={180}
-          height={80}
-          className="flex-shrink-0 cursor-pointer"
-          title='Retour à l`accueil'
-        />
-
-      </div>
+      <Link className='h-32 flex justify-center items-center overflow-hidden '
+        href="/"
+        title='retour à l`accueil'
+      >
+          <Icon
+          name="logo"
+          className="text-clrprincipal stroke-25"
+          size={200}
+          />
+      </Link>
 
     </div>
   );
