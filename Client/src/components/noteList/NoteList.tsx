@@ -34,7 +34,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
   };
 
   return (
-    <main className="p-4 md:pl-25 md:pr-25 md:pt-8">
+    <main className="p-4">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
 
         {/* Add Note Button */}

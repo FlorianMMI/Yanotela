@@ -190,7 +190,7 @@ export default function ResetPasswordForm({
           <button
             type="button"
             onClick={() => router.push('/login')}
-            className="text-sm text-primary hover:text-primary/80"
+            className="text-sm text-primary hover:text-primary-hover hover:underline cursor-pointer"
           >
             Retour à la connexion
           </button>

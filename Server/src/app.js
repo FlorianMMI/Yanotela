@@ -7,6 +7,7 @@ import sessionMiddleware from './config/sessionConfig.js';
 import {corsConfig} from './config/corsConfig.js';
 import authRoutes from './routes/authRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import helmet from 'helmet';
 
 
@@ -26,6 +27,7 @@ app.use(express.json());
 // Routes
 app.use('/', authRoutes);
 app.use('/note', noteRoutes);
+app.use('/user', userRoutes);
 
 // Route de health check pour Docker
 app.get('/health', (req, res) => {
