@@ -18,21 +18,16 @@ export default function Login() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log('Vérification de l\'authentification...');
         const res = await fetch('http://localhost:3001/auth/check', {
           method: 'GET',
           credentials: 'include',
         });
 
-        console.log('Réponse du serveur:', res.status, res.ok);
-
         if (res.ok) {
           const data = await res.json();
-          console.log('Données reçues:', data);
 
           // Vérifier les deux formats possibles de la réponse
           if (data.authenticated || data.isAuthenticated) {
-            console.log('Utilisateur authentifié, redirection vers /');
             router.push('/');
             return;
           }

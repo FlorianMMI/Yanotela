@@ -86,7 +86,7 @@ export default function Breadcrumb() {
           });
           
           if (success) {
-            console.log('Titre sauvegardé:', newTitle);
+            // Optionnel: confirmer la sauvegarde
           } else {
             console.error('Échec de la sauvegarde du titre');
           }

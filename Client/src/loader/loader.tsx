@@ -24,7 +24,6 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
         }
 
         const data = await response.json();
-        console.log("Réponse de l'API :", data);
         return { note: data.note, redirectUrl: data.redirectUrl };
     } catch (error) {
         console.error("Error creating note:", error);
@@ -35,8 +34,6 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
 export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-
-        console.log('API URL for GetNotes:', apiUrl); // Pour debug
 
         const response = await fetch(`${apiUrl}/note/get`, {
             method: "GET",
@@ -100,7 +97,6 @@ export async function GetNoteById(id: string): Promise<Note | null> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        console.log('API URL for GetNoteById:', apiUrl); // Pour debug
         const response = await fetch(`${apiUrl}/note/get/${id}`, {
             method: "GET",
             headers: {
@@ -112,7 +108,6 @@ export async function GetNoteById(id: string): Promise<Note | null> {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const note = await response.json();
-        console.log('Note from server:', note);
         return note;
     } catch (error) {
         console.error("Error fetching note by ID:", error);
@@ -124,7 +119,6 @@ export async function SaveNote(id: string, noteData: Partial<Note>): Promise<boo
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        console.log('API URL for SaveNote:', apiUrl);
         const response = await fetch(`${apiUrl}/note/update/${id}`, {
             method: "POST",
             headers: {
@@ -341,11 +335,9 @@ interface InfoUserResponse {
 }
 
 export async function InfoUser(): Promise<InfoUserResponse> {
-    console.log('🔍 InfoUser: Début de la requête');
     
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        console.log('🔍 InfoUser: URL API:', apiUrl);
         
         const response = await fetch(`${apiUrl}/user/info`, {
             method: 'GET',
@@ -355,11 +347,8 @@ export async function InfoUser(): Promise<InfoUserResponse> {
             credentials: 'include',
         });
 
-        console.log('🔍 InfoUser: Statut de la réponse:', response.status);
-
         if (response.ok) {
             const userData = await response.json();
-            console.log('🔍 InfoUser: Données reçues:', userData);
             return { success: true, message: 'Informations utilisateur récupérées', user: userData };
         } else {
             const errorData = await response.json().catch(() => ({}));

@@ -21,8 +21,6 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
   const handleCreateNote = async () => {
     const { note, redirectUrl } = await CreateNote();
     
-    console.log('Newly created note:', note);
-
     if (note && redirectUrl) {
       if (onNoteCreated) {
         onNoteCreated(); // Déclencher le refresh des notes

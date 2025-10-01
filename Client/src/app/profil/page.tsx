@@ -48,7 +48,6 @@ export default function Profil() {
         async function fetchTotalNotes() {
             try {
                 const { totalNotes } = await GetNotes();
-                console.log('Total notes fetched in Home page:', totalNotes);
                 setTotalNotes(totalNotes);
             } catch (error) {
                 console.error('Error fetching total notes in Home page:', error);

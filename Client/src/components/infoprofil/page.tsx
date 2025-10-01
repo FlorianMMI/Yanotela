@@ -8,7 +8,6 @@ interface Props {
 }
 
 export default function Infoprofil(Props: Props) {
-    console.log(Props);
     return (
         <>
             <section className="flex flex-col items-center gap-4 p-6 rounded-md w-fit h-fit mx-auto mt-10">

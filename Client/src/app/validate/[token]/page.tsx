@@ -23,7 +23,6 @@ export default function ValidatePage() {
       }
 
       try {
-        console.log('Tentative de validation avec token:', token);
         
         // Appeler l'API de validation du backend
         const response = await fetch(`http://localhost:3001/validate/${token}`, {
@@ -31,10 +30,7 @@ export default function ValidatePage() {
           credentials: 'include', // Important pour les sessions
         });
 
-        console.log('Réponse du serveur:', response.status, response.statusText);
-        
         const data = await response.json();
-        console.log('Données reçues:', data);
 
         if (response.ok && data.success) {
           setStatus('success');

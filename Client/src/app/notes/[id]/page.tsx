@@ -67,7 +67,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     const fetchNote = async () => {
       // Récupération de l'ID depuis les params unwrappés (garder comme string)
       const noteId = id;
-      console.log("Fetching note with ID:", noteId);
 
       if (noteId) {
         const note = await GetNoteById(noteId);
@@ -166,7 +165,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     function saveContent(editorState: EditorState) {
       // Call toJSON on the EditorState object, which produces a serialization safe string
       const editorStateJSON = editorState.toJSON();
-      console.log("Editor State JSON:", editorStateJSON);
       // However, we still have a JavaScript object, so we need to convert it to an actual string with JSON.stringify
       setEditorContent(JSON.stringify(editorStateJSON));
       uploadContent(id, noteTitle, JSON.stringify(editorStateJSON));

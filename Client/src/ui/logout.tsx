@@ -5,8 +5,12 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { Logout as LogoutAPI } from '@/loader/loader';
 import LogoutConfirm from './logout-confirm';
+import Icon from './Icon';
+
 
 export default function Logout(){
+
+    
     const router = useRouter();
     const [showConfirm, setShowConfirm] = useState(false);
 
