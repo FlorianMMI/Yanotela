@@ -102,7 +102,9 @@ export default function LoginForm({
           />
         </div>
         
+
         <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire border-primary border-2 rounded-[10px] flex justify-between items-center">
+
           <div className="flex justify-center items-center gap-2.5">
             <Icon name="keyhole" className="text-zinc-500" size={20} />
             <input 
@@ -132,6 +134,7 @@ export default function LoginForm({
           <button 
             type="button"
             onClick={onSwitchToForgot || (() => router.push('/forgot-password'))}
+
             className="w-full justify-start text-start flex text-rouge-clair hover:text-primary-hover hover:underline text-sm font-normal font-gant cursor-pointer"
           >
             Mot de passe oublié ?
@@ -178,7 +181,9 @@ export default function LoginForm({
               <button
                 type="button"
                 onClick={onSwitchToRegister || (() => router.push('/register'))}
+
                 className="text-rouge-clair hover:underline"
+
               >
                 Inscrivez-vous
               </button>

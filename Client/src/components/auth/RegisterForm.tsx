@@ -7,6 +7,8 @@ import Icon from '@/ui/Icon';
 import ReturnButton from '@/ui/returnButton';
 import ConfirmPassword from '@/ui/confirm-password';
 import { Register } from '@/loader/loader';
+import FormField from '@/ui/form/FormField';
+import FormMessage from '@/ui/form/FormMessage';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -165,20 +167,12 @@ export default function RegisterForm({
         onSubmit={handleSubmit}
         className={`${isInSidebar ? 'space-y-4' : 'flex flex-col justify-start items-center gap-5'}`}
       >
-        {error && (
-          <div className="w-full p-2.5 bg-red-100 border border-red-400 text-red-700 rounded-[10px] text-sm">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="w-full p-2.5 bg-green-100 border border-green-400 text-green-700 rounded-[10px] text-sm">
-            {success}
-          </div>
-        )}
+        <FormMessage type="error" message={error} />
+        <FormMessage type="success" message={success} />
 
         {/* Champs du formulaire */}
         <div className={`w-full flex flex-col justify-start items-start ${isInSidebar ? 'space-y-4' : 'gap-5'}`}>
+
           {/* Pseudo */}
           <div className={`${isInSidebar ? 'w-full' : 'flex w-full justify-between items-center gap-5'}`}>
             <div className={`${isInSidebar ? 'mb-1' : 'flex flex-col'}`}>
@@ -202,8 +196,9 @@ export default function RegisterForm({
             />
           </div>
 
-          {/* Prénom */}
+
           <div className={`${isInSidebar ? 'grid grid-cols-2 gap-4' : 'flex w-full justify-between items-center gap-5'}`}>
+
             <div>
               <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
                 Prénom
@@ -248,9 +243,21 @@ export default function RegisterForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
+
             />
           </div>
+
+          <FormField
+            label="Email"
+            name="email"
+            placeholder={isInSidebar ? "votre@email.com" : "Exemple@mail.com"}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            isInSidebar={isInSidebar}
+          />
         </div>
+
         
         <ConfirmPassword
           password={password}
@@ -259,6 +266,7 @@ export default function RegisterForm({
           onConfirmPasswordChange={setConfirmPassword}
           disabled={isLoading}
         />
+
 
         <button
           type="submit"
@@ -293,7 +301,9 @@ export default function RegisterForm({
             <button
               type="button"
               onClick={onSwitchToLogin}
+
               className="text-sm text-rouge-clair hover:underline"
+
             >
                Se connecter
             </button>

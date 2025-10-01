@@ -103,7 +103,7 @@ jobs:
     - name: 🧪 Run Frontend Tests (if available)
       run: |
         cd Client
-        npm test || echo "No frontend tests configured"
+        npm run test || echo "No frontend tests configured"
       continue-on-error: true
 
   # ===== BUILD DOCKER IMAGES =====
@@ -210,15 +210,15 @@ jobs:
     - name: 📤 Copy files to EC2
       run: |
         # Copy deployment files to EC2
-        scp -o StrictHostKeyChecking=no -r deployment/ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/yanotela/
+        scp -o StrictHostKeyChecking=no -r deployment/ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/Yanotela/
         
         # Copy environment file
-        echo "${{ secrets.ENV_PROD_FILE }}" | ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'cat > ~/yanotela/.env.prod'
+        echo "${{ secrets.ENV_PROD_FILE }}" | ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'cat > /var/www/Yanotela/.env.prod'
 
     - name: 🚀 Deploy on EC2
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          cd ~/yanotela
+          cd /var/www/Yanotela
           
           # Create backup of current deployment
           if [ -d "backup" ]; then rm -rf backup; fi

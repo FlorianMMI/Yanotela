@@ -32,9 +32,8 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
     }
 }
 
-export async function GetNotes(): Promise<Note[]> {
+export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
     try {
-        // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
 
         console.log('API URL for GetNotes:', apiUrl); // Pour debug
@@ -51,26 +50,49 @@ export async function GetNotes(): Promise<Note[]> {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const notes = await response.json();
-        console.log('Notes from server:', notes);
+        const data = await response.json();
 
-        // Transformation du JSON stringifié en objet
-        for (const note of notes) {
+        // Vérification que les données attendues sont présentes
+        if (!data.notes || typeof data.totalNotes === 'undefined') {
+            console.error('Invalid response format - missing notes or totalNotes:', data);
+            return { notes: [], totalNotes: 0 };
+        }
+
+        // Transformation du JSON stringifié en objet lisible
+        for (const note of data.notes) {
             try {
                 const parsedContent = JSON.parse(note.Content);
                 if (typeof parsedContent === 'object' && parsedContent !== null) {
-                    note.Content = parsedContent;
+                    // Si c'est un objet Lexical, extraire le texte
+                    if (parsedContent.root && parsedContent.root.children) {
+                        // Extraction du texte depuis la structure Lexical
+                        const extractText = (children: any[]): string => {
+                            return children.map((child: any) => {
+                                if (child.type === 'paragraph' && child.children) {
+                                    return extractText(child.children);
+                                } else if (child.type === 'text' && child.text) {
+                                    return child.text;
+                                }
+                                return '';
+                            }).join(' ');
+                        };
+                        note.Content = extractText(parsedContent.root.children) || 'Contenu vide';
+                    } else {
+                        // Si c'est un autre type d'objet, convertir en string lisible
+                        note.Content = JSON.stringify(parsedContent);
+                    }
                 }
             } catch {
-                // If parsing fails, leave the content as is
-                console.warn(`Invalid JSON content for note ID ${note.id}, leaving content unparsed.`);
+                // Si le parsing échoue, garder le contenu tel quel
+                console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
+                note.Content = String(note.Content);
             }
         }
 
-        return notes;
+        return { notes: data.notes, totalNotes: data.totalNotes };
     } catch (error) {
         console.error("Error fetching notes:", error);
-        return [];
+        return { notes: [], totalNotes: 0 };
     }
 }
 
@@ -299,6 +321,53 @@ export async function Logout(): Promise<AuthResponse> {
         }
     } catch (error) {
         console.error('Erreur de déconnexion:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+
+interface InfoUserResponse {
+    success: boolean;
+    message?: string;
+    error?: string;
+    user?: {
+        id: number;
+        pseudo: string;
+        prenom?: string;
+        nom?: string;
+        email: string;
+        noteCount?: number; // Nombre de notes de l'utilisateur
+    };
+}
+
+export async function InfoUser(): Promise<InfoUserResponse> {
+    console.log('🔍 InfoUser: Début de la requête');
+    
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        console.log('🔍 InfoUser: URL API:', apiUrl);
+        
+        const response = await fetch(`${apiUrl}/user/info`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        console.log('🔍 InfoUser: Statut de la réponse:', response.status);
+
+        if (response.ok) {
+            const userData = await response.json();
+            console.log('🔍 InfoUser: Données reçues:', userData);
+            return { success: true, message: 'Informations utilisateur récupérées', user: userData };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('🔍 InfoUser: Erreur de réponse:', errorData);
+            return { success: false, error: errorData.message || 'Erreur lors de la récupération des informations utilisateur' };
+        }
+    } catch (error) {
+        console.error('🔍 InfoUser: Erreur de connexion:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
