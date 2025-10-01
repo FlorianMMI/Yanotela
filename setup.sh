@@ -20,7 +20,7 @@ npm install
 
 # Démarrer le client
 echo "🌐 Démarrage du client..."
-npm run dev &
+npm run dev-noturbo &
 CLIENT_PID=$!
 
 echo "✅ Application démarrée !"
