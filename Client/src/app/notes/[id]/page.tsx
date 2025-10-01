@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import { $getRoot, EditorState } from "lexical";
 import { useEffect, useState, use } from "react";
 
@@ -167,8 +167,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   }
 
   return (
-    <div className="flex flex-col p-2.5 bg-background h-fit min-h-full gap-2.5">
-      <div className="flex rounded-lg p-2.5 items-center bg-primary text-white sticky top-2 z-10">
+    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
+      <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
         <ReturnButton />
         {
           hasError ?

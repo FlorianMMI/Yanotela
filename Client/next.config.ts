@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Enable standalone output for Docker optimization
+  output: 'standalone',
 };
 
 export default nextConfig;

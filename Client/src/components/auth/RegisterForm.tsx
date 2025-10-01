@@ -52,8 +52,10 @@ export default function RegisterForm({
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
 
-    // Vérification que les mots de passe correspondent (seulement si pas dans la sidebar)
-    if (!isInSidebar && password !== confirmPassword) {
+    // Critères de validation du mot de passe
+
+    // Vérification que les mots de passe correspondent
+    if (password !== confirmPassword) {
       setError("Les mots de passe ne correspondent pas");
       setIsLoading(false);
       return;
@@ -92,20 +94,23 @@ export default function RegisterForm({
 
   // Vérification de tous les champs pour activer/désactiver le submit
   useEffect(() => {
-    if (isInSidebar) {
-      // Pour la sidebar, pas besoin de confirmPassword
-      if (username && email && firstName && lastName && password) {
+    if (username && email && firstName && lastName && password && confirmPassword) {
+      const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_\-\.]).+$/;
+
+      // Si les mots de passe ne correspondent pas
+      if (password !== confirmPassword) {
+        setIsFormValid(false);
+        return;
+      }
+
+      // On vérifie les critères du mot de passe
+      if (passwordCriteria.test(password)) {
         setIsFormValid(true);
       } else {
         setIsFormValid(false);
       }
     } else {
-      // Pour la page complète, avec confirmPassword
-      if (username && email && firstName && lastName && password && confirmPassword) {
-        setIsFormValid(true);
-      } else {
-        setIsFormValid(false);
-      }
+      setIsFormValid(false);
     }
   }, [
     username,
@@ -114,7 +119,6 @@ export default function RegisterForm({
     lastName,
     password,
     confirmPassword,
-    isInSidebar,
   ]);
 
   // Version simplifiée pour la sidebar (juste un lien)
@@ -149,14 +153,13 @@ export default function RegisterForm({
 
   // Version complète pour les pages dédiées
   return (
-    <div className={`${className} ${!isInSidebar ? 'h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 text-clrprincipal' : 'space-y-4'}`}>
-      {!isInSidebar && <ReturnButton />}
-
+    <div className={`${className} ${!isInSidebar ? 'h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 relative text-clrprincipal' : 'space-y-4'}`}>
+      
       {showTitle && (
         <p className={`${isInSidebar ? 'text-2xl' : 'text-3xl'} font-bold text-primary mb-6 ${
           !isInSidebar ? 'text-center after:content-[\'\'] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8' : ''
         }`}>
-          {isInSidebar ? 'Créer un compte' : 'Bienvenue à bord 👋'}
+          {isInSidebar ? 'Créer un compte' : 'Bienvenue à bord'}
         </p>
       )}
 
@@ -169,34 +172,78 @@ export default function RegisterForm({
 
         {/* Champs du formulaire */}
         <div className={`w-full flex flex-col justify-start items-start ${isInSidebar ? 'space-y-4' : 'gap-5'}`}>
-          <FormField
-            label={isInSidebar ? "Nom d'utilisateur" : "Pseudonyme*"}
-            name="username"
-            placeholder={isInSidebar ? "Votre nom d'utilisateur" : "MartinJean05"}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            isInSidebar={isInSidebar}
-          />
+
+          {/* Pseudo */}
+          <div className={`${isInSidebar ? 'w-full' : 'flex w-full justify-between items-center gap-5'}`}>
+            <div className={`${isInSidebar ? 'mb-1' : 'flex flex-col'}`}>
+              <p className={`text-clrprincipal ${isInSidebar ? 'text-sm' : 'text-sm'} font-bold`}>
+                {isInSidebar ? 'Nom d\'utilisateur' : 'Pseudonyme*'}
+              </p>
+              {!isInSidebar && (
+                <p className="text-zinc-500 text-xs font-light">
+                  *doit être unique
+                </p>
+              )}
+            </div>
+            <input
+              type="text"
+              name="username"
+              placeholder={isInSidebar ? "Votre nom d'utilisateur" : "MartinJean05"}
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className={`${isInSidebar ? 'w-full px-3 py-2 bg-clrsecondaire rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500 border-primary border-2'}`}
+            />
+          </div>
+
 
           <div className={`${isInSidebar ? 'grid grid-cols-2 gap-4' : 'flex w-full justify-between items-center gap-5'}`}>
-            <FormField
-              label="Prénom"
-              name="firstName"
-              placeholder="Jean"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+
+            <div>
+              <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
+                Prénom
+              </p>
+              <input
+                type="text"
+                name="firstName"
+                placeholder="Jean"
+                required
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
+              />
+            </div>
+
+            <div>
+              <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
+                Nom
+              </p>
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Martin"
+                required
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div className={`${isInSidebar ? 'w-full ' : 'self-stretch flex flex-col justify-start items-start gap-2.5 '}`}>
+            <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
+              Email
+            </p>
+            <input
+              type="email"
+              name="email"
+              placeholder={isInSidebar ? "votre@email.com" : "Exemple@mail.com"}
               required
-              isInSidebar={isInSidebar}
-            />
-            <FormField
-              label="Nom"
-              name="lastName"
-              placeholder="Martin"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-              isInSidebar={isInSidebar}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
+
             />
           </div>
 
@@ -211,27 +258,15 @@ export default function RegisterForm({
           />
         </div>
 
-        {/* Mot de passe et confirmation */}
-        {isInSidebar ? (
-          <FormField
-            label="Mot de passe"
-            name="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            type="password"
-            isInSidebar={isInSidebar}
-          />
-        ) : (
-          <ConfirmPassword
-            password={password}
-            confirmPassword={confirmPassword}
-            onPasswordChange={setPassword}
-            onConfirmPasswordChange={setConfirmPassword}
-            disabled={isLoading}
-          />
-        )}
+        
+        <ConfirmPassword
+          password={password}
+          confirmPassword={confirmPassword}
+          onPasswordChange={setPassword}
+          onConfirmPasswordChange={setConfirmPassword}
+          disabled={isLoading}
+        />
+
 
         <button
           type="submit"
@@ -261,13 +296,16 @@ export default function RegisterForm({
         </button>
 
         {showLoginLink && (
-          <div className="text-center">
+          <div className="text-center flex justify-start items-center gap-2">
+            <p className='text-sm text-gray-600'>Déjà un compte ?</p>
             <button
               type="button"
               onClick={onSwitchToLogin}
-              className="text-sm text-primary hover:underline hover:text-primary-hover transition-all cursor-pointer"
+
+              className="text-sm text-rouge-clair hover:underline"
+
             >
-              Déjà un compte ? Se connecter
+               Se connecter
             </button>
           </div>
         )}

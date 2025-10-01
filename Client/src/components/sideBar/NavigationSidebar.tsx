@@ -5,7 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthState } from '@/hooks/useAuth';
+
 import Icon from '@/ui/Icon';
+
 
 interface NavigationSidebarProps {
   user: AuthState['user'];
@@ -19,8 +21,8 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
     {
       href: '/notes',
       label: 'Mes Notes',
-      icon: '/icons.svg',
-      isActive: pathname === '/notes' || pathname.startsWith('/notes/'),
+      icon: 'files',
+      isActive: pathname === '/notes',
     },
   ];
 
@@ -28,6 +30,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
     <div className="h-full flex flex-col">
 
       {/* Header avec logo et utilisateur */}
+
       <div className="p-6 border-b border-gray-200">
 
         <Link href="/profil">
@@ -52,6 +55,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
           </div>
         </Link>
 
+
       </div>
 
       {/* Navigation */}
@@ -61,6 +65,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
             <li key={item.href}>
               <Link
                 href={item.href}
+
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${item.isActive
                   ? 'bg-primary text-white'
                   : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
@@ -71,6 +76,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
                   name="docs"
                   className={item.isActive ? "text-white" : "text-gray-400"}
                   size={30}
+
                 />
                 <span className="font-medium">{item.label}</span>
               </Link>
@@ -78,6 +84,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
           ))}
         </ul>
       </nav>
+
 
       <div className="flex items-center justify-center space-x-3 mb-4">
         <Image
@@ -88,6 +95,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
           className="flex-shrink-0 cursor-pointer"
           title='Retour à l`accueil'
         />
+
       </div>
 
     </div>

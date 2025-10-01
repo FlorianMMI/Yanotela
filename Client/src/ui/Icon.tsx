@@ -1,5 +1,6 @@
 'use client';
 
+import React from "react";
 import { useEffect, useState } from 'react';
 
 interface IconProps {
@@ -60,12 +61,13 @@ const Icon = ({ name, className = "", size = 20 }: IconProps) => {
   }, [name, size]);
 
   if (!svgContent) {
-    return <div className={className} style={{ width: size, height: size }} />;
+    return <div className={className} role="img" style={{ width: size, height: size }} />;
   }
 
   return (
     <div 
       className={className}
+      role="img"
       style={{ 
         width: size, 
         height: size, 

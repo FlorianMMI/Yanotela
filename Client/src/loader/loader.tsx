@@ -182,8 +182,8 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
         if (response.ok) {
             return { success: true, message: 'Connexion réussie' };
         } else {
-            const errorData = await response.text();
-            return { success: false, error: 'Identifiants incorrects' };
+            const errorData = await response.json();
+            return { success: false, error: errorData.error || 'Erreur lors de la connexion' };
         }
     } catch (error) {
         console.error('Erreur de connexion:', error);

@@ -70,18 +70,18 @@ export default function ForgotPasswordForm({
     <div className={`max-w-md w-full space-y-8 ${className}`}>
       {showTitle && (
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-3xl font-extrabold text-clrprincipal">
             Réinitialisation du mot de passe
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-clrprincipal">
             Saisissez votre adresse email pour recevoir un lien de réinitialisation
           </p>
         </div>
       )}
 
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+      <form className="mt-8 space-y-6" onSubmit={handleSubmit} role="form">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block text-sm font-medium text-clrprincipal">
             Adresse email
           </label>
           <input
@@ -93,7 +93,7 @@ export default function ForgotPasswordForm({
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 appearance-none relative block w-full px-3 py-2 border bg-white border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+            className="mt-1 appearance-none relative block w-full px-3 py-2  bg-white  placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm border-primary border-2"
             placeholder="Entrez votre email"
             disabled={loading}
           />
@@ -156,7 +156,7 @@ export default function ForgotPasswordForm({
             <button
               type="button"
               onClick={onSwitchToLogin}
-              className="text-sm text-primary hover:text-primary/80"
+              className="text-sm text-rouge-clair hover:text-primary/80"
             >
               Retour à la connexion
             </button>

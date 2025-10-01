@@ -41,7 +41,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
         <motion.div
           whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
           whileTap={{ scale: 0.95 }}
-          className="border-2 border-primary rounded-xl p-8 flex items-center justify-center hover:bg-primary active:bg-primary transition-colors cursor-pointer group text-primary hover:text-fondcardNote active:text-fondcardNote"
+          className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary"
           onClick={handleCreateNote}
         >
           <Icons
