@@ -31,7 +31,7 @@ export default function Register() {
           </span>
         </button>
 
-        <div className="flex items-center w-full gap-4">
+        {/* <div className="flex items-center w-full gap-4">
           <div className="flex-1 h-px bg-gray-300"></div>
           <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
           <div className="flex-1 h-px bg-gray-300"></div>
@@ -45,7 +45,7 @@ export default function Register() {
           <span className="text-gray-700 text-sm font-medium font-['Gantari']">
             S&apos;inscrire avec Google
           </span>
-        </button>
+        </button> */}
       </div>
 
       <div className="flex flex-col justify-center items-center gap-2 mt-4">
