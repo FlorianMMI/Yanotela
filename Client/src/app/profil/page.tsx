@@ -1,12 +1,13 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import InfoProfil from '@/components/infoprofil/page'
 import Image from 'next/image'
 import { GetNotes, InfoUser } from '@/loader/loader'
-import { useEffect, useState } from "react";
 import Logout from '@/ui/logout';
 import TotalNotes from '@/ui/note/totalNotes';
 import Icons from '@/ui/Icon';
+import ParamModal from '@/components/infoprofil/paramModal';
+import { AnimatePresence } from 'motion/react';
 
 interface UserInfo {
     id: number;
@@ -22,6 +23,7 @@ export default function Profil() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [totalNotes, setTotalNotes] = useState<number | undefined>(undefined);
+    const [isParamModalOpen, setIsParamModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -58,6 +60,14 @@ export default function Profil() {
         fetchTotalNotes();
     }, []);
 
+    const openParamModal = () => {
+        setIsParamModalOpen(true);
+    };
+
+    const closeParamModal = () => {
+        setIsParamModalOpen(false);
+    };
+
     if (loading) {
         return (
             <div className='flex justify-center items-center min-h-screen bg-fondpage'>
@@ -88,9 +98,12 @@ export default function Profil() {
             <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
 
                 {/* Boutons settings et déconnexion alignés en haut */}
-                <div className="flex flex-row justify-end items-center w-full px-8">
+                <div className="flex flex-row justify-between items-center w-full px-8">
 
-                    <div className="hidden items-center" title='Paramètres du compte'>
+                    <div
+                        className="items-center" title='Paramètres du compte'
+                        onClick={openParamModal}
+                    >
                         <Icons
                             name="settings"
                             size={35}
@@ -116,14 +129,22 @@ export default function Profil() {
                     <TotalNotes totalNotes={totalNotes} />
 
                     {/* Bouton déconnexion mobile en bas */}
-                    <div className="flex items-center md:hidden w-full px-8 " title='Me déconnecter'>
+                    <div
+                        className="flex items-center md:hidden w-full px-8 "
+                        title='Me déconnecter'
+                    >
                         <Logout />
                     </div>
                 </div>
 
-
-
             </div>
+
+            {/* Modal */}
+            <AnimatePresence>
+                {isParamModalOpen && (
+                    <ParamModal onClose={closeParamModal} />
+                )}
+            </AnimatePresence>
         </>
-    )
+    );
 }
