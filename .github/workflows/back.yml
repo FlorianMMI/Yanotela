@@ -1,0 +1,52 @@
+name: Node.js CI/CD on Amazon Linux
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies and build Client
+        run: |
+          cd Client
+          npm install
+          npm run build
+
+      - name: Install dependencies and prepare Server
+        run: |
+          cd Server
+          npm install
+          npx prisma generate
+
+      - name: Verify build output
+        run: |
+          ls -la Client
+          ls -la Server
+
+      - name: Deploy Client and Server to AWS EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "./"  
+          target: "/var/www/Yanotela"
+          rm: true  # Remove old files before uploading
+
+      - name: Restart PM2 application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /var/www/Yanotela/Server
+            pm2 reload all

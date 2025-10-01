@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 import { useState, useEffect, Suspense } from "react";
 import { Note } from "@/type/Note";
@@ -6,7 +7,7 @@ import NoteHeader from "@/components/noteHeader/NoteHeader";
 import NoteList from "@/components/noteList/NoteList";
 import { GetNotes } from "@/loader/loader";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
-import NoteNavBarre from "@/components/noteNavBarre/NoteNavBarre";
+import SearchBar from "@/ui/searchbar";
 
 export default function Home() {
   const { isAuthenticated, loading: authLoading } = useAuthRedirect();
@@ -47,12 +48,13 @@ export default function Home() {
 
   return (
     <div className="h-full">
-      <NoteHeader 
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-      />
+
+    <NoteHeader
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+      sortBy={sortBy}
+      setSortBy={setSortBy}
+    />
 
       <Suspense fallback={
         <div className="p-4">

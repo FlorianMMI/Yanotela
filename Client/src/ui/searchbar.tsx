@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Icon from "@/ui/Icon";
 
 
 interface SearchBarProps {
@@ -11,11 +12,9 @@ export default function SearchBar({ searchTerm, setSearchTerm }: SearchBarProps)
     return (
         <>
             <div className="relative flex items-center w-full">
-                <Image
-                    src="/recherche.svg"
-                    alt="Recherche"
-                    width={20}
-                    height={20}
+                <Icon
+                    name="recherche"
+                    size={20}
                     className="absolute left-3 top-2.5 z-10"
                 />
                 <input
