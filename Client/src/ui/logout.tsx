@@ -21,6 +21,7 @@ export default function Logout(){
                 setShowConfirm(false);
                 router.push('/');
                 router.refresh();
+                window.location.reload();
             } else {
                 console.error('Erreur de déconnexion:', response.error);
                 setShowConfirm(false);
