@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: eu-west-3
-  ECS_SERVICE: yanotela-service
+  ECS_SERVICE: yanotela-task-service-7qp5vex5
   ECS_CLUSTER: yanotela-cluster
   ECS_TASK_DEFINITION: ecs-task.json
   CLIENT_CONTAINER_NAME: client
