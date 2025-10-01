@@ -59,8 +59,8 @@ export const noteController = {
         // Récupérer l'authorId depuis la session au lieu du body
         const authorId = parseInt(req.session.userId); // Convertir en Int pour la DB
 
-        if (!Titre || !Content) {
-            return res.status(400).json({ message: 'Titre et Contenu requis' });
+        if (!Titre) {
+            return res.status(400).json({ message: 'Titre requis' });
         }
 
         try {
