@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { Logout as LogoutAPI } from '@/loader/loader';
 import LogoutConfirm from './logout-confirm';
-import Icon from './Icon';
-
 
 export default function Logout(){
 
@@ -46,9 +44,9 @@ export default function Logout(){
             <div className="w-full" title='Me déconnecter'>                
                 <button
                     onClick={handleLogoutClick}
-                    className="w-full flex items-center justify-center space-x-3 p-4 bg-white text-gray-700 border border-gray-200 rounded-xl shadow-md hover:bg-red-50 hover:border-red-300 hover:text-red-700 hover:shadow-lg transition-all cursor-pointer group"
+                    className="w-full flex items-center justify-center space-x-3 p-4 bg-primary text-white border border-red-700 rounded-xl shadow-md hover:bg-red-700 hover:border-red-800 hover:text-white hover:shadow-lg transition-all cursor-pointer group"
                 >
-                    <Icon name="exit" size={32} className="text-foreground" />
+                    <Icon name="exit" size={32} className="text-white" />
                     <span className="font-normal text-lg">Déconnexion</span>
                 </button>
             </div>
