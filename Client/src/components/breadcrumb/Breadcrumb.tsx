@@ -47,6 +47,11 @@ export default function Breadcrumb() {
         { label: 'Réinitialisation', isActive: true },
       ];
     }
+    if (pathname === '/profil') {
+      return [
+        { label: 'Mon Profil', isActive: true },
+      ];
+    }
 
     // Fallback pour les autres routes
     return [

@@ -45,7 +45,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
                 <Icon
                   name="arrow-barre"
                   size={40}
-                  className="text-clrsecondaire"
+                  className="text-black"
                 />
               </div>
             </div>
