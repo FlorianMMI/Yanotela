@@ -8,8 +8,8 @@ import {corsConfig} from './config/corsConfig.js';
 import authRoutes from './routes/authRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-import helmet from 'helmet';
 import googleAuthRoutes from './routes/googleAuthRoutes.js';
+import helmet from 'helmet';
 
 
 const app = express();
@@ -29,29 +29,8 @@ app.use(express.json());
 app.use('/', authRoutes);
 app.use('/note', noteRoutes);
 app.use('/user', userRoutes);
+app.use('/auth', googleAuthRoutes); // Routes Google OAuth
 
-<<<<<<< HEAD
-app.use('/auth', googleAuthRoutes);
-
-app.get('/', (req, res) => {
-  if (!req.session.userId) {
-    return res.render('index');
-  } else {
-    return res.render('index', {
-      pseudo: req.session.pseudo,
-      connected: true
-    });
-  }
-});
-
-// Route pour tester l'authentification Google
-app.get('/google-test', (req, res) => {
-  res.render('google-auth', {
-    user: req.session.userId ? {
-      id: req.session.userId,
-      pseudo: req.session.pseudo,
-      isLoggedIn: true
-=======
 // Route de health check pour Docker
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -72,14 +51,9 @@ app.get('/', (req, res) => {
     user: req.session.userId ? {
       id: req.session.userId,
       pseudo: req.session.pseudo
->>>>>>> Develop
     } : null
   });
 });
 
-<<<<<<< HEAD
-export { app, prisma, sessionMiddleware };
-export default app;
-=======
+
 export { app, sessionMiddleware };
->>>>>>> Develop

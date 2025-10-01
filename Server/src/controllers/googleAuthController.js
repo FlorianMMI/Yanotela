@@ -103,7 +103,9 @@ export const handleGoogleCallback = async (req, res) => {
       await req.session.save();
 
       console.log('Connexion Google réussie pour:', user.pseudo);
-      return res.redirect('/');
+      // Redirection vers le client après authentification
+      const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+      return res.redirect(`${clientUrl}/notes`);
     } else {
       // Nouvel utilisateur - inscription
       console.log('Création d\'un nouveau compte pour:', userInfo.email);
@@ -145,7 +147,9 @@ export const handleGoogleCallback = async (req, res) => {
       await req.session.save();
 
       console.log('Inscription Google réussie pour:', user.pseudo);
-      return res.redirect('/');
+      // Redirection vers le client après authentification
+      const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+      return res.redirect(`${clientUrl}/notes`);
     }
   } catch (error) {
     console.error('Erreur lors du callback Google:', error);
