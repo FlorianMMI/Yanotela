@@ -1,0 +1,77 @@
+name: Deploy App to Amazon ECS
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: eu-west-3
+  ECS_SERVICE: yanotela-service
+  ECS_CLUSTER: yanotela-cluster
+  ECS_TASK_DEFINITION: yanotela-task
+  CLIENT_CONTAINER_NAME: client
+  SERVER_CONTAINER_NAME: server
+  CLIENT_ECR_REPO: 987686461748.dkr.ecr.eu-west-3.amazonaws.com/yanotela
+  SERVER_ECR_REPO: 987686461748.dkr.ecr.eu-west-3.amazonaws.com/yanotela-server
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push client image
+        id: build-client
+        run: |
+          docker build -t ${{ env.CLIENT_ECR_REPO }}:${GITHUB_SHA} ./Client
+          docker push ${{ env.CLIENT_ECR_REPO }}:${GITHUB_SHA}
+          echo "image=${{ env.CLIENT_ECR_REPO }}:${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Build, tag, and push server image
+        id: build-server
+        run: |
+          docker build -t ${{ env.SERVER_ECR_REPO }}:${GITHUB_SHA} ./Server
+          docker push ${{ env.SERVER_ECR_REPO }}:${GITHUB_SHA}
+          echo "image=${{ env.SERVER_ECR_REPO }}:${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Render new ECS task definition
+        id: task-def-client
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CLIENT_CONTAINER_NAME }}
+          image: ${{ steps.build-client.outputs.image }}
+
+      - name: Render new ECS task definition (server)
+        id: task-def-server
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-client.outputs.task-definition }}
+          container-name: ${{ env.SERVER_CONTAINER_NAME }}
+          image: ${{ steps.build-server.outputs.image }}
+
+      - name: Deploy ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-server.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
