@@ -1,26 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&family=Geologica:wght@100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Nixie+One&display=swap");
 @import "tailwindcss";
 
+/* Keep @import statements at the very top of this file; do not duplicate @import later in the file. */
+
+:root {
+  --background: #E9EBDB;
+  --deskbackground: #EDEDED;
+  --foreground: #171717;
+  --clr-beige-foncer: #d5d7c3;
+  --clr-gris-clair: #272727;
+  --clr-rouge-fonce: #882626;
+  --gris-clair: #727272;
+  --rouge-fonce: #882626;
+  --rouge-hover: #ff0000;
+  --rouge-clair:oklch(63.7% 0.237 25.331);
+  --light: white;
+  --dark:black;
+  --lightNote: white;
+  --textlightNote:oklch(55.1% 0.027 264.364);
+
+
+  --font-title: 'Nixie One', cursive;
+  --font-family: "Gantari", Arial, Helvetica, sans-serif;
+  --font-gantari: 'Gantari', sans-serif;
+  --font-geologica: 'Geologica', sans-serif;
+}
 
 @theme inline {
   --color-background: var(--background);
+  --color-deskbackground: var(--deskbackground);
+  --color-beige-foncer: var(--clr-beige-foncer);
   --color-foreground: var(--foreground);
-  --color-red-default: var(--red-default);
-  --color-red-hover: var(--red-hover);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-gantari);
   --font-mono: var(--font-geist-mono);
+  
+  --color-primary: var(--rouge-fonce);
+  --color-primary-hover: var(--rouge-hover);
+  --color-rouge-hover: var(--rouge-hover);
+  --color-element: var(--gris-clair);
+  --color-rouge-clair: var(--rouge-clair);
+
+  --font-geo: var(--font-geologica);
+  --font-gant: var(--font-gantari);
+  --font-title: var(--font-title);
+
+  --color-clrprincipal:var(--dark);
+  --color-clrsecondaire:var(--light);
+  --color-fondcardNote:var(--lightNote);
+  --color-textcardNote:var(--textlightNote);
 }
 
-@layer base {
+
+ /* @media (prefers-color-scheme: dark) {
   :root {
-    --background: #e9ebdb;
-    --foreground: #ededed;
-    --red-default: #882626;
-    --red-hover: #be1515;
+    --background: #2f2f2f;
+    --deskbackground: #474747;
+    --clr-beige-foncer: #1d1d1d;
+    --light: black;
+    --dark:white;
+    --motif-opacity: 0.01;
+    --lightNote: #1e1e1e;
+    --textlightNote: white;
   }
-}
+}    */
+
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-gant);
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: var(--motif-opacity);
+  pointer-events: none;
+  z-index: -1;
 }

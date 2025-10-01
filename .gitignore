@@ -1,0 +1,33 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+.env
+.env.*
+.DS_Store
+
+# Prisma
+Server/prisma/dev.db
+Server/prisma/dev.db-journal
+
+# Next.js
+Client/.next/
+Client/out/
+Client/.turbo/
+
+# VSCode
+.vscode/
+
+# OS
+Thumbs.db
+*.swp
+
+# Logs
+logs/
+*.log
+
+# Test coverage
+coverage/

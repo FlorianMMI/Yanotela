@@ -16,6 +16,7 @@ datasource db {
 
 model User {
   id              Int         @id @default(autoincrement())
+  notes           Note[]      
   pseudo          String      @unique
   prenom          String
   password        String
@@ -23,4 +24,17 @@ model User {
   email           String      @unique
   token           String      @unique
   is_verified     Boolean     @default(false)
+
+}
+
+
+model Note {
+
+  id              String         @id 
+  Titre           String      
+  Content         String
+  authorId        Int
+  author          User        @relation(fields: [authorId], references: [id])
+  ModifiedAt       DateTime    @default(now())
+
 }

@@ -1,95 +1,77 @@
 ﻿'use client';
 
-import Image from "next/image";
-import Icon from "../../components/Icon";
-import { useState } from "react";
+import React from "react";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import LoginForm from '@/components/auth/LoginForm';
+import { useEffect, useState } from "react";
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false);
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Logique de connexion à implémenter
-    console.log('Formulaire soumis');
+  const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
+
+  const handleLoginSuccess = () => {
+    router.push('/notes');
+    router.refresh();
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('http://localhost:3001/auth/check', {
+          method: 'GET',
+          credentials: 'include',
+        });
 
-  return (
-    <div className="h-screen p-2.5 flex flex-col justify-between items-center">
-      <Link href="/" className="w-full items-start flex">
-        <Icon name="arrow-ss-barre" className="text-black hover:scale-75 active:scale-75 transition-transform duration-200" size={40} />
-      </Link>
+        if (res.ok) {
+          const data = await res.json();
 
-      <div className="p-5 flex flex-col justify-center items-start gap-8">
-        <div className="w-full h-fit text-center justify-center text-red-900 text-4xl font-bold font-['Geologica']">
-          Quel plaisir de vous revoir !
-        </div>
-        
-        <form onSubmit={handleSubmit} className="flex flex-col justify-center items-start gap-2.5">
-          <div className="justify-center text-black text-sm font-normal font-['Gantari']">
-            Veuillez indiquer votre adresse e-mail et votre mot de passe.
-          </div>
-          
-          <div data-property-1="Mail" className="w-full p-2.5 bg-white rounded-[10px] flex justify-start items-center gap-2.5">
-            <Icon name="at" className="text-zinc-500" size={20} />
-            <input 
-              type="text" 
-              name="email"
-              placeholder="Votre mail ou pseudonyme"
-              required
-              className="flex-1 bg-transparent text-black text-sm font-normal font-['Gantari'] outline-none"
-            />
-          </div>
-          
-          <div data-property-1="MDP" className="w-full p-2.5 bg-white rounded-[10px] flex justify-between items-center">
-            <div className="flex justify-center items-center gap-2.5">
-              <Icon name="keyhole" className="text-zinc-500" size={20} />
-              <input 
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Votre mot de passe"
-                required
-                className="flex-1 bg-transparent text-black text-sm font-normal font-['Gantari'] outline-none"
-              />
-            </div>
-            <button 
-              type="button"
-              onClick={togglePasswordVisibility}
-              className="w-4 h-4 flex items-center justify-center hover:scale-110 transition-transform"
-              aria-label={showPassword ? "Cacher le mot de passe" : "Afficher le mot de passe"}
-            >
-              <Icon 
-                name={showPassword ? "eye-close" : "eye"} 
-                className="text-zinc-500 hover:text-zinc-700" 
-                size={16} 
-              />
-            </button>
-          </div>
-          
-          <button type="button" className="w-full justify-start text-start flex text-red-default hover:text-red-hover active:text-red-hover text-sm font-normal font-['Gantari']">
-            Mot de passe oublié ?
-          </button>
-        
-          <button type="submit" className="p-2.5 w-full bg-red-default hover:bg-red-hover active:bg-red-active rounded-[10px] flex justify-between items-center shadow-md cursor-pointer transition-colors">
-            <p className="flex-1 text-center justify-center text-white text-xl font-bold font-['Gantari'] pointer-events-none">
-              Se connecter
-            </p>
-            <Icon name="arrow-barre" className="text-white pointer-events-none" size={32} />
-          </button>
-        </form>
+          // Vérifier les deux formats possibles de la réponse
+          if (data.authenticated || data.isAuthenticated) {
+            router.push('/');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification d\'authentification:', error);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  // Afficher un loader pendant la vérification
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-
-      <div className="p-2.5 flex flex-col justify-center items-center gap-2.5">
-        <div className="text-center justify-center text-black text-l font-normal font-['Gantari']">
-          Vous n avez pas de Compte ?
+    );
+  }
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-primary mb-2">
+            Quel plaisir de vous revoir !
+          </h1>
+          <p className="text-clrprincipal">
+            Connectez-vous à votre compte Yanotela
+          </p>
         </div>
-        <button className="text-center justify-center text-red-default hover:text-red-hover active:text-red-hover text-xl font-normal font-['Gantari']">
-          Inscrivez-vous
-        </button>
+
+        {/* Login Form */}
+        <div className="bg-clrsecondaire p-8 rounded-xl shadow-lg">
+          <LoginForm
+            onSuccess={handleLoginSuccess}
+            showTitle={false}
+            onSwitchToRegister={() => router.push('/register')}
+            onSwitchToForgot={() => router.push('/forgot-password')}
+          />
+        </div>
       </div>
     </div>
   );
