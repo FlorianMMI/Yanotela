@@ -89,9 +89,9 @@ export default function Profil() {
             <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
 
                 {/* Boutons settings et déconnexion alignés en haut */}
-                <div className="flex flex-row justify-between items-center w-full px-8">
+                <div className="flex flex-row justify-end items-center w-full px-8">
 
-                    <div className="flex items-center" title='Paramètres du compte'>
+                    <div className="hidden items-center" title='Paramètres du compte'>
                         <Icons
                             name="settings"
                             size={35}
