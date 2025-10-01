@@ -8,7 +8,7 @@ env:
   AWS_REGION: eu-west-3
   ECS_SERVICE: yanotela-service
   ECS_CLUSTER: yanotela-cluster
-  ECS_TASK_DEFINITION: yanotela-task
+  ECS_TASK_DEFINITION: ecs-task.json
   CLIENT_CONTAINER_NAME: client
   SERVER_CONTAINER_NAME: server
   CLIENT_ECR_REPO: 987686461748.dkr.ecr.eu-west-3.amazonaws.com/yanotela
