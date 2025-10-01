@@ -45,7 +45,7 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
-  const [noteTitle, setNoteTitle] = useState("Titre de la note");
+  const [noteTitle, setNoteTitle] = useState("");
   const [editorContent, setEditorContent] = useState("");
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +70,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       if (noteId) {
         const note = await GetNoteById(noteId);
         if (note) {
-          setNoteTitle(note.Titre || "Titre de la note");
+          setNoteTitle(note.Titre);
           // Si on a du contenu, on le parse pour l'éditeur
           if (note.Content) {
             try {
