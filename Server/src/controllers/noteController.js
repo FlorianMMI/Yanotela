@@ -129,6 +129,10 @@ export const noteController = {
             return res.status(400).json({ message: 'Champs requis manquants' });
         }
 
+        if (Titre == ""){
+            Titre = "Sans titre";
+        }
+
         try {
             const note = await prisma.note.update({
                 where: { id: id },
