@@ -8,7 +8,7 @@ Pour démarrer le projet en local:
     npm i
     npm run dev
     ```
-##  Coté server:
+##  Coté server :
     ```
     npm i
     npx prisma generate

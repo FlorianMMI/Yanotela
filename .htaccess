@@ -1,0 +1,11 @@
+# Redirect root requests to the client running on port 3000
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/Client
+RewriteRule ^(.*)$ http://13.39.149.206:3000/$1 [L,R=301]
+
+# Allow only the client to access the server
+<Directory "/var/www/Yanotela/Server">
+    Order Deny,Allow
+    Deny from all
+    Allow from 13.39.149.206
+</Directory>
