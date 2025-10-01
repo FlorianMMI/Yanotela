@@ -81,7 +81,7 @@ export default function Note({ note }: NoteProps) {
 
         {/* Date de modification */}
         <div className="mt-4 pt-2 border-t border-gray-100">
-          <p className="font-gantari text-xs text-gray-500 italic">
+          <p className="font-gantari text-xs text-element italic">
             Modifé le {new Date(note.ModifiedAt).toLocaleDateString('fr-FR', {
               day: 'numeric',
               month: 'short',
