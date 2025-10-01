@@ -46,16 +46,16 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
             {!loading && !isAuthenticated ? (
               <div className="h-full flex items-center justify-center">
                 <div className="text-center space-y-4">
-                  <div className="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-                    <div className="w-12 h-12 text-gray-400">
+                  <div className="w-24 h-24 mx-auto bg-beige-foncer rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 text-element">
                       <Icon name="files" size={48} />
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h2 className="text-xl font-semibold text-clrprincipal mb-2">
                       Bienvenue sur Yanotela
                     </h2>
-                    <p className="text-gray-600">
+                    <p className="text-element">
                       Connectez-vous pour accéder à vos notes
                     </p>
                   </div>
