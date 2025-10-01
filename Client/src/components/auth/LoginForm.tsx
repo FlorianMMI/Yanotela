@@ -90,7 +90,7 @@ export default function LoginForm({
           </p>
         )}
         
-        <div data-property-1="Mail" className="w-full p-2.5 bg-background rounded-[10px] flex justify-start items-center gap-2.5">
+        <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
           <Icon name="at" className="text-zinc-500" size={20} />
           <input 
             type="text" 
