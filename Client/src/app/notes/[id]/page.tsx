@@ -13,13 +13,14 @@ import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
-
+import OnChangePlugin from "@lexical/react/LexicalOnChangePlugin";
+import { useCallback } from "react";
 
 import { useRouter } from "next/navigation";
 
 import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
-import NoteLoadingSkeleton from "@/components/loading/NoteLoadingSkeleton";
+
 import ErrorFetch from "@/ui/note/errorFetch";
 
 const theme = {
@@ -45,17 +46,18 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
-  const [noteTitle, setNoteTitle] = useState("Titre de la note");
+  const [noteTitle, setNoteTitle] = useState("");
   const [editorContent, setEditorContent] = useState("");
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const [hasError, setHasError] = useState(false);
-  
+  const [editor, setEditor] = useState<any>(null);
+
   // Unwrap params using React.use()
   const { id } = use(params);
 
-  
+
   function updateNoteTitle(newTitle: string) {
     setNoteTitle(newTitle);
     uploadContent(id, newTitle, editorContent);
@@ -70,7 +72,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       if (noteId) {
         const note = await GetNoteById(noteId);
         if (note) {
-          setNoteTitle(note.Titre || "Titre de la note");
+          setNoteTitle(note.Titre);
           // Si on a du contenu, on le parse pour l'éditeur
           if (note.Content) {
             try {
@@ -110,7 +112,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           setEditorContent(note.Content || "");
         }
         else {
-          
+
           setHasError(true);
         }
       }
@@ -128,9 +130,30 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     editorState: initialEditorState ? initialEditorState : undefined,
   };
 
+  const focusAtEnd = useCallback(() => {
+    if (!editor) return;
+    editor.update(() => {
+      const root = $getRoot();
+      root.selectEnd();
+    });
+  }, [editor]);
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!editor) return;
+    const editorElem = editor.getRootElement();
+    // Si on clique directement sur la zone d'édition (mais pas sur du texte)
+    if (e.target === editorElem) {
+      focusAtEnd();
+    }
+  };
+
   function OnChangeBehavior() {
     const [editor] = useLexicalComposerContext();
-    
+
+    // Register editor in parent component
+    useEffect(() => {
+      setEditor(editor);
+    }, [editor]);
 
     // Debounced callback for logging editor state
     const debouncedLog = useDebouncedCallback(
@@ -147,7 +170,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       // However, we still have a JavaScript object, so we need to convert it to an actual string with JSON.stringify
       setEditorContent(JSON.stringify(editorStateJSON));
       uploadContent(id, noteTitle, JSON.stringify(editorStateJSON));
-      
+
     }
 
     useEffect(() => {
@@ -173,7 +196,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         {
           hasError ?
             <p className="w-full font-semibold bg-transparent p-1">Erreur</p>
-          :
+            :
             <input
               type="text"
               value={noteTitle}
@@ -191,7 +214,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           <ErrorFetch type="fetch" />
         ) : isLoading ? (
           // Si en chargement :
-            <div className="bg-white p-4 rounded-lg h-full flex items-center justify-center">
+          <div className="bg-white p-4 rounded-lg h-full flex items-center justify-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -201,14 +224,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
               <p className="text-textcardNote font-medium">Chargement de la note...</p>
             </motion.div>
-            </div>
+          </div>
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col h-fit min-h-screen">
+            <div  onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <RichTextPlugin
-                
                   contentEditable={
                     <ContentEditable
                       aria-placeholder={"Commencez à écrire..."}
@@ -223,8 +245,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                   ErrorBoundary={LexicalErrorBoundary}
                 />
                 <HistoryPlugin />
-                <AutoFocusPlugin />
                 <OnChangeBehavior />
+                <AutoFocusPlugin />
               </LexicalComposer>
             </div>
           </>
