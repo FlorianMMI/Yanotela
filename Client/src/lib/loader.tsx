@@ -8,8 +8,6 @@ export async function resetPassword($password: string, $token: string): Promise<
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-        console.log('API URL:', apiUrl); // Pour debug
-
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: "POST",
             headers: {

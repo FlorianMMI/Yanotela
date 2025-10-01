@@ -45,13 +45,6 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
     }
   );
 
-  console.log('SwipeNavigationWrapper render:', { 
-    pathname, 
-    swipeConfig: !!swipeConfig, 
-    isMobile, 
-    hasHandlers: Object.keys(swipeHandlers).length > 0 
-  });
-
   // Si pas de configuration de swipe ou pas sur mobile, renvoie juste les children
   if (!swipeConfig || !isMobile) {
     return <>{children}</>;
