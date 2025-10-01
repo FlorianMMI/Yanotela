@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Icon from './Icon';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { Logout as LogoutAPI } from '@/loader/loader';
@@ -45,14 +46,10 @@ export default function Logout(){
             <div className="w-full" title='Me déconnecter'>                
                 <button
                     onClick={handleLogoutClick}
-                    className="w-full flex items-center justify-center space-x-3 p-4 bg-primary text-gray-700 border border-gray-200 rounded-xl shadow-md hover:bg-red-50 hover:border-red-300 hover:text-red-700 hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                    className="w-full flex items-center justify-center space-x-3 p-4 bg-white text-gray-700 border border-gray-200 rounded-xl shadow-md hover:bg-red-50 hover:border-red-300 hover:text-red-700 hover:shadow-lg transition-all cursor-pointer group"
                 >
-                    <Icon
-                        name="exit"
-                        size={22}
-                        className="group-hover:filter group-hover:brightness-0 group-hover:sepia group-hover:hue-rotate-[340deg] group-hover:saturate-[2] transition-all duration-300 text-white"
-                    />
-                    <span className="font-normal text-lg text-white">Déconnexion</span>
+                    <Icon name="exit" size={32} className="text-foreground" />
+                    <span className="font-normal text-lg">Déconnexion</span>
                 </button>
             </div>
 
