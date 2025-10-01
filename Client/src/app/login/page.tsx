@@ -77,21 +77,6 @@ export default function Login() {
             onSwitchToForgot={() => router.push('/forgot-password')}
           />
         </div>
-
-        {/* Retiré car invisible sur desktop et en doublon sur mobile */}
-        {/* En plus ça fait bugger les tests */}
-        {/* Register Link
-        <div className="text-center">
-          <p className="text-gray-600 text-sm">
-            Vous n&apos;avez pas de compte ?{' '}
-            <Link
-              href="/register"
-              className="text-primary hover:text-rouge-hover font-medium"
-            >
-              Inscrivez-vous
-            </Link>
-          </p>
-        </div> */}
       </div>
     </div>
   );
