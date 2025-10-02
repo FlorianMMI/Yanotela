@@ -135,4 +135,45 @@ async function sendResetPasswordEmail(to, token) {
   }
 }
 
-export { sendValidationEmail, sendResetPasswordEmail };
+async function sendDeleteAccountEmail(to) {
+
+  // transporter
+  const transport = createEmailTransporter();
+  if (!transport) {
+    throw new Error('Impossible de créer le transporteur email');
+  }
+  try {
+    // Vérifier la configuration du transporteur
+    await transport.verify();
+    console.log('Configuration email validée');
+    
+    // Configurer l'expéditeur selon le service
+    const fromAddress =`"Yanotela" <${process.env.GMAIL_USER}>`;
+    await transport.sendMail({
+      from: fromAddress,
+      to,
+      subject: 'Votre compte Yanotela a été supprimé',
+      html: `
+      <div style="font-family: Arial, sans-serif; background: #f9f9f9; padding: 30px;">
+        <div style="max-width: 500px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 24px;">
+        <h2 style="color: #882626; margin-top: 0;">Compte supprimé</h2>
+        <p>Votre compte Yanotela a été supprimé avec succès. Nous sommes désolés de vous voir partir.</p>
+        <p>Si vous n'êtes pas à l'origine de cette action, veuillez contacter Gérard.</p>
+        <p>Si vous avez des questions ou des préoccupations, n'hésitez pas à nous contacter.</p>
+        <hr style="margin: 32px 0;">
+        <p style="font-size: 12px; color: #888;">Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+        </div>
+      </div>
+      `
+    });
+    
+    console.log(`Email de suppression de compte envoyé à ${to}`);
+    return { success: true, message: 'Email de suppression de compte envoyé avec succès' };
+    
+  }catch (error) {
+      console.error('Erreur lors de l\'envoi de l\'email de suppression de compte:', error);
+      throw new Error(`Échec de l'envoi de l'email: ${error.message}`);
+    }
+}
+
+export { sendValidationEmail, sendResetPasswordEmail, sendDeleteAccountEmail };
