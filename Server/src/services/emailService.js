@@ -44,6 +44,7 @@ async function sendValidationEmail(to, token) {
   });
   console.log(`Email de validation envoyé à ${to}`);
 }
+
 async function sendResetPasswordEmail(to, token) {
   // Désactiver les emails pendant les tests
   if (process.env.NODE_ENV === 'test') {

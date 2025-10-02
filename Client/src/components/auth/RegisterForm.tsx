@@ -232,9 +232,11 @@ export default function RegisterForm({
 
           {/* Email */}
           <div className={`${isInSidebar ? 'w-full ' : 'self-stretch flex flex-col justify-start items-start gap-2.5 '}`}>
+
             <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
               Email
             </p>
+
             <input
               type="email"
               name="email"
@@ -246,16 +248,6 @@ export default function RegisterForm({
 
             />
           </div>
-
-          <FormField
-            label="Email"
-            name="email"
-            placeholder={isInSidebar ? "votre@email.com" : "Exemple@mail.com"}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            isInSidebar={isInSidebar}
-          />
         </div>
 
         

@@ -1,7 +1,11 @@
+"use client";
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
+import { DeleteAccount } from '@/loader/loader';
+import AccountSupprSuccess from '@/ui/account-suppr-success';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -9,21 +13,47 @@ interface ParamModalProps {
 
 export default function ParamModal({ onClose }: ParamModalProps) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     const handleDeleteAccount = () => {
         setShowDeleteConfirm(true);
     };
 
-    const handleConfirmDelete = () => {
-        // Ici vous pouvez ajouter la logique de suppression du compte
-        console.log('Compte supprimé');
-        setShowDeleteConfirm(false);
-        onClose();
+    const router = useRouter();
+
+    const handleConfirmDelete = async () => {
+        setIsDeleting(true);
+        
+        try {
+            const response = await DeleteAccount('Suppression demandée par l\'utilisateur');
+            
+            if (response.success) {
+                console.log('Compte marqué pour suppression:', response.message);
+
+                // Fermer les modals de confirmation
+                setShowDeleteConfirm(false);
+                onClose();
+                
+                // Afficher le modal de succès (il gère sa propre redirection)
+                setShowSuccessModal(true);
+                
+            } else {
+                console.error('Erreur lors de la suppression:', response.error);
+                alert('Erreur lors de la suppression du compte: ' + response.error);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la suppression du compte:', error);
+            alert('Une erreur est survenue lors de la suppression du compte.');
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     const handleCancelDelete = () => {
         setShowDeleteConfirm(false);
     };
+    
     return (
         <>
             {/* Overlay fond noir */}
@@ -47,9 +77,9 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                     damping: 20,
                     duration: 0.5
                 }}
-                className="fixed top-0 left-0 min-w-1/2 md:min-w-[35%] w-fit h-full bg-background shadow-lg z-100"
+                className="fixed top-0 left-0 w-full md:w-[35%] h-full bg-background shadow-lg z-100"
             >
-                <div className='flex flex-col h-full w-fill p-2 relative'>
+                <div className='flex flex-col h-full w-full p-2 relative'>
 
                     {/* Close button */}
                     <div
@@ -86,7 +116,13 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 <AccountSupprConfirm
                     onClose={handleCancelDelete}
                     onConfirm={handleConfirmDelete}
+                    isLoading={isDeleting}
                 />
+            )}
+
+            {/* Modal de succès */}
+            {showSuccessModal && (
+                <AccountSupprSuccess />
             )}
         </>
     );
