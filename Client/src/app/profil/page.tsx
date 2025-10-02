@@ -85,12 +85,12 @@ export default function Profil() {
 
     return (
         <>
-            <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
+            <div className='py-4 flex flex-col items-center justify-between h-full bg-fondpage'>
 
                 {/* Boutons settings et déconnexion alignés en haut */}
-                <div className="flex flex-row justify-end items-center w-full px-8">
+                <div className=" flex-row justify-end hidden items-center w-full px-8">
 
-                    <div className="hidden items-center" title='Paramètres du compte'>
+                    <div className=" items-center" title='Paramètres du compte'>
                         <Icons
                             name="settings"
                             size={35}
@@ -98,17 +98,14 @@ export default function Profil() {
                         />
                     </div>
 
-                    <div className=" items-center hidden md:flex" title='Me déconnecter'>
-                        <Logout />
-                    </div>
+                    
 
                 </div>
 
                 {/* Contenu centré et réparti */}
-                <div className="flex-1 flex flex-col justify-start items-center text-center gap-20 w-full h-full">
+                <div className="flex-1 flex flex-col justify-between items-center text-center gap-20 w-full h-full">
                     {userInfo && (
-                        
-                            <InfoProfil
+                        <InfoProfil
                             name={displayName}
                             pseudo={userInfo.pseudo}
                             email={userInfo.email}
@@ -119,9 +116,13 @@ export default function Profil() {
                     <TotalNotes totalNotes={totalNotes} />
 
                     {/* Bouton déconnexion mobile en bas */}
-                    <div className="flex items-center md:hidden w-full px-8 " title='Me déconnecter'>
+                    <div className="flex flex-col items-end  w-full">
+                    <div className="flex items-center  w-full px-8  md:w-fit " title='Me déconnecter'>
                         <Logout />
                     </div>
+                    </div>
+
+                    
                 </div>
 
 
