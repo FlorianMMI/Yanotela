@@ -17,6 +17,7 @@ datasource db {
 model User {
   id              Int         @id @default(autoincrement())
   notes           Note[]      
+  permissions     Permission[]
   pseudo          String      @unique
   prenom          String
   password        String
@@ -27,7 +28,6 @@ model User {
 
 }
 
-
 model Note {
 
   id              String         @id 
@@ -35,6 +35,18 @@ model Note {
   Content         String
   authorId        Int
   author          User        @relation(fields: [authorId], references: [id])
+  permissions     Permission[]
   ModifiedAt       DateTime    @default(now())
+  
+}
 
+model Permission {
+  noteId String   @map("id_note")
+  userId Int      @map("id_user")
+  role   Int
+
+  note   Note   @relation(fields: [noteId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@id([noteId, userId])
 }

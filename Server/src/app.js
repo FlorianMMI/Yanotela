@@ -8,6 +8,7 @@ import {corsConfig} from './config/corsConfig.js';
 import authRoutes from './routes/authRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import permissionRoutes from './routes/permissionRoutes.js';
 import helmet from 'helmet';
 
 
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use('/', authRoutes);
 app.use('/note', noteRoutes);
 app.use('/user', userRoutes);
+app.use('/permission', permissionRoutes);
 
 // Route de health check pour Docker
 app.get('/health', (req, res) => {

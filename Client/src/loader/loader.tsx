@@ -2,11 +2,10 @@ import { Note } from '@/type/Note';
 import { create } from 'domain';
 import { ID } from 'yjs';
 
-const safeApiUrl = 'http://localhost:3001';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note | null; redirectUrl?: string }> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         const response = await fetch(`${apiUrl}/note/create`, {
             method: "POST",
             headers: {
@@ -33,7 +32,6 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
 
 export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
 
         const response = await fetch(`${apiUrl}/note/get`, {
             method: "GET",
@@ -96,7 +94,6 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
 export async function GetNoteById(id: string): Promise<Note | null> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         const response = await fetch(`${apiUrl}/note/get/${id}`, {
             method: "GET",
             headers: {
@@ -118,7 +115,6 @@ export async function GetNoteById(id: string): Promise<Note | null> {
 export async function SaveNote(id: string, noteData: Partial<Note>): Promise<boolean> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         const response = await fetch(`${apiUrl}/note/update/${id}`, {
             method: "POST",
             headers: {
@@ -162,7 +158,6 @@ interface AuthResponse {
 
 export async function Login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
@@ -187,7 +182,6 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
 
 export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
@@ -232,7 +226,6 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
 
 export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
@@ -258,7 +251,6 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
 
 export async function ResetPassword(token: string, password: string): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
@@ -284,7 +276,6 @@ export async function ResetPassword(token: string, password: string): Promise<Au
 
 export async function ValidateResetToken(token: string): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/reset-password/${token}`);
         const data = await response.json();
@@ -301,7 +292,6 @@ export async function ValidateResetToken(token: string): Promise<AuthResponse> {
 
 export async function Logout(): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/logout`, {
             method: 'POST',
@@ -337,7 +327,6 @@ interface InfoUserResponse {
 export async function InfoUser(): Promise<InfoUserResponse> {
     
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/user/info`, {
             method: 'GET',
@@ -357,6 +346,77 @@ export async function InfoUser(): Promise<InfoUserResponse> {
         }
     } catch (error) {
         console.error('🔍 InfoUser: Erreur de connexion:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function FetchPermission(noteId: string): Promise<{ success: boolean; permissions?: any[]; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/permission/note/${noteId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, permissions: data.permissions };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la récupération des permissions' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de la récupération des permissions:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function UpdatePermission(noteId: string, userId: number, newRole: number): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/permission/update/${noteId}/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ newRole })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la modification du rôle' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de la modification du rôle:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function AddPermission(noteId: string, identifier: string, role: number = 3): Promise<{ success: boolean; message?: string; user?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/permission/add/${noteId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ identifier, role })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message, user: data.user };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de l\'ajout de l\'utilisateur' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }

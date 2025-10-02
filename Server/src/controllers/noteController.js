@@ -15,6 +15,8 @@
 
 import {PrismaClient} from "@prisma/client";
 import crypto from "crypto";
+import {getPermission} from "./permissionController.js";
+
 const prisma = new PrismaClient();
 
 export const noteController = {
@@ -80,6 +82,12 @@ export const noteController = {
                     Titre,
                     Content,
                     authorId,
+                    permissions: {
+                        create: {
+                            id_user: authorId,
+                            role: 0 // Rôle 0 = Propriétaire
+                        }
+                    }
                 }
             });
 
@@ -91,6 +99,7 @@ export const noteController = {
         }
 
         catch (error) {
+            console.error('Erreur lors de la création de la note:', error);
             res.status(500).json({ message: 'Erreur lors de la création de la note', error: error.message });
         }
     },
@@ -120,6 +129,7 @@ export const noteController = {
 
         console.log('req.body:', req.session);
         const { userId } = req.session;
+        const userPermission = getPermission(userId, id);
         console.log('Session authorId:', userId);
         if (!userId) {
             return res.status(400).json({ message: 'Identifiant auteur manquant' });
@@ -132,7 +142,9 @@ export const noteController = {
         if (Titre == ""){
             Titre = "Sans titre";
         }
-
+        if (userPermission.role > 2) {
+            return res.status(403).json({ message: 'Vous n\'avez pas la permission de modifier cette note' });
+        }
         try {
             const note = await prisma.note.update({
                 where: { id: id },

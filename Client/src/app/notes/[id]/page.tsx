@@ -15,7 +15,8 @@ import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 import OnChangePlugin from "@lexical/react/LexicalOnChangePlugin";
 import { useCallback } from "react";
-
+import Icons from '@/ui/Icon';
+import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter } from "next/navigation";
 
 import { GetNoteById } from "@/loader/loader";
@@ -53,6 +54,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const router = useRouter();
   const [hasError, setHasError] = useState(false);
   const [editor, setEditor] = useState<any>(null);
+  const [showNoteMore, setShowNoteMore] = useState(false);
 
   // Unwrap params using React.use()
   const { id } = use(params);
@@ -195,14 +197,30 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           hasError ?
             <p className="w-full font-semibold bg-transparent p-1">Erreur</p>
             :
-            <input
+            <>
+              <input
               type="text"
               value={noteTitle}
               onChange={(e) => setNoteTitle(e.target.value)}
-              onBlur={(e) => updateNoteTitle(e.target.value)} //On blur permet de sauvegarder le titre quand on sort du champ
+              onBlur={(e) => updateNoteTitle(e.target.value)}
               className="w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white"
               placeholder="Titre de la note"
-            />
+              />
+              <div className="relative">
+              <span onClick={() => setShowNoteMore((prev) => !prev)}>
+                <Icons
+                  name="more"
+                  size={20}
+                  className="text-white cursor-pointer"
+                />
+              </span>
+              {showNoteMore && (
+                <div className="absolute right-0 mt-2 z-20">
+                <NoteMore noteId={id} onClose={() => setShowNoteMore(false)} />
+                </div>
+              )}
+              </div>
+            </>
         }
 
       </div>
@@ -226,7 +244,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div  onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
+            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <RichTextPlugin
                   contentEditable={
