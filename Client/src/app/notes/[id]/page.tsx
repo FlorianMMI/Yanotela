@@ -205,7 +205,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col h-fit min-h-screen">
+            <div className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col h-fit min-h-dvh">
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <RichTextPlugin
                 

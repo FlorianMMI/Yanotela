@@ -80,7 +80,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
         {/* Message si aucune note et pas en chargement */}
         {!isLoading && notes.length === 0 && (
           <div className="col-span-full text-center py-12">
-            <p className="text-gray-500 text-lg font-gant">
+            <p className="text-element text-lg font-gant">
               Aucune note trouvée. Créez votre première note !
             </p>
           </div>
