@@ -4,6 +4,7 @@ import React from 'react';
 import SideBar from '@/components/sideBar/sideBar';
 import Breadcrumb from '@/components/breadcrumb/Breadcrumb';
 import { useAuth } from '@/hooks/useAuth';
+import { useSidebarToggle } from '@/hooks/useSidebarToggle';
 import NoteHeader from '@/components/noteHeader/NoteHeader';
 import Icon from '@/ui/Icon';
 import { SwipeNavigationWrapper } from '@/components/navigation/SwipeNavigationWrapper';
@@ -14,6 +15,7 @@ interface DesktopLayoutProps {
 
 export default function DesktopLayout({ children }: DesktopLayoutProps) {
   const { isAuthenticated, loading } = useAuth();
+  const { isOpen } = useSidebarToggle();
 
 
 
@@ -35,10 +37,10 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
       {/* Desktop: nouvelle architecture */}
       <div className="hidden md:flex h-screen">
         {/* Sidebar */}
-        <SideBar state="open" />
+        <SideBar />
 
         {/* Contenu principal */}
-        <div className="flex-1 flex flex-col ml-80">
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${isOpen ? 'ml-64' : 'ml-16'}`}>
           {/* Breadcrumb en haut */}
           <Breadcrumb />
           
