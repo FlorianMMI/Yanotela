@@ -107,11 +107,14 @@ export default function Profil() {
                 {/* Contenu centré et réparti */}
                 <div className="flex-1 flex flex-col justify-start items-center text-center gap-20 w-full h-full">
                     {userInfo && (
-                        <InfoProfil
+                        
+                            <InfoProfil
                             name={displayName}
                             pseudo={userInfo.pseudo}
                             email={userInfo.email}
-                        />
+                            />
+                        
+                        
                     )}
                     <TotalNotes totalNotes={totalNotes} />
 
