@@ -1,5 +1,5 @@
 'use client';
-
+import React from 'react'
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
