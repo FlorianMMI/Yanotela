@@ -130,12 +130,16 @@ export default function ModificationProfil() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="p-4 flex flex-col gap-6 items-center">
+        <div className="p-4 flex flex-col gap-6 w-fit md:w-full items-center md:items-start">
+          <div className="flex md:hidden">
           <ReturnButton />
-          <div className="flex flex-col gap-8 w-fit items-center">
-            <h1 className="text-clrprincipal font-gant text-center text-4xl">
+          </div>
+          <div className="flex flex-col md:flex-row gap-8 w-fit md:w-full items-center md:items-start">
+            <div className="flex flex-col gap-4 items-center w-fit">
+            <p className="text-clrprincipal font-gant text-center text-4xl w-[198px]">
               Modifier le profil
-            </h1>
+            </p>
+            </div>
 
             {/* Zone de notifications */}
             {(success || error) && (
@@ -197,7 +201,7 @@ export default function ModificationProfil() {
                 )}
               </div>
             )}
-            
+            <div className="flex flex-col gap-4 w-full ">
             <InputModified 
               name="Pseudonyme"
               placeholder="pseudo"
@@ -248,6 +252,7 @@ export default function ModificationProfil() {
               </div>
             )}
           </button>
+          </div>
           </div>
         </div>
       )}
