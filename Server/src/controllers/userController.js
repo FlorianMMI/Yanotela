@@ -16,8 +16,7 @@ const prisma = new PrismaClient();
 export const userController = {
 
     getUserInfo: async (req, res) => {
-        console.log('📋 getUserInfo appelé');
-        console.log('Session userId:', req.session.userId);
+        
         
         // Vérifier l'authentification
         if (!req.session.userId) {
@@ -26,7 +25,7 @@ export const userController = {
         
         try {
             const userId = parseInt(req.session.userId, 10);
-            console.log('UserId converti:', userId);
+            
             
             // Récupérer les informations de l'utilisateur connecté
             const user = await prisma.user.findUnique({
@@ -69,6 +68,38 @@ export const userController = {
         } catch (error) {
             console.error('Erreur getUserInfo:', error);
             return res.status(500).json({ message: 'Erreur lors de la récupération des informations utilisateur', error: error.message });
+        }
+    },
+
+    updateUserInfo: async (req, res) => {
+
+
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Utilisateur non authentifié' });
+        }
+
+        
+
+        const userId = parseInt(req.session.userId, 10);
+        const { pseudo, prenom, nom, email } = req.body;
+ 
+        try {
+            const updatedUser = await prisma.user.update({
+                where: { id: userId },
+                data: { pseudo, prenom, nom, email },
+                select: {
+                    id: true,
+                    pseudo: true,
+                    prenom: true,
+                    nom: true,
+                    email: true
+                }
+            });
+            
+            return res.status(200).json(updatedUser);
+        } catch (error) {
+            console.error('Erreur updateUserInfo:', error);
+            return res.status(500).json({ message: 'Erreur lors de la mise à jour des informations utilisateur', error: error.message });
         }
     }
 
