@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarToggle } from '@/hooks/useSidebarToggle';
 import AuthSidebar from './AuthSidebar';
