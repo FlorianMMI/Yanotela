@@ -28,6 +28,9 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED 1
 
@@ -46,6 +49,6 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT=3000
-ENV HOST="0.0.0.0"
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
