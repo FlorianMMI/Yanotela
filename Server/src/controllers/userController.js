@@ -277,7 +277,9 @@ export const userController = {
                 message: 'Erreur lors de la suppression des comptes expirés', 
                 error: error.message 
             });
-          
+        }
+    },
+
     updateUserInfo: async (req, res) => {
 
 
@@ -310,4 +312,4 @@ export const userController = {
         }
     }
 
-}
+};

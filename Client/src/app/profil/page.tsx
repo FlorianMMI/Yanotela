@@ -79,10 +79,21 @@ export default function Profil() {
         );
     }
 
-    fetchTotalNotes();
-  }, []);
+    if (error) {
+        return (
+            <div className='flex justify-center items-center min-h-screen bg-fondpage'>
+                <div className="text-center text-red-500">
+                    <p>Erreur : {error}</p>
+                </div>
+            </div>
+        );
+    }
 
-  if (loading) {
+    // Construire le nom d'affichage
+    const displayName = userInfo?.prenom && userInfo?.nom 
+        ? `${userInfo.prenom} ${userInfo.nom}` 
+        : userInfo?.pseudo || 'Utilisateur';
+
     return (
         <>
             <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
