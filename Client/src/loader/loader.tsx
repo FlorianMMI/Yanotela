@@ -352,14 +352,79 @@ export async function InfoUser(): Promise<InfoUserResponse> {
 
         if (response.ok) {
             const userData = await response.json();
-            return { success: true, message: 'Informations utilisateur récupérées', user: userData };
+            return { success: true, user: userData };
         } else {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('🔍 InfoUser: Erreur de réponse:', errorData);
+            const errorData = await response.json();
             return { success: false, error: errorData.message || 'Erreur lors de la récupération des informations utilisateur' };
         }
     } catch (error) {
-        console.error('🔍 InfoUser: Erreur de connexion:', error);
+        console.error('Erreur InfoUser:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// ============== SUPPRESSION DE COMPTE ==============
+
+interface DeleteAccountResponse {
+    success: boolean;
+    message?: string;
+    error?: string;
+    deletionDate?: string;
+    canCancel?: boolean;
+}
+
+export async function DeleteAccount(reason?: string): Promise<DeleteAccountResponse> {
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        
+        const response = await fetch(`${apiUrl}/user/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ reason })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            return { 
+                success: true, 
+                message: data.message,
+                deletionDate: data.deletionDate,
+                canCancel: data.canCancel
+            };
+        } else {
+            return { success: false, error: data.message || 'Erreur lors de la suppression du compte' };
+        }
+    } catch (error) {
+        console.error('Erreur DeleteAccount:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function CancelAccountDeletion(): Promise<AuthResponse> {
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        
+        const response = await fetch(`${apiUrl}/user/cancel-deletion`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            return { success: true, message: data.message };
+        } else {
+            return { success: false, error: data.message || 'Erreur lors de l\'annulation de la suppression' };
+        }
+    } catch (error) {
+        console.error('Erreur CancelAccountDeletion:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }

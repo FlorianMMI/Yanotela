@@ -137,6 +137,35 @@ const login = async (req, res) => {
       });
     }
 
+    // Vérifier si le compte est marqué pour suppression
+    if (user.deleted_at) {
+      console.log("Tentative de connexion sur compte marqué pour suppression:", user.pseudo);
+      
+      // Calculer si le compte a expiré (1 minute pour test)
+      const deletionDate = new Date(user.deleted_at);
+      const expirationDate = new Date(deletionDate.getTime() + (1 * 60 * 1000)); // 1 minute en millisecondes
+      const now = new Date();
+      
+      if (now > expirationDate) {
+        // Le compte a expiré
+        return res.status(410).json({
+          error: "Votre compte a expiré et sera supprimé définitivement. Vous ne pouvez plus vous connecter.",
+          accountExpired: true
+        });
+      } else {
+        // Le compte est en attente de suppression, calculer le temps restant
+        const timeRemaining = expirationDate - now;
+        const secondsRemaining = Math.ceil(timeRemaining / 1000);
+        
+        return res.status(403).json({
+          error: `Votre compte sera supprimé dans ${secondsRemaining} seconde${secondsRemaining > 1 ? 's' : ''}. Contactez le support pour annuler.`,
+          accountScheduledForDeletion: true,
+          deletedAt: user.deleted_at,
+          secondsRemaining: secondsRemaining
+        });
+      }
+    }
+
     req.session.userId = user.id;
     req.session.pseudo = user.pseudo;
     await req.session.save();
@@ -153,7 +182,8 @@ const login = async (req, res) => {
   } catch (err) {
     console.error("Erreur connexion", err);
     return res.status(500).json({
-      error: "Erreur serveur"
+      error: "Erreur serveur",
+      details: err.message
     });
   }
 };
