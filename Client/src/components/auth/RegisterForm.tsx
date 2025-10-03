@@ -9,6 +9,7 @@ import ConfirmPassword from '@/ui/confirm-password';
 import { Register } from '@/loader/loader';
 import FormField from '@/ui/form/FormField';
 import FormMessage from '@/ui/form/FormMessage';
+import GoogleAuthButton from './GoogleAuthButton';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -286,6 +287,20 @@ export default function RegisterForm({
             size={40}
           />
         </button>
+
+        {/* Séparateur et inscription Google */}
+        <div className="flex flex-col items-center gap-4 w-full">
+          <div className="flex items-center w-full gap-4">
+            <div className="flex-1 h-px bg-gray-300"></div>
+            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+            <div className="flex-1 h-px bg-gray-300"></div>
+          </div>
+          
+          <GoogleAuthButton 
+            mode="register"
+            onSuccess={onSuccess}
+          />
+        </div>
 
         {showLoginLink && (
           <div className="text-center flex justify-start items-center gap-2">

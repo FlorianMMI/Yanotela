@@ -320,6 +320,9 @@ export async function Logout(): Promise<AuthResponse> {
 }
 
 
+// ============== USER  FUNCTION ==============
+
+
 interface InfoUserResponse {
     success: boolean;
     message?: string;
@@ -422,6 +425,33 @@ export async function CancelAccountDeletion(): Promise<AuthResponse> {
         }
     } catch (error) {
         console.error('Erreur CancelAccountDeletion:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+
+export async function updateUser(data: { prenom?: string; nom?: string; pseudo?: string; email?: string; password?: string; newPassword?: string; }): Promise<AuthResponse> {
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        
+        const response = await fetch(`${apiUrl}/user/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            const responseData = await response.json();
+            return { success: true, message: responseData.message || 'Informations utilisateur mises à jour avec succès' };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la mise à jour des informations utilisateur' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour des informations utilisateur:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }

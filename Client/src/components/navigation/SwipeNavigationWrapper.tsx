@@ -39,14 +39,15 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
 
   const swipeConfig = getSwipeConfig();
   
-  const { isMobile, swipeHandlers } = useSwipeNavigation(
-    swipeConfig || { 
-      routes: { current: pathname, left: '', right: '' }
-    }
-  );
+  const { isMobile, swipeHandlers } = useSwipeNavigation({
+    routes: swipeConfig?.routes || { current: pathname, left: '', right: '' },
+    enableMouse: true, // Activer la souris
+    minSwipeDistance: 50,
+    maxVerticalDistance: 100
+  });
 
-  // Si pas de configuration de swipe ou pas sur mobile, renvoie juste les children
-  if (!swipeConfig || !isMobile) {
+  // Si pas de configuration de swipe, renvoie juste les children
+  if (!swipeConfig) {
     return <>{children}</>;
   }
 
@@ -59,7 +60,21 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
         touchAction: 'pan-y',
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none'
+        WebkitTouchCallout: 'none',
+        // Curseur sur desktop pour indiquer l'interactivité
+        cursor: isMobile ? 'default' : 'grab'
+      }}
+      onMouseDown={(e) => {
+        if (!isMobile) {
+          e.currentTarget.style.cursor = 'grabbing';
+        }
+        swipeHandlers.onMouseDown?.(e);
+      }}
+      onMouseUp={(e) => {
+        if (!isMobile) {
+          e.currentTarget.style.cursor = 'grab';
+        }
+        swipeHandlers.onMouseUp?.();
       }}
     >
       {children}

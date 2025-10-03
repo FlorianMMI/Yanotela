@@ -10,12 +10,12 @@ import ParamModal from '@/components/infoprofil/paramModal';
 import { AnimatePresence } from 'motion/react';
 
 interface UserInfo {
-    id: number;
-    pseudo: string;
-    prenom?: string;
-    nom?: string;
-    email: string;
-    noteCount?: number;
+  id: number;
+  pseudo: string;
+  prenom?: string;
+  nom?: string;
+  email: string;
+  noteCount?: number;
 }
 
 export default function Profil() {
@@ -79,20 +79,10 @@ export default function Profil() {
         );
     }
 
-    if (error) {
-        return (
-            <div className='flex justify-center items-center min-h-screen bg-fondpage'>
-                <div className="text-center text-red-600">
-                    <p>Erreur: {error}</p>
-                </div>
-            </div>
-        );
-    }
+    fetchTotalNotes();
+  }, []);
 
-    const displayName = userInfo?.prenom && userInfo?.nom
-        ? `${userInfo.prenom} ${userInfo.nom}`
-        : userInfo?.pseudo || 'Utilisateur';
-
+  if (loading) {
     return (
         <>
             <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
