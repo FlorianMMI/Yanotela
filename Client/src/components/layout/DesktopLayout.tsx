@@ -40,7 +40,7 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
         <SideBar />
 
         {/* Contenu principal */}
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${isOpen ? 'ml-64' : 'ml-16'}`}>
+        <div className={`flex-1 flex flex-col w-full`}>
           {/* Breadcrumb en haut */}
           <Breadcrumb />
           
