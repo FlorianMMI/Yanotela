@@ -125,8 +125,6 @@ export default function Profil() {
             )}
           </div>
 
-            <Notification title="Bienvenue sur votre profil" author='test'/>
-
           <div className="hidden md:flex w-full">
             <ModificationProfil />
           </div>
