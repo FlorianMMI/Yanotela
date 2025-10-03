@@ -68,24 +68,27 @@ export default function Profil() {
         setIsParamModalOpen(false);
     };
 
-    if (loading) {
-        return (
-            <div className='flex justify-center items-center min-h-screen bg-fondpage'>
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p>Chargement des informations...</p>
-                </div>
-            </div>
-        );
-    }
-
-    fetchTotalNotes();
-  }, []);
-
-  if (loading) {
+if (loading) {
     return (
-        <>
-            <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
+        <div className='flex justify-center items-center min-h-screen bg-fondpage'>
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p>Chargement des informations...</p>
+            </div>
+        </div>
+    );
+}
+
+// Main render after loading
+// Définir displayName à partir des infos utilisateur
+const displayName =
+    userInfo?.prenom && userInfo?.nom
+        ? `${userInfo.prenom} ${userInfo.nom}`
+        : userInfo?.pseudo || '';
+
+return (
+    <>
+        <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
 
                 {/* Boutons settings et déconnexion alignés en haut */}
                 <div className="flex flex-row justify-between items-center w-full px-8">
