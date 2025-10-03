@@ -18,7 +18,7 @@ const sessionMiddleware = session({
     
     // Chemin d'application du cookie (toute l'application)
     path: '/',
-    maxAge: 3600000, // 1 heure en millisecondes
+    maxAge:1000 * 60 * 60 * 24 * 365 * 10, // 10 ans en ms
   }
 });
 

@@ -17,6 +17,7 @@ datasource db {
 model User {
   id              Int         @id @default(autoincrement())
   notes           Note[]      
+  modifiedNotes   Note[]      @relation("NoteModifier")
   permissions     Permission[]
   pseudo          String      @unique
   prenom          String
@@ -35,6 +36,8 @@ model Note {
   Content         String
   authorId        Int
   author          User        @relation(fields: [authorId], references: [id])
+  modifierId      Int?
+  modifier        User?       @relation("NoteModifier", fields: [modifierId], references: [id])
   permissions     Permission[]
   ModifiedAt       DateTime    @default(now())
   

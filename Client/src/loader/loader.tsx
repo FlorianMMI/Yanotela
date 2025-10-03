@@ -91,7 +91,7 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
     }
 }
 
-export async function GetNoteById(id: string): Promise<Note | null> {
+export async function GetNoteById(id: string): Promise<Note | { error: string } | null> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
         const response = await fetch(`${apiUrl}/note/get/${id}`, {
@@ -101,15 +101,15 @@ export async function GetNoteById(id: string): Promise<Note | null> {
             },
             credentials: 'include'
         });
+        const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            // Return backend error message if present
+            return { error: data.message || `HTTP error! status: ${response.status}` };
         }
-        const data = await response.json();
-        // La réponse contient { Titre, Content, userRole (optionnel) }
         return data;
     } catch (error) {
         console.error("Error fetching note by ID:", error);
-        return null;
+        return { error: "Erreur de connexion au serveur" };
     }
 }
 
