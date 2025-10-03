@@ -1,4 +1,3 @@
-// 
 import React, { useState, useEffect } from "react";
 import { FetchPermission, UpdatePermission, AddPermission, RemovePermission } from "@/loader/loader";
 import Icons from "@/ui/Icon";
@@ -34,15 +33,15 @@ const NoteShare: React.FC<NoteShareProps> = ({ noteId, onClose }) => {
     }, [noteId, connectedUserId]);
 
     return (
-        <div className="bg-white rounded-xl min-w-[400px] w-[450px] shadow-lg overflow-hidden relative max-h-[80vh] flex flex-col">
+        <div className="bg-white rounded-xl min-w-2xs w-sm shadow-lg overflow-hidden relative h-auto flex flex-col">
             <button
-                className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100 transition-colors z-10"
+                className="absolute top-2 right-2 p-1 rounded hover:bg-deskbackground transition-colors z-10"
                 onClick={onClose}
                 aria-label="Fermer"
             >
                 <Icons name="arrow-ss-barre" size={22} className="text-primary" />
             </button>
-            <div className="p-4 pb-2 border-b border-gray-200">
+            <div className="p-4 pb-2 border-b border-element">
                 <h3 className="text-lg font-semibold text-foreground">Partager la note</h3>
                 {currentUserRole !== null && (
                     <div className={`mt-2 px-3 py-1 rounded-full text-sm inline-block ${currentUserRole === 0 ? 'bg-deskbackground text-primary' :
@@ -83,6 +82,8 @@ const NoteShare: React.FC<NoteShareProps> = ({ noteId, onClose }) => {
                                                     <div className="flex items-end">
                                                         <select
                                                             value={item.role}
+                                                            disabled={item.user.id === connectedUserId}
+                                                            style={item.user.id === connectedUserId ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                                                             onChange={async (e) => {
                                                                 const newRole = parseInt(e.target.value);
                                                                 const result = await UpdatePermission(noteId, item.user.id, newRole);
@@ -100,9 +101,9 @@ const NoteShare: React.FC<NoteShareProps> = ({ noteId, onClose }) => {
                                                                     alert(result.error || 'Erreur lors de la modification');
                                                                 }
                                                             }}
-                                                            className="text-xs border border-element rounded px-2 py-1"
+                                                            className="text-xs border border-element rounded px-2 py-1 text-foreground"
                                                         >
-                                                            {(currentUserRole !== null && currentUserRole <= 1) && (
+                                                            {(currentUserRole !== null && currentUserRole < 1 || item.user.id === connectedUserId) && (
                                                                 <option value={1}>Admin</option>
                                                             )}										
                                                             <option value={2}>Éditeur</option>
@@ -139,7 +140,7 @@ const NoteShare: React.FC<NoteShareProps> = ({ noteId, onClose }) => {
                                                 )}
                                                 {/* Afficher seulement le rôle si l'utilisateur n'a pas les permissions de modification */}
                                                 {(currentUserRole === null || currentUserRole > 1) && role > 0 && (
-                                                    <span className="text-xs text-element px-2 py-1 bg-gray-100 rounded">
+                                                    <span className="text-xs text-element px-2 py-1 bg-deskbackground rounded">
                                                         {ROLE_LABELS[item.role]}
                                                     </span>
                                                 )}
@@ -154,7 +155,7 @@ const NoteShare: React.FC<NoteShareProps> = ({ noteId, onClose }) => {
             </div>
             {/* Section d'ajout d'utilisateur - seulement pour propriétaire et admin */}
             {currentUserRole !== null && currentUserRole <= 1 && (
-                <div className="border-t border-gray-200 p-4 bg-deskbackground">
+                <div className="border-t border-element p-4 bg-white text-center">
                     <h4 className="font-medium text-sm text-gray-700 mb-3">Inviter un utilisateur</h4>
                     <div className="flex gap-2 mb-2">
                         <input
@@ -162,14 +163,14 @@ const NoteShare: React.FC<NoteShareProps> = ({ noteId, onClose }) => {
                             placeholder="Email ou pseudo..."
                             value={newUserIdentifier}
                             onChange={(e) => setNewUserIdentifier(e.target.value)}
-                            className="flex-1 px-3 py-2 border border-element rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            className="flex-1 px-3 py-2 border border-element rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                         <select
                             value={selectedRole}
                             onChange={(e) => setSelectedRole(parseInt(e.target.value))}
-                            className="px-3 py-2 border border-element rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            className="px-3 py-2 border border-element rounded text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                         >
-                            {(currentUserRole !== null && currentUserRole <= 1) && (
+                            {(currentUserRole !== null && currentUserRole < 1) && (
                                 <option value={1}>Admin</option>
                             )}
                             <option value={2}>Éditeur</option>
@@ -203,8 +204,8 @@ const NoteShare: React.FC<NoteShareProps> = ({ noteId, onClose }) => {
             )}
             {/* Message pour les utilisateurs sans permissions de gestion */}
             {currentUserRole !== null && currentUserRole > 1 && (
-                <div className="border-t border-gray-200 p-4 bg-deskbackground text-center">
-                    <p className="text-sm text-gray-600">
+                <div className="border-t border-element p-4 bg-white text-center">
+                    <p className="text-sm text-foreground">
                         {currentUserRole === 2 ? "Vous pouvez modifier cette note mais pas gérer les permissions." :
                             "Vous avez un accès en lecture seule à cette note."}
                     </p>

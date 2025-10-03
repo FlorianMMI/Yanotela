@@ -1,7 +1,6 @@
 import "./globals.css";
 import React from "react";
 import DesktopLayout from "@/components/layout/DesktopLayout";
-import AuthWrapper from "@/components/auth/AuthWrapper";
 
 export const metadata = {
   title: "Yanotela - Notes collaboratives",
@@ -16,11 +15,9 @@ export default function RootLayout({
   return (
     <html lang="fr" className="h-full">
       <body className="antialiased h-screen bg-background">
-        <AuthWrapper>
-          <DesktopLayout>
-            {children}
-          </DesktopLayout>
-        </AuthWrapper>
+        <DesktopLayout>
+          {children}
+        </DesktopLayout>
       </body>
     </html>
   );
