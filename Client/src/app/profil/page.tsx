@@ -10,12 +10,12 @@ import ParamModal from '@/components/infoprofil/paramModal';
 import { AnimatePresence } from 'motion/react';
 
 interface UserInfo {
-  id: number;
-  pseudo: string;
-  prenom?: string;
-  nom?: string;
-  email: string;
-  noteCount?: number;
+    id: number;
+    pseudo: string;
+    prenom?: string;
+    nom?: string;
+    email: string;
+    noteCount?: number;
 }
 
 export default function Profil() {
@@ -68,27 +68,27 @@ export default function Profil() {
         setIsParamModalOpen(false);
     };
 
-if (loading) {
-    return (
-        <div className='flex justify-center items-center min-h-screen bg-fondpage'>
-            <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p>Chargement des informations...</p>
+    if (loading) {
+        return (
+            <div className='flex justify-center items-center min-h-screen bg-fondpage'>
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p>Chargement des informations...</p>
+                </div>
             </div>
-        </div>
-    );
-}
+        );
+    }
 
-// Main render after loading
-// Définir displayName à partir des infos utilisateur
-const displayName =
-    userInfo?.prenom && userInfo?.nom
-        ? `${userInfo.prenom} ${userInfo.nom}`
-        : userInfo?.pseudo || '';
+    // Main render after loading
+    // Définir displayName à partir des infos utilisateur
+    const displayName =
+        userInfo?.prenom && userInfo?.nom
+            ? `${userInfo.prenom} ${userInfo.nom}`
+            : userInfo?.pseudo || '';
 
-return (
-    <>
-        <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
+    return (
+        <>
+            <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
 
                 {/* Boutons settings et déconnexion alignés en haut */}
                 <div className="flex flex-row justify-between items-center w-full px-8">
@@ -99,8 +99,8 @@ return (
                     >
                         <Icons
                             name="settings"
-                            size={35}
-                            className='cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
+                            size={40}
+                            className='cursor-pointer w-full h-full rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
                         />
                     </div>
 
@@ -111,7 +111,7 @@ return (
                 </div>
 
                 {/* Contenu centré et réparti */}
-                <div className="flex-1 flex flex-col justify-start items-center text-center gap-20 w-full h-full">
+                <div className="flex flex-col justify-center items-center text-center gap-20 w-full h-full">
                     {userInfo && (
                         <InfoProfil
                             name={displayName}
