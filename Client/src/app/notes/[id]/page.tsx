@@ -211,7 +211,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               onChange={(e) => !isReadOnly && setNoteTitle(e.target.value)}
               onBlur={(e) => updateNoteTitle(e.target.value)}
               className={`w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white ${isReadOnly ? 'cursor-not-allowed' : ''}`}
-              placeholder={isReadOnly ? "📖 Lecture seule" : "Titre de la note"}
+              
               disabled={isReadOnly}
               />
               <div className="relative">

@@ -4,11 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/useAuth';
 import "../../globals.css";
 
 export default function ValidatePage() {
   const params = useParams();
   const router = useRouter();
+  const { refetch } = useAuth(); // Pour mettre à jour l'état d'auth après validation
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 
@@ -34,11 +36,14 @@ export default function ValidatePage() {
 
         if (response.ok && data.success) {
           setStatus('success');
-          setMessage('Votre compte a été validé avec succès !');
+          setMessage('Votre compte a été validé avec succès ! Connexion automatique...');
+
+          // Mettre à jour l'état d'authentification
+          await refetch();
           
-          // Rediriger vers la racine après 2 secondes
+          // Rediriger vers les notes après 2 secondes
           setTimeout(() => {
-            router.push('/');
+            router.push('/notes');
           }, 2000);
         } else {
           setStatus('error');
@@ -84,8 +89,12 @@ export default function ValidatePage() {
                     <p className="text-sm font-medium text-green-800">
                       {message}
                     </p>
-                      <Link href="/notes" className="mt-2 text-sm text-green-700 hover:text-green-500 underline">
-                        Accéder à mes notes
+                    <div className="mt-2 flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                      <span className="text-xs text-green-700">Redirection en cours...</span>
+                    </div>
+                      <Link href="/notes" className="mt-2 block text-sm text-green-700 hover:text-green-500 underline">
+                        Accéder à mes notes maintenant
                       </Link>
                   </div>
                 </div>
