@@ -41,10 +41,11 @@ export default function ValidatePage() {
           // Mettre à jour l'état d'authentification
           await refetch();
           
-          // Rediriger vers les notes après 2 secondes
+          // Délai pour permettre la synchronisation de l'état
           setTimeout(() => {
             router.push('/notes');
-          }, 2000);
+          }, 1000);
+         
         } else {
           setStatus('error');
           setMessage(data.error || 'Erreur lors de la validation du compte');
