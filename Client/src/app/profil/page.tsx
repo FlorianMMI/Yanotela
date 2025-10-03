@@ -58,21 +58,10 @@ export default function Profil() {
       }
     }
 
-    if (error) {
-        return (
-            <div className='flex justify-center items-center min-h-screen bg-fondpage'>
-                <div className="text-center text-red-500">
-                    <p>Erreur : {error}</p>
-                </div>
-            </div>
-        );
-    }
+    fetchTotalNotes();
+  }, []);
 
-    // Construire le nom d'affichage
-    const displayName = userInfo?.prenom && userInfo?.nom 
-        ? `${userInfo.prenom} ${userInfo.nom}` 
-        : userInfo?.pseudo || 'Utilisateur';
-
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-fondpage">
         <div className="text-center">
