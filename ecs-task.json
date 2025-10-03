@@ -17,13 +17,6 @@
           "protocol": "tcp"
         }
       ],
-      "healthCheck": {
-        "command": ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"],
-        "interval": 30,
-        "timeout": 5,
-        "retries": 3,
-        "startPeriod": 60
-      },
       "environment": [
         {
           "name": "HOSTNAME",
@@ -32,8 +25,20 @@
         {
           "name": "PORT",
           "value": "3000"
+        },
+        {
+          "name": "NODE_ENV",
+          "value": "production"
         }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/yanotela",
+          "awslogs-region": "eu-west-3",
+          "awslogs-stream-prefix": "client"
+        }
+      }
     },
     {
       "name": "server",
@@ -44,7 +49,15 @@
           "containerPort": 3001,
           "hostPort": 3001
         }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/yanotela",
+          "awslogs-region": "eu-west-3",
+          "awslogs-stream-prefix": "server"
+        }
+      }
     }
   ]
 }
