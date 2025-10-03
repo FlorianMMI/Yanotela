@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FetchPermission, UpdatePermission, AddPermission, RemovePermission } from "@/loader/loader";
 import Icons from "@/ui/Icon";
 import { useAuth } from "@/hooks/useAuth";
+import NoteInfo from "../noteInfo/noteinfo";
 
 interface NoteMoreProps {
     noteId: string;
@@ -15,6 +16,7 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
     const connectedUserId = auth.user?.id;
 
     const [showShareModal, setShowShareModal] = useState(false);
+    const [showInfoModal, setShowInfoModal] = useState(false);
     const [permissions, setPermissions] = useState<{ user: { pseudo: string, email: string, id: number }, role: number }[]>([]);
     const [loading, setLoading] = useState(false);
     const [newUserIdentifier, setNewUserIdentifier] = useState("");
@@ -63,7 +65,7 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                             </button>
                             <button
                                 className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-gray-50 hover:text-primary-hover w-full text-left text-base font-medium border-t border-gray-100 transition-colors"
-                                onClick={onClose}
+                                onClick={() => setShowInfoModal(true)}
                             >
                                 <Icons name="info" size={22} className="text-primary" />
                                 Infos de la note
@@ -71,6 +73,11 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Modal Infos de la note */}
+            {showInfoModal && (
+                <NoteInfo note={noteId} onClose={() => setShowInfoModal(false)} />
             )}
 
             {/* Modal Partager la note */}
