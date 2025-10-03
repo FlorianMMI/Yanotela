@@ -11,6 +11,7 @@
  */
 
 import {PrismaClient} from "@prisma/client";
+import { sendDeleteAccountEmail } from "../services/emailService.js";
 const prisma = new PrismaClient();
 
 export const userController = {
@@ -89,6 +90,8 @@ export const userController = {
             const user = await prisma.user.findUnique({
                 where: { id: userId }
             });
+
+            
             
             if (!user) {
                 return res.status(404).json({ message: 'Utilisateur non trouvé' });
@@ -110,6 +113,17 @@ export const userController = {
                 }
             });
             
+            // Envoyer un email de confirmation de suppression
+            const { email } = user;
+            try {
+                
+                await sendDeleteAccountEmail(email);
+                console.log(`Email de confirmation de suppression envoyé à ${email}`);
+            } catch (emailError) {
+                console.error('Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
+                // On continue le processus même si l'email échoue
+            }
+
             console.log('Compte marqué pour suppression:', updatedUser.id);
             
             // Calculer la date de suppression définitive (1 minute pour test)
@@ -233,7 +247,7 @@ export const userController = {
                     
                     // 1. Supprimer d'abord toutes les permissions liées à cet utilisateur
                     await prisma.permission.deleteMany({
-                        where: { id_user: user.id }
+                        where: { userId: user.id }
                     });
                     console.log(`   ✅ Permissions supprimées pour ${user.pseudo}`);
                     
@@ -241,7 +255,7 @@ export const userController = {
                     const userNoteIds = user.notes.map(note => note.id);
                     if (userNoteIds.length > 0) {
                         await prisma.permission.deleteMany({
-                            where: { id_note: { in: userNoteIds } }
+                            where: { noteId: { in: userNoteIds } }
                         });
                         console.log(`   ✅ Permissions des notes supprimées pour ${user.pseudo}`);
                     }
@@ -281,13 +295,9 @@ export const userController = {
     },
 
     updateUserInfo: async (req, res) => {
-
-
         if (!req.session.userId) {
             return res.status(401).json({ message: 'Utilisateur non authentifié' });
         }
-
-        
 
         const userId = parseInt(req.session.userId, 10);
         const { pseudo, prenom, nom, email } = req.body;
