@@ -166,7 +166,7 @@ export default function RegisterForm({
 
       <form
         onSubmit={handleSubmit}
-        className={`${isInSidebar ? 'space-y-4' : 'flex flex-col justify-start items-center gap-5'}`}
+        className={`${isInSidebar ? 'space-y-4' : 'flex flex-col justify-start w-full items-center gap-5'}`}
       >
         <FormMessage type="error" message={error} />
         <FormMessage type="success" message={success} />
@@ -193,14 +193,14 @@ export default function RegisterForm({
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className={`${isInSidebar ? 'w-full px-3 py-2 bg-clrsecondaire rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500 border-primary border-2'}`}
+              className={`${isInSidebar ? 'w-full px-3 py-2 bg-clrsecondaire rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500 border-primary border-2'}`}
             />
           </div>
 
 
           <div className={`${isInSidebar ? 'grid grid-cols-2 gap-4' : 'flex w-full justify-between items-center gap-5'}`}>
 
-            <div>
+            <div className='w-full'>
               <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
                 Prénom
               </p>
@@ -211,11 +211,11 @@ export default function RegisterForm({
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
               />
             </div>
 
-            <div>
+            <div className='w-full'>
               <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
                 Nom
               </p>
@@ -226,7 +226,7 @@ export default function RegisterForm({
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
               />
             </div>
           </div>
