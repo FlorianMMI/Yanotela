@@ -75,10 +75,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
       if (noteId) {
         const note = await GetNoteById(noteId);
-        if (note) {
+        if (note && !('error' in note)) {
           setNoteTitle(note.Titre);
-          setUserRole(note.userRole !== undefined ? note.userRole : null);
-          setIsReadOnly(note.userRole === 3); // Lecteur = lecture seule
+          setUserRole((note as any).userRole !== undefined ? (note as any).userRole : null);
+          setIsReadOnly((note as any).userRole === 3); // Lecteur = lecture seule
           // Si on a du contenu, on le parse pour l'éditeur
           if (note.Content) {
             try {
@@ -118,7 +118,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           setEditorContent(note.Content || "");
         }
         else {
-
           setHasError(true);
         }
       }
@@ -211,7 +210,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               onChange={(e) => !isReadOnly && setNoteTitle(e.target.value)}
               onBlur={(e) => updateNoteTitle(e.target.value)}
               className={`w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white ${isReadOnly ? 'cursor-not-allowed' : ''}`}
-              placeholder={isReadOnly ? "📖 Lecture seule" : "Titre de la note"}
+              
               disabled={isReadOnly}
               />
               <div className="relative">

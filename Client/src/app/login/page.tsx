@@ -28,7 +28,7 @@ export default function Login() {
 
           // Vérifier les deux formats possibles de la réponse
           if (data.authenticated || data.isAuthenticated) {
-            router.push('/');
+            router.push('/notes');
             return;
           }
         }
