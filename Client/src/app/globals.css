@@ -4,27 +4,53 @@
 
 /* Keep @import statements at the very top of this file; do not duplicate @import later in the file. */
 
-:root {
-  --background: #E9EBDB;
-  --deskbackground: #EDEDED;
-  --foreground: #171717;
-  --clr-beige-foncer: #d5d7c3;
-  --clr-gris-clair: #272727;
-  --clr-rouge-fonce: #882626;
-  --gris-clair: #727272;
-  --rouge-fonce: #882626;
-  --rouge-hover: #ff0000;
-  --rouge-clair:oklch(63.7% 0.237 25.331);
-  --light: white;
-  --dark:black;
-  --lightNote: white;
-  --textlightNote:oklch(55.1% 0.027 264.364);
+@layer base {
+
+  :root {
+    --background: #E9EBDB;
+    --deskbackground: #EDEDED;
+    --foreground: #171717;
+    --clr-beige-foncer: #d5d7c3;
+    --clr-gris-clair: #272727;
+    --clr-rouge-fonce: #882626;
+    --gris-clair: #727272;
+    --rouge-fonce: #882626;
+    --rouge-hover: #ff0000;
+    --rouge-clair: oklch(63.7% 0.237 25.331);
+    --light: white;
+    --dark: black;
+    --lightNote: white;
+    --textlightNote: oklch(55.1% 0.027 264.364);
 
 
-  --font-title: 'Nixie One', cursive;
-  --font-family: "Gantari", Arial, Helvetica, sans-serif;
-  --font-gantari: 'Gantari', sans-serif;
-  --font-geologica: 'Geologica', sans-serif;
+    --font-title: 'Nixie One', cursive;
+    --font-family: "Gantari", Arial, Helvetica, sans-serif;
+    --font-gantari: 'Gantari', sans-serif;
+    --font-geologica: 'Geologica', sans-serif;
+  }
+
+  body {
+    color: var(--foreground);
+    font-family: var(--font-gant);
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: var(--motif-opacity);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
 }
 
 @theme inline {
@@ -34,7 +60,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-gantari);
   --font-mono: var(--font-geist-mono);
-  
+
   --color-primary: var(--rouge-fonce);
   --color-primary-hover: var(--rouge-hover);
   --color-rouge-hover: var(--rouge-hover);
@@ -45,14 +71,14 @@
   --font-gant: var(--font-gantari);
   --font-title: var(--font-title);
 
-  --color-clrprincipal:var(--dark);
-  --color-clrsecondaire:var(--light);
-  --color-fondcardNote:var(--lightNote);
-  --color-textcardNote:var(--textlightNote);
+  --color-clrprincipal: var(--dark);
+  --color-clrsecondaire: var(--light);
+  --color-fondcardNote: var(--lightNote);
+  --color-textcardNote: var(--textlightNote);
 }
 
 
- /* @media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #2f2f2f;
     --deskbackground: #474747;
@@ -64,22 +90,3 @@
     --textlightNote: white;
   }
 }    */
-
-
-body {
-  color: var(--foreground);
-  font-family: var(--font-gant);
-  position: relative;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: var(--motif-opacity);
-  pointer-events: none;
-  z-index: -1;
-}
