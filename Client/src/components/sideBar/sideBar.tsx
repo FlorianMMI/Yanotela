@@ -50,7 +50,7 @@ export default function SideBar({ className }: SideBarProps) {
       {isAuthenticated && user ? ( 
         <button 
         onClick={toggle}
-        className='absolute top-1/2 -right-4 transform -translate-y-1/2 z-50 p-2 bg-background border border-gray-300 rounded-full shadow-md hover:bg-gray-50 transition-colors w-[40px] h-[40px] flex items-center justify-center'
+        className='absolute top-1/2 -right-4 transform -translate-y-1/2 z-50 p-2 bg-background border border-gray-300 rounded-full shadow-md hover:bg-gray-50 transition-colors w-[40px] h-[40px] flex items-center justify-center cursor-pointer'
       >
         <Icon name='arrow-ss-barre' size={20} className={isOpen ? 'rotate-180' : ''}/>
       </button>
