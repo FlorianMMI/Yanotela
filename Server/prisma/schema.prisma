@@ -24,15 +24,6 @@ model User {
 }
 
 model Note {
-  id         String       @id
-  Titre      String
-  Content    String
-  authorId   Int
-  ModifiedAt DateTime     @default(now())
-  author     User         @relation(fields: [authorId], references: [id])
-  Permission Permission[]
-}
-
   id              String         @id 
   Titre           String      
   Content         String
@@ -54,4 +45,5 @@ model Permission {
   user   User   @relation(fields: [userId], references: [id])
 
   @@id([noteId, userId])
+  
 }
