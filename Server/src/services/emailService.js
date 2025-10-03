@@ -154,15 +154,68 @@ async function sendDeleteAccountEmail(to) {
       to,
       subject: 'Votre compte Yanotela a été supprimé',
       html: `
-      <div style="font-family: Arial, sans-serif; background: #f9f9f9; padding: 30px;">
-        <div style="max-width: 500px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 24px;">
-        <h2 style="color: #882626; margin-top: 0;">Compte supprimé</h2>
-        <p>Votre compte Yanotela a été supprimé avec succès. Nous sommes désolés de vous voir partir.</p>
-        <p>Si vous n'êtes pas à l'origine de cette action, veuillez contacter Gérard.</p>
-        <p>Si vous avez des questions ou des préoccupations, n'hésitez pas à nous contacter.</p>
-        <hr style="margin: 32px 0;">
-        <p style="font-size: 12px; color: #888;">Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
-        </div>
+      <span style="display:none; font-size:1px; color:#ffffff; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+      Confirmation de suppression de votre compte Yanotela
+      </span>
+      <div style="font-family: Arial, Helvetica, sans-serif; background:#f4f6f8; padding:30px;">
+      <div style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 6px 24px rgba(34,41,47,0.06);">
+      
+      <!-- Header -->
+      <div style="background:linear-gradient(90deg,#882626 0%, #b03a3a 100%); padding:22px 24px; color:#fff; display:flex; align-items:center; gap:16px;">
+      <div style="width:56px; height:56px; border-radius:50%; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px; overflow:hidden;">
+        <img src="${FRONT_URL}/favicon.ico" alt="Yanotela" style="width:40px; height:40px; object-fit:contain; display:block;" />
+      </div>
+      <div>
+        <div style="font-size:18px; font-weight:700; letter-spacing:0.2px;">Yanotela</div>
+        <div style="font-size:13px; opacity:0.9;">Confirmation de suppression de compte</div>
+      </div>
+      </div>
+
+      <!-- Body -->
+      <div style="padding:28px;">
+      <h2 style="color:#222; margin:0 0 8px; font-size:20px;">Votre compte a bien été supprimé</h2>
+      <p style="color:#495057; line-height:1.5; margin:0 0 18px;">
+        Nous confirmons que votre compte Yanotela a été définitivement supprimé. Nous sommes désolés de vous voir partir.
+      </p>
+
+      <div style="background:#f8fafb; border:1px solid #eef2f4; padding:16px; border-radius:8px; margin-bottom:18px;">
+        <p style="margin:0; color:#333; font-weight:600;">Ce que cela signifie</p>
+        <ul style="margin:8px 0 0 18px; color:#555; line-height:1.45;">
+        <li>Toutes vos notes et données associées ont été supprimées.</li>
+        <li>Vous ne serez plus facturé (le cas échéant) et votre accès est révoqué.</li>
+        <li>Si la suppression n'était pas intentionnelle, contactez-nous rapidement.</li>
+        </ul>
+      </div>
+
+      <p style="margin:0 0 18px; color:#495057; line-height:1.5;">
+        Si vous avez des questions, ou si cette suppression n'était pas autorisée, contactez notre équipe :
+      </p>
+
+      <div style="text-align:left; margin-bottom:22px;">
+        <a href="mailto:${process.env.SUPPORT_EMAIL || 'noreply.yanotela@gmail.com'}" style="display:inline-block; background:#882626; color:#fff; padding:10px 16px; border-radius:8px; text-decoration:none; font-weight:600;">
+        Contacter le support
+        </a>
+
+        <a href="${FRONT_URL}" style="display:inline-block; margin-left:12px; background:#eef2f4; color:#222; padding:10px 16px; border-radius:8px; text-decoration:none; font-weight:600;">
+        Visiter Yanotela
+        </a>
+      </div>
+
+      <p style="color:#9aa0a6; font-size:13px; margin:0;">
+        Merci d'avoir essayé Yanotela — nous espérons vous revoir un jour.
+      </p>
+      </div>
+
+      <!-- Footer -->
+      <div style="background:#fafafa; padding:14px 20px; border-top:1px solid #eef2f4; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#8a8f94;">
+      <div>Yanotela • <span style="color:#8a8f94;">&copy; ${new Date().getFullYear()}</span></div>
+      <div>
+        <a href="${FRONT_URL}/privacy" style="color:#8a8f94; text-decoration:none; margin-left:12px;">Confidentialité</a>
+        <a href="${FRONT_URL}/terms" style="color:#8a8f94; text-decoration:none; margin-left:12px;">Conditions</a>
+      </div>
+      </div>
+
+      </div>
       </div>
       `
     });
