@@ -8,6 +8,8 @@ import Logout from "@/ui/logout";
 import TotalNotes from "@/ui/note/totalNotes";
 import Icons from "@/ui/Icon";
 import ModificationProfil from "@/components/ModificationProfil/page";
+import Notification from "@/ui/notification/page";
+
 
 interface UserInfo {
   id: number;
@@ -99,6 +101,16 @@ export default function Profil() {
               className="cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
             />
           </div>
+
+          {/* <div>
+            <Icons 
+              name='notification'
+              size={35}
+              className="ml-4 cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
+
+            />
+          </div> */}
+
         </div>
 
         {/* Contenu centré et réparti */}
@@ -112,6 +124,9 @@ export default function Profil() {
               />
             )}
           </div>
+
+            <Notification title="Bienvenue sur votre profil" author='test'/>
+
           <div className="hidden md:flex w-full">
             <ModificationProfil />
           </div>
