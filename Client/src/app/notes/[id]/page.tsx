@@ -15,7 +15,8 @@ import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 import OnChangePlugin from "@lexical/react/LexicalOnChangePlugin";
 import { useCallback } from "react";
-
+import Icons from '@/ui/Icon';
+import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter } from "next/navigation";
 
 import { GetNoteById } from "@/loader/loader";
@@ -53,12 +54,16 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const router = useRouter();
   const [hasError, setHasError] = useState(false);
   const [editor, setEditor] = useState<any>(null);
+  const [showNoteMore, setShowNoteMore] = useState(false);
+  const [userRole, setUserRole] = useState<number | null>(null); // Ajouter le rôle utilisateur
+  const [isReadOnly, setIsReadOnly] = useState(false); // Mode lecture seule
 
   // Unwrap params using React.use()
   const { id } = use(params);
 
 
   function updateNoteTitle(newTitle: string) {
+    if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
     setNoteTitle(newTitle);
     uploadContent(id, newTitle, editorContent);
   }
@@ -72,6 +77,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         const note = await GetNoteById(noteId);
         if (note) {
           setNoteTitle(note.Titre);
+          setUserRole(note.userRole !== undefined ? note.userRole : null);
+          setIsReadOnly(note.userRole === 3); // Lecteur = lecture seule
           // Si on a du contenu, on le parse pour l'éditeur
           if (note.Content) {
             try {
@@ -163,6 +170,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     );
 
     function saveContent(editorState: EditorState) {
+      if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
+      
       // Call toJSON on the EditorState object, which produces a serialization safe string
       const editorStateJSON = editorState.toJSON();
       // However, we still have a JavaScript object, so we need to convert it to an actual string with JSON.stringify
@@ -195,14 +204,31 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           hasError ?
             <p className="w-full font-semibold bg-transparent p-1">Erreur</p>
             :
-            <input
+            <>
+              <input
               type="text"
               value={noteTitle}
-              onChange={(e) => setNoteTitle(e.target.value)}
-              onBlur={(e) => updateNoteTitle(e.target.value)} //On blur permet de sauvegarder le titre quand on sort du champ
-              className="w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white"
-              placeholder="Titre de la note"
-            />
+              onChange={(e) => !isReadOnly && setNoteTitle(e.target.value)}
+              onBlur={(e) => updateNoteTitle(e.target.value)}
+              className={`w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+              placeholder={isReadOnly ? "📖 Lecture seule" : "Titre de la note"}
+              disabled={isReadOnly}
+              />
+              <div className="relative">
+              <span onClick={() => setShowNoteMore((prev) => !prev)}>
+                <Icons
+                  name="more"
+                  size={20}
+                  className="text-white cursor-pointer"
+                />
+              </span>
+              {showNoteMore && (
+                <div className="absolute right-0 mt-2 z-20">
+                <NoteMore noteId={id} onClose={() => setShowNoteMore(false)} />
+                </div>
+              )}
+              </div>
+            </>
         }
 
       </div>
@@ -226,25 +252,26 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div  onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
+            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
-                      aria-placeholder={"Commencez à écrire..."}
+                      aria-placeholder={isReadOnly ? "Mode lecture seule" : "Commencez à écrire..."}
                       placeholder={
                         <p className="absolute top-4 left-4 text-textcardNote select-none pointer-events-none">
-                          Commencez à écrire...
+                          {isReadOnly ? "📖 Mode lecture seule - Vous ne pouvez pas modifier cette note" : "Commencez à écrire..."}
                         </p>
                       }
-                      className="h-full focus:outline-none"
+                      className={`h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                      contentEditable={!isReadOnly}
                     />
                   }
                   ErrorBoundary={LexicalErrorBoundary}
                 />
                 <HistoryPlugin />
-                <OnChangeBehavior />
-                <AutoFocusPlugin />
+                {!isReadOnly && <OnChangeBehavior />}
+                {!isReadOnly && <AutoFocusPlugin />}
               </LexicalComposer>
             </div>
           </>

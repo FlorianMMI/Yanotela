@@ -97,3 +97,53 @@ export const requireNoteOwnership = async (req, res, next) => {
         });
     }
 };
+
+/**
+ * Middleware pour vérifier si l'utilisateur a les droits d'écriture sur une note
+ * (propriétaire, admin ou éditeur - pas lecteur)
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express  
+ * @param {Function} next - Fonction next d'Express
+ */
+export const requireWriteAccess = async (req, res, next) => {
+    const { id } = req.params;
+    
+    if (!req.session.userId) {
+        return res.status(401).json({ message: "Pas authentifié" });
+    }
+
+    try {
+        const { PrismaClient } = await import('@prisma/client');
+        const prisma = new PrismaClient();
+        
+        // Récupérer les permissions de l'utilisateur pour cette note
+        const permission = await prisma.permission.findFirst({
+            where: {
+                userId: parseInt(req.session.userId),
+                noteId: id
+            }
+        });
+
+        if (!permission) {
+            return res.status(403).json({ 
+                message: 'Vous n\'avez pas accès à cette note'
+            });
+        }
+
+        // Vérifier que l'utilisateur a les droits d'écriture (rôle 0, 1 ou 2)
+        // Rôle 3 = lecteur (lecture seule)
+        if (permission.role === 3) {
+            return res.status(403).json({ 
+                message: 'Vous n\'avez que les droits de lecture sur cette note'
+            });
+        }
+
+        req.userPermission = permission;
+        next();
+    } catch (error) {
+        res.status(500).json({ 
+            message: 'Erreur lors de la vérification des droits', 
+            error: error.message 
+        });
+    }
+};

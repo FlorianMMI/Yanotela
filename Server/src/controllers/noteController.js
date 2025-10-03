@@ -15,6 +15,8 @@
 
 import {PrismaClient} from "@prisma/client";
 import crypto from "crypto";
+import {getPermission} from "./permissionController.js";
+
 const prisma = new PrismaClient();
 
 export const noteController = {
@@ -29,21 +31,46 @@ export const noteController = {
         }
 
         try {
-            // Récupérer seulement les notes de l'utilisateur connecté
-            const notes = await prisma.note.findMany({
+                // Récupérer toutes les notes où l'utilisateur a des permissions
+
+            const permissions = await prisma.permission.findMany({
                 where: {
-                    authorId: req.session.userId
+                    userId: req.session.userId
                 },
-                orderBy: {
-                    ModifiedAt: 'desc' // Plus récent en premier
+                include: {
+                    note: {
+                        include: {
+                            author: true,
+                            modifier: true
+                        }
+                    }
                 }
             });
+
+
+            // Extraire les notes et formater author/modifier en pseudo
+            const notes = permissions.map(perm => {
+                const note = perm.note;
+                return {
+                    id: note.id,
+                    Titre: note.Titre,
+                    Content: note.Content,
+                    author: note.author ? note.author.pseudo : null,
+                    modifier: note.modifier ? note.modifier.pseudo : null,
+                    ModifiedAt: note.ModifiedAt,
+                    userRole: perm.role
+                };
+            });
+
+            // Trier par date de modification
+            notes.sort((a, b) => new Date(b.ModifiedAt) - new Date(a.ModifiedAt));
 
             const totalNotes = notes.length;
 
             res.status(200).json({ notes, totalNotes });
         } catch (error) {
-            res.status(500).json({ message: 'Erreur lors de la récupération des notes', error: error.message });
+            console.error('Erreur lors de la récupération des notes:', error);
+            res.status(500).json({ message: 'Erreur lors de la récupération des notes', error: error.message, stack: error.stack });
         }
     },
 
@@ -80,6 +107,13 @@ export const noteController = {
                     Titre,
                     Content,
                     authorId,
+                    modifierId: authorId, // Le fondateur est aussi le premier modificateur
+                    permissions: {
+                        create: {
+                            userId: authorId,
+                            role: 0 // Rôle 0 = Propriétaire
+                        }
+                    }
                 }
             });
 
@@ -91,56 +125,105 @@ export const noteController = {
         }
 
         catch (error) {
+            console.error('Erreur lors de la création de la note:', error);
             res.status(500).json({ message: 'Erreur lors de la création de la note', error: error.message });
         }
     },
     
     getNoteById: async (req, res) => {
         const { id } = req.params;
-        
+        const { userId } = req.session;
+
+        console.log('[getNoteById] Requested note ID:', id);
+        console.log('[getNoteById] Session userId:', userId);
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Utilisateur non authentifié' });
+        }
+
         try {
             const note = await prisma.note.findUnique({
                 where: { id: id },
-
+                include: {
+                    author: true,
+                    modifier: true
+                }
             });
+            console.log('[getNoteById] prisma.note.findUnique result:', note);
+
             if (!note) {
+                console.log('[getNoteById] Note not found for ID:', id);
                 return res.status(404).json({ message: 'Note non trouvée' });
             }
-            res.status(200).json({ Titre: note.Titre, Content: note.Content });
+
+            // Récupérer le rôle de l'utilisateur sur cette note
+            const userPermission = await getPermission(userId, id);
+            console.log('[getNoteById] userPermission:', userPermission);
+
+            if (!userPermission) {
+                console.log('[getNoteById] No permission for user', userId, 'on note', id);
+                return res.status(403).json({ message: 'Vous n\'avez pas accès à cette note' });
+            }
+
+            res.status(200).json({ 
+                Titre: note.Titre, 
+                Content: note.Content,
+                author: note.author ? note.author.pseudo : null,
+                modifier: note.modifier ? note.modifier.pseudo : null,
+                ModifiedAt: note.ModifiedAt,
+                userRole: userPermission.role // Ajouter le rôle pour le front
+            });
         }
         catch (error) {
+            console.error('[getNoteById] Error:', error);
             res.status(500).json({ message: 'Erreur lors de la récupération de la note', error: error.message });
         }
     },
     
     updateNoteById: async (req, res) => {
         const { id } = req.params;
-        const { Titre, Content } = req.body;
-       
+        let { Titre, Content } = req.body;
 
-        console.log('req.body:', req.session);
         const { userId } = req.session;
-        console.log('Session authorId:', userId);
+        
         if (!userId) {
-            return res.status(400).json({ message: 'Identifiant auteur manquant' });
+            return res.status(401).json({ message: 'Utilisateur non authentifié' });
         }
         
         if (!Titre || !Content) {
             return res.status(400).json({ message: 'Champs requis manquants' });
         }
 
-        if (Titre == ""){
+        if (Titre === ""){
             Titre = "Sans titre";
         }
 
         try {
+            // Vérifier les permissions (await car async)
+            const userPermission = await getPermission(userId, id);
+            
+            if (!userPermission) {
+                return res.status(403).json({ message: 'Vous n\'avez pas accès à cette note' });
+            }
+            
+            // Seuls propriétaire (0), admin (1) et éditeur (2) peuvent modifier
+            if (userPermission.role > 2) {
+                return res.status(403).json({ message: 'Vous n\'avez pas la permission de modifier cette note (lecture seule)' });
+            }
+
             const note = await prisma.note.update({
                 where: { id: id },
-                data: { Titre, Content, ModifiedAt: new Date() },
+                data: { 
+                    Titre, 
+                    Content, 
+                    ModifiedAt: new Date(),
+                    modifierId: parseInt(userId) // Enregistre le dernier modificateur
+                },
             });
             res.status(200).json({ message: 'Note mise à jour avec succès', note });
         }
         catch (error) {
+            console.error('Erreur lors de la mise à jour de la note:', error);
             res.status(500).json({ message: 'Erreur lors de la mise à jour de la note', error: error.message });
         }
     },
