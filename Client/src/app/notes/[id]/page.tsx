@@ -74,8 +74,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       const noteId = id;
 
       if (noteId) {
-        const note = await GetNoteById(noteId);
-        if (note) {
+        const result = await GetNoteById(noteId);
+        if (result && !('error' in result)) {
+          const note = result;
           setNoteTitle(note.Titre);
           setUserRole(note.userRole !== undefined ? note.userRole : null);
           setIsReadOnly(note.userRole === 3); // Lecteur = lecture seule
@@ -118,7 +119,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           setEditorContent(note.Content || "");
         }
         else {
-
           setHasError(true);
         }
       }
