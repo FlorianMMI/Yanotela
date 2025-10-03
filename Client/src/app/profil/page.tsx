@@ -89,7 +89,7 @@ export default function Profil() {
 
   return (
     <>
-      <div className="py-4 md:px-8 px-0 flex flex-col items-center justify-between  bg-fondpage">
+    <div className="py-4 md:px-8 px-0 flex flex-col items-center justify-between  bg-fondpage">
         {/* Boutons settings et déconnexion alignés en haut */}
         <div className=" flex-row justify-end hidden items-center w-full px-8">
           <div className=" items-center" title="Paramètres du compte">
@@ -125,7 +125,7 @@ export default function Profil() {
               <TotalNotes totalNotes={totalNotes} />
             </div>
             {/* Bouton déconnexion mobile en bas */}
-          <div className="flex flex-col items-center justify-center h-full w-full">
+          <div className="flex flex-col items-center justify-center w-full">
             
               <Logout />
             
