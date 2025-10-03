@@ -57,8 +57,6 @@ export default function SideBar({ className }: SideBarProps) {
       ) : (
         ""
       )}
-
-      
     </div>
   );
 }
