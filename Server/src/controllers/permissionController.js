@@ -82,31 +82,49 @@ const UpdatePermission = async (req, res) => {
     if (adminPermission.role === 0) {
       if (userPermission.role !== 0) {
         // L'utilisateur connecté devient admin (1), l'autre devient propriétaire (0)
-        await prisma.permission.update({
-          where: { 
-            noteId_userId: {
-              noteId: noteId,
-              userId: connected
-            }
-          },
-          data: { role: 1 }
-        });
-        await prisma.permission.update({
-          where: { 
-            noteId_userId: {
-              noteId: noteId,
-              userId: parseInt(userId)
-            }
-          },
-          data: { role: 0 }
-        });
-        return res.json({ success: true, message: "Transfert de propriété effectué. Vous êtes maintenant administrateur." });
+        if (req.body.newRole === 0) {
+          await prisma.permission.update({
+            where: { 
+              noteId_userId: {
+                noteId: noteId,
+                userId: connected
+              }
+            },
+            data: { role: 1 }
+          });
+          await prisma.permission.update({
+            where: { 
+              noteId_userId: {
+                noteId: noteId,
+                userId: parseInt(userId)
+              }
+            },
+            data: { role: 0 }
+          });
+          return res.json({ success: true, message: "Transfert de propriété effectué. Vous êtes maintenant administrateur." });
+        } else {
+          // Propriétaire peut modifier n'importe quel rôle (sauf un autre propriétaire)
+          const { newRole } = req.body;
+          if (typeof newRole !== 'number' || newRole < 1 || newRole > 3) {
+            return res.status(400).json({ error: "Rôle cible invalide ou non autorisé." });
+          }
+          await prisma.permission.update({
+            where: { 
+              noteId_userId: {
+                noteId: noteId,
+                userId: parseInt(userId)
+              }
+            },
+            data: { role: newRole }
+          });
+          return res.json({ success: true, message: `Rôle modifié avec succès` });
+        }
       } else {
         return res.status(400).json({ error: "L'utilisateur est déjà propriétaire." });
       }
     }
 
-    // Pour tous les autres : on ne peut donner qu'un rôle plus faible que le sien
+    // Pour les autres : on ne peut donner qu'un rôle plus faible que le sien
     if (adminPermission.role < userPermission.role) {
       const { newRole } = req.body;
       if (typeof newRole !== 'number' || newRole <= adminPermission.role || newRole > 3) {
@@ -211,4 +229,53 @@ async function AddPermission(req, res) {
 }
 
 
-export { getPermission, UpdatePermission, AddPermission };
+// Handler Express pour retirer une permission d'un utilisateur sur une note
+async function RemovePermission(req, res) {
+  const { noteId, userId } = req.params;
+  const connected = req.session.userId;
+  if (!connected) {
+    return res.status(401).json({ error: "Non authentifié" });
+  }
+
+  try {
+    // Permission de l'utilisateur connecté sur cette note
+    const adminPermission = await prisma.permission.findFirst({
+      where: {
+        userId: connected,
+        noteId: noteId
+      }
+    });
+    if (!adminPermission || adminPermission.role > 1) {
+      return res.status(403).json({ error: "Permissions insuffisantes pour retirer un utilisateur" });
+    }
+
+    // Permission de l'utilisateur cible
+    const userPermission = await prisma.permission.findFirst({
+      where: {
+        userId: parseInt(userId),
+        noteId: noteId
+      }
+    });
+    if (!userPermission) {
+      return res.status(404).json({ error: "Permission utilisateur cible introuvable" });
+    }
+    if (userPermission.role === 0) {
+      return res.status(403).json({ error: "Impossible de retirer le propriétaire de la note" });
+    }
+
+    await prisma.permission.delete({
+      where: {
+        noteId_userId: {
+          noteId: noteId,
+          userId: parseInt(userId)
+        }
+      }
+    });
+    res.json({ success: true, message: "Permission retirée avec succès" });
+  } catch (error) {
+    console.error('Erreur lors de la suppression de permission:', error);
+    res.status(500).json({ error: "Erreur serveur lors de la suppression de permission" });
+  }
+}
+
+export { getPermission, UpdatePermission, AddPermission, RemovePermission };

@@ -104,8 +104,9 @@ export async function GetNoteById(id: string): Promise<Note | null> {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const note = await response.json();
-        return note;
+        const data = await response.json();
+        // La réponse contient { Titre, Content, userRole (optionnel) }
+        return data;
     } catch (error) {
         console.error("Error fetching note by ID:", error);
         return null;
@@ -417,6 +418,29 @@ export async function AddPermission(noteId: string, identifier: string, role: nu
         }
     } catch (error) {
         console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function RemovePermission(noteId: string, userId: number): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/permission/${noteId}/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la suppression de la permission' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de la suppression de la permission:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }

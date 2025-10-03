@@ -1,5 +1,5 @@
 import express from 'express';
-import { FetchPermission, UpdatePermission, AddPermission } from '../controllers/permissionController.js';
+import { FetchPermission, UpdatePermission, AddPermission, RemovePermission } from '../controllers/permissionController.js';
 
 const router = express.Router();
 
@@ -9,5 +9,8 @@ router.get('/note/:noteId', FetchPermission);
 router.put('/update/:noteId/:userId', UpdatePermission);
 // Route pour ajouter un utilisateur à une note par email/pseudo
 router.post('/add/:noteId', AddPermission);
+
+// Route pour retirer un utilisateur d'une note (sauf propriétaire)
+router.delete('/:noteId/:userId', RemovePermission);
 
 export default router;
