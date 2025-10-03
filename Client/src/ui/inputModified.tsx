@@ -56,7 +56,7 @@ export default function InputModified({
       <p className="justify-start text-clrprincipal w-fit font-bold text-sm">
         {name}{type==="pseudo" ? "*" : " "}:
       </p>
-      {type==="pseudo" ? <span className="text-zinc-500 text-xs font-light">*Doit être unique</span> : " "}
+      {type==="pseudo" ? <span className="text-zinc-500 text-xs font-light text-start">*Doit être unique</span> : " "}
       </div>
       <div className={`flex  gap-4 w-full ${type==="email" ? "flex-col" : "flex-row"}`}>
         <input
