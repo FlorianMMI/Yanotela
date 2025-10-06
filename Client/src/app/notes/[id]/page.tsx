@@ -256,10 +256,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
-                      aria-placeholder={isReadOnly ? "Mode lecture seule" : "Commencez à écrire..."}
+                      aria-placeholder={ "Commencez à écrire..."}
                       placeholder={
                         <p className="absolute top-4 left-4 text-textcardNote select-none pointer-events-none">
-                          {isReadOnly ? "📖 Mode lecture seule - Vous ne pouvez pas modifier cette note" : "Commencez à écrire..."}
+                           "Commencez à écrire..."
                         </p>
                       }
                       className={`h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}

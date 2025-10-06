@@ -239,8 +239,7 @@ export default function Breadcrumb() {
         </div>
 
       </nav>
-      <div className='h-8 bg-primary'>
-      </div>
+
     </>
   );
 }
