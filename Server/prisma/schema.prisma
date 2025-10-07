@@ -38,6 +38,8 @@ model Permission {
   id_note String
   id_user Int
   role    Int
+  isAccepted Boolean @default(0)
+  
   Note    Note   @relation(fields: [id_note], references: [id])
   User    User   @relation(fields: [id_user], references: [id])
 
