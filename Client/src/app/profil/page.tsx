@@ -10,6 +10,8 @@ import Icons from "@/ui/Icon";
 import ModificationProfil from "@/components/ModificationProfil/page";
 import ParamModal from "@/components/infoprofil/paramModal";
 import { AnimatePresence } from "motion/react";
+import Notification from "@/ui/notification/page";
+
 
 interface UserInfo {
   id: number;
@@ -113,6 +115,16 @@ export default function Profil() {
               className="cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
             />
           </div>
+
+          {/* <div>
+            <Icons 
+              name='notification'
+              size={35}
+              className="ml-4 cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
+
+            />
+          </div> */}
+
         </div>
 
         {/* Contenu centré et réparti */}
@@ -126,6 +138,7 @@ export default function Profil() {
               />
             )}
           </div>
+
           <div className="hidden md:flex w-full">
             <ModificationProfil />
           </div>
