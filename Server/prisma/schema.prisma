@@ -19,7 +19,7 @@ model User {
   is_verified Boolean      @default(false)
   deleted_at  DateTime?
   notes       Note[]
-  Notification Notification[]
+  
   Permission  Permission[]
 }
 
@@ -30,7 +30,7 @@ model Note {
   authorId   Int
   ModifiedAt DateTime     @default(now())
   author     User         @relation(fields: [authorId], references: [id])
-  Notification Notification[]
+  
   Permission Permission[]
 }
 
@@ -38,8 +38,8 @@ model Permission {
   id_note String
   id_user Int
   role    Int
-  isAccepted Boolean @default(0)
-  
+  isAccepted Boolean @default(false)
+
   Note    Note   @relation(fields: [id_note], references: [id])
   User    User   @relation(fields: [id_user], references: [id])
 
