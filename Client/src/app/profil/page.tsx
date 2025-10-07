@@ -7,18 +7,20 @@ import { useEffect, useState } from "react";
 import Logout from "@/ui/logout";
 import TotalNotes from "@/ui/note/totalNotes";
 import Icons from "@/ui/Icon";
-import ModificationProfil from "@/components/ModificationProfil/page";
+import { AnimatePresence } from "framer-motion";
+import ParamModal from "@/components/infoprofil/paramModal"; // Adjust the path as needed
 
 interface UserInfo {
-    id: number;
-    pseudo: string;
-    prenom?: string;
-    nom?: string;
-    email: string;
-    noteCount?: number;
+  id: number;
+  pseudo: string;
+  prenom?: string;
+  nom?: string;
+  email: string;
+  noteCount?: number;
 }
 
 export default function Profil() {
+  const [isParamModalOpen, setIsParamModalOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,84 +63,79 @@ export default function Profil() {
     fetchTotalNotes();
   }, []);
 
-    const openParamModal = () => {
-        setIsParamModalOpen(true);
-    };
+  const openParamModal = () => {
+    setIsParamModalOpen(true);
+  };
 
-    const closeParamModal = () => {
-        setIsParamModalOpen(false);
-    };
+  const closeParamModal = () => {
+    setIsParamModalOpen(false);
+  };
 
-    if (loading) {
-        return (
-            <div className='flex justify-center items-center min-h-screen bg-fondpage'>
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p>Chargement des informations...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // Main render after loading
-    // Définir displayName à partir des infos utilisateur
-    const displayName =
-        userInfo?.prenom && userInfo?.nom
-            ? `${userInfo.prenom} ${userInfo.nom}`
-            : userInfo?.pseudo || '';
-
+  if (loading) {
     return (
-        <>
-            <div className='py-4 flex flex-col items-center justify-start h-full bg-fondpage'>
-
-                {/* Boutons settings et déconnexion alignés en haut */}
-                <div className="flex flex-row justify-between items-center w-full px-8">
-
-                    <div
-                        className="items-center" title='Paramètres du compte'
-                        onClick={openParamModal}
-                    >
-                        <Icons
-                            name="settings"
-                            size={40}
-                            className='cursor-pointer w-full h-full rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300'
-                        />
-                    </div>
-
-                    <div className=" items-center hidden md:flex" title='Me déconnecter'>
-                        <Logout />
-                    </div>
-
-                </div>
-
-                {/* Contenu centré et réparti */}
-                <div className="flex flex-col justify-center items-center text-center gap-20 w-full h-full">
-                    {userInfo && (
-                        <InfoProfil
-                            name={displayName}
-                            pseudo={userInfo.pseudo}
-                            email={userInfo.email}
-                        />
-                    )}
-                    <TotalNotes totalNotes={totalNotes} />
-
-                    {/* Bouton déconnexion mobile en bas */}
-                    <div
-                        className="flex items-center md:hidden w-full px-8 "
-                        title='Me déconnecter'
-                    >
-                        <Logout />
-                    </div>
-                </div>
-
-            </div>
-
-            {/* Modal */}
-            <AnimatePresence>
-                {isParamModalOpen && (
-                    <ParamModal onClose={closeParamModal} />
-                )}
-            </AnimatePresence>
-        </>
+      <div className="flex justify-center items-center min-h-screen bg-fondpage">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Chargement des informations...</p>
+        </div>
+      </div>
     );
+  }
+
+  // Main render after loading
+  // Définir displayName à partir des infos utilisateur
+  const displayName =
+    userInfo?.prenom && userInfo?.nom
+      ? `${userInfo.prenom} ${userInfo.nom}`
+      : userInfo?.pseudo || "";
+
+  return (
+    <>
+      <div className="py-4 flex flex-col items-center justify-start h-full bg-fondpage">
+        {/* Boutons settings et déconnexion alignés en haut */}
+        <div className="flex flex-row justify-between items-center w-full px-8">
+          <div
+            className="items-center"
+            title="Paramètres du compte"
+            onClick={openParamModal}
+          >
+            <Icons
+              name="settings"
+              size={40}
+              className="cursor-pointer w-full h-full rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
+            />
+          </div>
+
+          <div className=" items-center hidden md:flex" title="Me déconnecter">
+            <Logout />
+          </div>
+        </div>
+
+        {/* Contenu centré et réparti */}
+        <div className="flex flex-col justify-center items-center text-center gap-20 w-full h-full">
+          {userInfo && (
+            <InfoProfil
+              name={displayName}
+              pseudo={userInfo.pseudo}
+              email={userInfo.email}
+            />
+          )}
+          <TotalNotes totalNotes={totalNotes} />
+
+          {/* Bouton déconnexion mobile en bas */}
+          <div
+            className="flex items-center md:hidden w-full px-8 "
+            title="Me déconnecter"
+          >
+            <Logout />
+          </div>
+        </div>
+      </div>
+
+      {/* Modal */}
+      <AnimatePresence>
+        {isParamModalOpen && <ParamModal onClose={closeParamModal} />}
+      </AnimatePresence>
+    </>
+  );
 }
