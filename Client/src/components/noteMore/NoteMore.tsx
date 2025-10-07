@@ -17,28 +17,28 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
         <>
             {/* Modal Paramètres */}
             {!showShareModal && !showInfoModal && (
-                <div>
-                    <div className="bg-white rounded-2xl shadow-2xl min-w-[300px] w-[350px] max-w-full overflow-hidden flex flex-col animate-fade-in">
-                        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-300 bg-gray-50">
-                            <span className="text-lg font-semibold text-primary">Options de la note</span>
-                            <button
-                                className="p-2 rounded hover:bg-gray-200 transition-colors"
-                                onClick={onClose}
-                                aria-label="Fermer"
-                            >
-                                <Icons name="arrow-ss-barre" size={22} className="text-primary" />
-                            </button>
-                        </div>
+        <div className="bg-white rounded-xl min-w-2xs w-sm shadow-lg overflow-hidden relative h-auto flex flex-col">
+            <button
+                className="absolute top-2 right-2 p-1 rounded hover:bg-deskbackground transition-colors z-10"
+                onClick={onClose}
+                aria-label="Fermer"
+            >
+                <Icons name="arrow-ss-barre" size={22} className="text-primary" />
+            </button>
+            <div className="p-4 pb-2 border-b border-element">
+                <h3 className="text-lg font-semibold text-foreground">Option de la note</h3>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
                         <div className="flex flex-col gap-1 py-2">
                             <button
-                                className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-gray-50 hover:text-primary-hover w-full text-left text-base font-medium transition-colors"
+                                className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium transition-colors"
                                 onClick={() => setShowShareModal(true)}
                             >
                                 <Icons name="partage" size={22} className="text-primary" />
                                 Partager la note
                             </button>
                             <button
-                                className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-gray-50 hover:text-primary-hover w-full text-left text-base font-medium border-t border-gray-100 transition-colors"
+                                className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium border-t border-gray-100 transition-colors"
                                 onClick={() => setShowInfoModal(true)}
                             >
                                 <Icons name="info" size={22} className="text-primary" />

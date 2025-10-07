@@ -41,23 +41,18 @@ export default function NoteInfo({ noteId, onClose }: NoteInfoProps) {
 
 
     return (
-        <div className="bg-white rounded-2xl min-w-[350px] w-[400px] max-w-full shadow-2xl overflow-hidden flex flex-col animate-fade-in">
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-deskbackground">
-                <div className="flex items-center gap-2">
-                    <Icons name="info" size={22} className="text-primary" />
-                    <span className="text-lg font-semibold text-primary">Infos de la note</span>
-                </div>
-                <button
-                    className="p-2 rounded hover:bg-gray-200 transition-colors"
-                    onClick={onClose}
-                    aria-label="Fermer"
-                >
-                    <Icons name="arrow-ss-barre" size={22} className="text-primary" />
-                </button>
+        <div className="bg-white rounded-xl min-w-2xs w-sm shadow-lg overflow-hidden relative h-auto flex flex-col">
+            <button
+                className="absolute top-2 right-2 p-1 rounded hover:bg-deskbackground transition-colors z-10"
+                onClick={onClose}
+                aria-label="Fermer"
+            >
+                <Icons name="arrow-ss-barre" size={22} className="text-primary" />
+            </button>
+            <div className="p-4 pb-2 border-b border-element">
+                <h3 className="text-lg font-semibold text-foreground">Infos la note</h3>
             </div>
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 bg-white">
+            <div className="flex-1 overflow-y-auto p-4">
                 {loading ? (
                     <div className="py-8 text-center text-element">Chargement...</div>
                 ) : error ? (
