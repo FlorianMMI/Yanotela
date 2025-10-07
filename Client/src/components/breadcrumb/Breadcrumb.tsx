@@ -23,6 +23,7 @@ export default function Breadcrumb() {
   const [showNoteMore, setShowNoteMore] = useState(false);
   const [tempTitle, setTempTitle] = useState<string>(''); // Titre temporaire pour l'input
   const [isLoadingTitle, setIsLoadingTitle] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
 
   // Extraire l'ID de la note depuis l'URL
   const extractNoteId = (): string | null => {
@@ -34,6 +35,31 @@ export default function Breadcrumb() {
   };
 
   const noteId = extractNoteId();
+
+  // Hook pour détecter les changements de taille d'écran et synchroniser les données
+  useEffect(() => {
+    const handleResize = () => {
+      // Force le rechargement des données quand on change de taille d'écran
+      setLastFetchTime(Date.now());
+    };
+
+    // Écouter les mises à jour de titre depuis la page de note
+    const handleTitleUpdate = (event: CustomEvent) => {
+      const { noteId: updatedNoteId, title } = event.detail;
+      if (updatedNoteId === noteId) {
+        setNoteTitle(title);
+        setTempTitle(title);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+    };
+  }, [noteId]);
 
   // Charger le titre de la note
   useEffect(() => {
@@ -64,7 +90,7 @@ export default function Breadcrumb() {
     };
 
     fetchNoteTitle();
-  }, [noteId]);
+  }, [noteId, lastFetchTime]); // Ajouter lastFetchTime comme dépendance
 
   // Sauvegarder le titre modifié (récupère le contenu existant pour le préserver)
   const updateNoteTitle = async (newTitle: string) => {
@@ -83,7 +109,10 @@ export default function Breadcrumb() {
           });
 
           if (success) {
-            // Optionnel: confirmer la sauvegarde
+            // Émettre un événement pour synchroniser avec la page de note
+            window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
+              detail: { noteId, title: newTitle } 
+            }));
           } else {
             console.error('Échec de la sauvegarde du titre');
           }

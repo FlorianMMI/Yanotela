@@ -57,9 +57,34 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [showNoteMore, setShowNoteMore] = useState(false);
   const [userRole, setUserRole] = useState<number | null>(null); // Ajouter le rôle utilisateur
   const [isReadOnly, setIsReadOnly] = useState(false); // Mode lecture seule
+  const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
 
   // Unwrap params using React.use()
   const { id } = use(params);
+
+  // Hook pour détecter les changements de taille d'écran
+  useEffect(() => {
+    const handleResize = () => {
+      // Force le rechargement des données quand on change de taille d'écran
+      setLastFetchTime(Date.now());
+    };
+
+    // Écouter les mises à jour de titre depuis le Breadcrumb
+    const handleTitleUpdate = (event: CustomEvent) => {
+      const { noteId, title } = event.detail;
+      if (noteId === id) {
+        setNoteTitle(title);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+    };
+  }, [id]);
 
 
   function updateNoteTitle(newTitle: string) {
@@ -70,6 +95,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     
     setNoteTitle(finalTitle);
     uploadContent(id, finalTitle, editorContent);
+    
+    // Émettre un événement pour synchroniser avec le Breadcrumb
+    window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
+      detail: { noteId: id, title: finalTitle } 
+    }));
   }
 
   useEffect(() => {
@@ -129,7 +159,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     };
 
     fetchNote();
-  }, [id]); // Dépendance sur l'ID unwrappé
+  }, [id, lastFetchTime]); // Ajouter lastFetchTime comme dépendance
 
   const initialConfig = {
     namespace: "Editor",
