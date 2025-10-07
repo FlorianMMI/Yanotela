@@ -4,13 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/hooks/useAuth';
 import "../../globals.css";
 
 export default function ValidatePage() {
   const params = useParams();
   const router = useRouter();
-  const { refetch } = useAuth(); // Pour mettre à jour l'état d'auth après validation
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 
@@ -38,13 +36,11 @@ export default function ValidatePage() {
           setStatus('success');
           setMessage('Votre compte a été validé avec succès ! Connexion automatique...');
 
-          // Mettre à jour l'état d'authentification
-          await refetch();
-          
           // Délai pour permettre la synchronisation de l'état
           setTimeout(() => {
-            router.push('/notes');
-          }, 1000);
+            // Forcer un rechargement complet pour s'assurer que l'état d'auth est mis à jour
+            window.location.href = '/notes';
+          }, 1500);
          
         } else {
           setStatus('error');
