@@ -321,4 +321,5 @@ export const userController = {
             return res.status(500).json({ message: 'Erreur lors de la mise à jour des informations utilisateur', error: error.message });
         }
     }
+
 };

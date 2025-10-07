@@ -8,6 +8,8 @@ import Logout from "@/ui/logout";
 import TotalNotes from "@/ui/note/totalNotes";
 import Icons from "@/ui/Icon";
 import ModificationProfil from "@/components/ModificationProfil/page";
+import ParamModal from "@/components/infoprofil/paramModal";
+import { AnimatePresence } from "motion/react";
 import Notification from "@/ui/notification/page";
 
 
@@ -25,6 +27,7 @@ export default function Profil() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalNotes, setTotalNotes] = useState<number | undefined>(undefined);
+  const [isParamModalOpen, setIsParamModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -89,12 +92,23 @@ export default function Profil() {
       ? `${userInfo.prenom} ${userInfo.nom}`
       : userInfo?.pseudo || "Utilisateur";
 
+
+      const openParamModal = () => {
+        setIsParamModalOpen(true);
+    };
+
+    const closeParamModal = () => {
+        setIsParamModalOpen(false);
+    };
+      
   return (
     <>
     <div className="py-4 md:px-8 px-0 flex flex-col items-center justify-between  bg-fondpage">
         {/* Boutons settings et déconnexion alignés en haut */}
-        <div className=" flex-row justify-end hidden items-center w-full px-8">
-          <div className=" items-center" title="Paramètres du compte">
+        <div className=" flex-row justify-end items-center w-full px-8">
+          <div className=" items-center" title="Paramètres du compte"
+          onClick ={openParamModal}
+          >
             <Icons
               name="settings"
               size={35}
@@ -147,6 +161,13 @@ export default function Profil() {
           
         </div>
       </div>
+            <AnimatePresence>
+                {isParamModalOpen && (
+                    <ParamModal onClose={closeParamModal} />
+                )}
+            </AnimatePresence>
+
+
     </>
   );
 }

@@ -5,6 +5,7 @@ import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
 import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
 
 interface SwipeNavigationWrapperProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface SwipeNavigationWrapperProps {
 
 export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps) => {
   const pathname = usePathname();
+  const router = useRouter();
   
   // Configuration des routes pour le swipe
   const getSwipeConfig = () => {
@@ -81,11 +83,11 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
       
       {/* Indicateur visuel pour le swipe (seulement sur mobile) */}
       {isMobile && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
           <div className="flex items-center gap-3">
             {/* Indicateur Profil */}
             <motion.div 
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                 pathname === '/profil' 
                   ? 'bg-primary text-white' 
                   : 'bg-primary/30 text-primary'
@@ -96,12 +98,14 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
                 opacity: pathname === '/profil' ? 1 : 0.7
               }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => router.push('/profil')}
             >
             </motion.div>
             
             {/* Indicateur Notes */}
             <motion.div 
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                 pathname === '/notes' 
                   ? 'bg-primary text-white' 
                   : 'bg-primary/30 text-primary'
@@ -112,6 +116,8 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
                 opacity: pathname === '/notes' ? 1 : 0.7
               }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => router.push('/notes')}
             >
             </motion.div>
           </div>

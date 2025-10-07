@@ -11,9 +11,10 @@ import Icon from '@/ui/Icon';
 
 interface NavigationSidebarProps {
   user: AuthState['user'];
+  isopen?: boolean;
 }
 
-export default function NavigationSidebar({ user }: NavigationSidebarProps) {
+export default function NavigationSidebar({ user, isopen }: NavigationSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const isProfile = pathname.includes('/profil');
@@ -26,12 +27,13 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
     },
   ];
 
+
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full w-full flex flex-col">
 
       <div className="p-4">
         <Link href="/profil"
-          className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all text-gray-700 ${isProfile ? 'bg-primary text-white' : ' hover:bg-gray-100 hover:shadow-sm'}`}
+          className={`flex items-center ${isopen ? `w-full px-4  ` : `w-fit px-2  `} py-3 gap-3 rounded-lg transition-all text-gray-700 ${isProfile ? 'bg-primary text-white' : ' hover:bg-gray-100 hover:shadow-sm'}`}
           title='Accéder à mes notes'>
 
           <Icon
@@ -39,14 +41,16 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
             className={isProfile ? "text-white" : "text-element"}
             size={30}
           />
-          <div className="flex flex-col flex-1 min-w-0">
+
+          {isopen ? <div className="flex flex-col flex-1 min-w-0">
             <p className={`text-sm font-medium text-clrprincipal group-hover:text-primary transition-colors duration-300 ${isProfile ? 'text-white' : ''}`}>
               Bonjour, <span className={`text-primary capitalize ${isProfile ? 'text-white' : ''}`}>{user?.pseudo}</span>
             </p>
             <p className={`text-xs text-element truncate group-hover:text-gray-600 transition-colors duration-300 ${isProfile ? 'text-white' : ''}`}>
               {user?.email}
             </p>
-          </div>
+          </div> : ""}
+          
 
         </Link>
       </div>
@@ -58,7 +62,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
               <Link
                 href={item.href}
 
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${item.isActive
+                className={`flex items-center rounded-lg transition-all py-3 gap-3 ${isopen ? `w-full px-4  ` : `w-fit px-2 `} ${item.isActive
                   ? 'bg-primary text-white'
                   : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
@@ -70,7 +74,7 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
                   size={30}
 
                 />
-                <span className="font-medium">{item.label}</span>
+                <span className={`font-medium ${isopen ? `flex` : `hidden`}`}>{item.label}</span>
               </Link>
             </li>
           ))}
@@ -83,9 +87,9 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
         title='retour à l`accueil'
       >
         <Icon
-          name="logo"
+          name={isopen ? `logo` : `logoIcon`}
           className="text-clrprincipal stroke-25"
-          size={200}
+          size={isopen ? 200 : 40}
         />
       </Link>
 

@@ -137,7 +137,7 @@ export default function ModificationProfil() {
           <div className="flex flex-col md:flex-row gap-8 w-fit md:w-full items-center md:items-start">
             <div className="flex flex-col gap-4 items-center w-fit">
             <p className="text-clrprincipal font-gant text-center text-4xl w-[198px]">
-              Modifier le profil
+              Votre profil
             </p>
             </div>
 

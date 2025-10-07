@@ -9,40 +9,43 @@ datasource db {
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
-  pseudo      String       @unique
-  prenom      String
-  password    String
-  nom         String
-  email       String       @unique
-  token       String       @unique
-  is_verified Boolean      @default(false)
-  deleted_at  DateTime?
-  notes       Note[]
-  
-  Permission  Permission[]
+  id              Int         @id @default(autoincrement())
+  notes           Note[]      
+  modifiedNotes   Note[]      @relation("NoteModifier")
+  permissions     Permission[]
+  pseudo          String      @unique
+  prenom          String
+  password        String
+  nom             String
+  email           String      @unique
+  token           String      @unique
+  is_verified     Boolean     @default(false)
+
 }
 
 model Note {
-  id         String       @id
-  Titre      String
-  Content    String
-  authorId   Int
-  ModifiedAt DateTime     @default(now())
-  author     User         @relation(fields: [authorId], references: [id])
+  id              String         @id 
+  Titre           String      
+  Content         String
+  authorId        Int
+  author          User        @relation(fields: [authorId], references: [id])
+  modifierId      Int?
+  modifier        User?       @relation("NoteModifier", fields: [modifierId], references: [id])
+  permissions     Permission[]
+  ModifiedAt       DateTime    @default(now())
   
-  Permission Permission[]
 }
 
 model Permission {
-  id_note String
-  id_user Int
-  role    Int
+  noteId String   @map("id_note")
+  userId Int      @map("id_user")
+  role   Int
   isAccepted Boolean @default(false)
 
-  Note    Note   @relation(fields: [id_note], references: [id])
-  User    User   @relation(fields: [id_user], references: [id])
+  note   Note   @relation(fields: [noteId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
-  @@id([id_note, id_user])
+  @@id([noteId, userId])
+  
 }
 
