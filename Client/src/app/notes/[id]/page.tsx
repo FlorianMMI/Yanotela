@@ -64,8 +64,12 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
-    setNoteTitle(newTitle);
-    uploadContent(id, newTitle, editorContent);
+    
+    // Si le titre est vide, utiliser le fallback
+    const finalTitle = newTitle.trim() === '' ? 'Titre de la note' : newTitle;
+    
+    setNoteTitle(finalTitle);
+    uploadContent(id, finalTitle, editorContent);
   }
 
   useEffect(() => {

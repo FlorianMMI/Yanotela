@@ -35,27 +35,22 @@ export default function Breadcrumb() {
 
   const noteId = extractNoteId();
 
-  // Initialiser tempTitle avec un fallback dès qu'on a le noteId
-  useEffect(() => {
-    if (noteId && tempTitle === '') {
-      setTempTitle('Titre de la note'); // Même fallback que dans page.tsx
-    }
-  }, [noteId, tempTitle]);
-
   // Charger le titre de la note
   useEffect(() => {
     const fetchNoteTitle = async () => {
       if (noteId) {
         setIsLoadingTitle(true);
-        // Initialiser tempTitle avec le même fallback que page.tsx
-        setTempTitle('Titre de la note');
 
         try {
           const note = await GetNoteById(noteId);
-          if (note) {
+          if (note && !('error' in note)) {
             const title = note.Titre || 'Sans titre'; // Même fallback que page.tsx
             setNoteTitle(title);
             setTempTitle(title); // Synchroniser le titre temporaire
+          } else {
+            const errorTitle = 'Erreur de chargement';
+            setNoteTitle(errorTitle);
+            setTempTitle(errorTitle);
           }
         } catch (error) {
           console.error('Erreur lors du chargement du titre:', error);
@@ -84,7 +79,7 @@ export default function Breadcrumb() {
           // Sauvegarder avec le nouveau titre et l'ancien contenu
           const success = await SaveNote(noteId, {
             Titre: newTitle,
-            Content: note.Content || '' // Préserver le contenu existant
+            Content: 'Content' in note ? note.Content || '' : '' // Préserver le contenu existant
           });
 
           if (success) {
@@ -100,11 +95,14 @@ export default function Breadcrumb() {
   };
 
   const handleTitleSave = async (newTitle: string) => {
-    if (newTitle.trim() !== '' && newTitle !== noteTitle) {
+    if (newTitle.trim() === '') {
+      // Si le titre est vide, utiliser le fallback et sauvegarder
+      const fallbackTitle = 'Titre de la note';
+      setTempTitle(fallbackTitle);
+      await updateNoteTitle(fallbackTitle);
+    } else if (newTitle !== noteTitle) {
+      // Si le titre a changé et n'est pas vide, le sauvegarder
       await updateNoteTitle(newTitle);
-    } else if (newTitle.trim() === '') {
-      // Si le titre est vide, remettre l'ancien titre
-      setTempTitle(noteTitle);
     }
   };
 
