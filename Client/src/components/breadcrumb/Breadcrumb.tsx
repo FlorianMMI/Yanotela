@@ -122,7 +122,7 @@ export default function Breadcrumb() {
     if (pathname.startsWith('/notes/') && segments.length > 1) {
       const noteId = segments[1];
       // Utiliser noteTitle s'il existe et n'est pas vide, sinon utiliser le fallback par défaut
-      const displayTitle = noteTitle && noteTitle.trim() !== '' ? noteTitle : 'Titre de la note';
+      const displayTitle = noteTitle && noteTitle.trim() !== '' ? noteTitle : '';
       return [
         { label: 'Mes Notes', href: '/notes' },
         { label: displayTitle, isActive: true, isNoteTitle: true },
@@ -200,7 +200,7 @@ export default function Breadcrumb() {
                         }
                       }}
                       className="text-clrprincipal text-2xl font-semibold bg-transparent border-none outline-none focus:bg-white focus:bg-opacity-20 rounded py-1 min-w-0 max-w-xs"
-                      placeholder="Titre de la note"
+                      placeholder=""
                     />
                   )}
                       {/* Container pour pousser l'icône complètement à droite */}

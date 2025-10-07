@@ -33,6 +33,12 @@ export function useAuth(): AuthState {
           loading: false,
           user: data.user,
         });
+        
+        // Déclencher un événement pour notifier les autres hooks
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('auth-refresh', Date.now().toString());
+          window.dispatchEvent(new CustomEvent('auth-refresh'));
+        }
       } else {
         setAuthState({
           isAuthenticated: false,
