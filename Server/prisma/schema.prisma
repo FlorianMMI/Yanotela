@@ -44,16 +44,3 @@ model Permission {
   @@id([id_note, id_user])
 }
 
-model Notification{
-
-  id_notification Int @id @default(autoincrement())
-  id_note String
-  id_user Int
-  isAccept Int @default(2)
-
-  Note    Note   @relation(fields: [id_note], references: [id])
-  User    User   @relation(fields: [id_user], references: [id])
-
-  
-
-}
