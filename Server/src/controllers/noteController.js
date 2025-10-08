@@ -35,7 +35,8 @@ export const noteController = {
 
             const permissions = await prisma.permission.findMany({
                 where: {
-                    userId: req.session.userId
+                    userId: req.session.userId,
+                    isAccepted: true
                 },
                 include: {
                     note: {
@@ -111,7 +112,8 @@ export const noteController = {
                     permissions: {
                         create: {
                             userId: authorId,
-                            role: 0 // Rôle 0 = Propriétaire
+                            role: 0,// Rôle 0 = Propriétaire
+                            isAccepted: true
                         }
                     }
                 }
@@ -228,4 +230,63 @@ export const noteController = {
         }
     },
 
+    getNoteNotAccepted : async (req, res) => {
+        const { id } = req.params;
+        const { userId } = req.session;
+        
+        if (!userId) {
+            return res.status(401).json({ message: 'Utilisateur non authentifié' });
+        }
+        
+        try {
+            const notes = await prisma.note.findMany({
+                where: { 
+                    userId: req.session.userId,
+                    isAccepted: false
+                 },
+                include: {
+                    author: true,
+                    modifier: true
+                }
+            });
+            res.status(200).json({ notes });
+        }
+        catch (error) {
+            console.error('[getNoteNotAccepted] Error:', error);
+            res.status(500).json({ message: 'Erreur lors de la récupération de la note', error: error.message });
+        }
+    },
+
+    acceptInvitation: async (req, res) => {
+        const { id } = req.params;
+        const { userId } = req.session;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Utilisateur non authentifié' });
+        }
+
+        try {
+            const permission = await prisma.permission.updateMany({
+                where: {
+                    noteId: id,
+                    userId: userId,
+                    isAccepted: false
+                },
+                data: {
+                    isAccepted: true
+                }
+            });
+
+            if (permission.count === 0) {
+                return res.status(404).json({ message: 'Invitation non trouvée ou déjà acceptée' });
+            }
+            
+            res.status(200).json({ message: 'Invitation acceptée avec succès' }
+            );
+        }
+        catch (error) {
+            console.error('Erreur lors de l\'acceptation de l\'invitation:', error);
+            res.status(500).json({ message: 'Erreur lors de l\'acceptation de l\'invitation', error: error.message });
+        }
+    }
 }
