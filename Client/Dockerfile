@@ -1,6 +1,11 @@
 # Multi-stage build for Next.js client
 FROM node:20-alpine AS base
 
+# Add metadata labels
+LABEL maintainer="Yanotela Team"
+LABEL version="1.0"
+LABEL description="Yanotela Frontend - Next.js Application"
+
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
@@ -48,6 +53,11 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
 ENV HOSTNAME="0.0.0.0"
 
 # Vérifier que server.js existe avant de le lancer
