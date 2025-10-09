@@ -34,7 +34,7 @@ function onError(error: string | Error) {
 }
 
 function uploadContent(id: string, noteTitle: string, editorContent: string) {
-  SaveNote(id, {
+  return SaveNote(id, {
     Titre: noteTitle,
     Content: editorContent,
   });
@@ -58,6 +58,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [userRole, setUserRole] = useState<number | null>(null); // Ajouter le rôle utilisateur
   const [isReadOnly, setIsReadOnly] = useState(false); // Mode lecture seule
   const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
+  
+  // États pour les notifications
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isSavingContent, setIsSavingContent] = useState(false); // Pour l'indicateur de sauvegarde du contenu
 
   // Unwrap params using React.use()
   const { id } = use(params);
@@ -94,7 +99,17 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     const finalTitle = newTitle.trim() === '' ? 'Titre de la note' : newTitle;
     
     setNoteTitle(finalTitle);
-    uploadContent(id, finalTitle, editorContent);
+    
+    // Sauvegarder le titre avec notification
+    uploadContent(id, finalTitle, editorContent).then((success) => {
+      if (success) {
+        setSuccess('Titre sauvegardé avec succès');
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        setError('Erreur lors de la sauvegarde du titre');
+        setTimeout(() => setError(null), 5000);
+      }
+    });
     
     // Émettre un événement pour synchroniser avec le Breadcrumb
     window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
@@ -205,12 +220,28 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     function saveContent(editorState: EditorState) {
       if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
       
+      // Indiquer que la sauvegarde du contenu est en cours
+      setIsSavingContent(true);
+      
       // Call toJSON on the EditorState object, which produces a serialization safe string
       const editorStateJSON = editorState.toJSON();
       // However, we still have a JavaScript object, so we need to convert it to an actual string with JSON.stringify
-      setEditorContent(JSON.stringify(editorStateJSON));
-      uploadContent(id, noteTitle, JSON.stringify(editorStateJSON));
-
+      const contentString = JSON.stringify(editorStateJSON);
+      setEditorContent(contentString);
+      
+      // Sauvegarder avec notification
+      uploadContent(id, noteTitle, contentString).then((success) => {
+        setIsSavingContent(false);
+        if (success) {
+          // Afficher brièvement l'icône de sauvegarde réussie
+          setTimeout(() => {
+            // L'icône de sauvegarde réussie sera gérée par l'état isSavingContent
+          }, 500);
+        } else {
+          setError('Erreur lors de la sauvegarde du contenu');
+          setTimeout(() => setError(null), 5000);
+        }
+      });
     }
 
     useEffect(() => {
@@ -231,6 +262,69 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   return (
     <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
+      {/* Zone de notifications */}
+      {(success || error) && (
+        <div className="fixed top-4 right-4 z-50 max-w-md">
+          {success && (
+            <div 
+              onClick={() => setSuccess(null)}
+              className="rounded-md bg-green-50 p-4 border border-green-200 cursor-pointer hover:bg-green-100 transition-colors shadow-lg"
+            >
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-green-800">
+                    {success}
+                  </p>
+                </div>
+                <div className="ml-4 flex-shrink-0">
+                  <button className="inline-flex text-green-400 hover:text-green-600">
+                    <span className="sr-only">Fermer</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div 
+              onClick={() => setError(null)}
+              className="rounded-md bg-red-50 p-4 border border-red-200 cursor-pointer hover:bg-red-100 transition-colors shadow-lg"
+            >
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-red-800">
+                    {error}
+                  </p>
+                </div>
+                <div className="ml-4 flex-shrink-0">
+                  <button className="inline-flex text-red-400 hover:text-red-600">
+                    <span className="sr-only">Fermer</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Indicateur de sauvegarde du contenu - retiré, sera dans la zone d'écriture */}
+
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
         <ReturnButton />
         {
@@ -286,6 +380,25 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           // Si pas d'erreur et chargement terminé :
           <>
             <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
+              {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
+              <div className="absolute bottom-4 right-4 z-10">
+                {isSavingContent ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                ) : (
+                  <svg 
+                    className="h-5 w-5 text-primary" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2"
+                  >
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17,21 17,13 7,13 7,21"/>
+                    <polyline points="7,3 7,8 15,8"/>
+                  </svg>
+                )}
+              </div>
+              
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <RichTextPlugin
                   contentEditable={
