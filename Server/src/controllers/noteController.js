@@ -288,5 +288,53 @@ export const noteController = {
             console.error('Erreur lors de l\'acceptation de l\'invitation:', error);
             res.status(500).json({ message: 'Erreur lors de l\'acceptation de l\'invitation', error: error.message });
         }
-    }
+    },
+
+        deleteInvitation: async (req, res) => {
+            const { id } = req.params;
+            const { userId } = req.session;
+
+            if (!userId) {
+                return res.status(401).json({ message: 'Utilisateur non authentifié' });
+            }
+
+            try {
+                // Cherche la permission liée à cette note et cet utilisateur
+                const permission = await prisma.permission.findFirst({
+                    where: {
+                        noteId: id,
+                        userId: parseInt(userId)
+                    }
+                });
+
+                if (!permission) {
+                    return res.status(404).json({ message: 'Invitation non trouvée' });
+                }
+
+                // Vérifier que la note existe et récupérer son auteur
+                const note = await prisma.note.findUnique({
+                    where: { id },
+                    select: { authorId: true }
+                });
+
+                if (!note) {
+                    return res.status(404).json({ message: 'Note non trouvée' });
+                }
+
+                // Autoriser la suppression si l'utilisateur est le destinataire de l'invitation ou l'auteur de la note
+                if (permission.userId !== parseInt(userId) && note.authorId !== parseInt(userId)) {
+                    return res.status(403).json({ message: 'Vous n\'avez pas la permission de supprimer cette invitation' });
+                }
+
+                // Supprimer l'invitation
+                await prisma.permission.delete({
+                    where: { id: permission.id }
+                });
+
+                res.status(200).json({ message: 'Invitation supprimée avec succès' });
+            } catch (error) {
+                console.error('Erreur lors de la suppression de l\'invitation:', error);
+                res.status(500).json({ message: 'Erreur lors de la suppression de l\'invitation', error: error.message });
+            }
+        }
 }
