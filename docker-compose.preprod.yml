@@ -64,6 +64,29 @@ services:
         condition: service_healthy
     command: sh -c "npx prisma migrate deploy && npx nodemon index.js"
 
+
+  yjs-server:
+    build:
+      context: ./yjs-server
+      dockerfile: Dockerfile
+    container_name: yanotela-yjs
+    ports:
+      - "1234:1234"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=1234
+      - YPERSISTENCE=/data/yjs-persistence
+    volumes:
+      - yjs-data:/data
+    networks:
+      - yanotela-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "1234"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # Frontend Next.js
   frontend:
     build: 
@@ -93,8 +116,18 @@ services:
     depends_on:
       - backend
 
+
+      
+
 volumes:
   postgres_local_data:
     driver: local
+  yjs-data:
+    driver: local
+
+
+networks:
+  yanotela-network:
+    driver: bridge
 
 # Pas de réseau custom nécessaire en local
