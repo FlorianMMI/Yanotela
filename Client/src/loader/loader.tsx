@@ -363,6 +363,8 @@ interface DeleteAccountResponse {
     canCancel?: boolean;
 }
 
+const safeApiUrl = 'http://localhost:3001'; // Valeur par défaut sûre
+
 export async function DeleteAccount(reason?: string): Promise<DeleteAccountResponse> {
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
