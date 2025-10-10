@@ -29,8 +29,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
             const response = await DeleteAccount('Suppression demandée par l\'utilisateur');
             
             if (response.success) {
-                console.log('Compte marqué pour suppression:', response.message);
-
                 // Fermer les modals de confirmation
                 setShowDeleteConfirm(false);
                 onClose();

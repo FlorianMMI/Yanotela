@@ -34,7 +34,6 @@ export const initiateGoogleAuth = (req, res) => {
       prompt: 'consent' // Force l'affichage du consentement pour obtenir refresh_token
     });
 
-    console.log('Redirection vers Google OAuth:', authUrl);
     res.redirect(authUrl);
   } catch (error) {
     console.error('Erreur lors de l\'initiation Google Auth:', error);
@@ -75,7 +74,6 @@ export const handleGoogleCallback = async (req, res) => {
     const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
     const { data: userInfo } = await oauth2.userinfo.get();
 
-    console.log('Informations utilisateur Google:', userInfo);
 
     // Vérifier si l'utilisateur existe déjà
     let user = await prisma.user.findUnique({
@@ -84,7 +82,6 @@ export const handleGoogleCallback = async (req, res) => {
 
     if (user) {
       // Utilisateur existant - connexion
-      console.log('Utilisateur existant trouvé:', user.pseudo);
       
       // Mettre à jour les informations si nécessaire
       user = await prisma.user.update({
@@ -102,13 +99,11 @@ export const handleGoogleCallback = async (req, res) => {
       req.session.pseudo = user.pseudo;
       await req.session.save();
 
-      console.log('Connexion Google réussie pour:', user.pseudo);
       // Redirection vers le client après authentification
       const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
       return res.redirect(`${clientUrl}/notes`);
     } else {
       // Nouvel utilisateur - inscription
-      console.log('Création d\'un nouveau compte pour:', userInfo.email);
       
       // Générer un pseudo unique basé sur le nom ou l'email
       let basePseudo = userInfo.given_name?.toLowerCase() || 
@@ -146,7 +141,6 @@ export const handleGoogleCallback = async (req, res) => {
       req.session.pseudo = user.pseudo;
       await req.session.save();
 
-      console.log('Inscription Google réussie pour:', user.pseudo);
       // Redirection vers le client après authentification
       const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
       return res.redirect(`${clientUrl}/notes`);
@@ -176,7 +170,6 @@ export const googleLogout = async (req, res) => {
         });
       }
       
-      console.log('Déconnexion Google réussie');
       
       // Rediriger vers la page de déconnexion Google (optionnel)
       // ou simplement vers la page d'accueil

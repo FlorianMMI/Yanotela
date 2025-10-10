@@ -14,11 +14,6 @@ export function setupGoogleAuth(app) {
   // Routes Google OAuth
   app.use('/auth', googleAuthRoutes);
   
-  console.log('✅ Routes Google OAuth configurées');
-  console.log('   - GET  /auth/google (Initier connexion)');
-  console.log('   - GET  /auth/google/callback (Callback)');
-  console.log('   - POST /auth/google/logout (Déconnexion)');
-  console.log('   - GET  /auth/google/link (Lier compte)');
 }
 
 export default setupGoogleAuth;

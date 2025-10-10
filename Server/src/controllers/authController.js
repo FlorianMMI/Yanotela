@@ -28,7 +28,6 @@ const register = async (req, res) => {
   const errors = validationResult(req);
   
   if (!errors.isEmpty()) {
-    console.log("Erreurs de validation:", errors.array());
     return res.status(400).json({
       errors: errors.array(),
       message: "Erreurs de validation"
@@ -53,11 +52,9 @@ const register = async (req, res) => {
     }
 
     const token = crypto.randomBytes(32).toString("hex");
-    console.log("Envoi de l'email de validation...");
     
     try {
       await sendValidationEmail(email, token);
-      console.log("Email de validation envoyé avec succès");
     } catch (emailError) {
       console.error("Erreur lors de l'envoi de l'email:", emailError);
       // On continue quand même pour créer l'utilisateur
@@ -77,7 +74,6 @@ const register = async (req, res) => {
       },
     });
 
-    console.log("Utilisateur créé:", user.pseudo);
     
     return res.status(201).json({
       success: true,
@@ -116,7 +112,6 @@ const login = async (req, res) => {
     const user = userByPseudo || userByEmail;
     
     if (!user) {
-      console.log("Utilisateur non trouvé pour", identifiant);
       return res.status(401).json({
         error: "Utilisateur non trouvé"
       });
@@ -124,14 +119,12 @@ const login = async (req, res) => {
 
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
-      console.log("Mot de passe incorrect pour", identifiant);
       return res.status(401).json({
         error: "Mot de passe incorrect"
       });
     }
 
     if (!user.is_verified) {
-      console.log("Compte non activé pour", user.pseudo);
       return res.status(401).json({
         error: "Compte non activé"
       });
@@ -139,7 +132,6 @@ const login = async (req, res) => {
 
     // Vérifier si le compte est marqué pour suppression
     if (user.deleted_at) {
-      console.log("Tentative de connexion sur compte marqué pour suppression:", user.pseudo);
       
       // Calculer si le compte a expiré (1 minute pour test)
       const deletionDate = new Date(user.deleted_at);
@@ -169,7 +161,6 @@ const login = async (req, res) => {
     req.session.userId = user.id;
     req.session.pseudo = user.pseudo;
     await req.session.save();
-    console.log("Session après login:", req.session);
     
     return res.json({
       success: true,
@@ -207,15 +198,9 @@ const logout = (req, res) => {
 
 const validate = async (req, res) => {
   const { token } = req.params;
-  console.log("Tentative de validation avec token:", token);
   try {
     const user = await prisma.user.findFirst({ where: { token } });
-    console.log("Utilisateur trouvé:", user);
     if (!user || user.token.startsWith("VALIDATED_")) {
-      console.log(
-        "Lien de validation invalide ou déjà utilisé pour token:",
-        token
-      );
       return res.status(400).json({
         error: "Lien invalide, expiré ou déjà utilisé."
       });
@@ -230,7 +215,6 @@ const validate = async (req, res) => {
     req.session.userId = user.id;
     req.session.pseudo = user.pseudo;
     await req.session.save();
-    console.log("Session après validation:", req.session);
     
     return res.json({
       success: true,
@@ -357,7 +341,6 @@ const resetPasswordPost = async (req, res) => {
       }
     });
     
-    console.log("Mot de passe réinitialisé pour:", user.pseudo);
     
     return res.json({
       success: true,

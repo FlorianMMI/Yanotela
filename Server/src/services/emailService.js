@@ -38,7 +38,6 @@ async function sendValidationEmail(to, token) {
   try {
     // Vérifier la configuration du transporteur
     await transport.verify();
-    console.log('Configuration email validée');
 
     // Configurer l'expéditeur selon le service
     const fromAddress = process.env.EMAIL_SERVICE === 'gmail' 
@@ -68,7 +67,6 @@ async function sendValidationEmail(to, token) {
       `
     });
     
-    console.log(`Email de validation envoyé à ${to}`);
     return { success: true, message: 'Email de validation envoyé avec succès' };
     
   } catch (error) {
@@ -80,7 +78,6 @@ async function sendValidationEmail(to, token) {
 async function sendResetPasswordEmail(to, token) {
   // Désactiver les emails pendant les tests
   if (process.env.NODE_ENV === 'test') {
-    console.log(`[TEST MODE] Email de réinitialisation simulé pour ${to} avec le token ${token}`);
     return { success: true, message: 'Email simulé en mode test' };
   }
 
@@ -95,7 +92,6 @@ async function sendResetPasswordEmail(to, token) {
   try {
     // Vérifier la configuration du transporteur
     await transport.verify();
-    console.log('Configuration email validée');
 
     // Configurer l'expéditeur selon le service
     const fromAddress = process.env.EMAIL_SERVICE === 'gmail' 
@@ -126,7 +122,6 @@ async function sendResetPasswordEmail(to, token) {
       `
     });
     
-    console.log(`Email de réinitialisation envoyé à ${to}`);
     return { success: true, message: 'Email de réinitialisation envoyé avec succès' };
     
   } catch (error) {
@@ -145,7 +140,6 @@ async function sendDeleteAccountEmail(to) {
   try {
     // Vérifier la configuration du transporteur
     await transport.verify();
-    console.log('Configuration email validée');
     
     // Configurer l'expéditeur selon le service
     const fromAddress =`"Yanotela" <${process.env.GMAIL_USER}>`;
@@ -220,7 +214,6 @@ async function sendDeleteAccountEmail(to) {
       `
     });
     
-    console.log(`Email de suppression de compte envoyé à ${to}`);
     return { success: true, message: 'Email de suppression de compte envoyé avec succès' };
     
   }catch (error) {

@@ -43,6 +43,7 @@ services:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://yanotela_local:yanotela_local_2024@db:5432/yanotela_local
       - REDIS_URL=redis://redis:6379
+      - CLIENT_URL=http://localhost:3000
       - SESSION_SECRET=local_session_secret_dev_only
       - MAIL_SERVICE=gmail
       - MAIL_USER=test@example.com
