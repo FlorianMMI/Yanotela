@@ -64,8 +64,13 @@ jobs:
         with:
           host: ${{ env.EC2_HOST }}
           username: ${{ env.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
+            echo "✅ SSH connection successful!"
+            whoami
+            pwd
+            ls -la /var/www/yanotela/
+            
             cd ${{ env.DEPLOY_PATH }}
             
             # Update package cache (Ubuntu-specific)
