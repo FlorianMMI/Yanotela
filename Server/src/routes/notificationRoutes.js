@@ -12,7 +12,10 @@ router.get('/get', requireAuth, noteController.getNoteNotAccepted);
 // Route Get pour récupérer une notification par son ID (vérification des permissions dans le contrôleur)
 router.get('/get/:id', requireAuth, noteController.acceptInvitation);
 
-// Route Post pour mettre à jour une note par son ID (vérification des droits d'écriture)
-router.post('/update/:id', requireWriteAccess, noteController.updateNoteById);
+// Route Post pour accepter une invitation (authentification requise)
+router.post('/accept/:id', requireWriteAccess, noteController.acceptInvitation);
+
+// Route Post pour refuser une invitation (authentification requise)
+router.post('/refuse/:id', requireWriteAccess, noteController.deleteInvitation);
 
 export default router;
