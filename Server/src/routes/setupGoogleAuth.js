@@ -1,5 +1,5 @@
 import googleAuthRoutes from './googleAuthRoutes.js';
-import { validateGoogleOAuth, addUserToLocals } from '../middleware/googleAuthMiddleware.js';
+import { validateGoogleOAuth, addUserToLocals } from '../middlewares/googleAuthMiddleware.js';
 
 /**
  * Intègre les routes Google Auth dans l'application Express
