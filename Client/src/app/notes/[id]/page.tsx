@@ -3,6 +3,7 @@ import React from "react";
 import { $getRoot, EditorState } from "lexical";
 import { useEffect, useState, use } from "react";
 
+
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -63,6 +64,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSavingContent, setIsSavingContent] = useState(false); // Pour l'indicateur de sauvegarde du contenu
+  const [isTyping, setIsTyping] = useState(false); // Pour détecter quand l'utilisateur tape
 
   // Unwrap params using React.use()
   const { id } = use(params);
@@ -222,6 +224,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       
       // Indiquer que la sauvegarde du contenu est en cours
       setIsSavingContent(true);
+      setIsTyping(false); // L'utilisateur a fini de taper, on passe en mode sauvegarde
       
       // Call toJSON on the EditorState object, which produces a serialization safe string
       const editorStateJSON = editorState.toJSON();
@@ -248,6 +251,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }) => {
         // Only trigger the debounced log if there are changes to the content
         if (dirtyElements.size > 0 || dirtyLeaves.size > 0) {
+          // Indiquer immédiatement que l'utilisateur tape
+          setIsTyping(true);
           debouncedLog(editorState);
         }
       });
@@ -382,20 +387,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
             <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
               {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
               <div className="absolute bottom-4 right-4 z-10">
-                {isSavingContent ? (
+                {(isSavingContent || isTyping) ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
                 ) : (
-                  <svg 
-                    className="h-5 w-5 text-primary" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2"
-                  >
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17,21 17,13 7,13 7,21"/>
-                    <polyline points="7,3 7,8 15,8"/>
-                  </svg>
+                  <Icons name="save" size={20} className="h-5 w-5 text-primary" />
                 )}
               </div>
               
