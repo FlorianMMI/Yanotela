@@ -10,7 +10,7 @@ import Icons from "@/ui/Icon";
 import ModificationProfil from "@/components/ModificationProfil/page";
 import ParamModal from "@/components/infoprofil/paramModal";
 import { AnimatePresence } from "motion/react";
-import Notification from "@/ui/notification/page";
+// import Notification from "@/ui/notification";
 
 
 interface UserInfo {
