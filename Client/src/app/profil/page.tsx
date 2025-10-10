@@ -7,8 +7,11 @@ import { useEffect, useState } from "react";
 import Logout from "@/ui/logout";
 import TotalNotes from "@/ui/note/totalNotes";
 import Icons from "@/ui/Icon";
-import { AnimatePresence } from "framer-motion";
-import ParamModal from "@/components/infoprofil/paramModal"; // Adjust the path as needed
+import ModificationProfil from "@/components/ModificationProfil/page";
+import ParamModal from "@/components/infoprofil/paramModal";
+import { AnimatePresence } from "motion/react";
+import Notification from "@/ui/notification/page";
+
 
 interface UserInfo {
   id: number;
@@ -20,11 +23,11 @@ interface UserInfo {
 }
 
 export default function Profil() {
-  const [isParamModalOpen, setIsParamModalOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalNotes, setTotalNotes] = useState<number | undefined>(undefined);
+  const [isParamModalOpen, setIsParamModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -63,14 +66,6 @@ export default function Profil() {
     fetchTotalNotes();
   }, []);
 
-  const openParamModal = () => {
-    setIsParamModalOpen(true);
-  };
-
-  const closeParamModal = () => {
-    setIsParamModalOpen(false);
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-fondpage">
@@ -89,15 +84,22 @@ export default function Profil() {
       ? `${userInfo.prenom} ${userInfo.nom}`
       : userInfo?.pseudo || "";
 
+
+      const openParamModal = () => {
+        setIsParamModalOpen(true);
+    };
+
+    const closeParamModal = () => {
+        setIsParamModalOpen(false);
+    };
+      
   return (
     <>
       <div className="py-4 flex flex-col items-center justify-start h-full bg-fondpage">
         {/* Boutons settings et déconnexion alignés en haut */}
-        <div className="flex flex-row justify-between items-center w-full px-8">
-          <div
-            className="items-center"
-            title="Paramètres du compte"
-            onClick={openParamModal}
+        <div className=" flex-row justify-end items-center w-full px-8">
+          <div className=" items-center" title="Paramètres du compte"
+          onClick ={openParamModal}
           >
             <Icons
               name="settings"
@@ -106,9 +108,15 @@ export default function Profil() {
             />
           </div>
 
-          <div className=" items-center hidden md:flex" title="Me déconnecter">
-            <Logout />
-          </div>
+          {/* <div>
+            <Icons 
+              name='notification'
+              size={35}
+              className="ml-4 cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
+
+            />
+          </div> */}
+
         </div>
 
         {/* Contenu centré et réparti */}
@@ -129,13 +137,36 @@ export default function Profil() {
           >
             <Logout />
           </div>
+
+          <div className="hidden md:flex w-full">
+            <ModificationProfil />
+          </div>
+          <div className="flex flex-col md:flex-row gap-8 w-fit md:w-full md:items-start items-center">
+            <div className="flex flex-col gap-4 items-center w-fit">
+            <p className="text-clrprincipal font-gant text-center text-4xl w-[198px]">
+              Vos notes
+            </p>
+            </div>
+            <div className="flex flex-col gap-4 items-center w-full">
+              <TotalNotes totalNotes={totalNotes} />
+            </div>
+            {/* Bouton déconnexion mobile en bas */}
+          <div className="flex flex-col items-center justify-center w-full">
+            
+              <Logout />
+            
+          </div>
+          </div>
+          
         </div>
       </div>
+            <AnimatePresence>
+                {isParamModalOpen && (
+                    <ParamModal onClose={closeParamModal} />
+                )}
+            </AnimatePresence>
 
-      {/* Modal */}
-      <AnimatePresence>
-        {isParamModalOpen && <ParamModal onClose={closeParamModal} />}
-      </AnimatePresence>
+
     </>
   );
 }

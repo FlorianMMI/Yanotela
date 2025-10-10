@@ -23,6 +23,7 @@ export default function Breadcrumb() {
   const [showNoteMore, setShowNoteMore] = useState(false);
   const [tempTitle, setTempTitle] = useState<string>(''); // Titre temporaire pour l'input
   const [isLoadingTitle, setIsLoadingTitle] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
 
   // Extraire l'ID de la note depuis l'URL
   const extractNoteId = (): string | null => {
@@ -35,27 +36,47 @@ export default function Breadcrumb() {
 
   const noteId = extractNoteId();
 
-  // Initialiser tempTitle avec un fallback dès qu'on a le noteId
+  // Hook pour détecter les changements de taille d'écran et synchroniser les données
   useEffect(() => {
-    if (noteId && tempTitle === '') {
-      setTempTitle('Titre de la note'); // Même fallback que dans page.tsx
-    }
-  }, [noteId, tempTitle]);
+    const handleResize = () => {
+      // Force le rechargement des données quand on change de taille d'écran
+      setLastFetchTime(Date.now());
+    };
+
+    // Écouter les mises à jour de titre depuis la page de note
+    const handleTitleUpdate = (event: CustomEvent) => {
+      const { noteId: updatedNoteId, title } = event.detail;
+      if (updatedNoteId === noteId) {
+        setNoteTitle(title);
+        setTempTitle(title);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+    };
+  }, [noteId]);
 
   // Charger le titre de la note
   useEffect(() => {
     const fetchNoteTitle = async () => {
       if (noteId) {
         setIsLoadingTitle(true);
-        // Initialiser tempTitle avec le même fallback que page.tsx
-        setTempTitle('Titre de la note');
 
         try {
           const note = await GetNoteById(noteId);
-          if (note) {
+          if (note && !('error' in note)) {
             const title = note.Titre || 'Sans titre'; // Même fallback que page.tsx
             setNoteTitle(title);
             setTempTitle(title); // Synchroniser le titre temporaire
+          } else {
+            const errorTitle = 'Erreur de chargement';
+            setNoteTitle(errorTitle);
+            setTempTitle(errorTitle);
           }
         } catch (error) {
           console.error('Erreur lors du chargement du titre:', error);
@@ -69,7 +90,7 @@ export default function Breadcrumb() {
     };
 
     fetchNoteTitle();
-  }, [noteId]);
+  }, [noteId, lastFetchTime]); // Ajouter lastFetchTime comme dépendance
 
   // Sauvegarder le titre modifié (récupère le contenu existant pour le préserver)
   const updateNoteTitle = async (newTitle: string) => {
@@ -84,11 +105,14 @@ export default function Breadcrumb() {
           // Sauvegarder avec le nouveau titre et l'ancien contenu
           const success = await SaveNote(noteId, {
             Titre: newTitle,
-            Content: note.Content || '' // Préserver le contenu existant
+            Content: 'Content' in note ? note.Content || '' : '' // Préserver le contenu existant
           });
 
           if (success) {
-            // Optionnel: confirmer la sauvegarde
+            // Émettre un événement pour synchroniser avec la page de note
+            window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
+              detail: { noteId, title: newTitle } 
+            }));
           } else {
             console.error('Échec de la sauvegarde du titre');
           }
@@ -100,11 +124,14 @@ export default function Breadcrumb() {
   };
 
   const handleTitleSave = async (newTitle: string) => {
-    if (newTitle.trim() !== '' && newTitle !== noteTitle) {
+    if (newTitle.trim() === '') {
+      // Si le titre est vide, utiliser le fallback et sauvegarder
+      const fallbackTitle = 'Titre de la note';
+      setTempTitle(fallbackTitle);
+      await updateNoteTitle(fallbackTitle);
+    } else if (newTitle !== noteTitle) {
+      // Si le titre a changé et n'est pas vide, le sauvegarder
       await updateNoteTitle(newTitle);
-    } else if (newTitle.trim() === '') {
-      // Si le titre est vide, remettre l'ancien titre
-      setTempTitle(noteTitle);
     }
   };
 
@@ -124,7 +151,7 @@ export default function Breadcrumb() {
     if (pathname.startsWith('/notes/') && segments.length > 1) {
       const noteId = segments[1];
       // Utiliser noteTitle s'il existe et n'est pas vide, sinon utiliser le fallback par défaut
-      const displayTitle = noteTitle && noteTitle.trim() !== '' ? noteTitle : 'Titre de la note';
+      const displayTitle = noteTitle && noteTitle.trim() !== '' ? noteTitle : '';
       return [
         { label: 'Mes Notes', href: '/notes' },
         { label: displayTitle, isActive: true, isNoteTitle: true },
@@ -202,7 +229,7 @@ export default function Breadcrumb() {
                         }
                       }}
                       className="text-clrprincipal text-2xl font-semibold bg-transparent border-none outline-none focus:bg-white focus:bg-opacity-20 rounded py-1 min-w-0 max-w-xs"
-                      placeholder="Titre de la note"
+                      placeholder=""
                     />
                   )}
                       {/* Container pour pousser l'icône complètement à droite */}
@@ -239,8 +266,7 @@ export default function Breadcrumb() {
         </div>
 
       </nav>
-      <div className='h-8 bg-primary'>
-      </div>
+
     </>
   );
 }

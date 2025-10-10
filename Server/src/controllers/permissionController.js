@@ -78,53 +78,6 @@ const UpdatePermission = async (req, res) => {
       return res.status(404).json({ error: "Utilisateur cible non trouvé sur cette note" });
     }
 
-    // Cas spécial : Propriétaire (role 0) peut transférer la propriété
-    if (adminPermission.role === 0) {
-      if (userPermission.role !== 0) {
-        // L'utilisateur connecté devient admin (1), l'autre devient propriétaire (0)
-        if (req.body.newRole === 0) {
-          await prisma.permission.update({
-            where: { 
-              noteId_userId: {
-                noteId: noteId,
-                userId: connected
-              }
-            },
-            data: { role: 1 }
-          });
-          await prisma.permission.update({
-            where: { 
-              noteId_userId: {
-                noteId: noteId,
-                userId: parseInt(userId)
-              }
-            },
-            data: { role: 0 }
-          });
-          return res.json({ success: true, message: "Transfert de propriété effectué. Vous êtes maintenant administrateur." });
-        } else {
-          // Propriétaire peut modifier n'importe quel rôle (sauf un autre propriétaire)
-          const { newRole } = req.body;
-          if (typeof newRole !== 'number' || newRole < 1 || newRole > 3) {
-            return res.status(400).json({ error: "Rôle cible invalide ou non autorisé." });
-          }
-          await prisma.permission.update({
-            where: { 
-              noteId_userId: {
-                noteId: noteId,
-                userId: parseInt(userId)
-              }
-            },
-            data: { role: newRole }
-          });
-          return res.json({ success: true, message: `Rôle modifié avec succès` });
-        }
-      } else {
-        return res.status(400).json({ error: "L'utilisateur est déjà propriétaire." });
-      }
-    }
-
-    // Pour les autres : on ne peut donner qu'un rôle plus faible que le sien
     if (adminPermission.role < userPermission.role) {
       const { newRole } = req.body;
       if (typeof newRole !== 'number' || newRole <= adminPermission.role || newRole > 3) {
@@ -249,6 +202,7 @@ async function RemovePermission(req, res) {
       return res.status(403).json({ error: "Permissions insuffisantes pour retirer un utilisateur" });
     }
 
+
     // Permission de l'utilisateur cible
     const userPermission = await prisma.permission.findFirst({
       where: {
@@ -256,6 +210,9 @@ async function RemovePermission(req, res) {
         noteId: noteId
       }
     });
+    if (adminPermission.role === 1 && userPermission.role === 1) {
+      return res.status(403).json({ error: "Un administrateur ne peut pas retirer un autre administrateur" });
+    }
     if (!userPermission) {
       return res.status(404).json({ error: "Permission utilisateur cible introuvable" });
     }

@@ -47,7 +47,7 @@ export default function Home() {
  
 
   return (
-    <div className="h-full">
+    <div className="h-full w-full">
 
     <NoteHeader
       searchTerm={searchTerm}
