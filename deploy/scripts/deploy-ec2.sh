@@ -58,12 +58,10 @@ install_docker() {
 
 # Function to install Docker Compose if not present
 install_docker_compose() {
-    if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null 2>&1; then
-        echo "🔧 Docker Compose not found. Installing Docker Compose..."
-        
-        $SUDO curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        $SUDO chmod +x /usr/local/bin/docker-compose
-        
+    if ! docker compose version &> /dev/null 2>&1; then
+        echo "🔧 Docker Compose plugin not found. Installing Docker Compose..."
+        $SUDO apt-get update
+        $SUDO apt-get install -y docker-compose-plugin
         echo "✅ Docker Compose installed successfully"
     else
         echo "✅ Docker Compose is already installed"
@@ -94,7 +92,7 @@ create_backup() {
     
     # Backup container status
     if [ -f "$COMPOSE_FILE" ]; then
-        $SUDO docker-compose -f "$COMPOSE_FILE" ps > "$backup_dir/services_status.txt" 2>/dev/null || true
+        $SUDO docker compose -f "$COMPOSE_FILE" ps > "$backup_dir/services_status.txt" 2>/dev/null || true
     fi
     
     # Create symlink to latest backup
@@ -122,7 +120,7 @@ pull_images() {
     export DOCKER_USERNAME
     export IMAGE_TAG
     
-    $SUDO docker-compose -f "$COMPOSE_FILE" pull
+    $SUDO docker compose -f "$COMPOSE_FILE" pull
     
     echo "✅ Images pulled successfully"
 }
@@ -132,7 +130,7 @@ stop_services() {
     echo "🛑 Stopping current services..."
     
     if [ -f "$COMPOSE_FILE" ]; then
-        $SUDO docker-compose -f "$COMPOSE_FILE" down || true
+        $SUDO docker compose -f "$COMPOSE_FILE" down || true
     fi
     
     echo "✅ Services stopped"
@@ -145,7 +143,7 @@ start_services() {
     export DOCKER_USERNAME
     export IMAGE_TAG
     
-    $SUDO docker-compose -f "$COMPOSE_FILE" up -d
+    $SUDO docker compose -f "$COMPOSE_FILE" up -d
     
     echo "✅ Services started"
 }
@@ -160,8 +158,8 @@ wait_for_services() {
     
     while [ $elapsed -lt $max_wait ]; do
         # Check if all containers are running
-        local running=$($SUDO docker-compose -f "$COMPOSE_FILE" ps -q | wc -l)
-        local healthy=$($SUDO docker-compose -f "$COMPOSE_FILE" ps | grep -c "Up" || true)
+        local running=$($SUDO docker compose -f "$COMPOSE_FILE" ps -q | wc -l)
+        local healthy=$($SUDO docker compose -f "$COMPOSE_FILE" ps | grep -c "Up" || true)
         
         if [ "$running" -gt 0 ] && [ "$healthy" -eq "$running" ]; then
             echo "✅ All services are running"
@@ -280,7 +278,7 @@ main() {
     echo "✅ Deployment completed successfully!"
     echo ""
     echo "📊 Service Status:"
-    $SUDO docker-compose -f "$COMPOSE_FILE" ps
+    $SUDO docker compose -f "$COMPOSE_FILE" ps
     echo ""
     echo "🔗 Services are available at:"
     echo "   - Frontend: http://$(hostname -I | awk '{print $1}'):3000"
