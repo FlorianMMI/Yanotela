@@ -18,6 +18,7 @@ import { useCallback } from "react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter } from "next/navigation";
+import CollaborationPlugin from "@/components/collaboration/CollaborationPlugin";
 
 import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
@@ -58,6 +59,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [userRole, setUserRole] = useState<number | null>(null); // Ajouter le rôle utilisateur
   const [isReadOnly, setIsReadOnly] = useState(false); // Mode lecture seule
   const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
+  const [userPseudo, setUserPseudo] = useState<string>(""); // Pseudo pour la collaboration
   
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
@@ -116,6 +118,24 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       detail: { noteId: id, title: finalTitle } 
     }));
   }
+
+  // Récupérer les informations utilisateur au chargement
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/user/info', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUserPseudo(userData.pseudo || 'Anonyme');
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du pseudo:', error);
+      }
+    };
+    fetchUserInfo();
+  }, []);
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -418,6 +438,12 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 <HistoryPlugin />
                 {!isReadOnly && <OnChangeBehavior />}
                 {!isReadOnly && <AutoFocusPlugin />}
+                {/* Plugin de collaboration temps réel */}
+                <CollaborationPlugin 
+                  noteId={id} 
+                  username={userPseudo}
+                  isReadOnly={isReadOnly}
+                />
               </LexicalComposer>
             </div>
           </>
