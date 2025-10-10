@@ -86,7 +86,7 @@ export default function Breadcrumb() {
           });
           
           if (success) {
-            console.log('Titre sauvegardé:', newTitle);
+            // Optionnel: confirmer la sauvegarde
           } else {
             console.error('Échec de la sauvegarde du titre');
           }
@@ -160,62 +160,61 @@ export default function Breadcrumb() {
     <>
     <nav className="bg-background p-3">
       <div className="flex items-center space-x-2 text-sm">
-        <Icon name="files" size={24} className="text-primary" />
+        {/* Déterminer l'icône selon la page courante */}
+        {(() => {
+          if (pathname.includes('/notes/')) {
+        return <Icon name="docs" size={20} className="text-primary" />;
+          }
+          if (pathname.includes('/profil')) {
+        return <Icon name="profile" size={20} className="text-primary" />;
+          }
+        })()}
         {breadcrumbs.map((item, index) => (
           <React.Fragment key={index}>
-            {index > 0 && (
-              <p className="text-2xl text-clrprincipal">/</p>
-              /*<Icon
-                name="arrow-barre"
-                size={24}
-                className="text-gray-400"
-              />*/
-              
-            )}
-            
-            
-            {item.href && !item.isActive ? (
-              <Link
-                href={item.href}
-                className="text-clrprincipal hover:text-rouge-hover text-2xl transition-colors font-bold"
-              >
-                {item.label}
-              </Link>
-            ) : item.isNoteTitle ? (
-              // Input pour le titre de la note
-              <div className="flex items-center">
-                {isLoadingTitle ? (
-                  <span className="text-clrprincipal text-2xl font-semibold animate-pulse">
-                    Chargement...
-                  </span>
-                ) : (
-                  <input
-                    type="text"
-                    value={tempTitle}
-                    onChange={(e) => setTempTitle(e.target.value)}
-                    onBlur={(e) => handleTitleSave(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.currentTarget.blur();
-                      }
-                    }}
-                    className="text-clrprincipal text-2xl font-semibold bg-transparent border-none outline-none focus:bg-white focus:bg-opacity-20 rounded px-2 py-1 min-w-0 max-w-xs"
-                    placeholder="Titre de la note"
-                  />
-                )}
-              </div>
+        {index > 0 && (
+          <p className="text-2xl text-clrprincipal">/</p>              
+        )}
+        {item.href && !item.isActive ? (
+          <Link
+            href={item.href}
+            className="text-clrprincipal hover:text-rouge-hover text-2xl transition-colors font-bold"
+          >
+            {item.label}
+          </Link>
+        ) : item.isNoteTitle ? (
+          // Input pour le titre de la note
+          <div className="flex items-center">
+            {isLoadingTitle ? (
+          <span className="text-clrprincipal text-2xl font-semibold animate-pulse">
+            Chargement...
+          </span>
             ) : (
-              
-              <span
-                className={`${
-                  item.isActive 
-                    ? 'text-clrprincipal text-2xl font-semibold' 
-                    : 'text-gray-500'
-                } `}
-              >
-                {item.label}
-              </span>
+          <input
+            type="text"
+            value={tempTitle}
+            onChange={(e) => setTempTitle(e.target.value)}
+            onBlur={(e) => handleTitleSave(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+            e.currentTarget.blur();
+              }
+            }}
+            className="text-clrprincipal text-2xl font-semibold bg-transparent border-none outline-none focus:bg-white focus:bg-opacity-20 rounded px-2 py-1 min-w-0 max-w-xs"
+            placeholder="Titre de la note"
+          />
             )}
+          </div>
+        ) : (
+          <span
+            className={`${
+          item.isActive 
+            ? 'text-clrprincipal text-2xl font-semibold' 
+            : 'text-gray-500'
+            } `}
+          >
+            {item.label}
+          </span>
+        )}
           </React.Fragment>
         ))}
       </div>

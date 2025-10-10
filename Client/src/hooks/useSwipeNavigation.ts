@@ -25,18 +25,15 @@ export const useSwipeNavigation = (config: SwipeConfig) => {
   const minSwipeDistance = config.minSwipeDistance || 50;
   const maxVerticalDistance = config.maxVerticalDistance || 100;
 
-  // Détection mobile vs desktop
+  // Détection mobile vs desktop - Version simplifiée pour tester
   useEffect(() => {
     const checkIsMobile = () => {
-      const userAgent = navigator.userAgent;
-      const isTouchDevice = 'ontouchstart' in window;
       const hasSmallScreen = window.innerWidth <= 768;
+      const isTouchDevice = 'ontouchstart' in window;
       
-      // Détection des appareils mobiles par user agent
-      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-      const isMobileUA = mobileRegex.test(userAgent);
-      
-      setIsMobile(isMobileUA || (isTouchDevice && hasSmallScreen));
+      // Pour les tests, on active si écran petit OU device tactile
+      const mobile = hasSmallScreen || isTouchDevice;
+      setIsMobile(mobile);
     };
 
     checkIsMobile();

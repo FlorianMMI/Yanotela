@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import "../../globals.css";
 
@@ -23,7 +23,6 @@ export default function ValidatePage() {
       }
 
       try {
-        console.log('Tentative de validation avec token:', token);
         
         // Appeler l'API de validation du backend
         const response = await fetch(`http://localhost:3001/validate/${token}`, {
@@ -31,10 +30,7 @@ export default function ValidatePage() {
           credentials: 'include', // Important pour les sessions
         });
 
-        console.log('Réponse du serveur:', response.status, response.statusText);
-        
         const data = await response.json();
-        console.log('Données reçues:', data);
 
         if (response.ok && data.success) {
           setStatus('success');
@@ -60,16 +56,9 @@ export default function ValidatePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full space-y-8">
-             <Image
-                        src="/logo.svg"
-                        alt="Yanolela."
-                        width={200}
-                        height={200}
-                        className="col-span-full mx-auto"
-                    />
+      <div className="max-w-md w-full">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          <h2 className="text-3xl font-extrabold text-clrprincipal">
             Validation du compte
           </h2>
           
@@ -95,9 +84,9 @@ export default function ValidatePage() {
                     <p className="text-sm font-medium text-green-800">
                       {message}
                     </p>
-                    <p className="text-sm text-green-700 mt-1">
-                      Redirection en cours...
-                    </p>
+                      <Link href="/notes" className="mt-2 text-sm text-green-700 hover:text-green-500 underline">
+                        Accéder à mes notes
+                      </Link>
                   </div>
                 </div>
               </div>
@@ -117,12 +106,12 @@ export default function ValidatePage() {
                     <p className="text-sm font-medium text-red-800">
                       {message}
                     </p>
-                    <button
-                      onClick={() => router.push('/register')}
+                    <Link
+                      href="/"
                       className="mt-2 text-sm text-red-600 hover:text-red-500 underline"
                     >
-                      Retour à l&apos;enregistrement
-                    </button>
+                      Retour
+                    </Link>
                   </div>
                 </div>
               </div>

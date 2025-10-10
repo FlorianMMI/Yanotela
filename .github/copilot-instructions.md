@@ -2,96 +2,94 @@
 
 ## Project Architecture
 
-**Yanotela** is a full-stack note-taking application with strict client-server separation:
+**Yanotela** is a full-stack collaborative note-taking application with strict client-server separation:
 
-- **Client** (`Client/`): Next.js 15 app with App Router, TailwindCSS 4, TypeScript, and Lexical editor
-- **Server** (`Server/`): Node.js Express API with Prisma ORM, PostgreSQL, session-based auth
-- **Database**: PostgreSQL with Prisma migrations and schema in `Server/prisma/`
+- **Client** (`Client/`): Next.js 15 with App Router, TypeScript, TailwindCSS 4, Lexical rich text editor
+- **Server** (`Server/`): Node.js Express API with Prisma ORM, PostgreSQL, session-based auth  
+- **Database**: PostgreSQL with Prisma migrations in `Server/prisma/`
 
-## Development Workflow
+## Critical Development Workflows
 
-### Setup & Startup
-- Use `./setup.sh` (bash) to start both services - installs deps, generates Prisma client, runs servers
-- Client runs on `:3000`, Server on `:3001`
-- Alternative: `npm run dev` in each directory separately
+### Startup & Environment  
+- **Docker (recommended)**: `docker compose up --build` - runs client:3000, server:3001, postgres
+- **Manual**: `cd Client && npm run dev` + `cd Server && npm run dev` (no setup script exists)
+- Client uses `--turbopack` flag for faster dev builds
 
-### GitFlow Convention
-- Main branch: `develop` 
-- Feature branches: `feature/US[X.Y]-description` (e.g., `feature/US1.1-creation-de-compte`)
-- Commit format: `[US] - [Description]` (e.g., `[US1.1] - Création de la page d'inscription`)
+### Authentication Architecture
+- **Session-based auth** with `express-session` (no JWT) - sessions stored server-side
+- **Client auth check**: All protected pages use `useAuthRedirect` hook that calls `/auth/check`
+- **API calls pattern**: Always include `credentials: 'include'` for session cookies
+- **Email verification**: Required via `is_verified` field before login access
+- **Server middleware**: `authMiddleware.js` protects routes, no client-side auth state
 
-## Key Patterns & Conventions
+### API Communication Patterns
+- **Base URL**: Client calls `http://localhost:3001` (hardcoded in `loader.tsx`, fallback for env var)
+- **Route structure**: `/` (auth routes), `/note` (CRUD operations)  
+- **Error handling**: Express-validator on server → structured error responses → client displays
+- **Content-Type**: Always `application/json` with `credentials: 'include'`
 
-### Authentication Flow
-- Session-based auth with `express-session` and Redis
-- Client checks auth via `useAuthRedirect` hook: `fetch('http://localhost:3001/auth/check')`
-- Email verification required (`is_verified` field in User model)
-- Password reset via email tokens
-- Always use `credentials: 'include'` for API calls
-
-### API Communication
-- Client → Server: `http://localhost:3001` with `credentials: 'include'`
-- Routes: `/` (auth), `/note` (notes CRUD)
-- Error handling: Express-validator on server, client displays validation errors
-
-### File Organization
-- **Client components**: `src/components/[featureName]/ComponentName.tsx`
-- **Client pages**: `src/app/[route]/page.tsx` (App Router pattern)
-- **Server controllers**: `src/controllers/[feature]Controller.js`
-- **Types**: Client-side in `src/type/`, use PascalCase (e.g., `Note.ts`)
-
-### Database Schema
-```prisma
-User: id, pseudo(unique), email(unique), password, token(unique), is_verified
-Note: id, Titre, Content, authorId, ModifiedAt
+### Database Schema & Relationships
+```prisma  
+User: id(int), pseudo(unique), email(unique), password, token(unique), is_verified(boolean)
+Note: id(string), Titre, Content, authorId(int→User), ModifiedAt(datetime)
 ```
+- Note IDs are strings, User IDs are integers
+- **Critical**: Run `npx prisma generate` after schema changes before server restart
+
+### File Organization Conventions
+- **Client pages**: `src/app/[route]/page.tsx` (App Router, all client components)
+- **Client components**: `src/components/[feature]/ComponentName.tsx`  
+- **Client data fetching**: `src/loader/loader.tsx` (not React components despite .tsx)
+- **Server controllers**: `src/controllers/[feature]Controller.js` (ES modules)
+- **Types**: Client-only in `src/type/`, PascalCase filenames (e.g., `Note.ts`)
+
+### Testing Architecture  
+- **Server only**: Jest with `maxWorkers: 1`, `forceExit: true` for DB cleanup
+- **Test categories**: `tests/auth/`, `tests/notes/`, `tests/bdd/` with dedicated npm scripts
+- **Test utils**: `testUtils.js` provides shared Prisma instance, cleanup helpers, unique token generation
+- **Windows compatibility**: Scripts use `set NODE_ENV=test&&` (note double &)
 
 ### Styling System
-- TailwindCSS 4 with CSS variables in `globals.css`
-- Custom colors: `--rouge-fonce: #882626`, `--background: #E9EBDB`
-- Fonts: Gantari (primary), Geologica (secondary)
-- Background pattern: `--motif-image: url('/fond.jpg')` with opacity
+- **TailwindCSS 4** with CSS variables in `globals.css` 
+- **Custom properties**: `--rouge-fonce: #882626`, `--background: #E9EBDB`
+- **Typography**: Gantari (primary), Geologica (secondary) via Google Fonts
+- **Theme system**: CSS `@theme inline` block maps CSS vars to Tailwind tokens
 
-### Testing
-- **Server**: Jest with custom config, test categories: `auth/`, `notes/`, `bdd/`
-- Run specific tests: `npm run test:auth`, `npm run test:notes`, `npm run test:bdd`
-- Test environment isolation with `testUtils.js` cleanup
+## Technology Integration Points
 
-## Critical Integration Points
+### Lexical Rich Text Editor
+- Imported from `@lexical/react` in note components
+- Content stored as string in Note.Content field (not JSON objects)
+- Handle as plain text in database operations
 
-### Lexical Editor
-- Rich text editor in notes, imported from `@lexical/react`
-- Handle content as JSON/text in Note model's `Content` field
+### Real-time Collaboration (Planned)
+- `yjs` and `socket.io` dependencies present but not actively implemented
+- `motion` library available for animations
 
-### Real-time Features
-- Socket.io setup for collaborative editing (yjs dependency present)
-- Motion library for animations (`motion` package)
-
-## Development Commands
+## Development Commands Reference
 
 ```bash
-# Full setup
-./setup.sh
+# Docker full stack
+docker compose up --build
 
-# Server only
-cd Server && npm run dev
+# Manual development  
+cd Client && npm run dev    # Next.js with turbopack
+cd Server && npm run dev    # Node.js with auto-restart
 
-# Client only  
-cd Client && npm run dev
+# Database operations
+cd Server && npx prisma generate      # After schema changes
+cd Server && npx prisma migrate dev   # Apply migrations
 
-# Testing
-cd Server && npm run test        # All tests
-cd Server && npm run test:auth   # Auth tests only
-cd Server && npm run test:notes  # Notes tests only
-
-# Database
-cd Server && npx prisma generate
-cd Server && npx prisma migrate dev
+# Testing (Server only)
+cd Server && npm run test         # All tests
+cd Server && npm run test:auth    # Auth tests  
+cd Server && npm run test:notes   # Notes CRUD tests
+cd Server && npm run test:bdd     # Database tests
 ```
 
-## Common Gotchas
-- Server uses ES modules (`"type": "module"` in package.json)
-- Windows-specific test scripts use `set NODE_ENV=test&&` 
-- Prisma client must be regenerated after schema changes
-- Client uses `--turbopack` flag for faster builds
-- Auth redirects happen client-side via `useAuthRedirect` hook
+## Critical Gotchas & Patterns
+- **Server ES modules**: `"type": "module"` in package.json, use `.js` extensions in imports
+- **No client-side setup script**: References to `./setup.sh` in docs are outdated
+- **Auth flow**: `useAuthRedirect` redirects to `/login` on auth failure, no loading states needed
+- **API error structure**: Server returns `{ errors: [], message: "" }` for validation, `{ error: "" }` for other errors
+- **Prisma client**: Must regenerate after schema changes, shared test instance pattern in `testUtils.js`

@@ -19,7 +19,6 @@ export default function Login() {
   useEffect(() => {
     // Si l'utilisateur est déjà authentifié, rediriger vers /notes
     if (isAuthenticated === true) {
-      console.log('Utilisateur déjà authentifié, redirection vers /notes');
       router.replace('/notes');
     }
   }, [isAuthenticated, router]);

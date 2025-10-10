@@ -18,21 +18,16 @@ export default function Login() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log('Vérification de l\'authentification...');
         const res = await fetch('http://localhost:3001/auth/check', {
           method: 'GET',
           credentials: 'include',
         });
 
-        console.log('Réponse du serveur:', res.status, res.ok);
-
         if (res.ok) {
           const data = await res.json();
-          console.log('Données reçues:', data);
 
           // Vérifier les deux formats possibles de la réponse
           if (data.authenticated || data.isAuthenticated) {
-            console.log('Utilisateur authentifié, redirection vers /');
             router.push('/');
             return;
           }
@@ -77,21 +72,6 @@ export default function Login() {
             onSwitchToForgot={() => router.push('/forgot-password')}
           />
         </div>
-
-        {/* Retiré car invisible sur desktop et en doublon sur mobile */}
-        {/* En plus ça fait bugger les tests */}
-        {/* Register Link
-        <div className="text-center">
-          <p className="text-gray-600 text-sm">
-            Vous n&apos;avez pas de compte ?{' '}
-            <Link
-              href="/register"
-              className="text-primary hover:text-rouge-hover font-medium"
-            >
-              Inscrivez-vous
-            </Link>
-          </p>
-        </div> */}
       </div>
     </div>
   );

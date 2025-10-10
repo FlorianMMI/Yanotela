@@ -153,7 +153,7 @@ export default function LoginForm({
         </button>
 
         {/* Séparateur et connexion Google - seulement sur page complète */}
-        {!isInSidebar && (
+        {/* {!isInSidebar && (
           <div className="flex flex-col items-center gap-4 w-full">
             <div className="flex items-center w-full gap-4">
               <div className="flex-1 h-px bg-gray-300"></div>
@@ -171,7 +171,7 @@ export default function LoginForm({
               </span>
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Lien d'inscription */}
         {showRegisterLink && (
