@@ -1,10 +1,10 @@
 "use client";
-import React from 'react';
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import * as Y from 'yjs';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { $getRoot, $getSelection, $createParagraphNode, $createTextNode, TextNode } from 'lexical';
+import { socketService } from '@/services/socketService';
 
 interface CollaborationPluginProps {
   noteId: string;
@@ -27,87 +27,68 @@ export default function CollaborationPlugin({
 }: CollaborationPluginProps) {
   const [editor] = useLexicalComposerContext();
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [yDoc] = useState(() => new Y.Doc());
+  const yDocRef = useRef<Y.Doc | null>(null);
   const [status, setStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
   const [userCount, setUserCount] = useState<number>(1);
-  const isInitialized = useRef(false);
   const isSyncing = useRef(false);
 
   useEffect(() => {
-    // ✅ DEBUG : Vérifier les props
-    console.log('🔧 CollaborationPlugin - Props:', { noteId, username, isReadOnly });
-    
-    // ✅ CORRECTION : Ne pas initialiser si username est vide
-    if (!username || username.trim() === '') {
-      console.log('⚠️  Username vide, attente...');
-      return;
-    }
-    
-    if (isInitialized.current) {
-      console.log('⚠️  Déjà initialisé, skip');
-      return;
-    }
-    isInitialized.current = true;
+    // Crée un nouveau Y.Doc à chaque changement de noteId
+    const yDoc = new Y.Doc();
+    yDocRef.current = yDoc;
 
-    // URL du serveur Socket.IO
-    const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    console.log('🌐 Connexion à:', SOCKET_URL);
-    
-    // Créer la connexion Socket.IO avec les credentials pour l'authentification session
-    const newSocket = io(SOCKET_URL, {
-      withCredentials: true,
-      transports: ['websocket', 'polling']
-    });
+    // Initialise le socket
+    const newSocket = socketService.getSocket(noteId, username);
+    setSocket(newSocket || null);
 
-    setStatus('connecting');
-    setSocket(newSocket);
-
-    // Identifiant unique pour tracker l'origine des updates
     const UPDATE_ORIGIN = Symbol('socket-update');
 
-    // Gestion de la connexion établie
+    if (!newSocket) return;
+
+    // Nettoie tous les anciens listeners
+    newSocket.off('connect');
+    newSocket.off('disconnect');
+    newSocket.off('error');
+    newSocket.off('sync');
+    newSocket.off('yjsUpdate');
+    newSocket.off('userJoined');
+    newSocket.off('userLeft');
+
+    // Connexion
     newSocket.on('connect', () => {
-      console.log('🔌 Socket.IO connecté - Socket ID:', newSocket.id);
       setStatus('connected');
-      
-      // Rejoindre la room de la note
-      console.log('📨 Envoi de joinNote pour noteId:', noteId);
-      newSocket.emit('joinNote', { noteId });
+      if (!socketService.hasJoinedCurrentRoom()) {
+        newSocket.emit('joinNote', { noteId });
+        socketService.markRoomJoined();
+      }
     });
 
-    // Gestion de la déconnexion
-    newSocket.on('disconnect', (reason) => {
-      console.log('❌ Socket.IO déconnecté:', reason);
+    if (newSocket.connected && !socketService.hasJoinedCurrentRoom()) {
+      setStatus('connected');
+      newSocket.emit('joinNote', { noteId });
+      socketService.markRoomJoined();
+    }
+
+    newSocket.on('disconnect', () => {
       setStatus('disconnected');
     });
 
-    // Gestion des erreurs
     newSocket.on('error', (error) => {
       console.error('❌ Erreur Socket.IO:', error);
     });
 
-    // Recevoir l'état initial du document
-    newSocket.on('sync', ({ state, userCount: count, isReadOnly: serverReadOnly }) => {
-      console.log(`📥 État initial reçu (${count} utilisateurs)`);
+    newSocket.on('sync', ({ state, userCount: count }) => {
       setUserCount(count);
-
       try {
-        // Décoder et appliquer l'état initial depuis le serveur
         const stateBuffer = Uint8Array.from(Buffer.from(state, 'base64'));
         Y.applyUpdate(yDoc, stateBuffer, UPDATE_ORIGIN);
-
-        // ✅ CORRECTION CRITIQUE : Synchroniser Yjs → Lexical
         const yText = yDoc.getText('content');
-        
-        // Mettre à jour l'éditeur avec le contenu Yjs (une seule fois à l'init)
         isSyncing.current = true;
         editor.update(() => {
           const root = $getRoot();
           root.clear();
-          
           const content = yText.toString();
           if (content) {
-            // Créer les paragraphes depuis le contenu Yjs
             const lines = content.split('\n');
             lines.forEach(line => {
               const paragraph = $createParagraphNode();
@@ -118,37 +99,25 @@ export default function CollaborationPlugin({
               root.append(paragraph);
             });
           } else {
-            // Document vide, ajouter un paragraphe
             root.append($createParagraphNode());
           }
         });
         isSyncing.current = false;
-
-        console.log('✅ Collaboration initialisée - Contenu synchronisé');
-        
       } catch (error) {
         console.error('❌ Erreur lors de la synchronisation:', error);
       }
     });
 
-    // Recevoir les mises à jour Yjs des autres utilisateurs
-    newSocket.on('yjsUpdate', ({ update, userId }) => {
+    newSocket.on('yjsUpdate', ({ update }) => {
       try {
-        console.log(`📥 Mise à jour reçue de l'utilisateur ${userId}`);
         const updateBuffer = Uint8Array.from(Buffer.from(update, 'base64'));
-        
-        // Appliquer avec l'origine pour éviter de reboucler
         Y.applyUpdate(yDoc, updateBuffer, UPDATE_ORIGIN);
-        
-        // ✅ CORRECTION : Synchroniser Yjs → Lexical après réception
         const yText = yDoc.getText('content');
         isSyncing.current = true;
         editor.update(() => {
           const root = $getRoot();
           const currentContent = root.getTextContent();
           const yjsContent = yText.toString();
-          
-          // Ne mettre à jour que si le contenu diffère
           if (currentContent !== yjsContent) {
             root.clear();
             const lines = yjsContent.split('\n');
@@ -168,115 +137,73 @@ export default function CollaborationPlugin({
       }
     });
 
-    // Notification d'arrivée d'utilisateur
-    newSocket.on('userJoined', ({ pseudo, userCount: count }) => {
-      console.log(`👤 ${pseudo} a rejoint la note`);
+    newSocket.on('userJoined', ({ userCount: count }) => {
+      setUserCount(count);
+    });
+    newSocket.on('userLeft', ({ userCount: count }) => {
       setUserCount(count);
     });
 
-    // Notification de départ d'utilisateur
-    newSocket.on('userLeft', ({ pseudo, userCount: count }) => {
-      console.log(`👋 ${pseudo} a quitté la note`);
-      setUserCount(count);
-    });
-
-    // ✅ CORRECTION : Écouter les modifications de Lexical → Yjs
-    const removeUpdateListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }) => {
-      // Ignorer si on est en train de synchroniser depuis Yjs
-      if (isSyncing.current || isReadOnly) {
-        console.log('🔕 Update ignoré - isSyncing:', isSyncing.current, 'isReadOnly:', isReadOnly);
-        return;
-      }
-      
-      // Ignorer si aucun changement
+    // Lexical → Yjs
+    const removeUpdateListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
+      if (isSyncing.current || isReadOnly) return;
       if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return;
-
-      console.log('📝 Lexical update détecté - Mise à jour Yjs');
-      
       editorState.read(() => {
         const root = $getRoot();
         const content = root.getTextContent();
-        
         const yText = yDoc.getText('content');
         const yjsContent = yText.toString();
-        
-        // Mettre à jour Yjs seulement si le contenu diffère
         if (content !== yjsContent) {
-          console.log('🔄 Contenu différent, mise à jour Yjs:', content.substring(0, 50));
           yDoc.transact(() => {
             yText.delete(0, yText.length);
             yText.insert(0, content);
-          });
+          }, 'lexical-update');
         }
       });
     });
 
-    // Écouter les mises à jour du document Yjs local → Socket.IO
+    // Yjs → Socket
     const updateHandler = (update: Uint8Array, origin: any) => {
-      console.log('🔔 Yjs update event - origin:', origin, 'UPDATE_ORIGIN:', UPDATE_ORIGIN, 'isReadOnly:', isReadOnly);
-      
-      // ✅ CORRECTION : Vérifier l'origine correctement
-      if (origin === UPDATE_ORIGIN) {
-        // Cette mise à jour vient du serveur, ne pas la renvoyer
-        console.log('⏭️  Origine serveur, skip');
-        return;
-      }
-      
-      if (!isReadOnly) {
-        console.log(`📤 Envoi de la mise à jour au serveur`);
+      if (origin === UPDATE_ORIGIN || isSyncing.current) return;
+      if (origin === 'lexical-update' && !isReadOnly) {
         const updateBase64 = Buffer.from(update).toString('base64');
-        newSocket.emit('yjsUpdate', {
-          noteId,
-          update: updateBase64
-        });
-      } else {
-        console.log('🚫 isReadOnly=true, pas d\'envoi');
+        newSocket.emit('yjsUpdate', { noteId, update: updateBase64 });
       }
     };
-
     yDoc.on('update', updateHandler);
 
-    // Nettoyage à la déconnexion
+    // Cleanup
     return () => {
-      console.log('🧹 Nettoyage de la collaboration');
-      
-      // Quitter la room
-      if (newSocket.connected) {
-        newSocket.emit('leaveNote', { noteId });
-      }
-      
-      // Nettoyer les event listeners
       yDoc.off('update', updateHandler);
       removeUpdateListener();
-      
-      // Déconnecter le socket
-      newSocket.disconnect();
-      
-      // Réinitialiser le flag pour permettre une nouvelle connexion
-      isInitialized.current = false;
+      // On ne ferme pas explicitement le socket ici (géré ailleurs)
     };
-  }, [noteId, editor, yDoc, isReadOnly, username]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noteId, editor, isReadOnly, username]);
 
-  // Afficher un indicateur de statut (optionnel)
+  // ✅ Effet séparé pour détecter le changement de note
+  useEffect(() => {
+    // Quitter la room précédente lors du changement de noteId
+    return () => {
+      const currentSocket = socketService.getCurrentSocket();
+      if (currentSocket?.connected) {
+        currentSocket.emit('leaveNote', { noteId });
+        socketService.markRoomLeft();
+      }
+    };
+  }, [noteId]);
+
+  // ✅ Afficher un indicateur de statut simplifié
+  // Ne rien afficher si seul (userCount === 1), sinon juste "En ligne"
+  if (status !== 'connected' || userCount <= 1) {
+    return null; // Pas d'affichage si déconnecté ou seul
+  }
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      <div className={`
-        flex items-center gap-2 px-3 py-2 rounded-lg shadow-lg text-sm
-        ${status === 'connected' ? 'bg-green-100 text-green-800' : 
-          status === 'connecting' ? 'bg-yellow-100 text-yellow-800' : 
-          'bg-red-100 text-red-800'}
-      `}>
-        <div className={`
-          w-2 h-2 rounded-full
-          ${status === 'connected' ? 'bg-green-500' : 
-            status === 'connecting' ? 'bg-yellow-500 animate-pulse' : 
-            'bg-red-500'}
-        `} />
-        <span className="font-medium">
-          {status === 'connected' ? `${userCount} utilisateur${userCount > 1 ? 's' : ''}` :
-           status === 'connecting' ? 'Connexion...' :
-           'Déconnecté'}
-        </span>
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg shadow-lg text-sm bg-green-100 text-green-800">
+        <div className="w-2 h-2 rounded-full bg-green-500" />
+        <span className="font-medium">En ligne</span>
       </div>
     </div>
   );

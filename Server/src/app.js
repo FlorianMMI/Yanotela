@@ -95,7 +95,6 @@ if (process.env.REDIS_URL) {
 
   Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
     io.adapter(createAdapter(pubClient, subClient));
-    console.log('📡 Redis adapter configuré pour Socket.IO');
   }).catch((err) => {
     console.warn('⚠️  Redis non disponible, mode standalone:', err.message);
   });
@@ -116,20 +115,24 @@ io.use((socket, next) => {
   socket.userId = session.userId;
   socket.userPseudo = session.pseudo;
   
-  console.log(`🔌 Socket connecté: ${socket.userPseudo} (${socket.userId})`);
   next();
 });
 
 // Gestion des connexions Socket.IO
 io.on('connection', (socket) => {
-  console.log(`✅ Utilisateur ${socket.userPseudo} connecté (socket: ${socket.id})`);
 
   /**
    * Événement: joinNote
    * L'utilisateur rejoint une room pour collaborer sur une note
    */
   socket.on('joinNote', async ({ noteId }) => {
-    console.log(`🔔 ${socket.userPseudo} (${socket.userId}) tente de rejoindre la note ${noteId}`);
+    
+    // ✅ CRITIQUE : Vérifier si le socket est déjà dans la room
+    const roomName = `note-${noteId}`;
+    if (socket.rooms.has(roomName)) {
+      return; // Ignorer les joinNote en double
+    }
+    
     try {
       // Vérifier que l'utilisateur a accès à cette note
       const note = await prisma.note.findUnique({
@@ -142,7 +145,6 @@ io.on('connection', (socket) => {
       });
 
       if (!note) {
-        console.log(`❌ Note ${noteId} introuvable`);
         socket.emit('error', { message: 'Note introuvable' });
         return;
       }
@@ -152,10 +154,8 @@ io.on('connection', (socket) => {
       const hasPermission = note.permissions.length > 0; // ✅ Accepter même si isAccepted=false
       const hasAccess = isAuthor || hasPermission;
 
-      console.log(`🔍 Vérification accès: isAuthor=${isAuthor}, hasPermission=${hasPermission}, hasAccess=${hasAccess}`);
 
       if (!hasAccess) {
-        console.log(`❌ Accès refusé pour ${socket.userPseudo}`);
         socket.emit('error', { message: 'Accès refusé à cette note' });
         return;
       }
@@ -164,13 +164,18 @@ io.on('connection', (socket) => {
       const isReadOnly = note.permissions.length > 0 && note.permissions[0].role === 3;
 
       // Rejoindre la room Socket.IO
-      socket.join(`note-${noteId}`);
+      socket.join(roomName);
 
       // Obtenir ou créer le document Yjs
       const yDoc = getOrCreateYDoc(noteId, note.Content);
 
-      // Ajouter l'utilisateur à la tracking list
-      const userCount = addUserToNote(noteId, socket.id);
+      // ✅ Compter les VRAIS utilisateurs connectés dans la room Socket.IO
+      const socketsInRoom = await io.in(roomName).allSockets();
+      const userCount = socketsInRoom.size;
+      
+      // Ajouter à la tracking list pour le cleanup (optionnel)
+      addUserToNote(noteId, socket.id);
+
 
       // Envoyer l'état initial du document au client
       const stateVector = Y.encodeStateAsUpdate(yDoc);
@@ -181,14 +186,12 @@ io.on('connection', (socket) => {
         isReadOnly
       });
 
-      // Notifier les autres utilisateurs
+      // Notifier les autres utilisateurs avec le nombre réel
       socket.to(`note-${noteId}`).emit('userJoined', {
         userId: socket.userId,
         pseudo: socket.userPseudo,
         userCount
       });
-
-      console.log(`📝 ${socket.userPseudo} a rejoint la note ${noteId} (${userCount} utilisateurs)`);
 
     } catch (error) {
       console.error('Erreur lors de joinNote:', error);
@@ -201,7 +204,6 @@ io.on('connection', (socket) => {
    * Synchronisation des changements Yjs entre clients
    */
   socket.on('yjsUpdate', async ({ noteId, update }) => {
-    console.log(`📥 yjsUpdate reçu de ${socket.userPseudo} (${socket.userId}) pour note ${noteId}`);
     try {
       // Récupérer le document Yjs
       const yDoc = getOrCreateYDoc(noteId);
@@ -210,10 +212,9 @@ io.on('connection', (socket) => {
       const updateBuffer = Buffer.from(update, 'base64');
       Y.applyUpdate(yDoc, updateBuffer);
 
-      console.log(`📤 Diffusion de la mise à jour aux autres clients dans note-${noteId}`);
       
       // Diffuser la mise à jour aux autres clients dans la room
-      socket.to(`note-${noteId}`).emit('yjsUpdate', {
+      io.in(`note-${noteId}`).emit('yjsUpdate', {
         noteId,
         update,
         userId: socket.userId
@@ -247,32 +248,40 @@ io.on('connection', (socket) => {
   /**
    * Déconnexion du socket
    */
-  socket.on('disconnect', () => {
-    console.log(`❌ Utilisateur ${socket.userPseudo} déconnecté`);
+  socket.on('disconnect', (reason) => {
     
     // Notifier toutes les rooms où l'utilisateur était présent
     const rooms = Array.from(socket.rooms).filter(room => room.startsWith('note-'));
+    
     rooms.forEach(room => {
       const noteId = room.replace('note-', '');
       handleUserLeave(socket, noteId);
     });
+    
   });
 });
 
 /**
  * Gérer le départ d'un utilisateur d'une note
  */
-function handleUserLeave(socket, noteId) {
-  const userCount = removeUserFromNote(noteId, socket.id);
+async function handleUserLeave(socket, noteId) {
+  // Retirer de la tracking list
+  removeUserFromNote(noteId, socket.id);
   
+  // Quitter la room Socket.IO
+  socket.leave(`note-${noteId}`);
+  
+  // ✅ Compter les VRAIS utilisateurs restants dans la room
+  const socketsInRoom = await io.in(`note-${noteId}`).allSockets();
+  const userCount = socketsInRoom.size;
+  
+  // Notifier les autres avec le compte réel
   socket.to(`note-${noteId}`).emit('userLeft', {
     userId: socket.userId,
     pseudo: socket.userPseudo,
     userCount
   });
   
-  socket.leave(`note-${noteId}`);
-  console.log(`👋 ${socket.userPseudo} a quitté la note ${noteId}`);
 }
 
 export { app, sessionMiddleware, httpServer, io };

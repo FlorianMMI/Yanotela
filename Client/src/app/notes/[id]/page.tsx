@@ -19,6 +19,7 @@ import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter } from "next/navigation";
 import CollaborationPlugin from "@/components/collaboration/CollaborationPlugin";
+import { socketService } from "@/services/socketService";
 
 import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
@@ -68,6 +69,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   // Unwrap params using React.use()
   const { id } = use(params);
+
+  // ✅ Hook pour déconnecter le socket quand on quitte la page note
+  useEffect(() => {
+    return () => {
+      socketService.disconnect();
+    };
+  }, [id]);
 
   // Hook pour détecter les changements de taille d'écran
   useEffect(() => {

@@ -22,11 +22,9 @@ const prisma = new PrismaClient();
 export const noteController = {
 
     getNotes: async (req, res) => {
-        console.log('Session data:', req.session); // Debug log
         
         // Vérifier l'authentification
         if (!req.session.userId) {
-            console.log('User not authenticated - session userId missing');
             return res.status(401).json({ message: 'Utilisateur non authentifié' });
         }
 
@@ -99,7 +97,6 @@ export const noteController = {
         try {
             // Générer un UUID plus simple et fiable
             const UID = crypto.randomBytes(8).toString('hex'); // 16 characters
-            console.log("Generated UID:", UID);
 
             const note = await prisma.note.create({
                 data: {
@@ -134,8 +131,6 @@ export const noteController = {
         const { id } = req.params;
         const { userId } = req.session;
 
-        console.log('[getNoteById] Requested note ID:', id);
-        console.log('[getNoteById] Session userId:', userId);
 
         if (!userId) {
             return res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -149,19 +144,15 @@ export const noteController = {
                     modifier: true
                 }
             });
-            console.log('[getNoteById] prisma.note.findUnique result:', note);
 
             if (!note) {
-                console.log('[getNoteById] Note not found for ID:', id);
                 return res.status(404).json({ message: 'Note non trouvée' });
             }
 
             // Récupérer le rôle de l'utilisateur sur cette note
             const userPermission = await getPermission(userId, id);
-            console.log('[getNoteById] userPermission:', userPermission);
 
             if (!userPermission) {
-                console.log('[getNoteById] No permission for user', userId, 'on note', id);
                 return res.status(403).json({ message: 'Vous n\'avez pas accès à cette note' });
             }
 

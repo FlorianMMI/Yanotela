@@ -30,14 +30,27 @@ export function getOrCreateYDoc(noteId, initialContent = null) {
   const doc = new Y.Doc();
   const yText = doc.getText('content');
 
-  // Si on a du contenu initial, l'appliquer
+  // ✅ Si on a du contenu initial, l'appliquer
   if (initialContent) {
-    try {
-      // Essayer de décoder depuis base64 (format binaire Yjs)
-      const binary = Buffer.from(initialContent, 'base64');
-      Y.applyUpdate(doc, binary);
-    } catch (e) {
-      // Si ça échoue, traiter comme du texte JSON ou plain text
+    // D'abord vérifier si c'est du base64 Yjs (anciennes notes)
+    // Le base64 Yjs commence généralement par des caractères spécifiques
+    const looksLikeBase64Yjs = /^[A-Za-z0-9+/=]{50,}$/.test(initialContent.substring(0, 100));
+    
+    if (looksLikeBase64Yjs) {
+      try {
+        // Essayer de décoder depuis base64 (format binaire Yjs - anciennes notes)
+        const binary = Buffer.from(initialContent, 'base64');
+        Y.applyUpdate(doc, binary);
+        
+        // ✅ CORRECTION: Après avoir chargé du base64, sauvegarder en texte brut
+        const textContent = yText.toString();
+        // La prochaine sauvegarde sera en texte brut grâce à saveYDocToDatabase
+      } catch (e) {
+        // Si ça échoue, traiter comme du texte
+        yText.insert(0, initialContent);
+      }
+    } else {
+      // Sinon, traiter comme du texte brut ou JSON
       try {
         const parsed = JSON.parse(initialContent);
         // Si c'est un EditorState Lexical, extraire le texte
@@ -45,7 +58,6 @@ export function getOrCreateYDoc(noteId, initialContent = null) {
           const text = extractTextFromLexical(parsed);
           yText.insert(0, text);
         } else {
-          // Sinon insérer tel quel
           yText.insert(0, initialContent);
         }
       } catch {
@@ -61,7 +73,6 @@ export function getOrCreateYDoc(noteId, initialContent = null) {
   });
 
   activeDocuments.set(noteId, doc);
-  console.log(`📄 Document Yjs créé pour la note: ${noteId}`);
   
   return doc;
 }
@@ -121,20 +132,19 @@ function scheduleSave(noteId, doc) {
  */
 export async function saveYDocToDatabase(noteId, doc) {
   try {
-    // Encoder le document Yjs en format binaire puis base64
-    const update = Y.encodeStateAsUpdate(doc);
-    const base64Content = Buffer.from(update).toString('base64');
+    // ✅ CORRECTION CRITIQUE : Extraire le TEXTE du document Yjs, pas l'état binaire
+    const yText = doc.getText('content');
+    const textContent = yText.toString();
 
-    // Sauvegarder dans Prisma
+    // Sauvegarder le texte brut dans Prisma
     await prisma.note.update({
       where: { id: noteId },
       data: { 
-        Content: base64Content,
+        Content: textContent, // ✅ Sauvegarder le texte, pas le binaire
         ModifiedAt: new Date()
       }
     });
 
-    console.log(`💾 Note ${noteId} sauvegardée avec succès`);
   } catch (error) {
     console.error(`❌ Erreur lors de la sauvegarde de la note ${noteId}:`, error);
   }
@@ -152,7 +162,7 @@ export function addUserToNote(noteId, socketId) {
   activeUsers.get(noteId).add(socketId);
   
   const userCount = activeUsers.get(noteId).size;
-  console.log(`👤 Utilisateur ajouté à la note ${noteId}. Total: ${userCount}`);
+  const socketIds = Array.from(activeUsers.get(noteId));
   
   return userCount;
 }
@@ -167,7 +177,6 @@ export function removeUserFromNote(noteId, socketId) {
     activeUsers.get(noteId).delete(socketId);
     
     const userCount = activeUsers.get(noteId).size;
-    console.log(`👋 Utilisateur retiré de la note ${noteId}. Restants: ${userCount}`);
     
     // Si plus personne sur la note, nettoyer après un délai
     if (userCount === 0) {
@@ -210,7 +219,6 @@ async function cleanupNote(noteId) {
     savePending.delete(noteId);
   }
 
-  console.log(`🧹 Note ${noteId} nettoyée de la mémoire`);
 }
 
 /**
@@ -240,7 +248,6 @@ export function getActiveDocuments() {
  * Forcer la sauvegarde de tous les documents actifs
  */
 export async function saveAllDocuments() {
-  console.log(`💾 Sauvegarde de ${activeDocuments.size} documents...`);
   const promises = [];
   
   for (const [noteId, doc] of activeDocuments.entries()) {
@@ -248,7 +255,6 @@ export async function saveAllDocuments() {
   }
   
   await Promise.all(promises);
-  console.log('✅ Tous les documents sauvegardés');
 }
 
 // Sauvegarde automatique périodique
@@ -260,14 +266,12 @@ setInterval(() => {
 
 // Nettoyage à l'arrêt du serveur
 process.on('SIGINT', async () => {
-  console.log('\n🛑 Arrêt du serveur, sauvegarde finale...');
   await saveAllDocuments();
   await prisma.$disconnect();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  console.log('\n🛑 Arrêt du serveur, sauvegarde finale...');
   await saveAllDocuments();
   await prisma.$disconnect();
   process.exit(0);

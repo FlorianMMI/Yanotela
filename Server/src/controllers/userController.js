@@ -43,7 +43,6 @@ export const userController = {
                 }
             });
 
-            console.log('Utilisateur trouvé:', user);
 
             if (!user) {
                 return res.status(404).json({ message: 'Utilisateur non trouvé' });
@@ -56,7 +55,6 @@ export const userController = {
                 }
             });
 
-            console.log('Nombre de notes:', noteCount);
 
             // Ajouter le nombre de notes aux informations utilisateur
             const userWithNoteCount = {
@@ -64,7 +62,6 @@ export const userController = {
                 noteCount
             };
 
-            console.log('Réponse finale:', userWithNoteCount);
             
             return res.status(200).json(userWithNoteCount);
         } catch (error) {
@@ -75,8 +72,6 @@ export const userController = {
 
     // Marquer un compte pour suppression (soft delete)
     requestAccountDeletion: async (req, res) => {
-        console.log('🗑️ requestAccountDeletion appelé');
-        console.log('Session userId:', req.session.userId);
         
         // Vérifier l'authentification
         if (!req.session.userId) {
@@ -118,13 +113,11 @@ export const userController = {
             try {
                 
                 await sendDeleteAccountEmail(email);
-                console.log(`Email de confirmation de suppression envoyé à ${email}`);
             } catch (emailError) {
                 console.error('Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
                 // On continue le processus même si l'email échoue
             }
 
-            console.log('Compte marqué pour suppression:', updatedUser.id);
             
             // Calculer la date de suppression définitive (1 minute pour test)
             const deletionDate = new Date(updatedUser.deleted_at);
@@ -154,8 +147,6 @@ export const userController = {
 
     // Annuler la suppression d'un compte (Pas pour tout de suite)
     cancelAccountDeletion: async (req, res) => {
-        console.log('↩️ cancelAccountDeletion appelé');
-        console.log('Session userId:', req.session.userId);
         
         // Vérifier l'authentification
         if (!req.session.userId) {
@@ -200,7 +191,6 @@ export const userController = {
                 }
             });
             
-            console.log('Suppression annulée pour le compte:', updatedUser.id);
             
             return res.status(200).json({ 
                 success: true,
@@ -218,7 +208,6 @@ export const userController = {
 
     // Supprimer définitivement les comptes après 30 jours (fonction pour cron job)
     deleteExpiredAccounts: async (req, res) => {
-        console.log('🧹 deleteExpiredAccounts appelé');
         
         try {
             // Calculer la date limite (1 minute en arrière pour test)
@@ -237,19 +226,16 @@ export const userController = {
                 }
             });
             
-            console.log(`Comptes expirés trouvés: ${expiredUsers.length}`);
             
             let deletedCount = 0;
             
             for (const user of expiredUsers) {
                 try {
-                    console.log(`🗑️ Suppression en cours pour ${user.pseudo} (ID: ${user.id})`);
                     
                     // 1. Supprimer d'abord toutes les permissions liées à cet utilisateur
                     await prisma.permission.deleteMany({
                         where: { userId: user.id }
                     });
-                    console.log(`   ✅ Permissions supprimées pour ${user.pseudo}`);
                     
                     // 2. Supprimer toutes les permissions liées aux notes de cet utilisateur
                     const userNoteIds = user.notes.map(note => note.id);
@@ -257,14 +243,12 @@ export const userController = {
                         await prisma.permission.deleteMany({
                             where: { noteId: { in: userNoteIds } }
                         });
-                        console.log(`   ✅ Permissions des notes supprimées pour ${user.pseudo}`);
                     }
                     
                     // 3. Supprimer toutes les notes de l'utilisateur
                     await prisma.note.deleteMany({
                         where: { authorId: user.id }
                     });
-                    console.log(`   ✅ Notes supprimées pour ${user.pseudo} (${user.notes.length} notes)`);
                     
                     // 4. Finalement, supprimer l'utilisateur
                     await prisma.user.delete({
@@ -272,7 +256,6 @@ export const userController = {
                     });
                     
                     deletedCount++;
-                    console.log(`✅ Compte supprimé définitivement: ${user.pseudo} (ID: ${user.id})`);
                     
                 } catch (deleteError) {
                     console.error(`❌ Erreur lors de la suppression du compte ${user.id}:`, deleteError);
