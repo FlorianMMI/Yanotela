@@ -10,10 +10,13 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { CollaborationPlugin } from "@lexical/react/LexicalCollaborationPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { WebsocketProvider } from "y-websocket";
-import { $getRoot, EditorState } from "lexical";
+import { $getRoot } from "lexical";
+import type { EditorState } from 'lexical';
+// Runtime import for EditorState methods (avoid TS type-only export issue)
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const LexicalRuntime: any = require('lexical');
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import * as Y from "yjs";
-
-
 
 const theme = {
   // Votre theme existant
@@ -23,129 +26,161 @@ function onError(error: string | Error) {
   console.error(error);
 }
 
-// Helper pour gérer les documents Yjs
-function getDocFromMap(id: string, yjsDocMap: Map<string, Y.Doc>): Y.Doc {
-  let doc = yjsDocMap.get(id);
-  
-  if (doc === undefined) {
-    doc = new Y.Doc();
-    yjsDocMap.set(id, doc);
-  }
-  
-  return doc;
-}
-
 interface CollaborativeEditorProps {
   noteId: string;
   isReadOnly: boolean;
   onContentChange?: (content: string) => void;
+  initialEditorState?: string | null;
 }
 
 export default function CollaborativeEditor({
   noteId,
   isReadOnly,
   onContentChange,
+  initialEditorState,
 }: CollaborativeEditorProps) {
   const [isConnected, setIsConnected] = useState(false);
+  const [isSynced, setIsSynced] = useState(false);
   
-  // Référence stable pour le provider
+  // Références stables
   const providerRef = useRef<WebsocketProvider | null>(null);
   const docRef = useRef<Y.Doc | null>(null);
+  const yjsDocMapRef = useRef<Map<string, Y.Doc>>(new Map());
   
-  // ID stable pour l'éditeur - ne change jamais une fois défini
+  // ID stable pour l'éditeur
   const editorId = useMemo(() => `yanotela-note-${noteId}`, [noteId]);
 
+  // Parse the serialized editor state but do NOT pass the raw object to Lexical's initialConfig,
+  // because some Lexical internals expect an EditorState instance and may call methods like isEmpty().
+  const parsedInitialState = useMemo(() => {
+    if (typeof initialEditorState === 'string' && initialEditorState) {
+      try {
+        return JSON.parse(initialEditorState);
+      } catch (e) {
+        console.warn('[Editor] Failed to parse initialEditorState', e);
+        return null;
+      }
+    }
+    return null;
+  }, [initialEditorState]);
+
   const initialConfig = useMemo(() => ({
-    // CRITIQUE : editorState doit être null pour la collaboration YJS
-    editorState: null,
+    editorState: null, // keep null to avoid passing plain objects into Lexical internals
     namespace: editorId,
     theme,
     onError,
     nodes: [],
   }), [editorId]);
 
-  // Factory pour créer le provider WebSocket - VERSION SIMPLIFIÉE
-  const providerFactory = useMemo(() => {
-    return (id: string, yjsDocMap: Map<string, Y.Doc>): any => {
-      console.log("Création du provider YJS pour:", id);
+  // Factory pour créer le provider WebSocket
+  const providerFactory = useCallback((id: string, yjsDocMap: Map<string, Y.Doc>): any => {
+    console.log("[YJS] Creating provider for:", id);
 
-      // Vérifier si on a déjà un provider pour cet ID
-      if (providerRef.current && docRef.current) {
-        console.log("Provider existant trouvé, réutilisation");
-        return providerRef.current;
-      }
-
-      // Créer ou récupérer le document
-      let doc = yjsDocMap.get(id);
-      if (!doc) {
-        doc = new Y.Doc();
-        yjsDocMap.set(id, doc);
-        console.log("Nouveau document YJS créé pour:", id);
-      } else {
-        console.log("Document YJS existant réutilisé pour:", id);
-      }
-      docRef.current = doc;
-      
-      // Nettoyer l'ancien provider si nécessaire
-      if (providerRef.current) {
-        console.log("Nettoyage de l'ancien provider");
+    // Nettoyer l'ancien provider si nécessaire
+    if (providerRef.current) {
+      console.log("[YJS] Cleaning up old provider");
+      try {
         providerRef.current.disconnect();
         providerRef.current.destroy();
+      } catch (e) {
+        console.warn("[YJS] Error cleaning up old provider:", e);
       }
+      providerRef.current = null;
+    }
+
+    // Créer ou récupérer le document YJS
+    let doc = yjsDocMap.get(id);
+    if (!doc) {
+      doc = new Y.Doc();
+      yjsDocMap.set(id, doc);
+      console.log("[YJS] New Y.Doc created for:", id);
+    } else {
+      console.log("[YJS] Reusing existing Y.Doc for:", id);
+    }
+    
+    docRef.current = doc;
+    yjsDocMapRef.current = yjsDocMap;
+
+    // NE PAS créer manuellement le type YText
+    // Lexical CollaborationPlugin le gère automatiquement
+    console.log("[YJS] Y.Doc ready, waiting for Lexical to initialize types");
+    
+    // Créer le provider WebSocket
+    const provider = new WebsocketProvider(
+      "ws://localhost:1234",
+      id,
+      doc,
+      {
+        connect: true,
+        WebSocketPolyfill: WebSocket as any,
+        resyncInterval: 120000,
+        maxBackoffTime: 10000,
+        disableBc: false,
+      }
+    );
+
+  providerRef.current = provider;
+
+    // Event listeners pour le provider
+    provider.on("status", (event: { status: string }) => {
+      console.log("[YJS] WebSocket status:", event.status);
+      const connected = event.status === "connected";
+      setIsConnected(connected);
       
-      const provider = new WebsocketProvider(
-        "ws://localhost:1234",
-        id,
-        doc,
-        {
-          connect: true,
-          WebSocketPolyfill: WebSocket,
-          resyncInterval: 120000,
-          maxBackoffTime: 10000,
-          disableBc: false,
-        }
-      );
+      if (!connected) {
+        setIsSynced(false);
+      }
+    });
 
-      // Stocker la référence
-      providerRef.current = provider;
+    provider.on("sync", (synced: boolean) => {
+      console.log("[YJS] Document sync status:", synced);
+      setIsSynced(synced);
+      
+      if (synced) {
+        // Accéder au type YText de manière sûre après la sync
+        const ytext = doc.getText('root');
+        console.log("[YJS] Document synchronized, content length:", ytext?.length || 0);
+      }
+    });
 
-      // Écouter les changements de connexion
-      provider.on("status", (event: { status: string }) => {
-        console.log("Yjs WebSocket status:", event.status);
-        setIsConnected(event.status === "connected");
-      });
+    provider.on("connection-error", (error: any) => {
+      console.error("[YJS] Connection error:", error);
+      setIsConnected(false);
+      setIsSynced(false);
+    });
 
-      provider.on("sync", (isSynced: boolean) => {
-        console.log("Yjs document synced:", isSynced);
-        // YJS gère automatiquement la synchronisation du contenu
-        // Pas d'initialisation manuelle pour éviter les conflits
-      });
+    provider.on("connection-close", (event: any) => {
+      console.log("[YJS] Connection closed:", event?.code || 'unknown', event?.reason || 'no reason');
+      setIsConnected(false);
+      setIsSynced(false);
+    });
 
-      provider.on("connection-error", (event: Event) => {
-        console.error("Yjs connection error:", event);
-        setIsConnected(false);
-      });
-
-      provider.on("connection-close", (event: any) => {
-        console.log("Yjs connection closed:", event);
-        setIsConnected(false);
-      });
-
-      return provider;
-    };
-  }, [noteId]); // Supprimé initialContent des dépendances
+    return provider as any;
+  }, []);
 
   // Cleanup effect
   useEffect(() => {
+    console.log("[YJS] Component mounted for note:", noteId);
+    
     return () => {
+      console.log("[YJS] Component unmounting, cleaning up for note:", noteId);
+      
       if (providerRef.current) {
-        console.log("Cleaning up provider for note:", noteId);
-        providerRef.current.disconnect();
-        providerRef.current.destroy();
+        try {
+          providerRef.current.disconnect();
+          providerRef.current.destroy();
+        } catch (e) {
+          console.warn("[YJS] Error during cleanup:", e);
+        }
         providerRef.current = null;
       }
+      
       if (docRef.current) {
-        docRef.current.destroy();
+        try {
+          docRef.current.destroy();
+        } catch (e) {
+          console.warn("[YJS] Error destroying doc:", e);
+        }
         docRef.current = null;
       }
     };
@@ -153,39 +188,52 @@ export default function CollaborativeEditor({
 
   // Gestion des changements d'éditeur
   const handleEditorChange = useCallback((editorState: EditorState) => {
-    if (onContentChange && !isReadOnly) {
-      // Vérifier si l'éditeur est vide de manière sûre
+    if (onContentChange && !isReadOnly && isSynced) {
       editorState.read(() => {
-        const root = $getRoot();
-        const textContent = root.getTextContent();
-        
-        if (textContent.trim() === '') {
-          // L'éditeur est vide
-          onContentChange('');
-        } else {
-          // L'éditeur a du contenu
-          const serializedState = JSON.stringify(editorState.toJSON());
-          onContentChange(serializedState);
+        try {
+          const root = $getRoot();
+          const textContent = root.getTextContent();
+          
+          if (textContent.trim() === '') {
+            onContentChange('');
+          } else {
+            const serializedState = JSON.stringify(editorState.toJSON());
+            onContentChange(serializedState);
+          }
+        } catch (error) {
+          console.error("[Editor] Error reading editor state:", error);
         }
       });
     }
-  }, [onContentChange, isReadOnly]);
+  }, [onContentChange, isReadOnly, isSynced]);
 
   return (
     <div className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
-      {/* Indicateur de connexion */}
-      <div className="absolute top-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
+      {/* Indicateur de connexion amélioré */}
+      <div className="absolute top-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm z-10">
         <div
           className={`w-2 h-2 rounded-full transition-colors ${
-            isConnected ? "bg-green-500" : "bg-red-500"
+            isConnected && isSynced
+              ? "bg-green-500"
+              : isConnected
+              ? "bg-yellow-500"
+              : "bg-red-500"
           }`}
         />
         <span className="text-xs font-medium text-textcardNote">
-          {isConnected ? "Synchronisé" : "Hors ligne"}
+          {isConnected && isSynced
+            ? "Synchronisé"
+            : isConnected
+            ? "Connexion..."
+            : "Hors ligne"}
         </span>
       </div>
 
       <LexicalComposer initialConfig={initialConfig}>
+        {/* If we have a serialized initial state from the API, apply it once the editor is available */}
+        {parsedInitialState && (
+          <InitialContentLoader serializedState={parsedInitialState} />
+        )}
         <RichTextPlugin
           contentEditable={
             <ContentEditable
@@ -204,11 +252,11 @@ export default function CollaborativeEditor({
           ErrorBoundary={LexicalErrorBoundary}
         />
 
-        {/* Plugin de collaboration Yjs - SANS initialEditorState */}
+        {/* Plugin de collaboration Yjs */}
         <CollaborationPlugin
           id={editorId}
           providerFactory={providerFactory}
-          shouldBootstrap={false}
+          shouldBootstrap={true}
         />
 
         {/* Plugin pour écouter les changements */}
@@ -221,4 +269,36 @@ export default function CollaborativeEditor({
       </LexicalComposer>
     </div>
   );
+}
+
+function InitialContentLoader({ serializedState }: { serializedState: any }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    if (!serializedState) return;
+
+    try {
+      // Convert serialized JSON into an EditorState instance and set it
+  // Create an EditorState instance from the serialized JSON via runtime API
+  const state = LexicalRuntime.EditorState.fromJSON(serializedState);
+  editor.setEditorState(state);
+    } catch (e) {
+      console.warn('[Editor] Could not create EditorState from JSON', e);
+      // Fallback: try to populate simple text content
+      try {
+        editor.update(() => {
+          const root = $getRoot();
+          // If serializedState contains plain text in root.children, try to extract
+          if (serializedState && serializedState.root && Array.isArray(serializedState.root.children)) {
+            // attempt basic reconstruction: clear and do nothing else (Lexical nodes require full mapping)
+            // A more complete fallback would transform the serialized structure into Lexical nodes.
+          }
+        });
+      } catch (err) {
+        console.error('[Editor] Fallback editor update failed', err);
+      }
+    }
+  }, [editor, serializedState]);
+
+  return null;
 }
