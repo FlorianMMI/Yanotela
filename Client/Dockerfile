@@ -1,13 +1,18 @@
 # Multi-stage build for Next.js client
 FROM node:20-alpine AS base
 
+# Add metadata labels
+LABEL maintainer="Yanotela Team"
+LABEL version="1.0"
+LABEL description="Yanotela Frontend - Next.js Application"
+
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -16,36 +21,44 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage
-# Learn more here: https://nextjs.org/telemetry
-# Disable telemetry during the build
-ENV NEXT_TELEMETRY_DISABLED 1
+# Disable telemetry during build
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build the application
 RUN npm run build
 
-# Production image, copy all the files and run next
+# Vérifier que le build a créé les fichiers standalone
+RUN ls -la .next/standalone || echo "ERROR: No standalone output found!"
+
+# Production image
 FROM base AS runner
 WORKDIR /app
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy the standalone output
-COPY --from=builder /app/public ./public
-
-# Automatically leverage output traces to reduce image size
+# Copy standalone server
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-CMD ["npm", "server.js"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+ENV HOSTNAME="0.0.0.0"
+
+# Vérifier que server.js existe avant de le lancer
+CMD ["sh", "-c", "ls -la server.js && node server.js"]

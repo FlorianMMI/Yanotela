@@ -49,9 +49,7 @@ services:
         max-file: "3"
 
   backend-prod:
-    build: 
-      context: ./Server
-      target: runner
+    image: ${DOCKER_USERNAME:-yourusername}/yanotela-backend:${IMAGE_TAG:-latest}
     container_name: yanotela-backend-prod
     ports:
       - "3001:3001"
@@ -87,9 +85,7 @@ services:
           memory: 256M
 
   frontend-prod:
-    build: 
-      context: ./Client
-      target: runner
+    image: ${DOCKER_USERNAME:-yourusername}/yanotela-frontend:${IMAGE_TAG:-latest}
     container_name: yanotela-frontend-prod
     ports:
       - "3000:3000"

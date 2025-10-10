@@ -1,0 +1,63 @@
+{
+  "family": "yanotela-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::987686461748:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "client",
+      "image": "987686461748.dkr.ecr.eu-west-3.amazonaws.com/yanotela:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "HOSTNAME",
+          "value": "0.0.0.0"
+        },
+        {
+          "name": "PORT",
+          "value": "3000"
+        },
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/yanotela",
+          "awslogs-region": "eu-west-3",
+          "awslogs-stream-prefix": "client"
+        }
+      }
+    },
+    {
+      "name": "server",
+      "image": "987686461748.dkr.ecr.eu-west-3.amazonaws.com/yanotela-server:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3001,
+          "hostPort": 3001
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/yanotela",
+          "awslogs-region": "eu-west-3",
+          "awslogs-stream-prefix": "server"
+        }
+      }
+    }
+  ]
+}
