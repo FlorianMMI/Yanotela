@@ -54,7 +54,7 @@ export default function ModificationProfil() {
       updateData[fieldName] = newValue;
 
       const result = await updateUser(updateData);
-      
+
       if (result.success) {
         // Mettre à jour les données locales
         setUserData(prev => ({
@@ -62,14 +62,14 @@ export default function ModificationProfil() {
           [fieldName]: newValue
         }));
         setSuccess(`${fieldName} mis à jour avec succès`);
-        
+
         // Faire disparaître le message de succès après 3 secondes
         setTimeout(() => {
           setSuccess(null);
         }, 3000);
       } else {
         setError(result.error || `Erreur lors de la mise à jour de ${fieldName}`);
-        
+
         // Faire disparaître le message d'erreur après 5 secondes
         setTimeout(() => {
           setError(null);
@@ -78,7 +78,7 @@ export default function ModificationProfil() {
     } catch (error) {
       console.error('Erreur:', error);
       setError('Erreur de connexion au serveur');
-      
+
       // Faire disparaître le message d'erreur après 5 secondes
       setTimeout(() => {
         setError(null);
@@ -108,7 +108,7 @@ export default function ModificationProfil() {
     try {
       // Envoi de la demande de confirmation
       const result = await ForgotPassword(userData.email);
-      
+
       if (result.success) {
         setSuccess('Un mail de confirmation a été envoyé à votre adresse email.');
       } else {
@@ -121,7 +121,7 @@ export default function ModificationProfil() {
       setLoading(false);
     }
   };
-  
+
 
   return (
     <>
@@ -132,20 +132,22 @@ export default function ModificationProfil() {
       ) : (
         <div className="p-4 flex flex-col gap-6 w-fit md:w-full items-center md:items-start">
           <div className="flex md:hidden">
-          <ReturnButton />
+            <ReturnButton />
           </div>
-          <div className="flex flex-col md:flex-row gap-8 w-fit md:w-full items-center md:items-start">
+          <div className="flex flex-col gap-8 w-fit md:w-full items-center md:items-start">
             <div className="flex flex-col gap-4 items-center w-fit">
-            <p className="text-clrprincipal font-gant text-center text-4xl w-[198px]">
-              Votre profil
-            </p>
+
+              <p className="text-clrprincipal font-gant text-center text-4xl w-[198px]">
+                Votre profil
+              </p>
+
             </div>
 
             {/* Zone de notifications */}
             {(success || error) && (
               <div className="fixed top-4 right-4 z-50 max-w-md">
                 {success && (
-                  <div 
+                  <div
                     onClick={() => setSuccess(null)}
                     className="rounded-md bg-green-50 p-4 border border-green-200 cursor-pointer hover:bg-green-100 transition-colors shadow-lg"
                   >
@@ -173,7 +175,7 @@ export default function ModificationProfil() {
                 )}
 
                 {error && (
-                  <div 
+                  <div
                     onClick={() => setError(null)}
                     className="rounded-md bg-red-50 p-4 border border-red-200 cursor-pointer hover:bg-red-100 transition-colors shadow-lg"
                   >
@@ -202,57 +204,57 @@ export default function ModificationProfil() {
               </div>
             )}
             <div className="flex flex-col gap-4 w-full ">
-            <InputModified 
-              name="Pseudonyme"
-              placeholder="pseudo"
-              type="pseudo"
-              defaultValue={userData.pseudo}
-              onSave={(value) => handleFieldSave('pseudo', value)}
-            />
-            <InputModified 
-              name="Prénom"
-              placeholder="userName"
-              type="username"
-              defaultValue={userData.prenom}
-              onSave={(value) => handleFieldSave('prenom', value)}
-            />
-            <InputModified 
-              name="Nom"
-              placeholder="Name"
-              type="name"
-              defaultValue={userData.nom}
-              onSave={(value) => handleFieldSave('nom', value)}
-            />
-            <InputModified 
-              name="Mail"
-              placeholder="Mail"
-              type="email"
-              defaultValue={userData.email}
-              onSave={(value) => handleFieldSave('email', value)}
-            />
+              <InputModified
+                name="Pseudonyme"
+                placeholder="pseudo"
+                type="pseudo"
+                defaultValue={userData.pseudo}
+                onSave={(value) => handleFieldSave('pseudo', value)}
+              />
+              <InputModified
+                name="Prénom"
+                placeholder="userName"
+                type="username"
+                defaultValue={userData.prenom}
+                onSave={(value) => handleFieldSave('prenom', value)}
+              />
+              <InputModified
+                name="Nom"
+                placeholder="Name"
+                type="name"
+                defaultValue={userData.nom}
+                onSave={(value) => handleFieldSave('nom', value)}
+              />
+              <InputModified
+                name="Mail"
+                placeholder="Mail"
+                type="email"
+                defaultValue={userData.email}
+                onSave={(value) => handleFieldSave('email', value)}
+              />
 
-          <button 
-            onClick={handleSendConfirmationEmail}
-            disabled={loading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {loading ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Envoi en cours...
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <span>Modifier le mot de passe</span>
-                <Icons
-                  name="keyhole"
-                  size={20}
-                  className="text-white"
-                />
-              </div>
-            )}
-          </button>
-          </div>
+              <button
+                onClick={handleSendConfirmationEmail}
+                disabled={loading}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {loading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Envoi en cours...
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <span>Modifier le mot de passe</span>
+                    <Icons
+                      name="keyhole"
+                      size={20}
+                      className="text-white"
+                    />
+                  </div>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

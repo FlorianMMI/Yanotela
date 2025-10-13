@@ -26,12 +26,12 @@ function onError(error: string | Error) {
 // Helper pour gérer les documents Yjs
 function getDocFromMap(id: string, yjsDocMap: Map<string, Y.Doc>): Y.Doc {
   let doc = yjsDocMap.get(id);
-  
+
   if (doc === undefined) {
     doc = new Y.Doc();
     yjsDocMap.set(id, doc);
   }
-  
+
   return doc;
 }
 
@@ -47,11 +47,11 @@ export default function CollaborativeEditor({
   onContentChange,
 }: CollaborativeEditorProps) {
   const [isConnected, setIsConnected] = useState(false);
-  
+
   // Référence stable pour le provider
   const providerRef = useRef<WebsocketProvider | null>(null);
   const docRef = useRef<Y.Doc | null>(null);
-  
+
   // ID stable pour l'éditeur - ne change jamais une fois défini
   const editorId = useMemo(() => `yanotela-note-${noteId}`, [noteId]);
 
@@ -85,14 +85,14 @@ export default function CollaborativeEditor({
         console.log("Document YJS existant réutilisé pour:", id);
       }
       docRef.current = doc;
-      
+
       // Nettoyer l'ancien provider si nécessaire
       if (providerRef.current) {
         console.log("Nettoyage de l'ancien provider");
         providerRef.current.disconnect();
         providerRef.current.destroy();
       }
-      
+
       const provider = new WebsocketProvider(
         "ws://localhost:1234",
         id,
@@ -158,7 +158,7 @@ export default function CollaborativeEditor({
       editorState.read(() => {
         const root = $getRoot();
         const textContent = root.getTextContent();
-        
+
         if (textContent.trim() === '') {
           // L'éditeur est vide
           onContentChange('');
@@ -176,9 +176,8 @@ export default function CollaborativeEditor({
       {/* Indicateur de connexion */}
       <div className="absolute top-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
         <div
-          className={`w-2 h-2 rounded-full transition-colors ${
-            isConnected ? "bg-green-500" : "bg-red-500"
-          }`}
+          className={`w-2 h-2 rounded-full transition-colors ${isConnected ? "bg-green-500" : "bg-red-500"
+            }`}
         />
         <span className="text-xs font-medium text-textcardNote">
           {isConnected ? "Synchronisé" : "Hors ligne"}
@@ -195,9 +194,8 @@ export default function CollaborativeEditor({
                   Commencez à écrire...
                 </p>
               }
-              className={`h-full focus:outline-none mt-8 ${
-                isReadOnly ? "cursor-not-allowed" : ""
-              }`}
+              className={`h-full focus:outline-none mt-8 ${isReadOnly ? "cursor-not-allowed" : ""
+                }`}
               contentEditable={!isReadOnly}
             />
           }
