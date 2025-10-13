@@ -124,9 +124,6 @@ jobs:
             # Update package cache
             sudo apt-get update -qq
             
-            # Pull latest development images
-            sudo docker compose -f docker-compose.dev.yml pull || echo "⚠️ Docker compose file not found, will create basic setup"
-            
             # Create development environment file if it doesn't exist
             if [ ! -f .env.dev ]; then
               echo "📝 Creating development environment file..."
@@ -134,6 +131,10 @@ jobs:
             # Development Environment Configuration
             NODE_ENV=development
             PORT=3001
+            
+            # Docker Configuration
+            DOCKER_USERNAME=${{ env.DOCKER_USERNAME }}
+            IMAGE_TAG=develop
             
             # Database Configuration (PostgreSQL)
             DB_USER=yanotela_dev
@@ -164,21 +165,27 @@ jobs:
               echo "✅ Development environment file created"
             fi
             
-            # Load environment variables
+            # Pull latest development images
+            sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs) 2>/dev/null; docker compose -f docker-compose.dev.yml pull' || echo "⚠️ Docker compose pull failed, will continue with existing images"
+            
+            # Load environment variables and recreate containers
             set -a
             source .env.dev
             set +a
             echo "✅ Development environment variables loaded"
             
-            # Recreate containers with new images (using develop tag)
-            sudo -E DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml up -d --force-recreate
+            # Pass all environment variables to Docker Compose
+            sudo -E bash -c '
+              export $(cat .env.dev | grep -v "^#" | xargs)
+              docker compose -f docker-compose.dev.yml up -d --force-recreate
+            '
             
             # Wait for services to be healthy
             echo "Waiting for services to start..."
             sleep 30
             
             # Check if services are running
-            if sudo docker compose -f docker-compose.dev.yml ps | grep -q "Up"; then
+            if sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs); docker compose -f docker-compose.dev.yml ps' | grep -q "Up"; then
               echo "✅ Development deployment successful!"
               
               # Test frontend
@@ -186,7 +193,7 @@ jobs:
                 echo "✅ Frontend is responding on development server"
               else
                 echo "❌ Frontend is not responding"
-                sudo docker compose -f docker-compose.dev.yml logs yanotela-frontend-dev
+                sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs); docker compose -f docker-compose.dev.yml logs yanotela-frontend-dev'
                 exit 1
               fi
               
@@ -195,7 +202,7 @@ jobs:
                 echo "✅ Backend is responding on development server"
               else
                 echo "❌ Backend is not responding"
-                sudo docker compose -f docker-compose.dev.yml logs yanotela-backend-dev
+                sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs); docker compose -f docker-compose.dev.yml logs yanotela-backend-dev'
                 exit 1
               fi
               
@@ -205,6 +212,6 @@ jobs:
               echo "   Backend:  http://${{ env.EC2_HOST }}:3001"
             else
               echo "❌ Services failed to start on development server"
-              sudo docker compose -f docker-compose.dev.yml logs
+              sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs); docker compose -f docker-compose.dev.yml logs'
               exit 1
             fi
