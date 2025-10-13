@@ -3,131 +3,221 @@ import { io, Socket } from 'socket.io-client';
 
 /**
  * Service singleton pour gérer la connexion Socket.IO
- * Persiste entre les re-renders React et se déconnecte uniquement au changement de page
+ * Gère la connexion unique, les rooms, et les événements de collaboration temps réel
  */
 class SocketService {
   private socket: Socket | null = null;
   private currentNoteId: string | null = null;
-  private isConnecting = false;
-  private hasJoinedRoom = false; // ✅ Track si on a déjà rejoint la room
 
   /**
-   * Marquer qu'on a quitté la room
+   * Obtenir ou créer la connexion socket globale
    */
-  markRoomLeft() {
-    this.hasJoinedRoom = false;
-  }
-
-  /**
-   * Obtenir ou créer la connexion socket
-   */
-  getSocket(noteId: string, username: string): Socket | null {
-    const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-    // ✅ Si on est déjà connecté à la même note (même si pas encore 'connected'), retourner le socket
-    if (this.socket && this.currentNoteId === noteId) {
+  private getOrCreateSocket(): Socket {
+    if (this.socket && this.socket.connected) {
       return this.socket;
     }
 
-    // Si on change de note, déconnecter l'ancien socket
-    if (this.socket && this.currentNoteId !== noteId) {
-      this.hasJoinedRoom = false; // Reset le flag avant de changer de note
-      this.disconnect();
-    }
+    const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-    // Éviter les créations multiples simultanées
-    if (this.isConnecting) {
-      return this.socket; // Retourner le socket en cours de connexion
-    }
-
-    // Créer un nouveau socket
-    this.isConnecting = true;
-    
     this.socket = io(SOCKET_URL, {
       withCredentials: true,
-      transports: ['websocket'], // Force WebSocket uniquement
-      reconnection: false, // Pas de reconnexion auto
-      timeout: 10000,
+      transports: ['websocket', 'polling'], // WebSocket prioritaire, polling en fallback
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      timeout: 20000,
     });
+
+    this.socket.on('connect', () => {
+      console.log('✅ Socket connecté');
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('❌ Erreur connexion socket:', error);
+    });
+
+    this.socket.on('disconnect', (reason) => {
+      console.log('❌ Socket déconnecté:', reason);
+    });
+
+    return this.socket;
+  }
+
+  /**
+   * Rejoindre une note (room)
+   */
+  joinNote(noteId: string, onInit?: (data: any) => void) {
+    const socket = this.getOrCreateSocket();
+
+    // Si on change de note, quitter l'ancienne room
+    if (this.currentNoteId && this.currentNoteId !== noteId) {
+      socket.emit('leaveNote', { noteId: this.currentNoteId });
+    }
 
     this.currentNoteId = noteId;
 
-    // Écouter la connexion réussie
-    this.socket.on('connect', () => {
-      this.isConnecting = false;
-    });
+    // Écouter l'initialisation de la note
+    if (onInit) {
+      socket.off('noteInit'); // Éviter les listeners multiples
+      socket.on('noteInit', onInit);
+    }
 
-    // Écouter les erreurs
-    this.socket.on('connect_error', (error) => {
-      console.error('❌ Erreur connexion socket:', error);
-      this.isConnecting = false;
-    });
-
-    // Connecter le socket
-    this.socket.connect();
-
-    return this.socket;
+    // Rejoindre la room
+    socket.emit('joinNote', { noteId });
+    console.log(`📥 Demande de join pour note ${noteId}`);
   }
 
   /**
-   * Déconnecter le socket actuel
+   * Quitter la note courante
+   */
+  leaveNote() {
+    if (!this.currentNoteId || !this.socket) return;
+
+    this.socket.emit('leaveNote', { noteId: this.currentNoteId });
+    console.log(`📤 Quitte la note ${this.currentNoteId}`);
+    this.currentNoteId = null;
+  }
+
+  /**
+   * Émettre une mise à jour du titre
+   */
+  emitTitleUpdate(noteId: string, titre: string) {
+    if (!this.socket || !this.socket.connected) return;
+    this.socket.emit('titleUpdate', { noteId, titre });
+  }
+
+  /**
+   * Émettre une mise à jour du contenu
+   */
+  emitContentUpdate(noteId: string, content: string) {
+    if (!this.socket || !this.socket.connected) return;
+    this.socket.emit('contentUpdate', { noteId, content });
+  }
+
+  /**
+   * Écouter les mises à jour du titre
+   */
+  onTitleUpdate(callback: (data: { noteId: string; titre: string; userId: number; pseudo: string }) => void) {
+    if (!this.socket) return;
+    this.socket.off('titleUpdate'); // Éviter les listeners multiples
+    this.socket.on('titleUpdate', callback);
+  }
+
+  /**
+   * Écouter les mises à jour du contenu
+   */
+  onContentUpdate(callback: (data: { noteId: string; content: string; userId: number; pseudo: string }) => void) {
+    if (!this.socket) return;
+    this.socket.off('contentUpdate'); // Éviter les listeners multiples
+    this.socket.on('contentUpdate', callback);
+  }
+
+  /**
+   * Écouter les nouveaux utilisateurs
+   */
+  onUserJoined(callback: (data: { userId: number; pseudo: string; userCount: number }) => void) {
+    if (!this.socket) return;
+    this.socket.off('userJoined'); // Éviter les listeners multiples
+    this.socket.on('userJoined', callback);
+  }
+
+  /**
+   * Écouter les utilisateurs qui partent
+   */
+  onUserLeft(callback: (data: { userId: number; pseudo: string; userCount: number }) => void) {
+    if (!this.socket) return;
+    this.socket.off('userLeft'); // Éviter les listeners multiples
+    this.socket.on('userLeft', callback);
+  }
+
+  /**
+   * Écouter les erreurs
+   */
+  onError(callback: (data: { message: string }) => void) {
+    if (!this.socket) return;
+    this.socket.off('error'); // Éviter les listeners multiples
+    this.socket.on('error', callback);
+  }
+
+  /**
+   * Écouter la liste des utilisateurs (userList)
+   */
+  onUserList(callback: (data: { users: Array<{ userId: number; pseudo: string }> }) => void) {
+    if (!this.socket) return;
+    this.socket.off('userList');
+    this.socket.on('userList', callback);
+  }
+
+  /**
+   * Arrêter d'écouter la liste des utilisateurs (userList)
+   */
+  offUserList(callback: (data: { users: Array<{ userId: number; pseudo: string }> }) => void) {
+    if (!this.socket) return;
+    this.socket.off('userList', callback);
+  }
+
+  /**
+   * Demander la liste des utilisateurs pour une note
+   */
+  requestUserList(noteId: string) {
+    if (!this.socket || !this.socket.connected) return;
+    this.socket.emit('requestUserList', { noteId });
+  }
+
+  /**
+   * Nettoyer tous les listeners
+   */
+  removeAllListeners() {
+    if (!this.socket) return;
+    this.socket.off('noteInit');
+    this.socket.off('titleUpdate');
+    this.socket.off('contentUpdate');
+    this.socket.off('userJoined');
+    this.socket.off('userLeft');
+    this.socket.off('error');
+  }
+
+  /**
+   * Déconnecter complètement le socket
    */
   disconnect() {
-    if (this.socket) {
-      
-      // Quitter la note avant de déconnecter
-      if (this.currentNoteId && this.socket.connected && this.hasJoinedRoom) {
-        this.socket.emit('leaveNote', { noteId: this.currentNoteId });
-      }
-      
-      this.socket.removeAllListeners();
-      this.socket.disconnect();
-      this.socket = null;
-      this.currentNoteId = null;
-      this.isConnecting = false;
-      this.hasJoinedRoom = false;
+    if (!this.socket) return;
+
+    // Quitter la note courante avant de déconnecter
+    if (this.currentNoteId) {
+      this.socket.emit('leaveNote', { noteId: this.currentNoteId });
     }
+
+    this.removeAllListeners();
+    this.socket.disconnect();
+    this.socket = null;
+    this.currentNoteId = null;
+    console.log('🔌 Socket déconnecté');
   }
 
   /**
-   * Marquer qu'on a rejoint la room
+   * Vérifier si connecté
    */
-  markRoomJoined() {
-    this.hasJoinedRoom = true;
+  isConnected(): boolean {
+    return !!(this.socket && this.socket.connected);
   }
 
   /**
-   * Vérifier si on a déjà rejoint la room
+   * Obtenir l'ID de la note courante
    */
-  hasJoinedCurrentRoom(): boolean {
-    return this.hasJoinedRoom;
-  }
-
-  /**
-   * Vérifier si un socket est actif pour une note
-   */
-  isConnected(noteId: string): boolean {
-    return !!(
-      this.socket && 
-      this.socket.connected && 
-      this.currentNoteId === noteId
-    );
-  }
-
-  /**
-   * Obtenir le socket actuel (peut être null)
-   */
-  getCurrentSocket(): Socket | null {
-    return this.socket;
+  getCurrentNoteId(): string | null {
+    return this.currentNoteId;
   }
 }
 
 // Export d'une instance unique (singleton)
 export const socketService = new SocketService();
 
-// Déconnecter quand l'utilisateur quitte la page (navigation ou fermeture)
+// Nettoyer proprement à la fermeture de la page
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     socketService.disconnect();
   });
 }
+
+

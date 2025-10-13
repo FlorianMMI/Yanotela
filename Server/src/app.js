@@ -86,8 +86,7 @@ const io = new Server(httpServer, {
     credentials: true,
     methods: ['GET', 'POST']
   },
-  // Configuration pour supporter les gros messages (deltas Yjs)
-  maxHttpBufferSize: 1e8 // 100 MB
+  maxHttpBufferSize: 1e7 // 10 MB
 });
 
 // Configuration Redis pour le clustering (optionnel mais recommandé en production)
@@ -97,6 +96,7 @@ if (process.env.REDIS_URL) {
 
   Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
     io.adapter(createAdapter(pubClient, subClient));
+    console.log('✅ Redis adapter configuré');
   }).catch((err) => {
     console.warn('⚠️  Redis non disponible, mode standalone:', err.message);
   });
@@ -122,17 +122,19 @@ io.use((socket, next) => {
 
 // Gestion des connexions Socket.IO
 io.on('connection', (socket) => {
+  console.log(`✅ Socket connecté: ${socket.id} (user: ${socket.userPseudo})`);
 
   /**
    * Événement: joinNote
    * L'utilisateur rejoint une room pour collaborer sur une note
    */
   socket.on('joinNote', async ({ noteId }) => {
-    
-    // ✅ CRITIQUE : Vérifier si le socket est déjà dans la room
     const roomName = `note-${noteId}`;
+    
+    // Vérifier si déjà dans la room
     if (socket.rooms.has(roomName)) {
-      return; // Ignorer les joinNote en double
+      console.log(`⚠️  User ${socket.userPseudo} déjà dans room ${roomName}`);
+      return;
     }
     
     try {
@@ -153,9 +155,8 @@ io.on('connection', (socket) => {
 
       // Vérifier les permissions (auteur ou permission existante)
       const isAuthor = note.authorId === socket.userId;
-      const hasPermission = note.permissions.length > 0; // ✅ Accepter même si isAccepted=false
+      const hasPermission = note.permissions.length > 0;
       const hasAccess = isAuthor || hasPermission;
-
 
       if (!hasAccess) {
         socket.emit('error', { message: 'Accès refusé à cette note' });
@@ -165,78 +166,100 @@ io.on('connection', (socket) => {
       // Vérifier le mode lecture seule (role = 3)
       const isReadOnly = note.permissions.length > 0 && note.permissions[0].role === 3;
 
-      // Rejoindre la room Socket.IO
+      // Rejoindre la room Socket.IO (la room est créée automatiquement si elle n'existe pas)
       socket.join(roomName);
+      console.log(`✅ User ${socket.userPseudo} a rejoint room ${roomName}`);
 
-      // Obtenir ou créer le document Yjs
-      const yDoc = getOrCreateYDoc(noteId, note.Content);
-
-      // ✅ Compter les VRAIS utilisateurs connectés dans la room Socket.IO
+      // Compter les utilisateurs connectés dans la room
       const socketsInRoom = await io.in(roomName).allSockets();
       const userCount = socketsInRoom.size;
-      
-      // Ajouter à la tracking list pour le cleanup (optionnel)
-      addUserToNote(noteId, socket.id);
 
-
-      // Envoyer l'état initial du document au client
-      const stateVector = Y.encodeStateAsUpdate(yDoc);
-      socket.emit('sync', {
+      // Envoyer l'état initial de la note au client qui vient de rejoindre
+      socket.emit('noteInit', {
         noteId,
-        state: Buffer.from(stateVector).toString('base64'),
+        titre: note.Titre,
+        content: note.Content,
         userCount,
         isReadOnly
       });
 
-      // Notifier les autres utilisateurs avec le nombre réel
-      socket.to(`note-${noteId}`).emit('userJoined', {
+      // Notifier les autres utilisateurs dans la room qu'un nouvel utilisateur a rejoint
+      socket.to(roomName).emit('userJoined', {
         userId: socket.userId,
         pseudo: socket.userPseudo,
         userCount
       });
 
     } catch (error) {
-      console.error('Erreur lors de joinNote:', error);
+      console.error('❌ Erreur lors de joinNote:', error);
       socket.emit('error', { message: 'Erreur lors de la connexion à la note' });
     }
   });
 
   /**
-   * Événement: yjsUpdate
-   * Synchronisation des changements Yjs entre clients
+   * Événement: titleUpdate
+   * Un utilisateur change le titre de la note
    */
-  socket.on('yjsUpdate', async ({ noteId, update }) => {
+  socket.on('titleUpdate', async ({ noteId, titre }) => {
+    const roomName = `note-${noteId}`;
+    
+    // Vérifier que l'utilisateur est dans la room
+    if (!socket.rooms.has(roomName)) {
+      return;
+    }
+
     try {
-      // Récupérer le document Yjs
-      const yDoc = getOrCreateYDoc(noteId);
-
-      // Appliquer la mise à jour au document
-      const updateBuffer = Buffer.from(update, 'base64');
-      Y.applyUpdate(yDoc, updateBuffer);
-
-      
-      // Diffuser la mise à jour aux autres clients dans la room
-      io.in(`note-${noteId}`).emit('yjsUpdate', {
-        noteId,
-        update,
-        userId: socket.userId
+      // Mettre à jour le titre en base de données
+      await prisma.note.update({
+        where: { id: noteId },
+        data: { Titre: titre, ModifiedAt: new Date() }
       });
 
+      // Diffuser le changement de titre à tous les autres utilisateurs dans la room
+      socket.to(roomName).emit('titleUpdate', {
+        noteId,
+        titre,
+        userId: socket.userId,
+        pseudo: socket.userPseudo
+      });
+
+      console.log(`📝 Titre mis à jour par ${socket.userPseudo}: "${titre}"`);
     } catch (error) {
-      console.error('Erreur lors de yjsUpdate:', error);
+      console.error('❌ Erreur lors de titleUpdate:', error);
     }
   });
 
   /**
-   * Événement: cursorUpdate
-   * Synchronisation des positions de curseur
+   * Événement: contentUpdate
+   * Un utilisateur change le contenu de la note
    */
-  socket.on('cursorUpdate', ({ noteId, cursor }) => {
-    socket.to(`note-${noteId}`).emit('cursorUpdate', {
-      userId: socket.userId,
-      pseudo: socket.userPseudo,
-      cursor
-    });
+  socket.on('contentUpdate', async ({ noteId, content }) => {
+    const roomName = `note-${noteId}`;
+    
+    // Vérifier que l'utilisateur est dans la room
+    if (!socket.rooms.has(roomName)) {
+      return;
+    }
+
+    try {
+      // Mettre à jour le contenu en base de données
+      await prisma.note.update({
+        where: { id: noteId },
+        data: { Content: content, ModifiedAt: new Date() }
+      });
+
+      // Diffuser le changement de contenu à tous les autres utilisateurs dans la room
+      socket.to(roomName).emit('contentUpdate', {
+        noteId,
+        content,
+        userId: socket.userId,
+        pseudo: socket.userPseudo
+      });
+
+      console.log(`📝 Contenu mis à jour par ${socket.userPseudo} (${content.length} chars)`);
+    } catch (error) {
+      console.error('❌ Erreur lors de contentUpdate:', error);
+    }
   });
 
   /**
@@ -251,6 +274,7 @@ io.on('connection', (socket) => {
    * Déconnexion du socket
    */
   socket.on('disconnect', (reason) => {
+    console.log(`❌ Socket déconnecté: ${socket.id} (raison: ${reason})`);
     
     // Notifier toutes les rooms où l'utilisateur était présent
     const rooms = Array.from(socket.rooms).filter(room => room.startsWith('note-'));
@@ -259,7 +283,6 @@ io.on('connection', (socket) => {
       const noteId = room.replace('note-', '');
       handleUserLeave(socket, noteId);
     });
-    
   });
 });
 
@@ -267,23 +290,22 @@ io.on('connection', (socket) => {
  * Gérer le départ d'un utilisateur d'une note
  */
 async function handleUserLeave(socket, noteId) {
-  // Retirer de la tracking list
-  removeUserFromNote(noteId, socket.id);
+  const roomName = `note-${noteId}`;
   
   // Quitter la room Socket.IO
-  socket.leave(`note-${noteId}`);
+  socket.leave(roomName);
+  console.log(`👋 User ${socket.userPseudo} a quitté room ${roomName}`);
   
-  // ✅ Compter les VRAIS utilisateurs restants dans la room
-  const socketsInRoom = await io.in(`note-${noteId}`).allSockets();
+  // Compter les utilisateurs restants dans la room
+  const socketsInRoom = await io.in(roomName).allSockets();
   const userCount = socketsInRoom.size;
   
-  // Notifier les autres avec le compte réel
-  socket.to(`note-${noteId}`).emit('userLeft', {
+  // Notifier les autres utilisateurs
+  socket.to(roomName).emit('userLeft', {
     userId: socket.userId,
     pseudo: socket.userPseudo,
     userCount
   });
-  
 }
 
 export { app, sessionMiddleware, httpServer, io };

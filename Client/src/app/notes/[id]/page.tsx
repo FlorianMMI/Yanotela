@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef } from "react";
 import { $getRoot, EditorState } from "lexical";
 import { useEffect, useState, use } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
@@ -12,7 +12,7 @@ import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
-import OnChangePlugin from "@lexical/react/LexicalOnChangePlugin";
+
 import { useCallback } from "react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
@@ -71,57 +71,65 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const { id } = use(params);
 
   // ✅ Hook pour déconnecter le socket quand on quitte la page note
-  useEffect(() => {
-    return () => {
-      socketService.disconnect();
-    };
-  }, [id]);
+  // useEffect(() => {
+  //   return () => {
+  //     socketService.disconnect();
+  //   };
+  // }, [id]);
 
   // Reload the page once on first visit to ensure Lexical and collaboration initialize correctly.
   // Uses sessionStorage per-note to avoid reload loops. This is a client-only effect.
-  useEffect(() => {
-    try {
-      const key = `yanotela:notes:reload:${id}`;
-      const alreadyReloaded = sessionStorage.getItem(key);
-      if (!alreadyReloaded) {
-        // mark as reloaded to avoid loops and reload once
-        sessionStorage.setItem(key, '1');
-        // small timeout to allow navigation to settle before reloading
-        window.setTimeout(() => {
-          // Use location.replace to avoid adding an extra history entry
-          window.location.replace(window.location.href);
-        }, 100);
-      }
-    } catch (e) {
-      // sessionStorage may be unavailable in some environments; ignore failures
-      console.warn('One-time reload skipped (sessionStorage unavailable):', e);
-    }
-  }, [id]);
+  // useEffect(() => {
+  //   try {
+  //     const key = `yanotela:notes:reload:${id}`;
+  //     const alreadyReloaded = sessionStorage.getItem(key);
+  //     if (!alreadyReloaded) {
+  //       // mark as reloaded to avoid loops and reload once
+  //       sessionStorage.setItem(key, '1');
+  //       // small timeout to allow navigation to settle before reloading
+  //       window.setTimeout(() => {
+  //         // Use location.replace to avoid adding an extra history entry
+  //         window.location.replace(window.location.href);
+  //       }, 100);
+  //     }
+  //   } catch (e) {
+  //     // sessionStorage may be unavailable in some environments; ignore failures
+  //     console.warn('One-time reload skipped (sessionStorage unavailable):', e);
+  //   }
+  // }, [id]);
 
   // Hook pour détecter les changements de taille d'écran
-  useEffect(() => {
-    const handleResize = () => {
-      // Force le rechargement des données quand on change de taille d'écran
-      setLastFetchTime(Date.now());
-    };
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     // Force le rechargement des données quand on change de taille d'écran
+  //     setLastFetchTime(Date.now());
+  //   };
 
-    // Écouter les mises à jour de titre depuis le Breadcrumb
-    const handleTitleUpdate = (event: CustomEvent) => {
-      const { noteId, title } = event.detail;
-      if (noteId === id) {
-        setNoteTitle(title);
-      }
-    };
+  //   // Écouter les mises à jour de titre depuis le Breadcrumb
+  //   const handleTitleUpdate = (event: CustomEvent) => {
+  //     const { noteId, title } = event.detail;
+  //     if (noteId === id) {
+  //       setNoteTitle(title);
+  //     }
+  //   };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+  //   window.addEventListener('resize', handleResize);
+  //   window.addEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
     
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
-    };
-  }, [id]);
+  //   return () => {
+  //     window.removeEventListener('resize', handleResize);
+  //     window.removeEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+  //   };
+  // }, [id]);
 
+
+  // Debounced emit pour le titre (synchronisation rapide quasi-instantanée)
+  const debouncedTitleEmit = useDebouncedCallback(
+    (titre: string) => {
+      socketService.emitTitleUpdate(id, titre);
+    },
+    1000 // 1000ms = synchronisation très rapide, sensation quasi-instantanée
+  );
 
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
@@ -131,22 +139,109 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     
     setNoteTitle(finalTitle);
     
-    // Sauvegarder le titre avec notification
-    uploadContent(id, finalTitle, editorContent).then((success) => {
-      if (success) {
-        setSuccess('Titre sauvegardé avec succès');
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError('Erreur lors de la sauvegarde du titre');
-        setTimeout(() => setError(null), 5000);
-      }
-    });
+    // Émettre via socket (debounced)
+    debouncedTitleEmit(finalTitle);
     
     // Émettre un événement pour synchroniser avec le Breadcrumb
     window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
       detail: { noteId: id, title: finalTitle } 
     }));
   }
+
+  // Callback pour gérer les mises à jour de titre distantes
+  const handleRemoteTitleUpdate = useCallback((titre: string) => {
+    setNoteTitle(titre);
+    // Synchroniser avec le Breadcrumb
+    window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
+      detail: { noteId: id, title: titre } 
+    }));
+  }, [id]);
+
+  // DOM listener fallback: appliquer les updates provenant du socket
+  // (moved) DOM listener will be registered after content callback is defined
+
+  // Callback pour gérer les mises à jour de contenu distantes (temps réel)
+  const handleRemoteContentUpdate = useCallback((content: string) => {
+    if (!editor) return;
+    
+    try {
+      const parsedContent = JSON.parse(content);
+      
+      // Vérifier si le contenu est vraiment différent pour éviter les boucles
+      const currentContent = JSON.stringify(editor.getEditorState().toJSON());
+      if (currentContent === content) {
+        return; // Pas de changement, ignorer
+      }
+      
+      const newEditorState = editor.parseEditorState(parsedContent);
+      
+      // Sauvegarder la position du curseur et le focus
+      const hasFocus = editor.getRootElement() === document.activeElement || 
+                       editor.getRootElement()?.contains(document.activeElement);
+      
+      let savedSelection: any = null;
+      if (hasFocus) {
+        editor.getEditorState().read(() => {
+          savedSelection = editor.getEditorState()._selection?.clone();
+        });
+      }
+      
+      // Appliquer la mise à jour distante
+      editor.setEditorState(newEditorState);
+      setEditorContent(content);
+      
+      // Restaurer le focus et la position du curseur si l'utilisateur était en train de taper
+      if (hasFocus && savedSelection) {
+        // Attendre un tick pour que l'état soit appliqué
+        setTimeout(() => {
+          editor.focus();
+          // Tenter de restaurer la sélection (peut échouer si le contenu a trop changé)
+          editor.update(() => {
+            try {
+              if (savedSelection) {
+                savedSelection.dirty = true;
+                editor.getEditorState()._selection = savedSelection;
+              }
+            } catch (e) {
+              // Si la restauration échoue, on laisse le curseur à la fin
+              console.log('Impossible de restaurer la sélection exacte');
+            }
+          });
+        }, 0);
+      }
+    } catch (err) {
+      console.warn('Impossible de parser le contenu distant:', err);
+    }
+  }, [editor]);
+
+  // DOM listener fallback: appliquer les updates provenant du socket
+  useEffect(() => {
+    const onSocketContent = (e: any) => {
+      const { noteId: nid, content } = e.detail || {};
+      if (!nid || nid !== id) return;
+      // Si editor prêt, appliquer via callback sinon buffer via setEditorContent
+      if (editor) {
+        handleRemoteContentUpdate(content);
+      } else {
+        console.log('🔔 Buffering content update until editor is ready (note:', id, ')');
+        setEditorContent(content);
+      }
+    };
+
+    const onSocketTitle = (e: any) => {
+      const { noteId: nid, titre } = e.detail || {};
+      if (!nid || nid !== id) return;
+      handleRemoteTitleUpdate(titre);
+    };
+
+    window.addEventListener('socketContentUpdate', onSocketContent as EventListener);
+    window.addEventListener('socketTitleUpdate', onSocketTitle as EventListener);
+
+    return () => {
+      window.removeEventListener('socketContentUpdate', onSocketContent as EventListener);
+      window.removeEventListener('socketTitleUpdate', onSocketTitle as EventListener);
+    };
+  }, [editor, handleRemoteContentUpdate, handleRemoteTitleUpdate, id]);
 
   // Récupérer les informations utilisateur au chargement
   useEffect(() => {
@@ -252,18 +347,21 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   function OnChangeBehavior() {
     const [editor] = useLexicalComposerContext();
+    const charCountRef = useRef(0);
+    const lastContentLengthRef = useRef(0);
 
     // Register editor in parent component
     useEffect(() => {
       setEditor(editor);
     }, [editor]);
 
-    // Debounced callback for logging editor state
-    const debouncedLog = useDebouncedCallback(
+    // Debounced callback for emitting content changes via socket (150ms d'inactivité)
+    const debouncedContentEmit = useDebouncedCallback(
       (editorState: EditorState) => {
+        charCountRef.current = 0; // Reset le compteur après l'envoi
         saveContent(editorState);
       },
-      1000 // 1-second debounce
+      150 // 150ms = envoi après inactivité
     );
 
     function saveContent(editorState: EditorState) {
@@ -271,7 +369,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       
       // Indiquer que la sauvegarde du contenu est en cours
       setIsSavingContent(true);
-      setIsTyping(false); // L'utilisateur a fini de taper, on passe en mode sauvegarde
       
       // Call toJSON on the EditorState object, which produces a serialization safe string
       const editorStateJSON = editorState.toJSON();
@@ -279,35 +376,48 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       const contentString = JSON.stringify(editorStateJSON);
       setEditorContent(contentString);
       
-      // Sauvegarder avec notification
-      uploadContent(id, noteTitle, contentString).then((success) => {
-        setIsSavingContent(false);
-        if (success) {
-          // Afficher brièvement l'icône de sauvegarde réussie
-          setTimeout(() => {
-            // L'icône de sauvegarde réussie sera gérée par l'état isSavingContent
-          }, 500);
-        } else {
-          setError('Erreur lors de la sauvegarde du contenu');
-          setTimeout(() => setError(null), 5000);
-        }
-      });
+      // Émettre via socket pour synchronisation temps réel
+      socketService.emitContentUpdate(id, contentString);
+      
+      setIsSavingContent(false);
+      setIsTyping(false); // Marquer immédiatement comme terminé
     }
 
     useEffect(() => {
       const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
-        // Only trigger the debounced log if there are changes to the content
+        // Only trigger the emit if there are changes to the content
         if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0) {
           // Indiquer immédiatement que l'utilisateur tape
           setIsTyping(true);
-          debouncedLog(editorState);
+          
+          // Calculer le nombre de caractères changés
+          const currentContent = editorState.read(() => {
+            const root = $getRoot();
+            return root.getTextContent();
+          });
+          const currentLength = currentContent.length;
+          const charDiff = Math.abs(currentLength - lastContentLengthRef.current);
+          lastContentLengthRef.current = currentLength;
+          
+          // Incrémenter le compteur de caractères
+          charCountRef.current += charDiff;
+          
+          // Si on a tapé 2 caractères ou plus, envoyer immédiatement
+          if (charCountRef.current >= 2) {
+            charCountRef.current = 0; // Reset
+            debouncedContentEmit.cancel(); // Annuler le debounce en cours
+            saveContent(editorState); // Envoyer immédiatement
+          } else {
+            // Sinon, utiliser le debounce (150ms)
+            debouncedContentEmit(editorState);
+          }
         }
       });
 
       return () => {
         unregisterListener();
       };
-    }, [editor, debouncedLog]);
+    }, [editor, debouncedContentEmit]);
 
     return null;
   }
@@ -465,6 +575,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                   noteId={id} 
                   username={userPseudo}
                   isReadOnly={isReadOnly}
+                  onTitleUpdate={handleRemoteTitleUpdate}
+                  onContentUpdate={handleRemoteContentUpdate}
                 />
               </LexicalComposer>
             </div>
