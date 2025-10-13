@@ -21,6 +21,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
   const router = useRouter();
   const pathname = usePathname();
   const isProfile = pathname.includes('/profil');
+  const isFlashNote = pathname === '/flashnote';
   const navItems = [
     {
       href: '/notes',
@@ -61,9 +62,9 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       <hr className="border-t border-element mx-8" />
       <FlashNoteButton 
         isOpen={isopen} 
+        isActive={isFlashNote}
         onClick={() => {
-          // TODO: Ajouter la logique pour Flash Note
-          console.log('Flash Note clicked');
+          router.push('/flashnote');
         }}
       />
       <nav className="flex-1 p-4">

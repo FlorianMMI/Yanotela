@@ -29,6 +29,9 @@ export default function Breadcrumb() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Détecter si on est sur Flash Note
+  const isFlashNote = pathname === '/flashnote';
+
   // Extraire l'ID de la note depuis l'URL
   const extractNoteId = (): string | null => {
     const segments = pathname.split('/').filter(Boolean);
@@ -65,8 +68,23 @@ export default function Breadcrumb() {
     };
   }, [noteId]);
 
-  // Charger le titre de la note
+  // Charger le titre de la note ou Flash Note
   useEffect(() => {
+    if (isFlashNote) {
+      // Pour Flash Note, charger depuis localStorage
+      try {
+        const savedTitle = localStorage.getItem("yanotela:flashnote:title");
+        const title = savedTitle || "Flash:";
+        setNoteTitle(title);
+        setTempTitle(title);
+      } catch (error) {
+        console.error('Erreur lors du chargement du titre Flash Note:', error);
+        setNoteTitle("Flash:");
+        setTempTitle("Flash:");
+      }
+      return;
+    }
+
     const fetchNoteTitle = async () => {
       if (noteId) {
         setIsLoadingTitle(true);
@@ -94,10 +112,28 @@ export default function Breadcrumb() {
     };
 
     fetchNoteTitle();
-  }, [noteId, lastFetchTime]); // Ajouter lastFetchTime comme dépendance
+  }, [noteId, lastFetchTime, isFlashNote]); // Ajouter isFlashNote comme dépendance
 
-  // Sauvegarder le titre modifié (récupère le contenu existant pour le préserver)
+  // Sauvegarder le titre modifié
   const updateNoteTitle = async (newTitle: string) => {
+    if (isFlashNote) {
+      // Pour Flash Note, sauvegarder dans localStorage
+      const finalTitle = newTitle.trim() === '' ? 'Flash:' : newTitle;
+      setNoteTitle(finalTitle);
+      setTempTitle(finalTitle);
+      
+      try {
+        localStorage.setItem("yanotela:flashnote:title", finalTitle);
+        setSuccess('Titre Flash Note sauvegardé localement');
+        setTimeout(() => setSuccess(null), 2000);
+      } catch (error) {
+        console.error('Erreur localStorage titre Flash Note:', error);
+        setError('Erreur lors de la sauvegarde du titre');
+        setTimeout(() => setError(null), 3000);
+      }
+      return;
+    }
+
     if (noteId) {
       setNoteTitle(newTitle);
       setTempTitle(newTitle);
@@ -133,14 +169,24 @@ export default function Breadcrumb() {
   };
 
   const handleTitleSave = async (newTitle: string) => {
-    if (newTitle.trim() === '') {
-      // Si le titre est vide, utiliser le fallback et sauvegarder
-      const fallbackTitle = 'Titre de la note';
-      setTempTitle(fallbackTitle);
-      await updateNoteTitle(fallbackTitle);
-    } else if (newTitle !== noteTitle) {
-      // Si le titre a changé et n'est pas vide, le sauvegarder
-      await updateNoteTitle(newTitle);
+    if (isFlashNote) {
+      // Pour Flash Note, utiliser "Flash:" comme fallback
+      if (newTitle.trim() === '') {
+        const fallbackTitle = 'Flash:';
+        setTempTitle(fallbackTitle);
+        await updateNoteTitle(fallbackTitle);
+      } else if (newTitle !== noteTitle) {
+        await updateNoteTitle(newTitle);
+      }
+    } else {
+      // Pour les notes normales
+      if (newTitle.trim() === '') {
+        const fallbackTitle = 'Titre de la note';
+        setTempTitle(fallbackTitle);
+        await updateNoteTitle(fallbackTitle);
+      } else if (newTitle !== noteTitle) {
+        await updateNoteTitle(newTitle);
+      }
     }
   };
 
@@ -164,6 +210,12 @@ export default function Breadcrumb() {
       return [
         { label: 'Mes Notes', href: '/notes' },
         { label: displayTitle, isActive: true, isNoteTitle: true },
+      ];
+    }
+
+    if (pathname === '/flashnote') {
+      return [
+        { label: 'Flash Note', isActive: true },
       ];
     }
 
@@ -267,6 +319,9 @@ export default function Breadcrumb() {
             if (pathname.includes('/profil')) {
               return <Icon name="profile" size={20} className="text-primary" />;
             }
+            if (pathname === '/flashnote') {
+              return <Icon name="flash" size={30} className="text-primary stroke-[10]" />;
+            }
           })()}
           {breadcrumbs.map((item, index) => (
             <React.Fragment key={index}>
@@ -302,24 +357,26 @@ export default function Breadcrumb() {
                       placeholder=""
                     />
                   )}
-                      {/* Container pour pousser l'icône complètement à droite */}
-                      <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
-                      <span
-                        onClick={() => setShowNoteMore((prev) => !prev)}
-                        className="ml-2"
-                      >
-                        <Icons
-                        name="more"
-                        size={30}
-                        className="text-primary cursor-pointer"
-                        />
-                      </span>
-                      {showNoteMore && (
-                        <div className="absolute right-0 mt-10 z-20">
-                        <NoteMore noteId={noteId!} onClose={() => setShowNoteMore(false)} />
+                      {/* Menu kebab seulement pour les notes normales, pas Flash Note */}
+                      {!isFlashNote && (
+                        <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
+                          <span
+                            onClick={() => setShowNoteMore((prev) => !prev)}
+                            className="ml-2"
+                          >
+                            <Icons
+                              name="more"
+                              size={30}
+                              className="text-primary cursor-pointer"
+                            />
+                          </span>
+                          {showNoteMore && (
+                            <div className="absolute right-0 mt-10 z-20">
+                              <NoteMore noteId={noteId!} onClose={() => setShowNoteMore(false)} />
+                            </div>
+                          )}
                         </div>
                       )}
-                      </div>
                 </div>
               ) : (
                 <span
