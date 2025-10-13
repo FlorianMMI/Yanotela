@@ -32,9 +32,9 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
 
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="h-full w-full flex flex-col relative">
 
-      <div className="p-4">
+      <div className="p-4 relative">
         <Link href="/profil"
           className={`flex items-center ${isopen ? `w-full px-4  ` : `w-fit px-2  `} py-3 gap-3 rounded-lg transition-all text-gray-700 ${isProfile ? 'bg-primary text-white' : ' hover:bg-gray-100 hover:shadow-sm'}`}
           title='Accéder à mes notes'>
@@ -55,7 +55,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
           </div> : ""}
           
         </Link>
-            <NotificationList />
+            <NotificationList isOpenSideBar={isopen} />
       </div>
       <hr className="border-t border-element mx-8" />
       <nav className="flex-1 p-4">
