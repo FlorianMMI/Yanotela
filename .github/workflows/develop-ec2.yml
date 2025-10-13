@@ -73,6 +73,8 @@ jobs:
             
             # Create deployment directory if it doesn't exist
             sudo mkdir -p ${{ env.DEPLOY_PATH }}
+            # Fix ownership to current user
+            sudo chown -R $USER:$USER ${{ env.DEPLOY_PATH }}
             cd ${{ env.DEPLOY_PATH }}
             
             # Check if Docker is installed, install if missing
@@ -87,15 +89,22 @@ jobs:
               sudo apt-get update -qq
               sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
               sudo usermod -aG docker $USER
+              # Start Docker service
+              sudo systemctl start docker
+              sudo systemctl enable docker
               echo "✅ Docker installed successfully"
             else
               echo "✅ Docker is already installed"
             fi
             
+            # Ensure Docker is running
+            sudo systemctl start docker || true
+            
             # Clone or update repository
-            if [ ! -d ".git" ]; then
+            if [ ! -d ".git" ] || [ ! -f "docker-compose.dev.yml" ]; then
               echo "📁 Cloning development repository..."
-              sudo rm -rf ./* ./.* 2>/dev/null || true
+              # Remove any existing files 
+              rm -rf ./* ./.* 2>/dev/null || true
               git clone -b Develop https://github.com/FlorianMMI/Yanotela.git .
               echo "✅ Repository cloned"
             else
@@ -123,19 +132,30 @@ jobs:
               echo "📝 Creating development environment file..."
               cat > .env.dev << 'EOF'
             # Development Environment Configuration
-            DATABASE_URL="postgresql://yanotela_dev:dev_password_123@localhost:5432/yanotela_dev"
             NODE_ENV=development
             PORT=3001
-            SESSION_SECRET="dev_session_secret_change_this"
             
-            # Database
-            POSTGRES_DB=yanotela_dev
-            POSTGRES_USER=yanotela_dev
-            POSTGRES_PASSWORD=dev_password_123
+            # Database Configuration (PostgreSQL)
+            DB_USER=yanotela_dev
+            DB_PASSWORD=dev_password_123
+            DB_NAME=yanotela_dev
+            DATABASE_URL=postgresql://yanotela_dev:dev_password_123@db-dev:5432/yanotela_dev
+            
+            # Redis Configuration
+            REDIS_PASSWORD=redis_dev_password_123
+            REDIS_URL=redis://:redis_dev_password_123@redis-dev:6379
+            
+            # Session Configuration
+            SESSION_SECRET=dev_session_secret_change_this_in_production
             
             # Application URLs
             CLIENT_URL=http://${{ env.EC2_HOST }}:3000
             SERVER_URL=http://${{ env.EC2_HOST }}:3001
+            
+            # Email Configuration (optional for development)
+            MAIL_SERVICE=gmail
+            MAIL_USER=
+            MAIL_PASSWORD=
             
             # Development settings
             DEBUG=true
