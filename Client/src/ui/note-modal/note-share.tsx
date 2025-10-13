@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FetchPermission, UpdatePermission, AddPermission, RemovePermission } from "@/loader/loader";
 import { useAuth } from "@/hooks/useAuth";
+import Icon from "../Icon";
 
-const ROLE_LABELS = ["Fondateur", "Administrateur", "Editeur", "Lecteur"];
+const ROLE_LABELS = ["Propriétaire", "Administrateur", "Éditeur", "Lecteur"];
 
 interface NoteShareUIProps {
     noteId: string;
@@ -34,12 +35,12 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
         <div className="flex-1 overflow-y-auto p-4">
             {currentUserRole !== null && (
                 <div className={`mb-4 px-3 py-1 rounded-full text-sm inline-block ${currentUserRole === 0 ? 'bg-deskbackground text-primary' :
-                        'bg-deskbackground text-element'
+                    'bg-deskbackground text-element'
                     }`}>
                     Vous êtes {ROLE_LABELS[currentUserRole].toLowerCase()}
                 </div>
             )}
-            
+
             {loading ? (
                 <div className="py-8 text-center text-element">Chargement...</div>
             ) : (
@@ -63,13 +64,11 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                                                 <div className="text-xs text-element">{item.user.email}</div>
                                             </div>
                                             {role === 0 && (
-                                                <svg className="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M12 6l4 6h-3v5h-2v-5H8l4-6z"/>
-                                                </svg>
+                                                <Icon name="crown" className="text-yellow-500" size={20} />
                                             )}
                                             {/* Afficher les actions seulement si l'utilisateur a les permissions ET ce n'est pas le propriétaire */}
                                             {role > 0 && currentUserRole !== null && currentUserRole <= 1 && (
-                                                <div className="flex items-end">
+                                                <div className="flex flex-col md:flex-row items-center gap-2">
                                                     <select
                                                         value={item.role}
                                                         disabled={item.user.id === connectedUserId}
@@ -95,7 +94,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                                                     >
                                                         {(currentUserRole !== null && currentUserRole < 1 || item.user.id === connectedUserId) && (
                                                             <option value={1}>Admin</option>
-                                                        )}										
+                                                        )}
                                                         <option value={2}>Éditeur</option>
                                                         <option value={3}>Lecteur</option>
                                                     </select>
@@ -192,7 +191,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                     </button>
                 </div>
             )}
-            
+
             {/* Message pour les utilisateurs sans permissions de gestion */}
             {currentUserRole !== null && currentUserRole > 1 && (
                 <div className="border-t border-element p-4 mt-4 bg-white">
