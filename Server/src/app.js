@@ -168,31 +168,44 @@ io.on('connection', (socket) => {
       // Rejoindre la room Socket.IO
       socket.join(roomName);
 
-      // Obtenir ou créer le document Yjs
+      // ✅ CORRECTION CRITIQUE: Obtenir/créer le document Yjs et attendre l'initialisation
       const yDoc = getOrCreateYDoc(noteId, note.Content);
-
-      // ✅ Compter les VRAIS utilisateurs connectés dans la room Socket.IO
-      const socketsInRoom = await io.in(roomName).allSockets();
-      const userCount = socketsInRoom.size;
       
-      // Ajouter à la tracking list pour le cleanup (optionnel)
-      addUserToNote(noteId, socket.id);
+      // ✅ ATTENDRE que le document soit complètement initialisé
+      // On utilise setImmediate pour s'assurer que toutes les opérations synchrones Yjs sont terminées
+      setImmediate(async () => {
+        try {
+          // ✅ Compter les VRAIS utilisateurs connectés dans la room Socket.IO  
+          const socketsInRoom = await io.in(roomName).allSockets();
+          const userCount = socketsInRoom.size;
+          
+          // Ajouter à la tracking list pour le cleanup (optionnel)
+          addUserToNote(noteId, socket.id);
 
+          // ✅ MAINTENANT envoyer l'état complet du document au client
+          const stateVector = Y.encodeStateAsUpdate(yDoc);
+          const finalContent = yDoc.getText('content').toString();
+          
+          console.log(`🔄 Sync envoyé pour note ${noteId}: ${finalContent.length} caractères, ${userCount} utilisateur(s)`);
+          
+          socket.emit('sync', {
+            noteId,
+            state: Buffer.from(stateVector).toString('base64'),
+            userCount,
+            isReadOnly
+          });
 
-      // Envoyer l'état initial du document au client
-      const stateVector = Y.encodeStateAsUpdate(yDoc);
-      socket.emit('sync', {
-        noteId,
-        state: Buffer.from(stateVector).toString('base64'),
-        userCount,
-        isReadOnly
-      });
-
-      // Notifier les autres utilisateurs avec le nombre réel
-      socket.to(`note-${noteId}`).emit('userJoined', {
-        userId: socket.userId,
-        pseudo: socket.userPseudo,
-        userCount
+          // Notifier les autres utilisateurs avec le nombre réel
+          socket.to(`note-${noteId}`).emit('userJoined', {
+            userId: socket.userId,
+            pseudo: socket.userPseudo,
+            userCount
+          });
+          
+        } catch (syncError) {
+          console.error('Erreur lors de la synchronisation:', syncError);
+          socket.emit('error', { message: 'Erreur lors de la synchronisation' });
+        }
       });
 
     } catch (error) {
@@ -203,27 +216,36 @@ io.on('connection', (socket) => {
 
   /**
    * Événement: yjsUpdate
-   * Synchronisation des changements Yjs entre clients
+   * ✅ CORRECTION: Synchronisation bidirectionnelle complète des changements Yjs
    */
   socket.on('yjsUpdate', async ({ noteId, update }) => {
     try {
-      // Récupérer le document Yjs
-      const yDoc = getOrCreateYDoc(noteId);
+      // ✅ IMPORTANTE: Vérifier que le socket est bien dans la room
+      const roomName = `note-${noteId}`;
+      if (!socket.rooms.has(roomName)) {
+        console.warn(`⚠️ Socket ${socket.id} essaie d'update note ${noteId} sans être dans la room`);
+        return;
+      }
 
-      // Appliquer la mise à jour au document
+      // Obtenir le document Yjs existant
+      const yDoc = getOrCreateYDoc(noteId);
+      
+      // Appliquer la mise à jour au document serveur
       const updateBuffer = Buffer.from(update, 'base64');
       Y.applyUpdate(yDoc, updateBuffer);
-
       
-      // Diffuser la mise à jour aux autres clients dans la room
-      io.in(`note-${noteId}`).emit('yjsUpdate', {
+      // ✅ CRITIQUE: Propager la mise à jour à TOUS les autres clients de la room
+      // Utiliser broadcast pour éviter de renvoyer à l'expéditeur
+      socket.to(roomName).emit('yjsUpdate', {
         noteId,
-        update,
-        userId: socket.userId
+        update // Transmettre l'update tel quel
       });
+      
+      console.log(`📡 Update propagé pour note ${noteId} vers ${socket.to(roomName).compress(false).adapter.rooms.get(roomName)?.size || 0} autres clients`);
 
     } catch (error) {
       console.error('Erreur lors de yjsUpdate:', error);
+      socket.emit('error', { message: 'Erreur lors de la synchronisation' });
     }
   });
 

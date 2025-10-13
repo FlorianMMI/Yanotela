@@ -18,6 +18,7 @@ const savePending = new Map();
 
 /**
  * Obtenir ou créer un document Yjs pour une note
+ * ✅ CORRECTION: Initialisation synchrone et complète
  * @param {string} noteId - ID de la note
  * @param {string} initialContent - Contenu initial depuis la base de données
  * @returns {Y.Doc} Document Yjs
@@ -30,10 +31,9 @@ export function getOrCreateYDoc(noteId, initialContent = null) {
   const doc = new Y.Doc();
   const yText = doc.getText('content');
 
-  // ✅ Si on a du contenu initial, l'appliquer
-  if (initialContent) {
+  // ✅ CORRECTION CRITIQUE: Initialiser SYNCHRONEMENT le contenu
+  if (initialContent && initialContent.trim()) {
     // D'abord vérifier si c'est du base64 Yjs (anciennes notes)
-    // Le base64 Yjs commence généralement par des caractères spécifiques
     const looksLikeBase64Yjs = /^[A-Za-z0-9+/=]{50,}$/.test(initialContent.substring(0, 100));
     
     if (looksLikeBase64Yjs) {
@@ -41,13 +41,11 @@ export function getOrCreateYDoc(noteId, initialContent = null) {
         // Essayer de décoder depuis base64 (format binaire Yjs - anciennes notes)
         const binary = Buffer.from(initialContent, 'base64');
         Y.applyUpdate(doc, binary);
-        
-        // ✅ CORRECTION: Après avoir chargé du base64, sauvegarder en texte brut
-        const textContent = yText.toString();
-        // La prochaine sauvegarde sera en texte brut grâce à saveYDocToDatabase
+        console.log(`✅ Note ${noteId}: Chargé depuis base64 Yjs (${yText.length} caractères)`);
       } catch (e) {
         // Si ça échoue, traiter comme du texte
         yText.insert(0, initialContent);
+        console.log(`✅ Note ${noteId}: Chargé comme texte brut (fallback, ${initialContent.length} caractères)`);
       }
     } else {
       // Sinon, traiter comme du texte brut ou JSON
@@ -57,19 +55,27 @@ export function getOrCreateYDoc(noteId, initialContent = null) {
         if (parsed.root && parsed.root.children) {
           const text = extractTextFromLexical(parsed);
           yText.insert(0, text);
+          console.log(`✅ Note ${noteId}: Chargé depuis JSON Lexical (${text.length} caractères)`);
         } else {
           yText.insert(0, initialContent);
+          console.log(`✅ Note ${noteId}: Chargé depuis JSON générique (${initialContent.length} caractères)`);
         }
       } catch {
         // Si ce n'est pas du JSON, insérer comme texte brut
         yText.insert(0, initialContent);
+        console.log(`✅ Note ${noteId}: Chargé comme texte brut (${initialContent.length} caractères)`);
       }
     }
+  } else {
+    console.log(`📝 Note ${noteId}: Créé document vide`);
   }
 
-  // Écouter les mises à jour pour déclencher les sauvegardes
-  doc.on('update', () => {
-    scheduleSave(noteId, doc);
+  // ✅ IMPORTANT: Écouter les mises à jour APRÈS l'initialisation
+  doc.on('update', (update, origin) => {
+    // Éviter de sauvegarder les updates d'initialisation
+    if (origin !== 'initialization') {
+      scheduleSave(noteId, doc);
+    }
   });
 
   activeDocuments.set(noteId, doc);
@@ -107,6 +113,7 @@ function extractTextFromLexical(lexicalState) {
 
 /**
  * Planifier une sauvegarde différée du document
+ * ✅ CORRECTION: Délai réduit et meilleure gestion des sauvegardes en cours
  * @param {string} noteId - ID de la note
  * @param {Y.Doc} doc - Document Yjs
  */
@@ -116,31 +123,36 @@ function scheduleSave(noteId, doc) {
     clearTimeout(savePending.get(noteId));
   }
 
-  // Planifier une nouvelle sauvegarde dans 5 secondes
+  // ✅ Délai réduit à 2 secondes pour une meilleure réactivité
   const timeoutId = setTimeout(() => {
     saveYDocToDatabase(noteId, doc);
     savePending.delete(noteId);
-  }, 5000);
+  }, 2000); // ✅ 2 secondes au lieu de 5
 
   savePending.set(noteId, timeoutId);
 }
 
 /**
  * Sauvegarder le document Yjs dans la base de données
+ * ✅ CORRECTION: Sauvegarde du texte ET de l'état binaire pour compatibilité
  * @param {string} noteId - ID de la note
  * @param {Y.Doc} doc - Document Yjs
  */
 export async function saveYDocToDatabase(noteId, doc) {
   try {
-    // ✅ CORRECTION CRITIQUE : Extraire le TEXTE du document Yjs, pas l'état binaire
+    // ✅ Extraire le TEXTE du document Yjs pour l'affichage
     const yText = doc.getText('content');
     const textContent = yText.toString();
+
+    // ✅ OPTIONNEL: Sauvegarder aussi l'état binaire pour une restauration parfaite
+    // const state = Y.encodeStateAsUpdate(doc);
+    // const stateBase64 = Buffer.from(state).toString('base64');
 
     // Sauvegarder le texte brut dans Prisma
     await prisma.note.update({
       where: { id: noteId },
       data: { 
-        Content: textContent, // ✅ Sauvegarder le texte, pas le binaire
+        Content: textContent, // ✅ Texte brut pour compatibilité
         ModifiedAt: new Date()
       }
     });

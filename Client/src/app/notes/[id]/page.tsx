@@ -77,26 +77,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     };
   }, [id]);
 
-  // Reload the page once on first visit to ensure Lexical and collaboration initialize correctly.
-  // Uses sessionStorage per-note to avoid reload loops. This is a client-only effect.
-  useEffect(() => {
-    try {
-      const key = `yanotela:notes:reload:${id}`;
-      const alreadyReloaded = sessionStorage.getItem(key);
-      if (!alreadyReloaded) {
-        // mark as reloaded to avoid loops and reload once
-        sessionStorage.setItem(key, '1');
-        // small timeout to allow navigation to settle before reloading
-        window.setTimeout(() => {
-          // Use location.replace to avoid adding an extra history entry
-          window.location.replace(window.location.href);
-        }, 100);
-      }
-    } catch (e) {
-      // sessionStorage may be unavailable in some environments; ignore failures
-      console.warn('One-time reload skipped (sessionStorage unavailable):', e);
-    }
-  }, [id]);
+  // ✅ SUPPRIMÉ: Le reload n'est plus nécessaire avec le binding Yjs corrigé
 
   // Hook pour détecter les changements de taille d'écran
   useEffect(() => {
@@ -229,8 +210,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     namespace: "Editor",
     theme,
     onError,
-    // Utiliser l'état initial si disponible
-    editorState: initialEditorState ? initialEditorState : undefined,
+    // ✅ NE PAS utiliser initialEditorState - Le contenu vient de Yjs via CollaborationPlugin
+    // Cela évite les conflits entre BDD et Yjs lors de la synchro initiale
+    editorState: undefined,
   };
 
   const focusAtEnd = useCallback(() => {
