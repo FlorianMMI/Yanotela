@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { noteController } from '../controllers/noteController.js';
-import { requireAuth, requireNoteOwnership } from '../middlewares/authMiddleware.js';
+import { requireAuth, requireNoteOwnership, requireWriteAccess } from '../middlewares/authMiddleware.js';
 
 //** Ce fichier permet de gérer les routes liées aux notes */
 
@@ -12,10 +12,10 @@ router.get('/get', requireAuth, noteController.getNotes);
 // Route Post pour créer une note (authentification requise)
 router.post('/create', requireAuth, noteController.createNote);
 
-// Route Get pour récupérer une note par son ID (vérification de propriété)
-router.get('/get/:id', requireNoteOwnership, noteController.getNoteById);
+// Route Get pour récupérer une note par son ID (vérification des permissions dans le contrôleur)
+router.get('/get/:id', requireAuth, noteController.getNoteById);
 
-// Route Post pour mettre à jour une note par son ID (vérification de propriété)
-router.post('/update/:id', requireNoteOwnership, noteController.updateNoteById);
+// Route Post pour mettre à jour une note par son ID (vérification des droits d'écriture)
+router.post('/update/:id', requireWriteAccess, noteController.updateNoteById);
 
 export default router;

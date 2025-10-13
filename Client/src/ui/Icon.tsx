@@ -6,11 +6,14 @@ interface IconProps {
   name: string;
   className?: string;
   size?: number;
+  width?: number;
+  height?: number;
 }
 
-const Icon = ({ name, className = "", size = 20 }: IconProps) => {
+const Icon = ({ name, className = "", size = 20, width, height }: IconProps) => {
   const [svgContent, setSvgContent] = useState<string>('');
-
+  if (!width) width = size;
+  if (!height) height = size;
   useEffect(() => {
     const loadSvg = async () => {
       try {
@@ -25,8 +28,9 @@ const Icon = ({ name, className = "", size = 20 }: IconProps) => {
           if (viewBoxMatch) {
             const viewBoxValues = viewBoxMatch[1].split(' ');
             const originalWidth = parseFloat(viewBoxValues[2]);
-            if (originalWidth > 0) {
-              scaleFactor = size / originalWidth;
+            const originalHeight = parseFloat(viewBoxValues[3]);
+            if (originalWidth > 0 && originalHeight > 0) {
+              scaleFactor = Math.min(width! / originalWidth, height! / originalHeight);
             }
           }
           
@@ -40,7 +44,7 @@ const Icon = ({ name, className = "", size = 20 }: IconProps) => {
             .replace(/fill="black"/g, 'fill="currentColor"')
             .replace(/width="[^"]*"/g, '')
             .replace(/height="[^"]*"/g, '')
-            .replace('<svg', `<svg width="${size}" height="${size}" style="display: block;"`);
+            .replace('<svg', `<svg width="${width}" height="${height}" style="display: block;"`);
           
           // Adapter les stroke-width proportionnellement
           modifiedSvg = modifiedSvg.replace(/stroke-width="([^"]+)"/g, (match, strokeWidth) => {
@@ -60,7 +64,7 @@ const Icon = ({ name, className = "", size = 20 }: IconProps) => {
   }, [name, size]);
 
   if (!svgContent) {
-    return <div className={className} role="img" style={{ width: size, height: size }} />;
+    return <div className={className} role="img" style={{ width: width, height: height }} />;
   }
 
   return (
@@ -68,8 +72,8 @@ const Icon = ({ name, className = "", size = 20 }: IconProps) => {
       className={className}
       role="img"
       style={{ 
-        width: size, 
-        height: size, 
+        width: width, 
+        height: height, 
         display: 'inline-flex', 
         alignItems: 'center', 
         justifyContent: 'center',

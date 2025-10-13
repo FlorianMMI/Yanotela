@@ -1,19 +1,19 @@
-# Docker Compose pour l'environnement Production
+# Docker Compose pour l'environnement Development
 
 services:
-  db-prod:
+  db-dev:
     image: postgres:15-alpine
-    container_name: yanotela-db-prod
+    container_name: yanotela-db-dev
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - postgres_prod_data:/var/lib/postgresql/data
+      - postgres_dev_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
-      - yanotela-prod
+      - yanotela-dev
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 30s
@@ -26,16 +26,16 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  redis-prod:
+  redis-dev:
     image: redis:7-alpine
-    container_name: yanotela-redis-prod
+    container_name: yanotela-redis-dev
     command: redis-server --requirepass ${REDIS_PASSWORD}
     volumes:
-      - redis_prod_data:/data
+      - redis_dev_data:/data
     ports:
       - "6379:6379"
     networks:
-      - yanotela-prod
+      - yanotela-dev
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 30s
@@ -49,27 +49,29 @@ services:
         max-file: "3"
 
   backend-prod:
-    image: ${DOCKER_USERNAME:-yourusername}/yanotela-backend:${IMAGE_TAG:-latest}
+    build: 
+      context: ./Server
+      target: runner
     container_name: yanotela-backend-prod
     ports:
       - "3001:3001"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db-prod:5432/${DB_NAME}
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis-prod:6379
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db-dev:5432/${DB_NAME}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis-dev:6379
       - SESSION_SECRET=${SESSION_SECRET}
       - MAIL_SERVICE=${MAIL_SERVICE}
       - MAIL_USER=${MAIL_USER}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
     env_file:
-      - .env.prod
+      - .env.dev
     depends_on:
-      db-prod:
+      db-dev:
         condition: service_healthy
-      redis-prod:
+      redis-dev:
         condition: service_healthy
     networks:
-      - yanotela-prod
+      - yanotela-dev
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -84,20 +86,20 @@ services:
         reservations:
           memory: 256M
 
-  frontend-prod:
-    image: ${DOCKER_USERNAME:-yourusername}/yanotela-frontend:${IMAGE_TAG:-latest}
-    container_name: yanotela-frontend-prod
+  frontend-dev:
+    image: ${DOCKER_USERNAME:-jefee}/yanotela-frontend-dev:${IMAGE_TAG:-develop}
+    container_name: yanotela-frontend-dev
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://backend-prod:3001
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://backend-dev:3001
     env_file:
-      - .env.prod
+      - .env.dev
     depends_on:
-      - backend-prod
+      - backend-dev
     networks:
-      - yanotela-prod
+      - yanotela-dev
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -112,11 +114,11 @@ services:
           memory: 128M
 
 volumes:
-  postgres_prod_data:
+  postgres_dev_data:
     driver: local
-  redis_prod_data:
+  redis_dev_data:
     driver: local
 
 networks:
-  yanotela-prod:
+  yanotela-dev:
     driver: bridge
