@@ -30,4 +30,5 @@ logs/
 *.log
 
 # Test coverage
-coverage/
+coverage/cles_yanotela_1.pem
+.env.prod

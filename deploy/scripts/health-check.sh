@@ -1,20 +1,13 @@
 #!/bin/bash
-# Health Check Script pour Yanotela
+# Development Health Check Script
 
 set -e
 
-ENVIRONMENT=${1:-"prod"}
-HOST=${2:-"localhost"}
+ENVIRONMENT=${1:-"dev"}
 
-if [ "$ENVIRONMENT" = "preprod" ]; then
-    FRONTEND_PORT=8080
-    BACKEND_PORT=8081
-    COMPOSE_FILE="docker-compose.preprod.yml"
-else
-    FRONTEND_PORT=80
-    BACKEND_PORT=3001
-    COMPOSE_FILE="docker-compose.prod.yml"
-fi
+# Development environment configuration
+COMPOSE_FILE="docker-compose.dev.yml"
+BASE_URL="http://13.39.48.72"
 
 echo "🏥 Starting health checks for $ENVIRONMENT environment..."
 
