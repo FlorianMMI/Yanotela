@@ -27,7 +27,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
   ];
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="h-full w-full flex flex-col relative">
 
       <div className="flex flex-row items-center p-4 gap-2">
 
@@ -51,8 +51,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
           </div> : ""}
 
         </Link>
-
-        <NotificationList />
+        <NotificationList isOpenSideBar={isopen} />
       </div>
 
       <hr className="border-t border-element mx-8" />

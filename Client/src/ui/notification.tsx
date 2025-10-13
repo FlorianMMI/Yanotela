@@ -39,8 +39,8 @@ export default function Notification({ id, title, author, onNotificationUpdate }
                 <div className="flex flex-row gap-3 pl-2 items-center">
 
                     <p className="text-gray-500 text-sm "><span className="font-bold">{author}</span> vous a invité à rejoindre cette note</p>
-                    <div onClick={handleUpdateNotification}><Icon  name="Checkk" size={20} className=" text-green-500"/></div>
-                    <div onClick={handleRefuseNotification}><Icon  name="close" size={20} className=" text-red-500"/></div>
+                    <div onClick={handleUpdateNotification} className="hover:bg-gray-100"><Icon  name="Checkk" size={20} className=" text-green-500"/></div>
+                    <div onClick={handleRefuseNotification} className="hover:bg-gray-100"><Icon  name="close" size={20} className=" text-red-500"/></div>
 
                 </div>
                 
