@@ -124,10 +124,9 @@ jobs:
             # Update package cache
             sudo apt-get update -qq
             
-            # Create development environment file if it doesn't exist
-            if [ ! -f .env.dev ]; then
-              echo "📝 Creating development environment file..."
-              cat > .env.dev << 'EOF'
+            # Create development environment file (always recreate to ensure latest values)
+            echo "📝 Creating development environment file..."
+            cat > .env.dev << 'EOF'
             # Development Environment Configuration
             NODE_ENV=development
             PORT=3001
@@ -162,30 +161,37 @@ jobs:
             DEBUG=true
             LOG_LEVEL=debug
             EOF
-              echo "✅ Development environment file created"
-            fi
+            echo "✅ Development environment file created"
+            
+            # Debug: Show environment file content
+            echo "📋 Environment file content:"
+            cat .env.dev
             
             # Pull latest development images
-            sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs) 2>/dev/null; docker compose -f docker-compose.dev.yml pull' || echo "⚠️ Docker compose pull failed, will continue with existing images"
+            sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml pull || echo "⚠️ Docker compose pull failed, will continue with existing images"
             
             # Load environment variables and recreate containers
-            set -a
-            source .env.dev
-            set +a
             echo "✅ Development environment variables loaded"
             
-            # Pass all environment variables to Docker Compose
-            sudo -E bash -c '
-              export $(cat .env.dev | grep -v "^#" | xargs)
-              docker compose -f docker-compose.dev.yml up -d --force-recreate
-            '
+            # Use direct environment variable passing instead of relying on .env.dev file
+            sudo DB_USER=yanotela_dev \
+                 DB_PASSWORD=dev_password_123 \
+                 DB_NAME=yanotela_dev \
+                 REDIS_PASSWORD=redis_dev_password_123 \
+                 SESSION_SECRET=dev_session_secret_change_this_in_production \
+                 MAIL_SERVICE=gmail \
+                 MAIL_USER= \
+                 MAIL_PASSWORD= \
+                 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} \
+                 IMAGE_TAG=develop \
+                 docker compose -f docker-compose.dev.yml up -d --force-recreate
             
             # Wait for services to be healthy
             echo "Waiting for services to start..."
             sleep 30
             
             # Check if services are running
-            if sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs); docker compose -f docker-compose.dev.yml ps' | grep -q "Up"; then
+            if sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 SESSION_SECRET=dev_session_secret_change_this_in_production MAIL_SERVICE=gmail MAIL_USER= MAIL_PASSWORD= DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml ps | grep -q "Up"; then
               echo "✅ Development deployment successful!"
               
               # Test frontend
@@ -193,7 +199,7 @@ jobs:
                 echo "✅ Frontend is responding on development server"
               else
                 echo "❌ Frontend is not responding"
-                sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs); docker compose -f docker-compose.dev.yml logs yanotela-frontend-dev'
+                sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml logs yanotela-frontend-dev
                 exit 1
               fi
               
@@ -202,7 +208,7 @@ jobs:
                 echo "✅ Backend is responding on development server"
               else
                 echo "❌ Backend is not responding"
-                sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs); docker compose -f docker-compose.dev.yml logs yanotela-backend-dev'
+                sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml logs yanotela-backend-dev
                 exit 1
               fi
               
@@ -212,6 +218,6 @@ jobs:
               echo "   Backend:  http://${{ env.EC2_HOST }}:3001"
             else
               echo "❌ Services failed to start on development server"
-              sudo -E bash -c 'export $(cat .env.dev | grep -v "^#" | xargs); docker compose -f docker-compose.dev.yml logs'
+              sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml logs
               exit 1
             fi
