@@ -11,6 +11,7 @@ import ModificationProfil from "@/components/ModificationProfil/page";
 import ParamModal from "@/components/infoprofil/paramModal";
 import { AnimatePresence } from "motion/react";
 // import Notification from "@/ui/notification";
+import NotificationList from "@/components/notificationList/page";
 
 
 interface UserInfo {
@@ -105,8 +106,8 @@ export default function Profil() {
     <>
       <div className="min-h-screen py-4 md:px-8 px-0 flex flex-col bg-fondpage">
         {/* Boutons settings et déconnexion alignés en haut */}
-        <div className=" flex-row justify-end items-center w-full px-8">
-          <div className=" items-center" title="Paramètres du compte"
+        <div className=" flex flex-row justify-between items-center w-full px-8">
+          <div className=" w-fit" title="Paramètres du compte"
             onClick={openParamModal}
           >
             <Icons
@@ -116,15 +117,9 @@ export default function Profil() {
             />
           </div>
 
-          {/* <div>
-            <Icons 
-              name='notification'
-              size={35}
-              className="ml-4 cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
-
-            />
-          </div> */}
-
+          <div className="md:hidden flex relative">
+        <NotificationList isOpenSideBar={true} />
+        </div>
         </div>
 
         {/* Contenu centré et réparti */}
