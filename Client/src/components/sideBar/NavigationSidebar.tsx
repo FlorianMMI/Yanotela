@@ -89,7 +89,8 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
         <Icon
           name={isopen ? `logo` : `logoIcon`}
           className="text-clrprincipal stroke-25"
-          size={isopen ? 150 : 20} // alors il prend la width et la height on tne peut pas lui donner que la width ou que la height voire ça plus tard
+          width={isopen ? 150 : 25}
+          height={isopen ? 50 : 25}
         />
       </Link>
 
