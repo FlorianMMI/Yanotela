@@ -17,33 +17,40 @@ export default function Infoprofil(Props: Props) {
 
   return (
     <>
-      <section className="flex items-center gap-4 p-6 rounded-md w-fit h-fit relative">
-        <article className="flex flex-col gap-1 items-center text-center">
-          <div className="grid grid-cols-3 items-center w-full">
-            <div></div> {/* Espace vide pour équilibrer */}
-            <h2 className="text-3xl md:text-xl font-title text-clrprincipal text-center">
-              {Props.name}
-            </h2>
-            <div className="flex justify-center">
-              <button
-                className="flex items-center justify-center"
-                onClick={handleModifyProfile}
-                aria-label="Modifier le profil"
-              >
-                <Icons
-                  name="modif"
-                  size={30}
-                  className="cursor-pointer rounded-full p-2 bg-primary text-white hover:shadow-md transition-all duration-300"
-                />
-              </button>
-            </div>
-          </div>
+      {/* Card-like layout on mobile, revert to inline style on md+ */}
+      <section className="bg-white rounded-xl shadow-lg p-6 w-full x-auto flex flex-row items-start gap-6 relative md:bg-transparent md:shadow-none md:p-6 md:w-fit">
 
-          <p className="text-lg font-bold text-clrprincipal ">
+        <article className="flex flex-col gap-3 text-left w-full">
+
+          <h2
+            className="text-2xl md:text-3xl font-title text-clrprincipal leading-tight mr-4"
+            style={({ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } as unknown) as React.CSSProperties}
+            title={Props.name}
+          >
+            {Props.name}
+          </h2>
+
+          <p className="text-base md:text-sm font-bold text-clrprincipal truncate max-w-full">
             @{Props.pseudo}
           </p>
-          <p className="text-lg font-bold text-clrprincipal ">{Props.email}</p>
+          <p className="text-base md:text-sm text-clrprincipal truncate max-w-full">
+            {Props.email}
+          </p>
+
         </article>
+
+        <button
+          className="flex-shrink-0 ml-2 flex items-center justify-center"
+          onClick={handleModifyProfile}
+          aria-label="Modifier le profil"
+        >
+          <Icons
+            name="modif"
+            size={34}
+            className="cursor-pointer rounded-full p-2 bg-primary text-white hover:shadow-md transition-all duration-300"
+          />
+        </button>
+
       </section>
     </>
   );
