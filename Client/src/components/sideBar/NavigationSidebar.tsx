@@ -5,8 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthState } from '@/hooks/useAuth';
-
+import NotificationList from '../notificationList/page';
 import Icon from '@/ui/Icon';
+
+
 
 
 interface NavigationSidebarProps {
@@ -26,6 +28,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       isActive: pathname.includes('/notes'),
     },
   ];
+
 
 
   return (
@@ -51,8 +54,8 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
             </p>
           </div> : ""}
           
-
         </Link>
+            <NotificationList />
       </div>
       <hr className="border-t border-element mx-8" />
       <nav className="flex-1 p-4">

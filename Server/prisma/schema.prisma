@@ -20,6 +20,7 @@ model User {
   email           String      @unique
   token           String      @unique
   is_verified     Boolean     @default(false)
+  deleted_at      DateTime?               
 
 }
 

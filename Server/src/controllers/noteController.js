@@ -33,7 +33,8 @@ export const noteController = {
 
             const permissions = await prisma.permission.findMany({
                 where: {
-                    userId: req.session.userId
+                    userId: req.session.userId,
+                    isAccepted: true
                 },
                 include: {
                     note: {
@@ -108,7 +109,8 @@ export const noteController = {
                     permissions: {
                         create: {
                             userId: authorId,
-                            role: 0 // Rôle 0 = Propriétaire
+                            role: 0,// Rôle 0 = Propriétaire
+                            isAccepted: true
                         }
                     }
                 }
@@ -219,4 +221,135 @@ export const noteController = {
         }
     },
 
+    getNoteNotAccepted : async (req, res) => {
+        const { userId } = req.session;
+        
+        if (!userId) {
+            return res.status(401).json({ message: 'Utilisateur non authentifié' });
+        }
+        
+        try {
+            // Rechercher les permissions non acceptées pour cet utilisateur et inclure la note liée
+            const permissions = await prisma.permission.findMany({
+                where: {
+                    userId: parseInt(userId),
+                    isAccepted: false
+                },
+                include: {
+                    note: {
+                        include: {
+                            author: true,
+                            modifier: true
+                        }
+                    }
+                }
+            });
+
+            // Extraire les notes depuis les permissions
+            const notes = permissions.map(perm => {
+                const note = perm.note;
+                return {
+                    id: note.id,
+                    Titre: note.Titre,
+                    Content: note.Content,
+                    author: note.author ? note.author.pseudo : null,
+                    modifier: note.modifier ? note.modifier.pseudo : null,
+                    ModifiedAt: note.ModifiedAt,
+                    userRole: perm.role,
+                    isAccepted: perm.isAccepted
+                };
+            });
+            console.log('[getNoteNotAccepted] Retrieved notes:', notes);
+            res.status(200).json({ notes });
+        }
+        catch (error) {
+            console.error('[getNoteNotAccepted] Error:', error);
+            res.status(500).json({ message: 'Erreur lors de la récupération de la note', error: error.message });
+        }
+    },
+
+    acceptInvitation: async (req, res) => {
+        const { id } = req.params;
+        const { userId } = req.session;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Utilisateur non authentifié' });
+        }
+
+        try {
+            const permission = await prisma.permission.updateMany({
+                where: {
+                    noteId: id,
+                    userId: userId,
+                    isAccepted: false
+                },
+                data: {
+                    isAccepted: true
+                }
+            });
+
+            if (permission.count === 0) {
+                return res.status(404).json({ message: 'Invitation non trouvée ou déjà acceptée' });
+            }
+            
+            res.status(200).json({ message: 'Invitation acceptée avec succès' }
+            );
+        }
+        catch (error) {
+            console.error('Erreur lors de l\'acceptation de l\'invitation:', error);
+            res.status(500).json({ message: 'Erreur lors de l\'acceptation de l\'invitation', error: error.message });
+        }
+    },
+
+        deleteInvitation: async (req, res) => {
+            const { id } = req.params;
+            const { userId } = req.session;
+
+            if (!userId) {
+                return res.status(401).json({ message: 'Utilisateur non authentifié' });
+            }
+
+            try {
+                // Cherche la permission liée à cette note et cet utilisateur
+                const permission = await prisma.permission.findFirst({
+                    where: {
+                        noteId: id,
+                        userId: parseInt(userId)
+                    }
+                });
+
+                if (!permission) {
+                    return res.status(404).json({ message: 'Invitation non trouvée' });
+                }
+
+                // Vérifier que la note existe et récupérer son auteur
+                const note = await prisma.note.findUnique({
+                    where: { id },
+                    select: { authorId: true }
+                });
+
+                if (!note) {
+                    return res.status(404).json({ message: 'Note non trouvée' });
+                }
+
+                // Autoriser la suppression si l'utilisateur est le destinataire de l'invitation ou l'auteur de la note
+                if (permission.userId !== parseInt(userId) && note.authorId !== parseInt(userId)) {
+                    return res.status(403).json({ message: 'Vous n\'avez pas la permission de supprimer cette invitation' });
+                }
+
+                // Supprimer l'invitation en utilisant deleteMany (le modèle Permission utilise une clé composite)
+                const deleted = await prisma.permission.deleteMany({
+                    where: { noteId: id, userId: parseInt(userId) }
+                });
+
+                if (deleted.count === 0) {
+                    return res.status(404).json({ message: 'Invitation non trouvée' });
+                }
+
+                res.status(200).json({ message: 'Invitation supprimée avec succès' });
+            } catch (error) {
+                console.error('Erreur lors de la suppression de l\'invitation:', error);
+                res.status(500).json({ message: 'Erreur lors de la suppression de l\'invitation', error: error.message });
+            }
+        }
 }

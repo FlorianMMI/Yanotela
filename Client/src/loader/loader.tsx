@@ -539,3 +539,74 @@ export async function RemovePermission(noteId: string, userId: number): Promise<
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
+
+// ============== NOTIFICATION  FUNCTIONS ==============
+
+export async function GetNotifications(): Promise<{ success: boolean; notes?: any[]; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/notification/get`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json().catch(() => ({}));
+            return { success: true, notes: data.notes || [] };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la récupération des notifications' };
+        }
+    } catch (error) {
+        console.error('Erreur GetNotifications:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function AcceptNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/notification/accept/${invitationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json().catch(() => ({}));
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de l\'acceptation de l\'invitation' };
+        }
+    } catch (error) {
+        console.error('Erreur AcceptNotification:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function RefuseNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/notification/refuse/${invitationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json().catch(() => ({}));
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors du refus de l\'invitation' };
+        }
+    } catch (error) {
+        console.error('Erreur RefuseNotification:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}

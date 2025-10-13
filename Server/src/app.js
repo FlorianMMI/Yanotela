@@ -13,6 +13,7 @@ import {corsConfig} from './config/corsConfig.js';
 import authRoutes from './routes/authRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import permissionRoutes from './routes/permissionRoutes.js';
 import googleAuthRoutes from './routes/googleAuthRoutes.js';
 import helmet from 'helmet';
@@ -46,6 +47,7 @@ app.use('/note', noteRoutes);
 app.use('/user', userRoutes);
 app.use('/permission', permissionRoutes);
 app.use('/auth', googleAuthRoutes); // Routes Google OAuth
+app.use('/notification', notificationRoutes);
 
 // Route de health check pour Docker
 app.get('/health', (req, res) => {
