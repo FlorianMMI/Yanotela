@@ -104,7 +104,7 @@ export const noteController = {
                     Titre,
                     Content,
                     authorId,
-                    modifierId: authorId, // Le fondateur est aussi le premier modificateur
+                    modifierId: authorId, // Le propriétaire est aussi le premier modificateur
                     permissions: {
                         create: {
                             userId: authorId,
