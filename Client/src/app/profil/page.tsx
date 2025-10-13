@@ -93,21 +93,21 @@ export default function Profil() {
       : userInfo?.pseudo || "Utilisateur";
 
 
-      const openParamModal = () => {
-        setIsParamModalOpen(true);
-    };
+  const openParamModal = () => {
+    setIsParamModalOpen(true);
+  };
 
-    const closeParamModal = () => {
-        setIsParamModalOpen(false);
-    };
-      
+  const closeParamModal = () => {
+    setIsParamModalOpen(false);
+  };
+
   return (
     <>
-    <div className="py-4 md:px-8 px-0 flex flex-col items-center justify-between  bg-fondpage">
+      <div className="min-h-screen py-4 md:px-8 px-0 flex flex-col bg-fondpage">
         {/* Boutons settings et déconnexion alignés en haut */}
         <div className=" flex-row justify-end items-center w-full px-8">
           <div className=" items-center" title="Paramètres du compte"
-          onClick ={openParamModal}
+            onClick={openParamModal}
           >
             <Icons
               name="settings"
@@ -128,7 +128,8 @@ export default function Profil() {
         </div>
 
         {/* Contenu centré et réparti */}
-        <div className="flex-1 flex flex-col justify-between items-center text-center gap-20 w-full">
+        <div className="flex-1 flex flex-col justify-between items-center text-center w-full">
+
           <div className="flex md:hidden">
             {userInfo && (
               <InfoProfil
@@ -142,30 +143,35 @@ export default function Profil() {
           <div className="hidden md:flex w-full">
             <ModificationProfil />
           </div>
-          <div className="flex flex-col md:flex-row gap-8 w-fit md:w-full md:items-start items-center">
+
+          <div className="flex flex-col md:flex-row gap-8 w-full p-4 md:w-full md:items-start items-center mb-6">
+
             <div className="flex flex-col gap-4 items-center w-fit">
-            <p className="text-clrprincipal font-gant text-center text-4xl w-[198px]">
-              Vos notes
-            </p>
+              <p className="text-clrprincipal font-gant text-center text-2xl w-full">
+                Vos notes
+              </p>
             </div>
+
             <div className="flex flex-col gap-4 items-center w-full">
               <TotalNotes totalNotes={totalNotes} />
             </div>
+
             {/* Bouton déconnexion mobile en bas */}
-          <div className="flex flex-col items-center justify-center w-full">
-            
+            <div className="flex flex-col items-center justify-center w-full max-w-1/2">
               <Logout />
-            
+            </div>
+
           </div>
-          </div>
-          
+
         </div>
+
       </div>
-            <AnimatePresence>
-                {isParamModalOpen && (
-                    <ParamModal onClose={closeParamModal} />
-                )}
-            </AnimatePresence>
+
+      <AnimatePresence>
+        {isParamModalOpen && (
+          <ParamModal onClose={closeParamModal} />
+        )}
+      </AnimatePresence>
 
 
     </>
