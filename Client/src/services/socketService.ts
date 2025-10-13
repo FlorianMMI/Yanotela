@@ -12,49 +12,20 @@ class SocketService {
   /**
    * Obtenir ou créer la connexion socket globale
    */
-  markRoomLeft() {
-    this.hasJoinedRoom = false;
-  }
+  private getOrCreateSocket(): Socket {
+    if (this.socket && this.socket.connected) {
+      return this.socket;
+    }
 
-  /**
-   * Obtenir ou créer la connexion socket
-   * ✅ CORRECTION: Meilleure gestion du cycle de vie et reconnexion
-   */
-  getSocket(noteId: string, username: string): Socket | null {
     const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-    // ✅ Si on est déjà connecté à la même note ET que le socket est actif, le retourner
-    if (this.socket && this.currentNoteId === noteId && (this.socket.connected || this.isConnecting)) {
-      return this.socket;
-    }
-
-    // ✅ Si on change de note, bien nettoyer l'ancienne connexion
-    if (this.socket && this.currentNoteId !== noteId) {
-      this.disconnect();
-    }
-
-    // ✅ Si un socket existe mais est déconnecté pour la même note, le réutiliser
-    if (this.socket && this.currentNoteId === noteId && !this.socket.connected && !this.isConnecting) {
-      this.isConnecting = true;
-      this.socket.connect();
-      return this.socket;
-    }
-
-    // Éviter les créations multiples simultanées
-    if (this.isConnecting && this.socket) {
-      return this.socket;
-    }
-
-    // Créer un nouveau socket
-    this.isConnecting = true;
-    
     this.socket = io(SOCKET_URL, {
       withCredentials: true,
-      transports: ['websocket', 'polling'], // ✅ Permettre fallback sur polling
-      reconnection: true, // ✅ Activer la reconnexion auto
-      reconnectionAttempts: 5,
+      transports: ['websocket', 'polling'], // WebSocket prioritaire, polling en fallback
+      reconnection: true,
+      reconnectionAttempts: 10,
       reconnectionDelay: 1000,
-      timeout: 10000,
+      timeout: 20000,
     });
 
     this.socket.on('connect', () => {
@@ -91,19 +62,9 @@ class SocketService {
       socket.on('noteInit', onInit);
     }
 
-    // ✅ Gérer la reconnexion
-    this.socket.on('reconnect', (attemptNumber) => {
-      console.log(`🔄 Socket reconnecté après ${attemptNumber} tentative(s)`);
-      this.hasJoinedRoom = false; // Reset pour rejoindre la room
-    });
-
-    // Écouter les erreurs
-    this.socket.on('connect_error', (error) => {
-      console.error('❌ Erreur connexion socket:', error);
-      this.isConnecting = false;
-    });
-
-    return this.socket;
+    // Rejoindre la room
+    socket.emit('joinNote', { noteId });
+    console.log(`📥 Demande de join pour note ${noteId}`);
   }
 
   /**
