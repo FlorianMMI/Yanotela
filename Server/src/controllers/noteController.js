@@ -231,7 +231,6 @@ export const noteController = {
     },
 
     getNoteNotAccepted : async (req, res) => {
-        const { id } = req.params;
         const { userId } = req.session;
         
         if (!userId) {
@@ -239,16 +238,37 @@ export const noteController = {
         }
         
         try {
-            const notes = await prisma.note.findMany({
-                where: { 
-                    userId: req.session.userId,
+            // Rechercher les permissions non acceptées pour cet utilisateur et inclure la note liée
+            const permissions = await prisma.permission.findMany({
+                where: {
+                    userId: parseInt(userId),
                     isAccepted: false
-                 },
+                },
                 include: {
-                    author: true,
-                    modifier: true
+                    note: {
+                        include: {
+                            author: true,
+                            modifier: true
+                        }
+                    }
                 }
             });
+
+            // Extraire les notes depuis les permissions
+            const notes = permissions.map(perm => {
+                const note = perm.note;
+                return {
+                    id: note.id,
+                    Titre: note.Titre,
+                    Content: note.Content,
+                    author: note.author ? note.author.pseudo : null,
+                    modifier: note.modifier ? note.modifier.pseudo : null,
+                    ModifiedAt: note.ModifiedAt,
+                    userRole: perm.role,
+                    isAccepted: perm.isAccepted
+                };
+            });
+            console.log('[getNoteNotAccepted] Retrieved notes:', notes);
             res.status(200).json({ notes });
         }
         catch (error) {
@@ -326,10 +346,14 @@ export const noteController = {
                     return res.status(403).json({ message: 'Vous n\'avez pas la permission de supprimer cette invitation' });
                 }
 
-                // Supprimer l'invitation
-                await prisma.permission.delete({
-                    where: { id: permission.id }
+                // Supprimer l'invitation en utilisant deleteMany (le modèle Permission utilise une clé composite)
+                const deleted = await prisma.permission.deleteMany({
+                    where: { noteId: id, userId: parseInt(userId) }
                 });
+
+                if (deleted.count === 0) {
+                    return res.status(404).json({ message: 'Invitation non trouvée' });
+                }
 
                 res.status(200).json({ message: 'Invitation supprimée avec succès' });
             } catch (error) {

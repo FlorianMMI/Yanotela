@@ -536,7 +536,7 @@ export async function RemovePermission(noteId: string, userId: number): Promise<
 
 // ============== NOTIFICATION  FUNCTIONS ==============
 
-export async function GetNotifications(): Promise<{ success: boolean; notifications?: any[]; error?: string }> {
+export async function GetNotifications(): Promise<{ success: boolean; notes?: any[]; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/notification/get`, {
             method: 'GET',
@@ -548,7 +548,7 @@ export async function GetNotifications(): Promise<{ success: boolean; notificati
 
         if (response.ok) {
             const data = await response.json().catch(() => ({}));
-            return { success: true, notifications: data.notifications || [] };
+            return { success: true, notes: data.notes || [] };
         } else {
             const errorData = await response.json().catch(() => ({}));
             return { success: false, error: errorData.message || 'Erreur lors de la récupération des notifications' };

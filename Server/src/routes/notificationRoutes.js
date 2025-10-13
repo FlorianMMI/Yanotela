@@ -13,9 +13,9 @@ router.get('/get', requireAuth, noteController.getNoteNotAccepted);
 router.get('/get/:id', requireAuth, noteController.acceptInvitation);
 
 // Route Post pour accepter une invitation (authentification requise)
-router.post('/accept/:id', requireWriteAccess, noteController.acceptInvitation);
+router.post('/accept/:id', requireAuth, noteController.acceptInvitation);
 
 // Route Post pour refuser une invitation (authentification requise)
-router.post('/refuse/:id', requireWriteAccess, noteController.deleteInvitation);
+router.post('/refuse/:id', requireAuth, noteController.deleteInvitation);
 
 export default router;

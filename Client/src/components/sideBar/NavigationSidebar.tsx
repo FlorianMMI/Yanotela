@@ -9,6 +9,8 @@ import NotificationList from '../notificationList/page';
 import Icon from '@/ui/Icon';
 
 
+
+
 interface NavigationSidebarProps {
   user: AuthState['user'];
   isopen?: boolean;
@@ -26,6 +28,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       isActive: pathname.includes('/notes'),
     },
   ];
+
 
 
   return (

@@ -14,7 +14,7 @@ export default function NotificationList() {
         setLoading(true);
         try {
             const result = await GetNotifications();
-            setNotifications(result.notifications ?? []);
+            setNotifications(result.notes ?? []);
         } catch (err) {
             console.error("Error fetching notifications", err);
             setNotifications([]);
@@ -23,12 +23,17 @@ export default function NotificationList() {
         }
     };
 
+    // assure que le panneau est fermé au montage
+    useEffect(() => {
+        setOpen(false);
+    }, []);
+
     useEffect(() => {
         // preload when opening
         if (open && notifications.length === 0) {
             fetchNotifications();
         }
-    }, [open]);
+    }, [open, notifications.length]);
 
     return (
         <div className="flex flex-col gap-3">
@@ -42,19 +47,61 @@ export default function NotificationList() {
 
             {open ? (
                 loading ? (
-                    <div className="py-4 text-element">Chargement...</div>
-                ) : (
+                    <div className="bg-white rounded-xl min-w-2xs w-sm shadow-lg overflow-hidden relative h-auto flex flex-col items-center justify-center p-6" aria-busy="true">
+                        <Icon name="notification" size={36} className="text-gray-400 mb-3 animate-spin" />
+                        <p className="text-gray-600 mb-4">Chargement...</p>
+                        <button
+                            className="px-3 py-1 bg-[#882626] text-white rounded opacity-60 cursor-not-allowed"
+                            onClick={fetchNotifications}
+                            aria-label="Rafraîchir les notifications"
+                            disabled
+                        >
+                            Rafraîchir
+                        </button>
+                    </div>
+                ) : notifications.length > 0 ? (
                     <div className="bg-white rounded-xl min-w-2xs w-sm shadow-lg overflow-hidden relative h-auto flex flex-col">
-                        {notifications.map((n: any) => (
-                            <Notification key={n.id} title={n.title} author={n.author} />
-                        ))}
+                        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-gray-800">Notification</h3>
+                            <span className="text-sm text-gray-500">{notifications.length}</span>
+                        </div>
+
+                        <div className="p-4 space-y-3 max-h-72 overflow-y-auto">
+                            {notifications.map((n: any) => (
+                                <Notification
+                                    key={n.id}
+                                    id={n.id}
+                                    title={n.Titre}
+                                    author={n.author}
+                                    onNotificationUpdate={fetchNotifications}
+                                />
+                            ))}
+                        </div>
+
+                        <div className="px-4 py-3 border-t border-gray-100 flex justify-end">
+                            <button
+                                className="px-3 py-1 bg-[#882626] text-white rounded hover:bg-[#792121] transition-colors"
+                                onClick={fetchNotifications}
+                                aria-label="Rafraîchir les notifications"
+                            >
+                                Rafraîchir
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-xl min-w-2xs w-sm shadow-lg overflow-hidden relative h-auto flex flex-col items-center justify-center p-6">
+                        <Icon name="notification" size={36} className="text-gray-400 mb-3" />
+                        <p className="text-gray-600 mb-4">Aucune notification</p>
+                        <button
+                            className="px-3 py-1 bg-[#882626] text-white rounded hover:bg-[#792121] transition-colors"
+                            onClick={fetchNotifications}
+                            aria-label="Rafraîchir les notifications"
+                        >
+                            Rafraîchir
+                        </button>
                     </div>
                 )
-            ) : (
-                <div className="bg-white rounded-xl min-w-2xs w-sm shadow-lg overflow-hidden relative h-auto flex flex-col">
-                    <p>Aucune notification</p>
-                </div>
-            )}
+            ) : null}
         </div>
     );
 }
