@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { AuthState } from '@/hooks/useAuth';
 import NotificationList from '../notificationList/page';
 import Icon from '@/ui/Icon';
+import FlashNoteButton from '@/ui/flash-note-button';
 
 
 
@@ -58,6 +59,13 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
             <NotificationList isOpenSideBar={isopen} />
       </div>
       <hr className="border-t border-element mx-8" />
+      <FlashNoteButton 
+        isOpen={isopen} 
+        onClick={() => {
+          // TODO: Ajouter la logique pour Flash Note
+          console.log('Flash Note clicked');
+        }}
+      />
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navItems.map((item) => (
