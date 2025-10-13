@@ -70,59 +70,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // Unwrap params using React.use()
   const { id } = use(params);
 
-  // ✅ Hook pour déconnecter le socket quand on quitte la page note
-  // useEffect(() => {
-  //   return () => {
-  //     socketService.disconnect();
-  //   };
-  // }, [id]);
-
-  // Reload the page once on first visit to ensure Lexical and collaboration initialize correctly.
-  // Uses sessionStorage per-note to avoid reload loops. This is a client-only effect.
-  // useEffect(() => {
-  //   try {
-  //     const key = `yanotela:notes:reload:${id}`;
-  //     const alreadyReloaded = sessionStorage.getItem(key);
-  //     if (!alreadyReloaded) {
-  //       // mark as reloaded to avoid loops and reload once
-  //       sessionStorage.setItem(key, '1');
-  //       // small timeout to allow navigation to settle before reloading
-  //       window.setTimeout(() => {
-  //         // Use location.replace to avoid adding an extra history entry
-  //         window.location.replace(window.location.href);
-  //       }, 100);
-  //     }
-  //   } catch (e) {
-  //     // sessionStorage may be unavailable in some environments; ignore failures
-  //     console.warn('One-time reload skipped (sessionStorage unavailable):', e);
-  //   }
-  // }, [id]);
-
-  // Hook pour détecter les changements de taille d'écran
-  // useEffect(() => {
-  //   const handleResize = () => {
-  //     // Force le rechargement des données quand on change de taille d'écran
-  //     setLastFetchTime(Date.now());
-  //   };
-
-  //   // Écouter les mises à jour de titre depuis le Breadcrumb
-  //   const handleTitleUpdate = (event: CustomEvent) => {
-  //     const { noteId, title } = event.detail;
-  //     if (noteId === id) {
-  //       setNoteTitle(title);
-  //     }
-  //   };
-
-  //   window.addEventListener('resize', handleResize);
-  //   window.addEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
-    
-  //   return () => {
-  //     window.removeEventListener('resize', handleResize);
-  //     window.removeEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
-  //   };
-  // }, [id]);
-
-
   // Debounced emit pour le titre (synchronisation rapide quasi-instantanée)
   const debouncedTitleEmit = useDebouncedCallback(
     (titre: string) => {
@@ -324,8 +271,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     namespace: "Editor",
     theme,
     onError,
-    // Utiliser l'état initial si disponible
-    editorState: initialEditorState ? initialEditorState : undefined,
+    // ✅ NE PAS utiliser initialEditorState - Le contenu vient de Yjs via CollaborationPlugin
+    // Cela évite les conflits entre BDD et Yjs lors de la synchro initiale
+    editorState: undefined,
   };
 
   const focusAtEnd = useCallback(() => {

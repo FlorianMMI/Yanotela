@@ -170,24 +170,44 @@ io.on('connection', (socket) => {
       socket.join(roomName);
       console.log(`✅ User ${socket.userPseudo} a rejoint room ${roomName}`);
 
-      // Compter les utilisateurs connectés dans la room
-      const socketsInRoom = await io.in(roomName).allSockets();
-      const userCount = socketsInRoom.size;
+      // ✅ CORRECTION CRITIQUE: Obtenir/créer le document Yjs et attendre l'initialisation
+      const yDoc = getOrCreateYDoc(noteId, note.Content);
+      
+      // ✅ ATTENDRE que le document soit complètement initialisé
+      // On utilise setImmediate pour s'assurer que toutes les opérations synchrones Yjs sont terminées
+      setImmediate(async () => {
+        try {
+          // ✅ Compter les VRAIS utilisateurs connectés dans la room Socket.IO  
+          const socketsInRoom = await io.in(roomName).allSockets();
+          const userCount = socketsInRoom.size;
+          
+          // Ajouter à la tracking list pour le cleanup (optionnel)
+          addUserToNote(noteId, socket.id);
 
-      // Envoyer l'état initial de la note au client qui vient de rejoindre
-      socket.emit('noteInit', {
-        noteId,
-        titre: note.Titre,
-        content: note.Content,
-        userCount,
-        isReadOnly
-      });
+          // ✅ MAINTENANT envoyer l'état complet du document au client
+          const stateVector = Y.encodeStateAsUpdate(yDoc);
+          const finalContent = yDoc.getText('content').toString();
+          
+          console.log(`🔄 Sync envoyé pour note ${noteId}: ${finalContent.length} caractères, ${userCount} utilisateur(s)`);
+          
+          socket.emit('sync', {
+            noteId,
+            state: Buffer.from(stateVector).toString('base64'),
+            userCount,
+            isReadOnly
+          });
 
-      // Notifier les autres utilisateurs dans la room qu'un nouvel utilisateur a rejoint
-      socket.to(roomName).emit('userJoined', {
-        userId: socket.userId,
-        pseudo: socket.userPseudo,
-        userCount
+          // Notifier les autres utilisateurs avec le nombre réel
+          socket.to(`note-${noteId}`).emit('userJoined', {
+            userId: socket.userId,
+            pseudo: socket.userPseudo,
+            userCount
+          });
+          
+        } catch (syncError) {
+          console.error('Erreur lors de la synchronisation:', syncError);
+          socket.emit('error', { message: 'Erreur lors de la synchronisation' });
+        }
       });
 
     } catch (error) {
@@ -196,10 +216,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  /**
-   * Événement: titleUpdate
-   * Un utilisateur change le titre de la note
-   */
   socket.on('titleUpdate', async ({ noteId, titre }) => {
     const roomName = `note-${noteId}`;
     
@@ -209,11 +225,28 @@ io.on('connection', (socket) => {
     }
 
     try {
-      // Mettre à jour le titre en base de données
-      await prisma.note.update({
-        where: { id: noteId },
-        data: { Titre: titre, ModifiedAt: new Date() }
+      // ✅ IMPORTANTE: Vérifier que le socket est bien dans la room
+      const roomName = `note-${noteId}`;
+      if (!socket.rooms.has(roomName)) {
+        console.warn(`⚠️ Socket ${socket.id} essaie d'update note ${noteId} sans être dans la room`);
+        return;
+      }
+
+      // Obtenir le document Yjs existant
+      const yDoc = getOrCreateYDoc(noteId);
+      
+      // Appliquer la mise à jour au document serveur
+      const updateBuffer = Buffer.from(update, 'base64');
+      Y.applyUpdate(yDoc, updateBuffer);
+      
+      // ✅ CRITIQUE: Propager la mise à jour à TOUS les autres clients de la room
+      // Utiliser broadcast pour éviter de renvoyer à l'expéditeur
+      socket.to(roomName).emit('yjsUpdate', {
+        noteId,
+        update // Transmettre l'update tel quel
       });
+      
+      console.log(`📡 Update propagé pour note ${noteId} vers ${socket.to(roomName).compress(false).adapter.rooms.get(roomName)?.size || 0} autres clients`);
 
       // Diffuser le changement de titre à tous les autres utilisateurs dans la room
       socket.to(roomName).emit('titleUpdate', {
@@ -225,7 +258,8 @@ io.on('connection', (socket) => {
 
       console.log(`📝 Titre mis à jour par ${socket.userPseudo}: "${titre}"`);
     } catch (error) {
-      console.error('❌ Erreur lors de titleUpdate:', error);
+      console.error('Erreur lors de yjsUpdate:', error);
+      socket.emit('error', { message: 'Erreur lors de la synchronisation' });
     }
   });
 
