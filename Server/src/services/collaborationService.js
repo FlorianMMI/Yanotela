@@ -10,8 +10,8 @@ const activeDocuments = new Map();
 // Map<noteId, Set<socketId>> - Pour tracker les utilisateurs par note
 const activeUsers = new Map();
 
-// Intervalle de sauvegarde automatique (en ms) - 30 secondes
-const AUTO_SAVE_INTERVAL = 30000;
+// Intervalle de sauvegarde automatique (en ms) - 3 secondes
+const AUTO_SAVE_INTERVAL = 3000;
 
 // Map<noteId, timeoutId> - Pour gérer les sauvegardes différées
 const savePending = new Map();
