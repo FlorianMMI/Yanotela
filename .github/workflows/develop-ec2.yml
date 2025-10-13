@@ -40,6 +40,8 @@ jobs:
           context: ./Client
           platforms: linux/amd64
           push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://13.39.48.72:3001
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
             ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
