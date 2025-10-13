@@ -1,0 +1,137 @@
+name: Deploy App to EC2 (Development)
+
+on:
+  push:
+    branches: [ "Develop" ]
+
+env:
+  DOCKER_USERNAME: jefee
+  DOCKER_FRONTEND_REPO: jefee/yanotela-frontend-dev
+  DOCKER_BACKEND_REPO: jefee/yanotela-backend-dev
+  EC2_HOST: 13.39.48.72
+  EC2_USER: ubuntu
+  DEPLOY_PATH: /var/www/yanotela
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Development
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push frontend image (dev)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Client
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.DOCKER_FRONTEND_REPO }}:develop
+            ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push backend image (dev)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Server
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.DOCKER_BACKEND_REPO }}:develop
+            ${{ env.DOCKER_BACKEND_REPO }}:develop-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        continue-on-error: false
+
+      - name: Deploy to Development EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ${{ env.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "🚀 Starting deployment to DEVELOPMENT environment"
+            echo "✅ SSH connection successful!"
+            whoami
+            pwd
+            ls -la /var/www/yanotela/ || echo "Creating deployment directory..."
+            
+            # Create deployment directory if it doesn't exist
+            sudo mkdir -p ${{ env.DEPLOY_PATH }}
+            cd ${{ env.DEPLOY_PATH }}
+            
+            # Update package cache (Ubuntu-specific)
+            sudo apt-get update -qq
+            
+            # Pull latest development images
+            sudo docker compose -f docker-compose.dev.yml pull || echo "⚠️ Docker compose file not found, will create basic setup"
+            
+            # Load environment variables and restart services
+            if [ -f .env.dev ]; then
+              set -a
+              source .env.dev
+              set +a
+              echo "✅ Development environment variables loaded"
+            elif [ -f .env.prod ]; then
+              set -a
+              source .env.prod
+              set +a
+              echo "✅ Using production environment variables for development"
+            else
+              echo "⚠️ No environment file found - using default environment"
+            fi
+            
+            # Recreate containers with new images (using develop tag)
+            sudo -E DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml up -d --force-recreate
+            
+            # Wait for services to be healthy
+            echo "Waiting for services to start..."
+            sleep 30
+            
+            # Check if services are running
+            if sudo docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
+              echo "✅ Development deployment successful!"
+              
+              # Test frontend
+              if curl -f -s -m 10 http://localhost:3000 > /dev/null; then
+                echo "✅ Frontend is responding on development server"
+              else
+                echo "❌ Frontend is not responding"
+                sudo docker compose -f docker-compose.prod.yml logs frontend-prod
+                exit 1
+              fi
+              
+              # Test backend
+              if curl -f -s -m 10 http://localhost:3001 > /dev/null; then
+                echo "✅ Backend is responding on development server"
+              else
+                echo "❌ Backend is not responding"
+                sudo docker compose -f docker-compose.prod.yml logs backend-prod
+                exit 1
+              fi
+              
+              echo "🎉 All services are healthy on DEVELOPMENT environment!"
+              echo "🌐 Access your development app at:"
+              echo "   Frontend: http://${{ env.EC2_HOST }}:3000"
+              echo "   Backend:  http://${{ env.EC2_HOST }}:3001"
+            else
+              echo "❌ Services failed to start on development server"
+              sudo docker compose -f docker-compose.prod.yml logs
+              exit 1
+            fi

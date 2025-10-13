@@ -14,36 +14,53 @@ sudo mv ~/docker-compose.prod.yml .
 # 3. Make script executable
 sudo chmod +x deploy-ec2.sh
 
-# 4. Create production environment file
-echo "📝 Creating .env.prod file..."
-cat > .env.prod << 'EOF'
-# Database Configuration
-DB_USER=yanotela_user
-DB_PASSWORD=$(openssl rand -base64 32)
-DB_NAME=yanotela_prod
+#!/bin/bash
+# Development EC2 Setup Commands
 
-# Redis Configuration  
-REDIS_PASSWORD=$(openssl rand -base64 32)
+echo "🚀 Setting up development environment on EC2..."
 
-# Session Configuration
-SESSION_SECRET=$(openssl rand -base64 64)
+# 1. Navigate to development directory
+cd ~/yanotela-dev
 
-# Email Configuration (UPDATE THESE!)
-MAIL_SERVICE=gmail
-MAIL_USER=your_email@gmail.com
-MAIL_PASSWORD=your_app_password_here
+# 2. Move development Docker Compose file
+echo "📦 Setting up Docker Compose for development..."
+sudo mv ~/docker-compose.dev.yml .
 
-# Docker Configuration (UPDATE THIS!)
-DOCKER_USERNAME=your_dockerhub_username
-IMAGE_TAG=latest
+# 3. Make deployment script executable
+chmod +x deploy/scripts/build-and-push-dev.sh
+
+# 4. Create development environment file
+echo "📝 Creating .env.dev file..."
+cat > .env.dev << 'EOF'
+# Development Environment Configuration
+DATABASE_URL="postgresql://yanotela_dev:dev_secure_password_123@localhost:5432/yanotela_dev"
+NODE_ENV=development
+PORT=3001
+SESSION_SECRET="dev_session_secret_change_this_in_production"
+
+# Database
+POSTGRES_DB=yanotela_dev
+POSTGRES_USER=yanotela_dev
+POSTGRES_PASSWORD=dev_secure_password_123
+
+# Application URLs  
+CLIENT_URL=http://13.39.48.72:3000
+SERVER_URL=http://13.39.48.72:3001
+
+# Development settings
+DEBUG=true
+LOG_LEVEL=debug
 EOF
 
-echo "⚠️  IMPORTANT: Edit .env.prod and update:"
-echo "   - MAIL_USER (your email)"
-echo "   - MAIL_PASSWORD (your app password)"
-echo "   - DOCKER_USERNAME (your Docker Hub username)"
+echo "✅ Development environment configured!"
 echo ""
-echo "Run: sudo nano .env.prod"
+echo "⚠️  IMPORTANT: Edit .env.dev and update:"
+echo "  - POSTGRES_PASSWORD with a secure password"
+echo "  - SESSION_SECRET with a random secret"
+echo "  - Database connection details"
+echo "  - Email configuration if needed"
 echo ""
-echo "After editing .env.prod, run the deployment:"
-echo "sudo DOCKER_USERNAME=your_username IMAGE_TAG=latest ./deploy-ec2.sh"
+echo "Run: sudo nano .env.dev"
+echo ""
+echo "After editing .env.dev, run the deployment:"
+echo "sudo docker compose -f docker-compose.dev.yml up -d"

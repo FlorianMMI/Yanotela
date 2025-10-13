@@ -1,17 +1,16 @@
 #!/bin/bash
-# Script to build and push Docker images to Docker Hub
-# Usage: ./build-and-push.sh [tag] [dockerhub_username]
+# Script to build and push Docker images to Docker Hub (Development)
+# Usage: ./build-and-push-dev.sh [tag] [dockerhub_username]
 
 set -e
 
 # Configuration
-TAG=${1:-"latest"}
-DOCKER_USERNAME=${2:-"yourusername"}
-DOCKER_REPO_FRONTEND="${DOCKER_USERNAME}/yanotela-frontend"
-DOCKER_REPO_BACKEND="${DOCKER_USERNAME}/yanotela-backend"
-DOCKER_REPO_DB="${DOCKER_USERNAME}/yanotela-db"
+TAG=${1:-"develop"}
+DOCKER_USERNAME=${2:-"jefee"}
+DOCKER_REPO_FRONTEND="${DOCKER_USERNAME}/yanotela-frontend-dev"
+DOCKER_REPO_BACKEND="${DOCKER_USERNAME}/yanotela-backend-dev"
 
-echo "🐳 Building and pushing Docker images to Docker Hub"
+echo "🐳 Building and pushing Docker images to Docker Hub (DEVELOPMENT)"
 echo "📋 Configuration:"
 echo "   - Tag: $TAG"
 echo "   - Docker Hub Username: $DOCKER_USERNAME"
@@ -39,44 +38,44 @@ fi
 echo ""
 echo "🏗️  Building Frontend image..."
 docker build -t "$DOCKER_REPO_FRONTEND:$TAG" \
-    -t "$DOCKER_REPO_FRONTEND:latest" \
+    -t "$DOCKER_REPO_FRONTEND:latest-dev" \
     --platform linux/amd64 \
     ./Client
 
 echo "📤 Pushing Frontend image to Docker Hub..."
 docker push "$DOCKER_REPO_FRONTEND:$TAG"
-docker push "$DOCKER_REPO_FRONTEND:latest"
+docker push "$DOCKER_REPO_FRONTEND:latest-dev"
 
 # Build and push backend
 echo ""
 echo "🏗️  Building Backend image..."
 docker build -t "$DOCKER_REPO_BACKEND:$TAG" \
-    -t "$DOCKER_REPO_BACKEND:latest" \
+    -t "$DOCKER_REPO_BACKEND:latest-dev" \
     --platform linux/amd64 \
     ./Server
 
 echo "📤 Pushing Backend image to Docker Hub..."
 docker push "$DOCKER_REPO_BACKEND:$TAG"
-docker push "$DOCKER_REPO_BACKEND:latest"
+docker push "$DOCKER_REPO_BACKEND:latest-dev"
 
 # Display image sizes
 echo ""
 echo "📊 Image sizes:"
-docker images | grep "yanotela-" | head -4
+docker images | grep "yanotela-.*-dev" | head -4
 
 echo ""
-echo "✅ All images have been successfully pushed to Docker Hub!"
+echo "✅ All development images have been successfully pushed to Docker Hub!"
 echo ""
 echo "📋 Summary:"
 echo "   Frontend: $DOCKER_REPO_FRONTEND:$TAG"
 echo "   Backend: $DOCKER_REPO_BACKEND:$TAG"
 echo ""
 echo "🔗 View your images at:"
-echo "   - https://hub.docker.com/r/$DOCKER_USERNAME/yanotela-frontend"
-echo "   - https://hub.docker.com/r/$DOCKER_USERNAME/yanotela-backend"
+echo "   - https://hub.docker.com/r/$DOCKER_USERNAME/yanotela-frontend-dev"
+echo "   - https://hub.docker.com/r/$DOCKER_USERNAME/yanotela-backend-dev"
 echo ""
 echo "🚀 Next steps:"
-echo "   1. Configure your EC2 instance"
-echo "   2. Copy docker-compose.prod.yml to EC2"
-echo "   3. Run: docker-compose -f docker-compose.prod.yml pull"
-echo "   4. Run: docker-compose -f docker-compose.prod.yml up -d"
+echo "   1. Configure your development EC2 instance"
+echo "   2. Copy docker-compose.dev.yml to EC2"
+echo "   3. Run: docker compose -f docker-compose.dev.yml pull"
+echo "   4. Run: docker compose -f docker-compose.dev.yml up -d"
