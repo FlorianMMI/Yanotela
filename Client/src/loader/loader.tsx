@@ -365,7 +365,7 @@ interface DeleteAccountResponse {
 
 export async function DeleteAccount(reason?: string): Promise<DeleteAccountResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         
         const response = await fetch(`${apiUrl}/user/delete`, {
             method: 'DELETE',
@@ -396,7 +396,7 @@ export async function DeleteAccount(reason?: string): Promise<DeleteAccountRespo
 
 export async function CancelAccountDeletion(): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         
         const response = await fetch(`${apiUrl}/user/cancel-deletion`, {
             method: 'POST',
@@ -422,7 +422,7 @@ export async function CancelAccountDeletion(): Promise<AuthResponse> {
 
 export async function updateUser(data: { prenom?: string; nom?: string; pseudo?: string; email?: string; password?: string; newPassword?: string; }): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         
         const response = await fetch(`${apiUrl}/user/update`, {
             method: 'POST',
