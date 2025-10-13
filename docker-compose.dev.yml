@@ -48,9 +48,11 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  backend-dev:
-    image: ${DOCKER_USERNAME:-jefee}/yanotela-backend-dev:${IMAGE_TAG:-develop}
-    container_name: yanotela-backend-dev
+  backend-prod:
+    build: 
+      context: ./Server
+      target: runner
+    container_name: yanotela-backend-prod
     ports:
       - "3001:3001"
     environment:

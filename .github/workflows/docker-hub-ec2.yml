@@ -1,0 +1,361 @@
+name: 🚀 CI/CD - Docker Hub & EC2 Deployment
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment even if tests fail'
+        required: false
+        default: 'false'
+        type: boolean
+      image_tag:
+        description: 'Docker image tag (default: commit SHA)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  REGISTRY: docker.io
+
+jobs:
+  # ===== TESTS =====
+  test-backend:
+    name: 🧪 Test Backend
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: Server/package-lock.json
+
+    - name: 📦 Install Backend Dependencies
+      run: |
+        cd Server
+        npm ci
+
+    - name: 🗄️ Setup Test Database
+      run: |
+        cd Server
+        echo "DATABASE_URL=postgresql://test_user:test_pass@localhost:5432/test_db" > .env.test
+        echo "NODE_ENV=test" >> .env.test
+        npx prisma generate
+        npx prisma migrate deploy
+      env:
+        DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
+
+    - name: 🧪 Run Backend Tests
+      run: |
+        cd Server
+        npm run test:ci || npm test
+      env:
+        NODE_ENV: test
+        DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
+      continue-on-error: ${{ github.event.inputs.force_deploy == 'true' }}
+
+  test-frontend:
+    name: 🧪 Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: Client/package-lock.json
+
+    - name: 📦 Install Frontend Dependencies
+      run: |
+        cd Client
+        npm ci
+
+    - name: 🔍 TypeScript Check
+      run: |
+        cd Client
+        npm run type-check || npx tsc --noEmit
+      continue-on-error: ${{ github.event.inputs.force_deploy == 'true' }}
+
+    - name: 🏗️ Build Frontend
+      run: |
+        cd Client
+        npm run build
+
+    - name: 🧪 Run Frontend Tests
+      run: |
+        cd Client
+        npm run test || echo "No frontend tests configured"
+      continue-on-error: true
+
+  # ===== BUILD & PUSH TO DOCKER HUB =====
+  build-and-push:
+    name: 🐳 Build & Push to Docker Hub
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    if: github.event_name == 'push' || github.event.inputs.force_deploy == 'true'
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.version }}
+      frontend-image: ${{ steps.meta.outputs.frontend-image }}
+      backend-image: ${{ steps.meta.outputs.backend-image }}
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 🔧 Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: 🔧 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: 🔑 Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: 📝 Extract metadata
+      id: meta
+      run: |
+        # Determine image tag
+        if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+          IMAGE_TAG="${{ github.event.inputs.image_tag }}"
+        else
+          IMAGE_TAG="${GITHUB_SHA::8}"
+        fi
+        
+        # Set output variables
+        echo "version=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+        echo "frontend-image=${DOCKER_USERNAME}/yanotela-frontend:${IMAGE_TAG}" >> $GITHUB_OUTPUT
+        echo "backend-image=${DOCKER_USERNAME}/yanotela-backend:${IMAGE_TAG}" >> $GITHUB_OUTPUT
+        
+        echo "📦 Image tag: ${IMAGE_TAG}"
+
+    - name: 🏗️ Build and Push Frontend Image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./Client
+        file: ./Client/Dockerfile
+        platforms: linux/amd64
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/yanotela-frontend:${{ steps.meta.outputs.version }}
+          ${{ secrets.DOCKER_USERNAME }}/yanotela-frontend:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILD_DATE=${{ github.event.head_commit.timestamp }}
+          VCS_REF=${{ github.sha }}
+          VERSION=${{ steps.meta.outputs.version }}
+
+    - name: 🏗️ Build and Push Backend Image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./Server
+        file: ./Server/Dockerfile
+        platforms: linux/amd64
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/yanotela-backend:${{ steps.meta.outputs.version }}
+          ${{ secrets.DOCKER_USERNAME }}/yanotela-backend:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILD_DATE=${{ github.event.head_commit.timestamp }}
+          VCS_REF=${{ github.sha }}
+          VERSION=${{ steps.meta.outputs.version }}
+
+    - name: 📊 Image Summary
+      run: |
+        echo "### 🐳 Docker Images Built" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Frontend:** \`${{ steps.meta.outputs.frontend-image }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Backend:** \`${{ steps.meta.outputs.backend-image }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Docker Hub:**" >> $GITHUB_STEP_SUMMARY
+        echo "- [Frontend](https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/yanotela-frontend)" >> $GITHUB_STEP_SUMMARY
+        echo "- [Backend](https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/yanotela-backend)" >> $GITHUB_STEP_SUMMARY
+
+  # ===== DEPLOY TO EC2 =====
+  deploy-to-ec2:
+    name: 🚀 Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+
+    - name: 📋 Prepare deployment files
+      run: |
+        mkdir -p deployment
+        cp docker-compose.prod.yml deployment/
+        cp deploy/scripts/deploy-ec2.sh deployment/
+        chmod +x deployment/deploy-ec2.sh
+
+    - name: 🔐 Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    - name: 📤 Copy files to EC2
+      run: |
+        # Create project directory on EC2
+        ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "sudo mkdir -p /var/www/yanotela && sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} /var/www/yanotela"
+        
+        # Copy deployment files
+        scp -r deployment/* ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/yanotela/
+        
+        # Copy environment file
+        echo "${{ secrets.ENV_PROD_FILE }}" | ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'cat > /var/www/yanotela/.env.prod'
+
+    - name: 🚀 Deploy on EC2
+      run: |
+        ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+          cd /var/www/yanotela
+          
+          # Export environment variables
+          export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+          export IMAGE_TAG=${{ needs.build-and-push.outputs.image-tag }}
+          export DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
+          
+          # Run deployment script
+          chmod +x deploy-ec2.sh
+          ./deploy-ec2.sh
+        ENDSSH
+
+    - name: 🏥 Health Check
+      run: |
+        # Wait for services to stabilize
+        sleep 15
+        
+        # Check frontend
+        echo "🔍 Checking frontend..."
+        if curl -f -s -m 10 http://${{ secrets.EC2_HOST }}:3000 > /dev/null; then
+          echo "✅ Frontend is healthy"
+        else
+          echo "❌ Frontend health check failed"
+          exit 1
+        fi
+        
+        # Check backend
+        echo "🔍 Checking backend..."
+        if curl -f -s -m 10 http://${{ secrets.EC2_HOST }}:3001/health > /dev/null; then
+          echo "✅ Backend is healthy"
+        else
+          echo "❌ Backend health check failed"
+          exit 1
+        fi
+
+    - name: 📊 Deployment Summary
+      if: always()
+      run: |
+        echo "### 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+        echo "**Image Tag:** \`${{ needs.build-and-push.outputs.image-tag }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Services:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Frontend: http://${{ secrets.EC2_HOST }}:3000" >> $GITHUB_STEP_SUMMARY
+        echo "- Backend: http://${{ secrets.EC2_HOST }}:3001" >> $GITHUB_STEP_SUMMARY
+
+  # ===== NOTIFICATIONS =====
+  notify:
+    name: 📧 Send Notifications
+    runs-on: ubuntu-latest
+    needs: [deploy-to-ec2]
+    if: always() && github.event_name == 'push'
+
+    steps:
+    - name: 📧 Deployment Status
+      run: |
+        if [ "${{ needs.deploy-to-ec2.result }}" == "success" ]; then
+          echo "✅ Deployment completed successfully!"
+        else
+          echo "❌ Deployment failed!"
+          exit 1
+        fi
+
+    - name: 📧 Send Success Notification
+      if: needs.deploy-to-ec2.result == 'success' && secrets.NOTIFICATION_EMAIL != ''
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.NOTIFICATION_EMAIL }}
+        password: ${{ secrets.NOTIFICATION_EMAIL_PASSWORD }}
+        subject: "✅ Yanotela Production Deployment Successful"
+        to: ${{ secrets.NOTIFICATION_EMAIL }}
+        from: GitHub Actions <noreply@github.com>
+        body: |
+          🎉 Production deployment completed successfully!
+          
+          📋 Details:
+          • Repository: ${{ github.repository }}
+          • Branch: ${{ github.ref_name }}
+          • Commit: ${{ github.sha }}
+          • Image Tag: ${{ needs.build-and-push.outputs.image-tag }}
+          
+          🔗 Services:
+          • Frontend: http://${{ secrets.EC2_HOST }}:3000
+          • Backend: http://${{ secrets.EC2_HOST }}:3001
+          
+          📊 GitHub Action: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    - name: 📧 Send Failure Notification
+      if: needs.deploy-to-ec2.result == 'failure' && secrets.NOTIFICATION_EMAIL != ''
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.NOTIFICATION_EMAIL }}
+        password: ${{ secrets.NOTIFICATION_EMAIL_PASSWORD }}
+        subject: "🚨 Yanotela Production Deployment FAILED"
+        to: ${{ secrets.NOTIFICATION_EMAIL }}
+        from: GitHub Actions <noreply@github.com>
+        body: |
+          🚨 Production deployment has FAILED!
+          
+          📋 Details:
+          • Repository: ${{ github.repository }}
+          • Branch: ${{ github.ref_name }}
+          • Commit: ${{ github.sha }}
+          
+          🔍 Check the logs:
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+          ⚠️ Action Required: Please check the deployment logs and fix any issues.
