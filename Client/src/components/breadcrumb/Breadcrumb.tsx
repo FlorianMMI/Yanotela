@@ -24,6 +24,10 @@ export default function Breadcrumb() {
   const [tempTitle, setTempTitle] = useState<string>(''); // Titre temporaire pour l'input
   const [isLoadingTitle, setIsLoadingTitle] = useState(false);
   const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
+  
+  // États pour les notifications du titre
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Extraire l'ID de la note depuis l'URL
   const extractNoteId = (): string | null => {
@@ -109,16 +113,21 @@ export default function Breadcrumb() {
           });
 
           if (success) {
+            setSuccess('Titre sauvegardé avec succès');
+            setTimeout(() => setSuccess(null), 3000);
             // Émettre un événement pour synchroniser avec la page de note
             window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
               detail: { noteId, title: newTitle } 
             }));
           } else {
-            console.error('Échec de la sauvegarde du titre');
+            setError('Erreur lors de la sauvegarde du titre');
+            setTimeout(() => setError(null), 5000);
           }
         }
       } catch (error) {
         console.error('Erreur lors de la sauvegarde du titre:', error);
+        setError('Erreur lors de la sauvegarde du titre');
+        setTimeout(() => setError(null), 5000);
       }
     }
   };
@@ -187,6 +196,67 @@ export default function Breadcrumb() {
 
   return (
     <>
+      {/* Zone de notifications pour le titre */}
+      {(success || error) && (
+        <div className="fixed top-4 right-4 z-50 max-w-md">
+          {success && (
+            <div 
+              onClick={() => setSuccess(null)}
+              className="rounded-md bg-green-50 p-4 border border-green-200 cursor-pointer hover:bg-green-100 transition-colors shadow-lg"
+            >
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-green-800">
+                    {success}
+                  </p>
+                </div>
+                <div className="ml-4 flex-shrink-0">
+                  <button className="inline-flex text-green-400 hover:text-green-600">
+                    <span className="sr-only">Fermer</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div 
+              onClick={() => setError(null)}
+              className="rounded-md bg-red-50 p-4 border border-red-200 cursor-pointer hover:bg-red-100 transition-colors shadow-lg"
+            >
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-red-800">
+                    {error}
+                  </p>
+                </div>
+                <div className="ml-4 flex-shrink-0">
+                  <button className="inline-flex text-red-400 hover:text-red-600">
+                    <span className="sr-only">Fermer</span>
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <nav className="bg-background p-3">
         <div className="flex items-center text-sm space-x-2 relative">
           {/* Déterminer l'icône selon la page courante */}

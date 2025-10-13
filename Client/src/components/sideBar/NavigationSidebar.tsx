@@ -82,14 +82,15 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       </nav>
 
 
-      <Link className='h-32 flex justify-center items-center overflow-hidden '
+      <Link className='h-fit flex m-4 justify-center items-center overflow-hidden '
         href="/"
         title='retour à l`accueil'
       >
         <Icon
           name={isopen ? `logo` : `logoIcon`}
           className="text-clrprincipal stroke-25"
-          size={isopen ? 200 : 40}
+          width={isopen ? 150 : 25}
+          height={isopen ? 50 : 25}
         />
       </Link>
 
