@@ -127,6 +127,7 @@ io.on('connection', (socket) => {
    * Événement: joinNote
    * L'utilisateur rejoint une room pour collaborer sur une note
    */
+  console.log(`🔗 Utilisateur connecté: ${socket.userPseudo} (ID: ${socket.userId})`);
   socket.on('joinNote', async ({ noteId }) => {
     
     // ✅ CRITIQUE : Vérifier si le socket est déjà dans la room
@@ -251,6 +252,7 @@ io.on('connection', (socket) => {
    * Déconnexion du socket
    */
   socket.on('disconnect', (reason) => {
+    console.log(`❌ Utilisateur déconnecté: ${socket.userPseudo} (ID: ${socket.userId}) - Raison: ${reason}`);
     
     // Notifier toutes les rooms où l'utilisateur était présent
     const rooms = Array.from(socket.rooms).filter(room => room.startsWith('note-'));

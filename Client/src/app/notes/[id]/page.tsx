@@ -79,24 +79,24 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   // Reload the page once on first visit to ensure Lexical and collaboration initialize correctly.
   // Uses sessionStorage per-note to avoid reload loops. This is a client-only effect.
-  useEffect(() => {
-    try {
-      const key = `yanotela:notes:reload:${id}`;
-      const alreadyReloaded = sessionStorage.getItem(key);
-      if (!alreadyReloaded) {
-        // mark as reloaded to avoid loops and reload once
-        sessionStorage.setItem(key, '1');
-        // small timeout to allow navigation to settle before reloading
-        window.setTimeout(() => {
-          // Use location.replace to avoid adding an extra history entry
-          window.location.replace(window.location.href);
-        }, 100);
-      }
-    } catch (e) {
-      // sessionStorage may be unavailable in some environments; ignore failures
-      console.warn('One-time reload skipped (sessionStorage unavailable):', e);
-    }
-  }, [id]);
+  // useEffect(() => {
+  //   try {
+  //     const key = `yanotela:notes:reload:${id}`;
+  //     const alreadyReloaded = sessionStorage.getItem(key);
+  //     if (!alreadyReloaded) {
+  //       // mark as reloaded to avoid loops and reload once
+  //       sessionStorage.setItem(key, '1');
+  //       // small timeout to allow navigation to settle before reloading
+  //       window.setTimeout(() => {
+  //         // Use location.replace to avoid adding an extra history entry
+  //         window.location.replace(window.location.href);
+  //       }, 100);
+  //     }
+  //   } catch (e) {
+  //     // sessionStorage may be unavailable in some environments; ignore failures
+  //     console.warn('One-time reload skipped (sessionStorage unavailable):', e);
+  //   }
+  // }, [id]);
 
   // Hook pour détecter les changements de taille d'écran
   useEffect(() => {
