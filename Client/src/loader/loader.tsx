@@ -365,8 +365,6 @@ interface DeleteAccountResponse {
 
 export async function DeleteAccount(reason?: string): Promise<DeleteAccountResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        
         const response = await fetch(`${apiUrl}/user/delete`, {
             method: 'DELETE',
             headers: {
@@ -396,8 +394,6 @@ export async function DeleteAccount(reason?: string): Promise<DeleteAccountRespo
 
 export async function CancelAccountDeletion(): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        
         const response = await fetch(`${apiUrl}/user/cancel-deletion`, {
             method: 'POST',
             headers: {
@@ -422,8 +418,6 @@ export async function CancelAccountDeletion(): Promise<AuthResponse> {
 
 export async function updateUser(data: { prenom?: string; nom?: string; pseudo?: string; email?: string; password?: string; newPassword?: string; }): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        
         const response = await fetch(`${apiUrl}/user/update`, {
             method: 'POST',
             headers: {
@@ -536,6 +530,77 @@ export async function RemovePermission(noteId: string, userId: number): Promise<
         }
     } catch (error) {
         console.error('Erreur lors de la suppression de la permission:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// ============== NOTIFICATION  FUNCTIONS ==============
+
+export async function GetNotifications(): Promise<{ success: boolean; notes?: any[]; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/notification/get`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json().catch(() => ({}));
+            return { success: true, notes: data.notes || [] };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la récupération des notifications' };
+        }
+    } catch (error) {
+        console.error('Erreur GetNotifications:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function AcceptNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/notification/accept/${invitationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json().catch(() => ({}));
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de l\'acceptation de l\'invitation' };
+        }
+    } catch (error) {
+        console.error('Erreur AcceptNotification:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function RefuseNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/notification/refuse/${invitationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json().catch(() => ({}));
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors du refus de l\'invitation' };
+        }
+    } catch (error) {
+        console.error('Erreur RefuseNotification:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
