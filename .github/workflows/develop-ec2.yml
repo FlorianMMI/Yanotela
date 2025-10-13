@@ -73,6 +73,8 @@ jobs:
             
             # Create deployment directory if it doesn't exist
             sudo mkdir -p ${{ env.DEPLOY_PATH }}
+            # Fix ownership to current user
+            sudo chown -R $USER:$USER ${{ env.DEPLOY_PATH }}
             cd ${{ env.DEPLOY_PATH }}
             
             # Check if Docker is installed, install if missing
@@ -87,15 +89,22 @@ jobs:
               sudo apt-get update -qq
               sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
               sudo usermod -aG docker $USER
+              # Start Docker service
+              sudo systemctl start docker
+              sudo systemctl enable docker
               echo "✅ Docker installed successfully"
             else
               echo "✅ Docker is already installed"
             fi
             
+            # Ensure Docker is running
+            sudo systemctl start docker || true
+            
             # Clone or update repository
-            if [ ! -d ".git" ]; then
+            if [ ! -d ".git" ] || [ ! -f "docker-compose.dev.yml" ]; then
               echo "📁 Cloning development repository..."
-              sudo rm -rf ./* ./.* 2>/dev/null || true
+              # Remove any existing files 
+              rm -rf ./* ./.* 2>/dev/null || true
               git clone -b Develop https://github.com/FlorianMMI/Yanotela.git .
               echo "✅ Repository cloned"
             else
