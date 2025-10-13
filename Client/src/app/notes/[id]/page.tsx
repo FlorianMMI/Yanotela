@@ -2,8 +2,6 @@
 import React from "react";
 import { $getRoot, EditorState } from "lexical";
 import { useEffect, useState, use } from "react";
-
-
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -77,6 +75,27 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     return () => {
       socketService.disconnect();
     };
+  }, [id]);
+
+  // Reload the page once on first visit to ensure Lexical and collaboration initialize correctly.
+  // Uses sessionStorage per-note to avoid reload loops. This is a client-only effect.
+  useEffect(() => {
+    try {
+      const key = `yanotela:notes:reload:${id}`;
+      const alreadyReloaded = sessionStorage.getItem(key);
+      if (!alreadyReloaded) {
+        // mark as reloaded to avoid loops and reload once
+        sessionStorage.setItem(key, '1');
+        // small timeout to allow navigation to settle before reloading
+        window.setTimeout(() => {
+          // Use location.replace to avoid adding an extra history entry
+          window.location.replace(window.location.href);
+        }, 100);
+      }
+    } catch (e) {
+      // sessionStorage may be unavailable in some environments; ignore failures
+      console.warn('One-time reload skipped (sessionStorage unavailable):', e);
+    }
   }, [id]);
 
   // Hook pour détecter les changements de taille d'écran
@@ -276,9 +295,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     }
 
     useEffect(() => {
-      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }) => {
+      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
         // Only trigger the debounced log if there are changes to the content
-        if (dirtyElements.size > 0 || dirtyLeaves.size > 0) {
+        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0) {
           // Indiquer immédiatement que l'utilisateur tape
           setIsTyping(true);
           debouncedLog(editorState);
