@@ -149,6 +149,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         <CollaborativeEditor
           noteId={id}
           isReadOnly={isReadOnly}
+          initialEditorState={initialEditorState}
         />
       )}
     </div>
