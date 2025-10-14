@@ -49,18 +49,6 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
           />
         </motion.div>
 
-        {/* Exemple d'affichage d'une note avec vos données */}
-        {/* <Note
-          note={{
-            id: "exemple",
-            Titre: "Exemple de Note",
-            Content: "Contenu personnalisé de la note.",
-            ModifiedAt: new Date().toISOString(),
-      
-          }}
-        />
-        <NoteSkeleton key={`skeleton-1`} /> */}
-
         {/* Loading Skeletons */}
         {isLoading && (
           <>
@@ -83,6 +71,8 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
             </p>
           </div>
         )}
+
+
       </div>
     </main>
   );
