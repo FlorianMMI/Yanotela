@@ -1,10 +1,10 @@
 #!/bin/bash
-# Script de setup initial pour EC2
+# Development EC2 Setup Script for Yanotela
 
 set -e
 
-echo "🚀 Configuration initiale de l'instance EC2 pour Yanotela"
-echo "========================================================"
+echo "🚀 Development EC2 Setup for Yanotela"
+echo "====================================="
 
 # Vérification des prérequis
 check_requirements() {
@@ -82,20 +82,17 @@ install_docker() {
     fi
 }
 
-# Configuration des répertoires
+# Setup development directories
 setup_directories() {
-    echo "📁 Configuration des répertoires..."
+    echo "📁 Setting up development directories..."
     
-    # Répertoires pour les environnements
-    mkdir -p ~/yanotela ~/yanotela-preprod
+    # Development environment directory
+    mkdir -p ~/yanotela-dev
     
-    # Répertoires pour les backups
-    mkdir -p ~/yanotela/backups ~/yanotela-preprod/backups
+    # Development backups and logs
+    mkdir -p ~/yanotela-dev/backups ~/logs/yanotela-dev
     
-    # Répertoires pour les logs
-    mkdir -p ~/logs/yanotela ~/logs/yanotela-preprod
-    
-    echo "✅ Répertoires créés"
+    echo "✅ Development directories created"
 }
 
 # Configuration du firewall (optionnel)
@@ -106,19 +103,17 @@ setup_firewall() {
         # Permettre SSH
         sudo ufw allow 22/tcp
         
-        # Permettre les ports de l'application
-        sudo ufw allow 80/tcp      # Prod frontend
-        sudo ufw allow 3001/tcp    # Prod backend
-        sudo ufw allow 8080/tcp    # Preprod frontend
-        sudo ufw allow 8081/tcp    # Preprod backend
+        # Allow development application ports
+        sudo ufw allow 3000/tcp    # Dev frontend
+        sudo ufw allow 3001/tcp    # Dev backend
         
-        # Afficher le statut
+        # Enable and check status
         sudo ufw --force enable
         sudo ufw status
         
-        echo "✅ Firewall configuré"
+        echo "✅ Firewall configured for development"
     else
-        echo "⚠️ UFW non installé, configuration manuelle du firewall recommandée"
+        echo "⚠️ UFW not installed, manual firewall configuration recommended"
     fi
 }
 
@@ -178,31 +173,31 @@ final_check() {
         return 1
     fi
     
-    # Vérifier les répertoires
-    if [[ -d ~/yanotela && -d ~/yanotela-preprod ]]; then
-        echo "✅ Répertoires créés"
+    # Check development directory
+    if [[ -d ~/yanotela-dev ]]; then
+        echo "✅ Development directory created"
     else
-        echo "❌ Problème avec les répertoires"
+        echo "❌ Problem with development directory"
         return 1
     fi
     
-    echo "🎉 Configuration terminée avec succès!"
+    echo "🎉 Development setup completed successfully!"
 }
 
-# Afficher les prochaines étapes
+# Show next steps
 show_next_steps() {
     echo ""
-    echo "🎯 Prochaines étapes:"
-    echo "==================="
-    echo "1. Configurez vos secrets GitHub (voir deploy/SETUP-GITHUB-SECRETS.md)"
-    echo "2. Clonez votre repository: git clone https://github.com/VotreUsername/Yanotela.git ~/yanotela"
-    echo "3. Testez le déploiement local: cd ~/yanotela && ./deploy/scripts/deploy.sh preprod"
-    echo "4. Poussez sur develop pour déclencher le premier déploiement preprod"
+    echo "🎯 Next Steps:"
+    echo "=============="
+    echo "1. Configure GitHub secrets (see deploy/SETUP-DEV-SECRETS.md)"
+    echo "2. Clone your repository: git clone -b Develop https://github.com/FlorianMMI/Yanotela.git ~/yanotela-dev"
+    echo "3. Test local deployment: cd ~/yanotela-dev && sudo docker compose -f docker-compose.dev.yml up -d"
+    echo "4. Push to Develop branch to trigger first deployment"
     echo ""
-    echo "🔗 Liens utiles:"
-    echo "• Documentation: ~/yanotela/deploy/README.md"
-    echo "• Scripts: ~/yanotela/deploy/scripts/"
-    echo "• Logs: ~/logs/yanotela/"
+    echo "🔗 Useful links:"
+    echo "• Documentation: ~/yanotela-dev/deploy/README.md"
+    echo "• Scripts: ~/yanotela-dev/deploy/scripts/"
+    echo "• Logs: ~/logs/yanotela-dev/"
     echo ""
     
     if groups $USER | grep -q '\bdocker\b'; then

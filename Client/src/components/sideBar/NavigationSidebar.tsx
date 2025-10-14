@@ -1,64 +1,63 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthState } from '@/hooks/useAuth';
-
+import NotificationList from '../notificationList/page';
 import Icon from '@/ui/Icon';
+
+
 
 
 interface NavigationSidebarProps {
   user: AuthState['user'];
+  isopen?: boolean;
 }
 
-export default function NavigationSidebar({ user }: NavigationSidebarProps) {
+export default function NavigationSidebar({ user, isopen }: NavigationSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
-
+  const isProfile = pathname.includes('/profil');
   const navItems = [
     {
       href: '/notes',
       label: 'Mes Notes',
-      icon: 'files',
-      isActive: pathname === '/notes',
+      icon: 'docs',
+      isActive: pathname.includes('/notes'),
     },
   ];
 
+
+
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full w-full flex flex-col">
 
-      {/* Header avec logo et utilisateur */}
+      <div className="p-4">
+        <Link href="/profil"
+          className={`flex items-center ${isopen ? `w-full px-4  ` : `w-fit px-2  `} py-3 gap-3 rounded-lg transition-all text-gray-700 ${isProfile ? 'bg-primary text-white' : ' hover:bg-gray-100 hover:shadow-sm'}`}
+          title='Accéder à mes notes'>
 
-      <div className="p-6 border-b border-gray-200">
+          <Icon
+            name="profile"
+            className={isProfile ? "text-white" : "text-element"}
+            size={30}
+          />
 
-        <Link href="/profil">
-          <div className="bg-background rounded-lg p-3 cursor-pointer hover:bg-gray-100 hover:shadow-md transition-all duration-300 group border border-transparent hover:border-gray-200" title='Accéder à mon profil'>
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-clrprincipal group-hover:text-primary transition-colors duration-300">
-                  Bonjour, {user?.pseudo}
-                </p>
-                <p className="text-xs text-gray-500 truncate group-hover:text-gray-600 transition-colors duration-300">
-                  {user?.email}
-                </p>
-              </div>
-              <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <Icon
-                  name="arrow-barre"
-                  size={40}
-                  className="text-black"
-                />
-              </div>
-            </div>
-          </div>
+          {isopen ? <div className="flex flex-col flex-1 min-w-0">
+            <p className={`text-sm font-medium text-clrprincipal group-hover:text-primary transition-colors duration-300 ${isProfile ? 'text-white' : ''}`}>
+              Bonjour, <span className={`text-primary capitalize ${isProfile ? 'text-white' : ''}`}>{user?.pseudo}</span>
+            </p>
+            <p className={`text-xs text-element truncate group-hover:text-gray-600 transition-colors duration-300 ${isProfile ? 'text-white' : ''}`}>
+              {user?.email}
+            </p>
+          </div> : ""}
+          
         </Link>
-
-
+            <NotificationList />
       </div>
-
-      {/* Navigation */}
+      <hr className="border-t border-element mx-8" />
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navItems.map((item) => (
@@ -66,19 +65,19 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
               <Link
                 href={item.href}
 
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${item.isActive
+                className={`flex items-center rounded-lg transition-all py-3 gap-3 ${isopen ? `w-full px-4  ` : `w-fit px-2 `} ${item.isActive
                   ? 'bg-primary text-white'
                   : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
                 title='Accéder à mes notes'
               >
                 <Icon
-                  name="docs"
-                  className={item.isActive ? "text-white" : "text-gray-400"}
+                  name={item.icon}
+                  className={item.isActive ? "text-white" : "text-element"}
                   size={30}
 
                 />
-                <span className="font-medium">{item.label}</span>
+                <span className={`font-medium ${isopen ? `flex` : `hidden`}`}>{item.label}</span>
               </Link>
             </li>
           ))}
@@ -86,17 +85,17 @@ export default function NavigationSidebar({ user }: NavigationSidebarProps) {
       </nav>
 
 
-      <div className="flex items-center justify-center space-x-3 mb-4">
-        <Image
-          src="/logo.svg"
-          alt="Yanotela"
-          width={180}
-          height={80}
-          className="flex-shrink-0 cursor-pointer"
-          title='Retour à l`accueil'
+      <Link className='h-fit flex m-4 justify-center items-center overflow-hidden '
+        href="/"
+        title='retour à l`accueil'
+      >
+        <Icon
+          name={isopen ? `logo` : `logoIcon`}
+          className="text-clrprincipal stroke-25"
+          width={isopen ? 150 : 25}
+          height={isopen ? 50 : 25}
         />
-
-      </div>
+      </Link>
 
     </div>
   );

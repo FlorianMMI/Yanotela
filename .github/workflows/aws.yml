@@ -1,25 +1,23 @@
-name: Deploy App to Amazon ECS
+name: Deploy App to EC2
 
 on:
   push:
     branches: [ "main" ]
 
 env:
-  AWS_REGION: eu-west-3
-  ECS_SERVICE: yanotela-task-service-7qp5vex5
-  ECS_CLUSTER: yanotela-cluster
-  ECS_TASK_DEFINITION: ecs-task.json
-  CLIENT_CONTAINER_NAME: client
-  SERVER_CONTAINER_NAME: server
-  CLIENT_ECR_REPO: 987686461748.dkr.ecr.eu-west-3.amazonaws.com/yanotela
-  SERVER_ECR_REPO: 987686461748.dkr.ecr.eu-west-3.amazonaws.com/yanotela-server
+  DOCKER_USERNAME: jefee
+  DOCKER_FRONTEND_REPO: jefee/yanotela-frontend
+  DOCKER_BACKEND_REPO: jefee/yanotela-backend
+  EC2_HOST: 13.36.209.205
+  EC2_USER: ubuntu
+  DEPLOY_PATH: /var/www/yanotela
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
-    name: Deploy
+  build-and-deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
     environment: production
 
@@ -27,51 +25,95 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, tag, and push client image
-        id: build-client
-        run: |
-          docker build -t ${{ env.CLIENT_ECR_REPO }}:${GITHUB_SHA} ./Client
-          docker push ${{ env.CLIENT_ECR_REPO }}:${GITHUB_SHA}
-          echo "image=${{ env.CLIENT_ECR_REPO }}:${GITHUB_SHA}" >> $GITHUB_OUTPUT
-
-      - name: Build, tag, and push server image
-        id: build-server
-        run: |
-          docker build -t ${{ env.SERVER_ECR_REPO }}:${GITHUB_SHA} ./Server
-          docker push ${{ env.SERVER_ECR_REPO }}:${GITHUB_SHA}
-          echo "image=${{ env.SERVER_ECR_REPO }}:${GITHUB_SHA}" >> $GITHUB_OUTPUT
-
-      - name: Render new ECS task definition
-        id: task-def-client
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
         with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: ${{ env.CLIENT_CONTAINER_NAME }}
-          image: ${{ steps.build-client.outputs.image }}
+          context: ./Client
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.DOCKER_FRONTEND_REPO }}:latest
+            ${{ env.DOCKER_FRONTEND_REPO }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Render new ECS task definition (server)
-        id: task-def-server
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
         with:
-          task-definition: ${{ steps.task-def-client.outputs.task-definition }}
-          container-name: ${{ env.SERVER_CONTAINER_NAME }}
-          image: ${{ steps.build-server.outputs.image }}
+          context: ./Server
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.DOCKER_BACKEND_REPO }}:latest
+            ${{ env.DOCKER_BACKEND_REPO }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        continue-on-error: false
 
-      - name: Deploy ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          task-definition: ${{ steps.task-def-server.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+          host: ${{ env.EC2_HOST }}
+          username: ${{ env.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "✅ SSH connection successful!"
+            whoami
+            pwd
+            ls -la /var/www/yanotela/
+            
+            cd ${{ env.DEPLOY_PATH }}
+            
+            # Update package cache (Ubuntu-specific)
+            sudo apt-get update -qq
+            
+            # Pull latest images
+            sudo docker compose -f docker-compose.prod.yml pull
+            
+            # Load environment variables and restart services
+            set -a
+            source .env.prod
+            set +a
+            
+            # Recreate containers with new images
+            sudo -E DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=latest docker compose -f docker-compose.prod.yml up -d --force-recreate
+            
+            # Wait for services to be healthy
+            echo "Waiting for services to start..."
+            sleep 30
+            
+            # Check if services are running
+            if sudo docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
+              echo "✅ Deployment successful!"
+              
+              # Test frontend
+              if curl -f -s -m 10 http://localhost:3000 > /dev/null; then
+                echo "✅ Frontend is responding"
+              else
+                echo "❌ Frontend is not responding"
+                exit 1
+              fi
+              
+              # Test backend
+              if curl -f -s -m 10 http://localhost:3001 > /dev/null; then
+                echo "✅ Backend is responding"
+              else
+                echo "❌ Backend is not responding"
+                exit 1
+              fi
+              
+              echo "🎉 All services are healthy!"
+            else
+              echo "❌ Services failed to start"
+              sudo docker compose -f docker-compose.prod.yml logs
+              exit 1
+            fi

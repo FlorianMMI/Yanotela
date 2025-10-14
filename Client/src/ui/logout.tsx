@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Icon from './Icon';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { Logout as LogoutAPI } from '@/loader/loader';
 import LogoutConfirm from './logout-confirm';
 
 export default function Logout(){
+
+    
     const router = useRouter();
     const [showConfirm, setShowConfirm] = useState(false);
 
@@ -38,19 +41,13 @@ export default function Logout(){
 
     return (
         <>
-            <div className="w-full" title='Me déconnecter'>                
+            <div className="w-full md:w-fit h-full" title='Me déconnecter'>                
                 <button
                     onClick={handleLogoutClick}
-                    className="w-full flex items-center justify-center space-x-3 p-4 bg-white text-gray-700 border border-gray-200 rounded-xl shadow-md hover:bg-red-50 hover:border-red-300 hover:text-red-700 hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                    className="w-full flex items-center justify-center space-x-3 p-4 bg-primary text-white border border-red-700 rounded-xl shadow-md hover:bg-red-700 hover:border-red-800 hover:text-white hover:shadow-lg transition-all cursor-pointer group"
                 >
-                    <Image
-                        src="/keyhole.svg"
-                        alt="Déconnexion"
-                        width={22}
-                        height={22}
-                        className="group-hover:filter group-hover:brightness-0 group-hover:sepia group-hover:hue-rotate-[340deg] group-hover:saturate-[2] transition-all duration-300"
-                    />
-                    <span className="font-normal text-lg">Déconnexion</span>
+                    <Icon name="exit" size={25} className="text-white" />
+                    <span className="font-normal text-md">Déconnexion</span>
                 </button>
             </div>
 

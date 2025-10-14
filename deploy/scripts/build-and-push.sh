@@ -27,10 +27,12 @@ fi
 
 # Check if logged in to Docker Hub
 echo "🔑 Checking Docker Hub authentication..."
-if ! docker info | grep -q "Username"; then
-    echo "⚠️  Not logged in to Docker Hub"
+if ! docker pull hello-world >/dev/null 2>&1; then
+    echo "⚠️  Not logged in to Docker Hub or no internet connection"
     echo "Please run: docker login"
     exit 1
+else
+    echo "✅ Docker Hub authentication verified"
 fi
 
 # Build and push frontend

@@ -45,7 +45,7 @@ export default function ForgotPasswordForm({
     setSuccess(null);
 
     try {
-      console.log('Envoi demande de réinitialisation pour:', email);
+      // Envoi de la demande de réinitialisation
       const result = await ForgotPassword(email);
       
       if (result.success) {

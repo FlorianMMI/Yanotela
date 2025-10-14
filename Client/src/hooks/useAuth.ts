@@ -10,46 +10,56 @@ export interface AuthState {
     pseudo: string;
     email: string;
   };
+  refetch: () => Promise<void>;
 }
 
 export function useAuth(): AuthState {
-  const [authState, setAuthState] = useState<AuthState>({
+  const [authState, setAuthState] = useState<Omit<AuthState, 'refetch'>>({
     isAuthenticated: null,
     loading: true,
   });
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/auth/check', {
-          method: 'GET',
-          credentials: 'include',
-        });
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/auth/check', {
+        method: 'GET',
+        credentials: 'include',
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          setAuthState({
-            isAuthenticated: data.authenticated,
-            loading: false,
-            user: data.user,
-          });
-        } else {
-          setAuthState({
-            isAuthenticated: false,
-            loading: false,
-          });
+      if (response.ok) {
+        const data = await response.json();
+        setAuthState({
+          isAuthenticated: data.authenticated,
+          loading: false,
+          user: data.user,
+        });
+        
+        // Déclencher un événement pour notifier les autres hooks
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('auth-refresh', Date.now().toString());
+          window.dispatchEvent(new CustomEvent('auth-refresh'));
         }
-      } catch (error) {
-        console.error('Erreur lors de la vérification d\'authentification:', error);
+      } else {
         setAuthState({
           isAuthenticated: false,
           loading: false,
         });
       }
-    };
+    } catch (error) {
+      console.error('Erreur lors de la vérification d\'authentification:', error);
+      setAuthState({
+        isAuthenticated: false,
+        loading: false,
+      });
+    }
+  };
 
+  useEffect(() => {
     checkAuth();
   }, []);
 
-  return authState;
+  return {
+    ...authState,
+    refetch: checkAuth,
+  };
 }
