@@ -35,9 +35,33 @@ export default function Breadcrumb() {
   const [showSavePopup, setShowSavePopup] = useState(false);
   const [saveTitle, setSaveTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [hasFlashContent, setHasFlashContent] = useState(false);
 
   // Détecter si on est sur Flash Note
   const isFlashNote = pathname === '/flashnote';
+
+  // Fonction helper pour extraire le texte du contenu Lexical
+  const extractTextFromLexicalContent = (contentObj: any): boolean => {
+    if (!contentObj || !contentObj.root || !contentObj.root.children) {
+      return false;
+    }
+    
+    const extractTextRecursive = (node: any): string => {
+      let text = '';
+      if (node.text) {
+        text += node.text;
+      }
+      if (node.children && Array.isArray(node.children)) {
+        for (const child of node.children) {
+          text += extractTextRecursive(child);
+        }
+      }
+      return text;
+    };
+    
+    const fullText = extractTextRecursive(contentObj.root);
+    return fullText.trim().length > 0;
+  };
 
   // Extraire l'ID de la note depuis l'URL
   const extractNoteId = (): string | null => {
@@ -120,6 +144,35 @@ export default function Breadcrumb() {
 
     fetchNoteTitle();
   }, [noteId, lastFetchTime, isFlashNote]); // Ajouter isFlashNote comme dépendance
+
+  // Vérifier le contenu de Flash Note pour activer/désactiver le bouton de sauvegarde
+  useEffect(() => {
+    if (isFlashNote) {
+      const checkFlashContent = () => {
+        const flashContent = localStorage.getItem("yanotela:flashnote:content") || '';
+        if (!flashContent.trim()) {
+          setHasFlashContent(false);
+          return;
+        }
+
+        try {
+          const contentObj = JSON.parse(flashContent);
+          const hasContent = extractTextFromLexicalContent(contentObj);
+          setHasFlashContent(hasContent);
+        } catch (e) {
+          setHasFlashContent(flashContent.trim().length > 0);
+        }
+      };
+
+      // Vérifier au chargement
+      checkFlashContent();
+
+      // Vérifier périodiquement (toutes les 500ms)
+      const interval = setInterval(checkFlashContent, 500);
+
+      return () => clearInterval(interval);
+    }
+  }, [isFlashNote]);
 
   // Sauvegarder le titre modifié
   const updateNoteTitle = async (newTitle: string) => {
@@ -205,11 +258,38 @@ export default function Breadcrumb() {
       return;
     }
 
+    // Récupérer le contenu de Flash Note depuis localStorage
+    const flashContent = localStorage.getItem("yanotela:flashnote:content") || '';
+    
+    // Vérifier si le contenu n'est pas vide
+    if (!flashContent.trim()) {
+      setError('Impossible de sauvegarder une Flash Note vide');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    // Vérifier si le contenu JSON a du texte réel
+    try {
+      const contentObj = JSON.parse(flashContent);
+      // Extraire le texte du contenu Lexical pour vérifier s'il y a du contenu réel
+      const hasRealContent = extractTextFromLexicalContent(contentObj);
+      if (!hasRealContent) {
+        setError('Impossible de sauvegarder une Flash Note vide');
+        setTimeout(() => setError(null), 3000);
+        return;
+      }
+    } catch (e) {
+      // Si ce n'est pas du JSON, vérifier directement le texte
+      if (!flashContent.trim()) {
+        setError('Impossible de sauvegarder une Flash Note vide');
+        setTimeout(() => setError(null), 3000);
+        return;
+      }
+    }
+
     setIsSaving(true);
     
     try {
-      // Récupérer le contenu de Flash Note depuis localStorage
-      const flashContent = localStorage.getItem("yanotela:flashnote:content") || '';
       
       // Créer une nouvelle note
       const result = await CreateNote();
@@ -429,7 +509,8 @@ export default function Breadcrumb() {
       )}
 
       <nav className="bg-background p-3">
-        <div className="flex items-center text-sm space-x-2 relative">
+        <div className="flex justify-between items-center text-sm space-x-2 relative">
+          <div>
           {/* Déterminer l'icône selon la page courante */}
           {(() => {
             if (pathname.includes('/notes')) {
@@ -509,16 +590,21 @@ export default function Breadcrumb() {
               )}
             </React.Fragment>
           ))}
-
+        </div>
           {/* Bouton de sauvegarde pour Flash Note à droite */}
           {isFlashNote && (
-            <div className="absolute right-4 top-2">
+            <div>
               <button
-                onClick={() => setShowSavePopup(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-                title="Sauvegarder Flash Note"
+                onClick={() => hasFlashContent && setShowSavePopup(true)}
+                disabled={!hasFlashContent}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
+                  hasFlashContent 
+                    ? 'bg-primary text-white hover:bg-primary/90 cursor-pointer' 
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+                title={hasFlashContent ? "Sauvegarder Flash Note" : "Aucun contenu à sauvegarder"}
               >
-                <Icon name="save" size={16} className="text-white" />
+                <Icon name="save" size={16} className={hasFlashContent ? "text-white" : "text-gray-500"} />
                 <span className="text-sm font-medium">Sauvegarder</span>
               </button>
             </div>
