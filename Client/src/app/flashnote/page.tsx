@@ -15,6 +15,7 @@ import { motion } from "motion/react";
 import OnChangePlugin from "@lexical/react/LexicalOnChangePlugin";
 import { useCallback } from "react";
 import Icons from '@/ui/Icon';
+import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
 
 const theme = {
   // Theme styling goes here
@@ -35,7 +36,7 @@ export default function FlashNoteEditor() {
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editor, setEditor] = useState<any>(null);
-  
+
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -124,9 +125,11 @@ export default function FlashNoteEditor() {
   function updateNoteTitle(newTitle: string) {
     const finalTitle = newTitle.trim() === '' ? 'Flash:' : newTitle;
     setNoteTitle(finalTitle);
-    
+
     try {
       localStorage.setItem(FLASH_NOTE_TITLE_KEY, finalTitle);
+      // Émettre un événement pour synchroniser avec le breadcrumb
+      window.dispatchEvent(new CustomEvent('flashnote-title-updated'));
       setSuccess('Titre sauvegardé localement');
       setTimeout(() => setSuccess(null), 2000);
     } catch (error) {
@@ -135,6 +138,21 @@ export default function FlashNoteEditor() {
       setTimeout(() => setError(null), 3000);
     }
   }
+
+  // Gérer les changements de titre en temps réel
+  const handleTitleChange = (newTitle: string) => {
+    setNoteTitle(newTitle);
+    // Sauvegarder immédiatement dans localStorage pour que le composant SaveFlashNoteButton puisse y accéder
+    try {
+      // Ne pas sauvegarder une chaîne vide, garder au moins "Flash:"
+      const titleToSave = newTitle.trim() === '' ? 'Flash:' : newTitle;
+      localStorage.setItem(FLASH_NOTE_TITLE_KEY, titleToSave);
+      // Émettre un événement pour synchroniser avec le breadcrumb
+      window.dispatchEvent(new CustomEvent('flashnote-title-updated'));
+    } catch (error) {
+      console.error('Erreur localStorage titre:', error);
+    }
+  };
 
   function OnChangeBehavior() {
     const [editor] = useLexicalComposerContext();
@@ -155,15 +173,15 @@ export default function FlashNoteEditor() {
     function saveContent(editorState: EditorState) {
       setIsSavingContent(true);
       setIsTyping(false);
-      
+
       try {
         const editorStateJSON = editorState.toJSON();
         const contentString = JSON.stringify(editorStateJSON);
         setEditorContent(contentString);
-        
+
         // Sauvegarder dans localStorage
         localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
-        
+
         setTimeout(() => {
           setIsSavingContent(false);
         }, 300);
@@ -197,7 +215,7 @@ export default function FlashNoteEditor() {
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md">
           {success && (
-            <div 
+            <div
               onClick={() => setSuccess(null)}
               className="rounded-md bg-green-50 p-4 border border-green-200 cursor-pointer hover:bg-green-100 transition-colors shadow-lg"
             >
@@ -225,7 +243,7 @@ export default function FlashNoteEditor() {
           )}
 
           {error && (
-            <div 
+            <div
               onClick={() => setError(null)}
               className="rounded-md bg-red-50 p-4 border border-red-200 cursor-pointer hover:bg-red-100 transition-colors shadow-lg"
             >
@@ -254,18 +272,16 @@ export default function FlashNoteEditor() {
         </div>
       )}
 
-      {/* Barre de titre mobile uniquement (sans menu kebab) */}
-      <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
+      {/* Barre mobile uniquement avec bouton de sauvegarde (sans input titre) */}
+      <div className="flex rounded-lg p-2.5 justify-between items-center md:hidden bg-primary text-white sticky top-2 z-10">
         <ReturnButton />
-        <input
-          type="text"
-          value={noteTitle}
-          onChange={(e) => setNoteTitle(e.target.value)}
-          onBlur={(e) => updateNoteTitle(e.target.value)}
-          className="w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white"
-          placeholder="Flash:"
+        
+        {/* Bouton de sauvegarde pour mobile */}
+        <SaveFlashNoteButton 
+          variant="mobile" 
+          currentTitle={noteTitle}
+          className="!bg-white !text-primary hover:!bg-gray-100"
         />
-        {/* Pas de menu kebab pour Flash Note */}
       </div>
 
       {isLoading ? (
@@ -292,7 +308,7 @@ export default function FlashNoteEditor() {
               <Icons name="save" size={20} className="h-5 w-5 text-primary" />
             )}
           </div>
-          
+
           <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
             <RichTextPlugin
               contentEditable={

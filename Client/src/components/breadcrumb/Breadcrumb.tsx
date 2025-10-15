@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Icon from '@/ui/Icon';
-import { GetNoteById, SaveNote, CreateNote } from '@/loader/loader';
+import { GetNoteById, SaveNote } from '@/loader/loader';
 import NoteMore from '@/components/noteMore/NoteMore';
 import Icons from '@/ui/Icon';
 import { useRouter } from 'next/navigation';
+import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 
 
 interface BreadcrumbItem {
@@ -30,11 +31,6 @@ export default function Breadcrumb() {
   // États pour les notifications du titre
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  // États pour le popup de sauvegarde Flash Note
-  const [showSavePopup, setShowSavePopup] = useState(false);
-  const [saveTitle, setSaveTitle] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
 
   // Détecter si on est sur Flash Note
   const isFlashNote = pathname === '/flashnote';
@@ -79,17 +75,41 @@ export default function Breadcrumb() {
   useEffect(() => {
     if (isFlashNote) {
       // Pour Flash Note, charger depuis localStorage
-      try {
-        const savedTitle = localStorage.getItem("yanotela:flashnote:title");
-        const title = savedTitle || "Flash:";
-        setNoteTitle(title);
-        setTempTitle(title);
-      } catch (error) {
-        console.error('Erreur lors du chargement du titre Flash Note:', error);
-        setNoteTitle("Flash:");
-        setTempTitle("Flash:");
-      }
-      return;
+      const loadFlashNoteTitle = () => {
+        try {
+          const savedTitle = localStorage.getItem("yanotela:flashnote:title");
+          const title = savedTitle || "Flash:";
+          setNoteTitle(title);
+          setTempTitle(title);
+        } catch (error) {
+          console.error('Erreur lors du chargement du titre Flash Note:', error);
+          setNoteTitle("Flash:");
+          setTempTitle("Flash:");
+        }
+      };
+
+      // Charger initialement
+      loadFlashNoteTitle();
+
+      // Écouter les changements dans localStorage (pour synchronisation avec la page Flash Note)
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === "yanotela:flashnote:title") {
+          loadFlashNoteTitle();
+        }
+      };
+
+      // Écouter aussi les événements custom pour la synchronisation
+      const handleFlashNoteTitleUpdate = () => {
+        loadFlashNoteTitle();
+      };
+
+      window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('flashnote-title-updated', handleFlashNoteTitleUpdate);
+
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('flashnote-title-updated', handleFlashNoteTitleUpdate);
+      };
     }
 
     const fetchNoteTitle = async () => {
@@ -194,61 +214,6 @@ export default function Breadcrumb() {
       } else if (newTitle !== noteTitle) {
         await updateNoteTitle(newTitle);
       }
-    }
-  };
-
-  // Fonction pour sauvegarder Flash Note comme note normale
-  const handleSaveFlashNote = async () => {
-    if (!saveTitle.trim()) {
-      setError('Le titre ne peut pas être vide');
-      setTimeout(() => setError(null), 3000);
-      return;
-    }
-
-    setIsSaving(true);
-    
-    try {
-      // Récupérer le contenu de Flash Note depuis localStorage
-      const flashContent = localStorage.getItem("yanotela:flashnote:content") || '';
-      
-      // Créer une nouvelle note
-      const result = await CreateNote();
-
-      if (result.note && result.note.id) {
-        // Mettre à jour la note avec le titre et contenu de Flash Note
-        const updateSuccess = await SaveNote(result.note.id, {
-          Titre: saveTitle.trim(),
-          Content: flashContent
-        });
-
-        if (updateSuccess) {
-          // Vider Flash Note localStorage
-          localStorage.removeItem("yanotela:flashnote:title");
-          localStorage.removeItem("yanotela:flashnote:content");
-          
-          setSuccess('Flash Note sauvegardée avec succès !');
-          setTimeout(() => setSuccess(null), 3000);
-          
-          // Fermer le popup
-          setShowSavePopup(false);
-          setSaveTitle('');
-          
-          // Rediriger vers la nouvelle note
-          router.push(`/notes/${result.note.id}`);
-        } else {
-          setError('Erreur lors de la sauvegarde du contenu');
-          setTimeout(() => setError(null), 5000);
-        }
-      } else {
-        setError('Erreur lors de la création de la note');
-        setTimeout(() => setError(null), 5000);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde Flash Note:', error);
-      setError('Erreur lors de la sauvegarde');
-      setTimeout(() => setError(null), 5000);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -371,66 +336,9 @@ export default function Breadcrumb() {
         </div>
       )}
 
-      {/* Popup de sauvegarde Flash Note */}
-      {showSavePopup && (
-        <div className="fixed inset-0 bg-[#00000050] flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-clrprincipal mb-4">
-              Sauvegarder Flash Note
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Donnez un titre à votre Flash Note pour la sauvegarder comme note normale :
-            </p>
-            <input
-              type="text"
-              value={saveTitle}
-              onChange={(e) => setSaveTitle(e.target.value)}
-              placeholder="Titre de la note..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-4"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !isSaving) {
-                  handleSaveFlashNote();
-                }
-                if (e.key === 'Escape') {
-                  setShowSavePopup(false);
-                  setSaveTitle('');
-                }
-              }}
-            />
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => {
-                  setShowSavePopup(false);
-                  setSaveTitle('');
-                }}
-                disabled={isSaving}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleSaveFlashNote}
-                disabled={isSaving || !saveTitle.trim()}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isSaving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Sauvegarde...
-                  </>
-                ) : (
-                  'Sauvegarder'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <nav className="bg-background p-3">
+      <nav className="bg-background p-3">{/* Début de la section navigation */}
         <div className="flex items-center text-sm space-x-2 relative">
-          {/* Déterminer l'icône selon la page courante */}
+          {/* Icône de la page courante */}
           {(() => {
             if (pathname.includes('/notes')) {
               return <Icon name="docs" size={20} className="text-primary" />;
@@ -441,7 +349,10 @@ export default function Breadcrumb() {
             if (pathname === '/flashnote') {
               return <Icon name="flash" size={30} className="text-primary stroke-[10]" />;
             }
+            return null;
           })()}
+          
+          {/* Fil d'Ariane */}
           {breadcrumbs.map((item, index) => (
             <React.Fragment key={index}>
               {index > 0 && (
@@ -476,26 +387,26 @@ export default function Breadcrumb() {
                       placeholder=""
                     />
                   )}
-                      {/* Menu kebab seulement pour les notes normales, pas Flash Note */}
-                      {!isFlashNote && (
-                        <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
-                          <span
-                            onClick={() => setShowNoteMore((prev) => !prev)}
-                            className="ml-2"
-                          >
-                            <Icons
-                              name="more"
-                              size={30}
-                              className="text-primary cursor-pointer"
-                            />
-                          </span>
-                          {showNoteMore && (
-                            <div className="absolute right-0 mt-10 z-20">
-                              <NoteMore noteId={noteId!} onClose={() => setShowNoteMore(false)} />
-                            </div>
-                          )}
+                  {/* Menu kebab seulement pour les notes normales, pas Flash Note */}
+                  {!isFlashNote && (
+                    <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
+                      <span
+                        onClick={() => setShowNoteMore((prev) => !prev)}
+                        className="ml-2"
+                      >
+                        <Icons
+                          name="more"
+                          size={30}
+                          className="text-primary cursor-pointer"
+                        />
+                      </span>
+                      {showNoteMore && (
+                        <div className="absolute right-0 mt-10 z-20">
+                          <NoteMore noteId={noteId!} onClose={() => setShowNoteMore(false)} />
                         </div>
                       )}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <span
@@ -510,21 +421,16 @@ export default function Breadcrumb() {
             </React.Fragment>
           ))}
 
-          {/* Bouton de sauvegarde pour Flash Note à droite */}
+          {/* Bouton de sauvegarde pour Flash Note à droite (desktop uniquement) */}
           {isFlashNote && (
-            <div className="absolute right-4 top-2">
-              <button
-                onClick={() => setShowSavePopup(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-                title="Sauvegarder Flash Note"
-              >
-                <Icon name="save" size={16} className="text-white" />
-                <span className="text-sm font-medium">Sauvegarder</span>
-              </button>
+            <div className="absolute right-4 top-2 hidden md:block">
+              <SaveFlashNoteButton 
+                currentTitle={noteTitle}
+                className="!text-sm"
+              />
             </div>
           )}
         </div>
-
       </nav>
 
     </>
