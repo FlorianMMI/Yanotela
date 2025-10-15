@@ -55,7 +55,6 @@ export default function Home() {
       sortBy={sortBy}
       setSortBy={setSortBy}
     />
-
       <Suspense fallback={
         <div className="p-4">
           <div className="text-center text-gray-500">Chargement des notes...</div>

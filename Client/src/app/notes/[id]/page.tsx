@@ -2,13 +2,21 @@
 import React, { useRef } from "react";
 import { $getRoot, EditorState } from "lexical";
 import { useEffect, useState, use } from "react";
+// @ts-ignore
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+// @ts-ignore
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
+// @ts-ignore
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+// @ts-ignore
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+// @ts-ignore
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+// @ts-ignore
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import ReturnButton from "@/ui/returnButton";
+// @ts-ignore
+// import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
@@ -24,10 +32,38 @@ import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 
 import ErrorFetch from "@/ui/note/errorFetch";
+import ToolbarPlugin from "@/components/textRich/ToolbarPlugin";
+import { editorNodes } from "@/components/textRich/editorNodes";
+// @ts-ignore
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+// @ts-ignore
+import { RichTextPlugin as LexicalRichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import '@/components/textRich/EditorStyles.css';
 
 const theme = {
-  // Theme styling goes here
-  //...
+  heading: {
+    h1: 'editor-heading-h1',
+    h2: 'editor-heading-h2',
+    h3: 'editor-heading-h3',
+  },
+  list: {
+    nested: {
+      listitem: 'editor-nested-listitem',
+    },
+    ol: 'editor-list-ol',
+    ul: 'editor-list-ul',
+    listitem: 'editor-listitem',
+  },
+  text: {
+    bold: 'editor-text-bold',
+    italic: 'editor-text-italic',
+    underline: 'editor-text-underline',
+    strikethrough: 'editor-text-strikethrough',
+    underlineStrikethrough: 'editor-text-underlineStrikethrough',
+    code: 'editor-text-code',
+  },
+  paragraph: 'editor-paragraph',
+  quote: 'editor-quote',
 };
 
 function onError(error: string | Error) {
@@ -271,8 +307,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     namespace: "Editor",
     theme,
     onError,
-    // ✅ NE PAS utiliser initialEditorState - Le contenu vient de Yjs via CollaborationPlugin
-    // Cela évite les conflits entre BDD et Yjs lors de la synchro initiale
+    nodes: editorNodes,
     editorState: undefined,
   };
 
@@ -500,6 +535,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               </div>
               
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
+                {!isReadOnly && <ToolbarPlugin />}
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
@@ -516,6 +552,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                   ErrorBoundary={LexicalErrorBoundary}
                 />
                 <HistoryPlugin />
+                <ListPlugin />
                 {!isReadOnly && <OnChangeBehavior />}
                 {!isReadOnly && <AutoFocusPlugin />}
                 {/* Plugin de collaboration temps réel */}
