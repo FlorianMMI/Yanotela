@@ -152,7 +152,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                             placeholder="Email ou pseudo..."
                             value={newUserIdentifier}
                             onChange={(e) => setNewUserIdentifier(e.target.value)}
-                            className="flex-1 px-3 py-2 border border-element rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            className="flex-1 px-3 py-2 border border-element rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
                         />
                         <select
                             value={selectedRole}
