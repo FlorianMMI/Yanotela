@@ -1,6 +1,7 @@
 import React from "react";
 import Icon from "./Icon";
 import { AcceptNotification, RefuseNotification } from "@/loader/loader";
+import { refreshNotifications } from "@/utils/notificationUtils";
 
 interface NotificationProps {
     id: string;
@@ -17,6 +18,8 @@ export default function Notification({ id, title, author, onNotificationUpdate }
             await AcceptNotification(id);
             // Appeler le callback pour rafraîchir la liste
             onNotificationUpdate?.();
+            // Déclencher la mise à jour globale des notifications
+            refreshNotifications();
         } catch (error) {
             console.error("Erreur lors de la mise à jour de la notification:", error);
         }
@@ -28,6 +31,8 @@ export default function Notification({ id, title, author, onNotificationUpdate }
             await RefuseNotification(id);
             // Appeler le callback pour rafraîchir la liste
             onNotificationUpdate?.();
+            // Déclencher la mise à jour globale des notifications
+            refreshNotifications();
         } catch (error) {
             console.error("Erreur lors du refus de la notification:", error);
         }

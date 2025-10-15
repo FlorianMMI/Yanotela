@@ -21,7 +21,7 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
     const isProfilePage = pathname.includes('/profil');
     
     // Déterminer si on doit afficher l'indicateur rouge
-    const shouldShowRedIndicator = !isOpenSideBar && notifications.length > 0;
+    const shouldShowRedIndicator = notifications.length > 0;
 
     const fetchNotifications = async () => {
         setLoading(true);
@@ -41,8 +41,37 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
         setOpen(false);
     }, []);
 
+    // Charger les notifications au montage pour permettre l'affichage de l'indicateur rouge
     useEffect(() => {
-        // preload when opening
+        fetchNotifications();
+        
+        // Polling périodique pour détecter les nouvelles notifications
+        const interval = setInterval(() => {
+            fetchNotifications();
+        }, 30000); // Vérifier toutes les 30 secondes
+        
+        // Vérifier les notifications quand la fenêtre redevient active
+        const handleFocus = () => {
+            fetchNotifications();
+        };
+
+        // Écouter l'événement personnalisé pour forcer la mise à jour des notifications
+        const handleNotificationRefresh = () => {
+            fetchNotifications();
+        };
+        
+        window.addEventListener('focus', handleFocus);
+        window.addEventListener('refreshNotifications', handleNotificationRefresh);
+        
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('focus', handleFocus);
+            window.removeEventListener('refreshNotifications', handleNotificationRefresh);
+        };
+    }, []);
+
+    useEffect(() => {
+        // preload when opening si pas déjà chargées
         if (open && notifications.length === 0) {
             fetchNotifications();
         }
@@ -67,9 +96,9 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
 
     return (
         <>
-            {/* Indicateur rouge quand sidebar fermée et notifications présentes */}
+            {/* Indicateur rouge quand une notification est présente */}
             {shouldShowRedIndicator && (
-                <div className={`absolute top-4 right-4 z-30 pointer-events-none ${isOpenSideBar ? 'hidden' : 'flex'}`}>
+                <div className={`absolute right-4 z-30 pointer-events-none ${isOpenSideBar ? 'top-7' : 'top-4'}`}>
                     <div className={` w-3 h-3 bg-red-500 rounded-full animate-pulse`}></div>
                 </div>
             )}
