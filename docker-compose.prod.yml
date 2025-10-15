@@ -93,7 +93,7 @@ services:
     environment:
       - NODE_ENV=production
       # CRITICAL FIX: Use backend container name for internal communication
-      - NEXT_PUBLIC_API_URL=http://${PUBLIC_DOMAIN:-localhost}:3001
+      - NEXT_PUBLIC_API_URL=http://${EC2_HOST:-localhost}:3001
     env_file:
       - .env.prod
     depends_on:
