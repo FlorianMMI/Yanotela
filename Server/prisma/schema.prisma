@@ -12,6 +12,7 @@ model User {
   id              Int         @id @default(autoincrement())
   notes           Note[]      
   modifiedNotes   Note[]      @relation("NoteModifier")
+  dossier         Dossier[]   
   permissions     Permission[]
   pseudo          String      @unique
   prenom          String
@@ -48,5 +49,16 @@ model Permission {
 
   @@id([noteId, userId])
   
+}
+
+model Dossier {
+
+  id String   @id 
+  Titre String 
+  authorId Int
+  author User @relation(fields: [authorId], references: [id])
+  ModifiedAt DateTime   @default(now())
+
+
 }
 
