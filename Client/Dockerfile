@@ -52,7 +52,8 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-CMD ["npm", "server.js"]
+# Vérifier que server.js existe avant de le lancer
+CMD ["sh", "-c", "ls -la server.js && node server.js"]
