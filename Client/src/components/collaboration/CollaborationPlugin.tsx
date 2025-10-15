@@ -24,6 +24,12 @@ export default function CollaborationPlugin({
 }: CollaborationPluginProps) {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [userCount, setUserCount] = useState<number>(0);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]); // Utilisateurs en train de taper
+
+  // Log username pour debug cross-browser
+  useEffect(() => {
+    console.log('[CollabPlugin] username:', username);
+  }, [username]);
 
   useEffect(() => {
     // Détecter si on est sur mobile pour ajuster le délai
@@ -111,6 +117,25 @@ export default function CollaborationPlugin({
         setIsConnected(false);
       });
 
+      // ✅ Écouter les utilisateurs en train de taper
+      socketService.onUserTyping((data) => {
+        if (data.isTyping) {
+          setTypingUsers(prev => {
+            if (!prev.includes(data.pseudo)) {
+              return [...prev, data.pseudo];
+            }
+            return prev;
+          });
+          
+          // Auto-retirer après 3 secondes (au cas où l'événement "stop typing" ne vient pas)
+          setTimeout(() => {
+            setTypingUsers(prev => prev.filter(u => u !== data.pseudo));
+          }, 3000);
+        } else {
+          setTypingUsers(prev => prev.filter(u => u !== data.pseudo));
+        }
+      });
+
       // Mettre à jour l'état de connexion via les events connect/disconnect
       // (Suppression des appels à socketService.onConnect et onDisconnect car ils n'existent pas)
     }, initDelay);
@@ -148,11 +173,33 @@ export default function CollaborationPlugin({
   }, [onContentUpdate, onTitleUpdate, isReadOnly]);
 
   return (
-    <div className="fixed bottom-6 right-16 z-30 flex items-center gap-3 px-3 py-1.5 bg-white/90 border border-gray-200 shadow-lg rounded-full backdrop-blur-sm transition-all">
-      <div className={`flex items-center gap-1 font-medium ${isConnected ? "text-green-700" : "text-orange-700"}`}>
-      <span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: isConnected ? "#22c55e" : "#f59e42" }} />
-      {isConnected ? "En ligne" : "Hors ligne"}
-      </div>
+    <div
+      className="fixed left-1/2 bottom-4 md:bottom-8 z-30 flex flex-col gap-2 pointer-events-none"
+      style={{ transform: 'translateX(-50%)', maxWidth: '90vw' }}
+    >
+      {/* Indicateur "X est en train d'écrire..." */}
+      {username && (() => {
+        const othersTyping = typingUsers.filter(u => !!u && u !== username);
+        if (othersTyping.length === 1) {
+          return (
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50/90 border border-blue-200 shadow-lg rounded-full backdrop-blur-sm transition-all animate-pulse">
+              <span className="text-sm text-blue-700 font-medium">
+                {`${othersTyping[0]} écrit...`}
+              </span>
+            </div>
+          );
+        }
+        if (othersTyping.length > 1) {
+          return (
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50/90 border border-blue-200 shadow-lg rounded-full backdrop-blur-sm transition-all animate-pulse">
+              <span className="text-sm text-blue-700 font-medium">
+                {`${othersTyping.length} personnes écrivent...`}
+              </span>
+            </div>
+          );
+        }
+        return null;
+      })()}
     </div>
   );
 }
