@@ -123,7 +123,7 @@ export default function Profil() {
         </div>
 
         {/* Contenu centré et réparti */}
-        <div className="flex-1 flex flex-col justify-between items-center text-center w-full">
+        <div className="flex-1 flex flex-col justify-start gap-6 items-center text-center w-full">
 
           <div className="flex md:hidden">
             {userInfo && (
@@ -142,17 +142,17 @@ export default function Profil() {
           <div className="flex flex-col md:flex-row gap-8 w-full p-4 md:w-full md:items-start items-center mb-6">
 
             <div className="flex flex-col gap-4 items-center w-fit">
-              <p className="text-clrprincipal font-gant text-center text-2xl w-full">
+              <p className=" whitespace-nowrap text-clrprincipal font-gant text-center md:text-left text-3xl md:text-4xl w-full md:w-auto">
                 Vos notes
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 items-center w-full">
+            <div className="flex flex-col gap-4 items-center md:items-end w-full">
               <TotalNotes totalNotes={totalNotes} />
             </div>
 
             {/* Bouton déconnexion mobile en bas */}
-            <div className="flex flex-col items-center justify-center w-full max-w-1/2">
+            <div className="flex flex-col items-end justify-center w-full max-w-1/2">
               <Logout />
             </div>
 

@@ -87,13 +87,13 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                     <Icon
                         name="notification"
                         size={22}
-                        className={isProfilePage ? "md:text-white text-primary hover:text-primary" : "text-primary"}
+                        className="text-primary "
                     />
                 </button>
 
                 {/* Dropdown */}
                 {open && (
-                    <div className="absolute left-0 top-full mt-2 sm:mt-3 w-[18.5rem] max-w-[calc(100vw-3rem)] sm:w-80 sm:max-h-[calc(100vh-10rem)] z-50">
+                    <div className=" absolute md:left-0 left-auto right-0 md:right-auto  top-full mt-2 sm:mt-3 w-[18.5rem] max-w-[calc(100vw-3rem)] sm:w-80 sm:max-h-[calc(100vh-10rem)] z-100">
                         <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[calc(100vh-10rem)]">
                             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                                 <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>

@@ -148,7 +148,7 @@ export default function CollaborationPlugin({
   }, [onContentUpdate, onTitleUpdate, isReadOnly]);
 
   return (
-    <div className="fixed bottom-6 right-16 z-30 flex items-center gap-3 px-3 py-1.5 bg-white/90 border border-gray-200 shadow-lg rounded-full backdrop-blur-sm transition-all">
+    <div className="fixed bottom-6 right-2 md:right-16 z-30 flex items-center gap-3 px-3 py-1.5 bg-white/90 border border-gray-200 shadow-lg rounded-full backdrop-blur-sm transition-all">
       <div className={`flex items-center gap-1 font-medium ${isConnected ? "text-green-700" : "text-orange-700"}`}>
       <span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: isConnected ? "#22c55e" : "#f59e42" }} />
       {isConnected ? "En ligne" : "Hors ligne"}
