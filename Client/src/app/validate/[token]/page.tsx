@@ -25,7 +25,8 @@ export default function ValidatePage() {
       try {
         
         // Appeler l'API de validation du backend
-        const response = await fetch(`http://localhost:3001/validate/${token}`, {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const response = await fetch(`${apiUrl}/validate/${token}`, {
           method: 'GET',
           credentials: 'include', // Important pour les sessions
         });

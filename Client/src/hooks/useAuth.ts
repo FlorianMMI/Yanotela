@@ -21,7 +21,8 @@ export function useAuth(): AuthState {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('http://localhost:3001/auth/check', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/auth/check`, {
         method: 'GET',
         credentials: 'include',
       });
