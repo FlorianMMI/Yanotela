@@ -22,9 +22,20 @@ export default function CollaborationPlugin({
   onContentUpdate,
   onTitleUpdate
 }: CollaborationPluginProps) {
+  // Force remount on noteId or username change to reset listeners and state
+  const [instanceKey, setInstanceKey] = useState(() => `${noteId}:${username}`);
+  useEffect(() => {
+    setInstanceKey(`${noteId}:${username}`);
+  }, [noteId, username]);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [userCount, setUserCount] = useState<number>(0);
   const [typingUsers, setTypingUsers] = useState<string[]>([]); // Utilisateurs en train de taper
+
+  // Reset typing users on mount/unmount (fixes stale state after reload)
+  useEffect(() => {
+    setTypingUsers([]);
+    return () => setTypingUsers([]);
+  }, [instanceKey]);
 
   // Log username pour debug cross-browser
   useEffect(() => {
@@ -174,10 +185,9 @@ export default function CollaborationPlugin({
 
   return (
     <div
-      className="fixed left-1/2 bottom-4 md:bottom-8 z-30 flex flex-col gap-2 pointer-events-none"
-      style={{ transform: 'translateX(-50%)', maxWidth: '90vw' }}
+      key={instanceKey}
+      className="absolute bottom-4 right-16 z-30 flex flex-col gap-2 pointer-events-none"
     >
-      {/* Indicateur "X est en train d'écrire..." */}
       {username && (() => {
         const othersTyping = typingUsers.filter(u => !!u && u !== username);
         if (othersTyping.length === 1) {

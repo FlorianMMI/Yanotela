@@ -48,6 +48,20 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
+  // Reload page on breakpoint change (mobile <-> desktop)
+  React.useEffect(() => {
+    // Détection du breakpoint initial
+    let lastIsMobile = window.innerWidth < 768;
+    const onResize = () => {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile !== lastIsMobile) {
+        window.location.reload();
+      }
+      lastIsMobile = isMobile;
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   const [noteTitle, setNoteTitle] = useState("");
   const [editorContent, setEditorContent] = useState("");
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
