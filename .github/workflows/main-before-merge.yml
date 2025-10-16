@@ -41,7 +41,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ env.DOCKER_FRONTEND_REPO }}:latest
+            ${{ env.DOCKER_FRONTEND_REPO }}:initial_1
             ${{ env.DOCKER_FRONTEND_REPO }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -53,7 +53,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ env.DOCKER_BACKEND_REPO }}:latest
+            ${{ env.DOCKER_BACKEND_REPO }}:initial_1
             ${{ env.DOCKER_BACKEND_REPO }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -85,7 +85,7 @@ jobs:
             set +a
             
             # Recreate containers with new images
-            sudo -E DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=latest docker compose -f docker-compose.prod.yml up -d --force-recreate
+            sudo -E DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=initial_1 docker compose -f docker-compose.prod.yml up -d --force-recreate
             
             # Wait for services to be healthy
             echo "Waiting for services to start..."
