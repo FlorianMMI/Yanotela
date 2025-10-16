@@ -1,7 +1,7 @@
 // sessionConfig.js
 import session from 'express-session';
 
-const FRONT_URL = process.env.FRONT_URL || 'https://yanotela.fr';
+const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
 
 /**
  * Configuration des sessions Express
@@ -12,12 +12,13 @@ const sessionMiddleware = session({
   resave: false, // Ne pas sauvegarder la session si elle n'a pas été modifiée
   saveUninitialized: false, // Ne pas sauvegarder les sessions non initialisées
   cookie: {
-    secure: true, // HTTPS obligatoire en production
+    secure: true, // false en développement (HTTP)
     httpOnly: true, // Empêche l'accès au cookie via JavaScript côté client
-    sameSite: 'lax', // Permet les redirections OAuth
-    domain: 'yanotela.fr', // Partage le cookie entre front et API (pas de point pour le domaine principal)
-    path: '/', // Cookie valide pour toute l'application
-    maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 ans en ms
+    sameSite: 'lax',
+    domaine: '.yanotela.fr', // Domaine pour lequel le cookie est valide
+    // Chemin d'application du cookie (toute l'application)
+    path: '/',
+    maxAge:1000 * 60 * 60 * 24 * 365 * 10, // 10 ans en ms
   }
 });
 
