@@ -110,17 +110,10 @@ const login = async (req, res) => {
       where: { email: identifiant },
     });
     const user = userByPseudo || userByEmail;
-    
-    if (!user) {
+    const ok = user ? await bcrypt.compare(password, user.password) : false;
+    if (!user || !ok) {
       return res.status(401).json({
-        error: "Utilisateur non trouvé"
-      });
-    }
-
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
-      return res.status(401).json({
-        error: "Mot de passe incorrect"
+        error: "Utilisateur ou mot de passe incorrect"
       });
     }
 
