@@ -33,10 +33,11 @@ export default function Login() {
           }
         }
       } catch (error) {
-        console.error('Erreur lors de la vérification d\'authentification:', error);
-      } finally {
-        setIsChecking(false);
+        // En cas d'erreur réseau, on continue et affiche le formulaire
+        // L'utilisateur pourra toujours essayer de se connecter
       }
+      
+      setIsChecking(false);
     };
 
     checkAuth();

@@ -49,11 +49,7 @@ export default function LoginForm({
       const result = await Login(loginData);
       
       if (result.success) {
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push('/notes');
-        }
+        onSuccess ? onSuccess() : router.push('/notes');
       } else {
         setError(result.error || 'Identifiants incorrects');
       }
@@ -64,9 +60,7 @@ export default function LoginForm({
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   return (
     <div className={className}>
@@ -181,7 +175,7 @@ export default function LoginForm({
               >
                 Inscrivez-vous
               </button>
-            </div>
+            </span>
           </div>
         )}
         
