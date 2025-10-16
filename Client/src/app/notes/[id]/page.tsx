@@ -21,6 +21,7 @@ import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 
 import ErrorFetch from "@/ui/note/errorFetch";
+import { useRouter } from "next/navigation";
 
 const theme = {
   // Theme styling goes here
