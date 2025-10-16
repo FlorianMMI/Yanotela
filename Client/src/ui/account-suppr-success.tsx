@@ -13,7 +13,8 @@ export default function AccountSupprSuccess() {
             setCountdown((prev) => {
                 if (prev <= 1) {
                     // Rediriger quand le countdown atteint 0
-                    router.push('/login');
+                    router.push('/');
+                    window.location.reload(); // Forcer le rechargement de la page
                     return 0;
                 }
                 return prev - 1;
