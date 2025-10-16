@@ -9,8 +9,8 @@ function createEmailTransporter() {
     return nodemailer.createTransport({
       service: 'gmail',
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // true pour 465, false pour autres ports
+      port: 465,
+      secure: true, // true pour 465, false pour autres ports
       auth: {
         user: process.env.GMAIL_USER, // Votre adresse Gmail
         pass: process.env.GMAIL_APP_PASSWORD // Mot de passe d'application Gmail
