@@ -12,11 +12,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="fr" className="h-full">
       <body className="antialiased h-screen bg-background">
         <DesktopLayout>
-          
           {children}
         </DesktopLayout>
       </body>

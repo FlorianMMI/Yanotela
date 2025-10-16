@@ -2,11 +2,10 @@ import { Note } from '@/type/Note';
 import { create } from 'domain';
 import { ID } from 'yjs';
 
-const safeApiUrl = 'http://localhost:3001';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note | null; redirectUrl?: string }> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         const response = await fetch(`${apiUrl}/note/create`, {
             method: "POST",
             headers: {
@@ -15,7 +14,7 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
             credentials: 'include',
             body: JSON.stringify({
                 Titre: "Sans titre",
-                Content: "Sans Contenu"
+                Content: "",
             })
         });
 
@@ -24,7 +23,6 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
         }
 
         const data = await response.json();
-        console.log("Réponse de l'API :", data);
         return { note: data.note, redirectUrl: data.redirectUrl };
     } catch (error) {
         console.error("Error creating note:", error);
@@ -32,12 +30,8 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
     }
 }
 
-export async function GetNotes(): Promise<Note[]> {
+export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
     try {
-        // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-
-        console.log('API URL for GetNotes:', apiUrl); // Pour debug
 
         const response = await fetch(`${apiUrl}/note/get`, {
             method: "GET",
@@ -51,34 +45,55 @@ export async function GetNotes(): Promise<Note[]> {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const notes = await response.json();
-        console.log('Notes from server:', notes);
+        const data = await response.json();
 
-        // Transformation du JSON stringifié en objet
-        for (const note of notes) {
+        // Vérification que les données attendues sont présentes
+        if (!data.notes || typeof data.totalNotes === 'undefined') {
+            console.error('Invalid response format - missing notes or totalNotes:', data);
+            return { notes: [], totalNotes: 0 };
+        }
+
+        // Transformation du JSON stringifié en objet lisible
+        for (const note of data.notes) {
             try {
                 const parsedContent = JSON.parse(note.Content);
                 if (typeof parsedContent === 'object' && parsedContent !== null) {
-                    note.Content = parsedContent;
+                    // Si c'est un objet Lexical, extraire le texte
+                    if (parsedContent.root && parsedContent.root.children) {
+                        // Extraction du texte depuis la structure Lexical
+                        const extractText = (children: any[]): string => {
+                            return children.map((child: any) => {
+                                if (child.type === 'paragraph' && child.children) {
+                                    return extractText(child.children);
+                                } else if (child.type === 'text' && child.text) {
+                                    return child.text;
+                                }
+                                return '';
+                            }).join(' ');
+                        };
+                        note.Content = extractText(parsedContent.root.children) || 'Contenu vide';
+                    } else {
+                        // Si c'est un autre type d'objet, convertir en string lisible
+                        note.Content = JSON.stringify(parsedContent);
+                    }
                 }
             } catch {
-                // If parsing fails, leave the content as is
-                console.warn(`Invalid JSON content for note ID ${note.id}, leaving content unparsed.`);
+                // Si le parsing échoue, garder le contenu tel quel
+                console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
+                note.Content = String(note.Content);
             }
         }
 
-        return notes;
+        return { notes: data.notes, totalNotes: data.totalNotes };
     } catch (error) {
         console.error("Error fetching notes:", error);
-        return [];
+        return { notes: [], totalNotes: 0 };
     }
 }
 
-export async function GetNoteById(id: string): Promise<Note | null> {
+export async function GetNoteById(id: string): Promise<Note | { error: string } | null> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        console.log('API URL for GetNoteById:', apiUrl); // Pour debug
         const response = await fetch(`${apiUrl}/note/get/${id}`, {
             method: "GET",
             headers: {
@@ -86,23 +101,21 @@ export async function GetNoteById(id: string): Promise<Note | null> {
             },
             credentials: 'include'
         });
+        const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            // Return backend error message if present
+            return { error: data.message || `HTTP error! status: ${response.status}` };
         }
-        const note = await response.json();
-        console.log('Note from server:', note);
-        return note;
+        return data;
     } catch (error) {
         console.error("Error fetching note by ID:", error);
-        return null;
+        return { error: "Erreur de connexion au serveur" };
     }
 }
 
 export async function SaveNote(id: string, noteData: Partial<Note>): Promise<boolean> {
     try {
         // Utiliser une URL par défaut si la variable d'environnement n'est pas définie
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
-        console.log('API URL for SaveNote:', apiUrl);
         const response = await fetch(`${apiUrl}/note/update/${id}`, {
             method: "POST",
             headers: {
@@ -146,7 +159,6 @@ interface AuthResponse {
 
 export async function Login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
@@ -171,7 +183,6 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
 
 export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
@@ -216,7 +227,6 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
 
 export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
@@ -242,7 +252,6 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
 
 export async function ResetPassword(token: string, password: string): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
@@ -268,7 +277,6 @@ export async function ResetPassword(token: string, password: string): Promise<Au
 
 export async function ValidateResetToken(token: string): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/reset-password/${token}`);
         const data = await response.json();
@@ -285,7 +293,6 @@ export async function ValidateResetToken(token: string): Promise<AuthResponse> {
 
 export async function Logout(): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || safeApiUrl;
         
         const response = await fetch(`${apiUrl}/logout`, {
             method: 'POST',
@@ -299,6 +306,307 @@ export async function Logout(): Promise<AuthResponse> {
         }
     } catch (error) {
         console.error('Erreur de déconnexion:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+
+// ============== USER  FUNCTION ==============
+
+
+interface InfoUserResponse {
+    success: boolean;
+    message?: string;
+    error?: string;
+    user?: {
+        id: number;
+        pseudo: string;
+        prenom?: string;
+        nom?: string;
+        email: string;
+        noteCount?: number; // Nombre de notes de l'utilisateur
+    };
+}
+
+export async function InfoUser(): Promise<InfoUserResponse> {
+    
+    try {
+        
+        const response = await fetch(`${apiUrl}/user/info`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            return { success: true, user: userData };
+        } else {
+            const errorData = await response.json();
+            return { success: false, error: errorData.message || 'Erreur lors de la récupération des informations utilisateur' };
+        }
+    } catch (error) {
+        console.error('Erreur InfoUser:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// ============== SUPPRESSION DE COMPTE ==============
+
+interface DeleteAccountResponse {
+    success: boolean;
+    message?: string;
+    error?: string;
+    deletionDate?: string;
+    canCancel?: boolean;
+}
+
+export async function DeleteAccount(reason?: string): Promise<DeleteAccountResponse> {
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        
+        const response = await fetch(`${apiUrl}/user/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ reason })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            return { 
+                success: true, 
+                message: data.message,
+                deletionDate: data.deletionDate,
+                canCancel: data.canCancel
+            };
+        } else {
+            return { success: false, error: data.message || 'Erreur lors de la suppression du compte' };
+        }
+    } catch (error) {
+        console.error('Erreur DeleteAccount:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function CancelAccountDeletion(): Promise<AuthResponse> {
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        
+        const response = await fetch(`${apiUrl}/user/cancel-deletion`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            return { success: true, message: data.message };
+        } else {
+            return { success: false, error: data.message || 'Erreur lors de l\'annulation de la suppression' };
+        }
+    } catch (error) {
+        console.error('Erreur CancelAccountDeletion:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+
+export async function updateUser(data: { prenom?: string; nom?: string; pseudo?: string; email?: string; password?: string; newPassword?: string; }): Promise<AuthResponse> {
+    try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        
+        const response = await fetch(`${apiUrl}/user/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            const responseData = await response.json();
+            return { success: true, message: responseData.message || 'Informations utilisateur mises à jour avec succès' };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la mise à jour des informations utilisateur' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour des informations utilisateur:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function FetchPermission(noteId: string): Promise<{ success: boolean; permissions?: any[]; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/permission/note/${noteId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, permissions: data.permissions };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la récupération des permissions' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de la récupération des permissions:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function UpdatePermission(noteId: string, userId: number, newRole: number): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/permission/update/${noteId}/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ newRole })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la modification du rôle' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de la modification du rôle:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function AddPermission(noteId: string, identifier: string, role: number = 3): Promise<{ success: boolean; message?: string; user?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/permission/add/${noteId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ identifier, role })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message, user: data.user };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de l\'ajout de l\'utilisateur' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function RemovePermission(noteId: string, userId: number): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/permission/${noteId}/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la suppression de la permission' };
+        }
+    } catch (error) {
+        console.error('Erreur lors de la suppression de la permission:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// ============== NOTIFICATION  FUNCTIONS ==============
+
+export async function GetNotifications(): Promise<{ success: boolean; notes?: any[]; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/notification/get`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json().catch(() => ({}));
+            return { success: true, notes: data.notes || [] };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la récupération des notifications' };
+        }
+    } catch (error) {
+        console.error('Erreur GetNotifications:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function AcceptNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/notification/accept/${invitationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json().catch(() => ({}));
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de l\'acceptation de l\'invitation' };
+        }
+    } catch (error) {
+        console.error('Erreur AcceptNotification:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function RefuseNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/notification/refuse/${invitationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const data = await response.json().catch(() => ({}));
+            return { success: true, message: data.message };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors du refus de l\'invitation' };
+        }
+    } catch (error) {
+        console.error('Erreur RefuseNotification:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }

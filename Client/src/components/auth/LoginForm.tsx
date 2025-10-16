@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
 import { Login } from '@/loader/loader';
+import GoogleAuthButton from './GoogleAuthButton';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -73,7 +74,7 @@ export default function LoginForm({
 
       <form role="form" onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
         {error && (
-          <div className="w-full p-2.5 bg-red-100 border-red-400 text-red-700 rounded-[10px] text-sm">
+          <div className="w-full p-2.5 bg-red-100 border-red-400 text-red-00 rounded-[10px] text-sm">
             {error}
           </div>
         )}
@@ -84,7 +85,7 @@ export default function LoginForm({
           </p>
         )}
         
-        <div data-property-1="Mail" className="w-full p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
+        <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
           <Icon name="at" className="text-zinc-500" size={20} />
           <input 
             type="text" 
@@ -96,7 +97,9 @@ export default function LoginForm({
           />
         </div>
         
-        <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center">
+
+        <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire border-primary border-2 rounded-[10px] flex justify-between items-center">
+
           <div className="flex justify-center items-center gap-2.5">
             <Icon name="keyhole" className="text-zinc-500" size={20} />
             <input 
@@ -126,7 +129,8 @@ export default function LoginForm({
           <button 
             type="button"
             onClick={onSwitchToForgot || (() => router.push('/forgot-password'))}
-            className="w-full justify-start text-start flex text-primary hover:text-primary-hover hover:underline text-sm font-normal font-gant cursor-pointer"
+
+            className="w-full justify-start text-start flex text-rouge-clair hover:text-primary-hover hover:underline text-sm font-normal font-gant cursor-pointer"
           >
             Mot de passe oublié ?
           </button>
@@ -143,36 +147,31 @@ export default function LoginForm({
           <Icon name="arrow-barre" className="text-white pointer-events-none" size={40} />
         </button>
 
-        {/* Connexion Google - seulement sur page complète */}
-        {!isInSidebar && (
-          <>
-            <div className="flex items-center w-full gap-4">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
-              <div className="flex-1 h-px bg-gray-300"></div>
-            </div>
-            
-            <button 
-              type="button" 
-              className="w-full p-2.5 bg-white border border-gray-300 rounded-[10px] flex justify-center items-center gap-3 hover:bg-gray-200 active:bg-gray-50 transition-colors cursor-pointer"
-            >
-              <Icon name="google" className="text-primary" size={20} />
-              <span className="text-clrprincipal text-sm font-medium font-gant">
-                Se connecter avec Google
-              </span>
-            </button>
-          </>
-        )}
+        {/* Séparateur et connexion Google */}
+        <div className="flex flex-col items-center gap-4 w-full">
+          <div className="flex items-center w-full gap-4">
+            <div className="flex-1 h-px bg-gray-300"></div>
+            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+            <div className="flex-1 h-px bg-gray-300"></div>
+          </div>
+          
+          <GoogleAuthButton 
+            mode="login"
+            onSuccess={onSuccess}
+          />
+        </div>
 
         {/* Lien d'inscription */}
         {showRegisterLink && (
-          <div className="text-center mt-4">
-            <span className="text-sm text-gray-600">
+          <div className={`${isInSidebar ? 'text-center mt-4' : 'text-center'}`}>
+            <div className="text-sm text-clrprincipal">
               {isInSidebar ? 'Pas de compte ?' : 'Vous n\'avez pas de Compte ?'}{' '}
               <button
                 type="button"
                 onClick={onSwitchToRegister || (() => router.push('/register'))}
-                className="text-primary hover:underline"
+
+                className="text-rouge-clair hover:underline"
+
               >
                 Inscrivez-vous
               </button>

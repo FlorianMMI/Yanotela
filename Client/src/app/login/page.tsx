@@ -25,9 +25,10 @@ export default function Login() {
 
         if (res.ok) {
           const data = await res.json();
-          // Si l'utilisateur est déjà authentifié, rediriger
+
+          // Vérifier les deux formats possibles de la réponse
           if (data.authenticated || data.isAuthenticated) {
-            router.push('/');
+            router.push('/notes');
             return;
           }
         }
@@ -58,13 +59,13 @@ export default function Login() {
           <h1 className="text-3xl font-bold text-primary mb-2">
             Quel plaisir de vous revoir !
           </h1>
-          <p className="text-gray-600">
+          <p className="text-clrprincipal">
             Connectez-vous à votre compte Yanotela
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white p-8 rounded-xl shadow-lg">
+        <div className="bg-clrsecondaire p-8 rounded-xl shadow-lg">
           <LoginForm
             onSuccess={handleLoginSuccess}
             showTitle={false}
@@ -72,21 +73,6 @@ export default function Login() {
             onSwitchToForgot={() => router.push('/forgot-password')}
           />
         </div>
-
-        {/* Retiré car invisible sur desktop et en doublon sur mobile */}
-        {/* En plus ça fait bugger les tests */}
-        {/* Register Link
-        <div className="text-center">
-          <p className="text-gray-600 text-sm">
-            Vous n&apos;avez pas de compte ?{' '}
-            <Link
-              href="/register"
-              className="text-primary hover:text-rouge-hover font-medium"
-            >
-              Inscrivez-vous
-            </Link>
-          </p>
-        </div> */}
       </div>
     </div>
   );

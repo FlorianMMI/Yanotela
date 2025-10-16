@@ -4,6 +4,7 @@ import Note from '@/ui/note/Note';
 import NoteSkeleton from '@/ui/note/NoteSkeleton';
 import { Note as NoteType } from '@/type/Note';
 import { CreateNote } from '@/loader/loader';
+import { socketService } from '@/services/socketService';
 import { useRouter } from 'next/navigation';
 import Icons from '@/ui/Icon';
 import { motion } from 'framer-motion';
@@ -21,9 +22,13 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
   const handleCreateNote = async () => {
     const { note, redirectUrl } = await CreateNote();
     
-    console.log('Newly created note:', note);
-
     if (note && redirectUrl) {
+      // Essayer de joindre la room socket avant la navigation
+      try {
+        socketService.joinNote(note.id);
+      } catch (err) {
+        console.warn('Could not join socket room after note creation:', err);
+      }
       if (onNoteCreated) {
         onNoteCreated(); // Déclencher le refresh des notes
       }
@@ -34,7 +39,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
   };
 
   return (
-    <main className="p-4 md:pl-25 md:pr-25 md:pt-8">
+    <main className="p-4">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
 
         {/* Add Note Button */}
@@ -80,7 +85,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
         {/* Message si aucune note et pas en chargement */}
         {!isLoading && notes.length === 0 && (
           <div className="col-span-full text-center py-12">
-            <p className="text-gray-500 text-lg font-gant">
+            <p className="text-element text-lg font-gant">
               Aucune note trouvée. Créez votre première note !
             </p>
           </div>

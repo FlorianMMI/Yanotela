@@ -1,0 +1,232 @@
+name: Deploy App to EC2 (Development)
+
+on:
+  push:
+    branches: [ "Develop" ]
+
+env:
+  DOCKER_USERNAME: jefee
+  DOCKER_FRONTEND_REPO: jefee/yanotela-frontend-dev
+  DOCKER_BACKEND_REPO: jefee/yanotela-backend-dev
+  EC2_HOST: 13.39.48.72
+  EC2_USER: ubuntu
+  DEPLOY_PATH: /var/www/yanotela
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Development
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push frontend image (dev)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Client
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://13.39.48.72:3001
+          tags: |
+            ${{ env.DOCKER_FRONTEND_REPO }}:develop
+            ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push backend image (dev)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Server
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.DOCKER_BACKEND_REPO }}:develop
+            ${{ env.DOCKER_BACKEND_REPO }}:develop-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        continue-on-error: false
+
+      - name: Deploy to Development EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ${{ env.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "🚀 Starting deployment to DEVELOPMENT environment"
+            echo "✅ SSH connection successful!"
+            whoami
+            pwd
+            
+            # Create deployment directory if it doesn't exist
+            sudo mkdir -p ${{ env.DEPLOY_PATH }}
+            # Fix ownership to current user
+            sudo chown -R $USER:$USER ${{ env.DEPLOY_PATH }}
+            cd ${{ env.DEPLOY_PATH }}
+            
+            # Check if Docker is installed, install if missing
+            if ! command -v docker &> /dev/null; then
+              echo "📦 Installing Docker..."
+              sudo apt-get update -qq
+              sudo apt-get install -y ca-certificates curl
+              sudo install -m 0755 -d /etc/apt/keyrings
+              sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+              sudo chmod a+r /etc/apt/keyrings/docker.asc
+              echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt-get update -qq
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+              sudo usermod -aG docker $USER
+              # Start Docker service
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              echo "✅ Docker installed successfully"
+            else
+              echo "✅ Docker is already installed"
+            fi
+            
+            # Ensure Docker is running
+            sudo systemctl start docker || true
+            
+            # Clone or update repository
+            if [ ! -d ".git" ] || [ ! -f "docker-compose.dev.yml" ]; then
+              echo "📁 Cloning development repository..."
+              # Remove any existing files 
+              rm -rf ./* ./.* 2>/dev/null || true
+              git clone -b Develop https://github.com/FlorianMMI/Yanotela.git .
+              echo "✅ Repository cloned"
+            else
+              echo "📁 Updating repository..."
+              git fetch origin
+              git reset --hard origin/Develop
+              echo "✅ Repository updated"
+            fi
+            
+            # Ensure docker-compose.dev.yml exists
+            if [ ! -f "docker-compose.dev.yml" ]; then
+              echo "❌ docker-compose.dev.yml not found in repository"
+              ls -la
+              exit 1
+            fi
+            
+            # Update package cache and clean up disk space
+            sudo apt-get update -qq
+            # Clean up disk space before pulling images
+            docker system prune -f || true
+            docker image prune -f || true
+            
+            # Create development environment file (always recreate to ensure latest values)
+            echo "📝 Creating development environment file..."
+            cat > .env.dev << 'EOF'
+            # Development Environment Configuration
+            NODE_ENV=development
+            PORT=3001
+            
+            # Docker Configuration
+            DOCKER_USERNAME=${{ env.DOCKER_USERNAME }}
+            IMAGE_TAG=develop
+            
+            # Database Configuration (PostgreSQL)
+            DB_USER=yanotela_dev
+            DB_PASSWORD=dev_password_123
+            DB_NAME=yanotela_dev
+            DATABASE_URL=postgresql://yanotela_dev:dev_password_123@db-dev:5432/yanotela_dev
+            
+            # Redis Configuration
+            REDIS_PASSWORD=redis_dev_password_123
+            REDIS_URL=redis://:redis_dev_password_123@redis-dev:6379
+            
+            # Session Configuration
+            SESSION_SECRET=dev_session_secret_change_this_in_production
+            
+            # Application URLs
+            CLIENT_URL=http://${{ env.EC2_HOST }}:3000
+            SERVER_URL=http://${{ env.EC2_HOST }}:3001
+            
+            # Email Configuration (optional for development)
+            MAIL_SERVICE=gmail
+            MAIL_USER=
+            MAIL_PASSWORD=
+            
+            # Development settings
+            DEBUG=true
+            LOG_LEVEL=debug
+            EOF
+            echo "✅ Development environment file created"
+            
+            # Debug: Show environment file content
+            echo "📋 Environment file content:"
+            cat .env.dev
+            
+            # Pull latest development images
+            sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml pull || echo "⚠️ Docker compose pull failed, will continue with existing images"
+            
+            # Load environment variables and recreate containers
+            echo "✅ Development environment variables loaded"
+            
+            # Use direct environment variable passing instead of relying on .env.dev file
+            sudo DB_USER=yanotela_dev \
+                 DB_PASSWORD=dev_password_123 \
+                 DB_NAME=yanotela_dev \
+                 REDIS_PASSWORD=redis_dev_password_123 \
+                 SESSION_SECRET=dev_session_secret_change_this_in_production \
+                 MAIL_SERVICE=gmail \
+                 MAIL_USER= \
+                 MAIL_PASSWORD= \
+                 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} \
+                 IMAGE_TAG=develop \
+                 docker compose -f docker-compose.dev.yml up -d --force-recreate
+            
+            # Wait for services to be healthy
+            echo "Waiting for services to start..."
+            sleep 60
+            
+            # Show container status for debugging
+            echo "📊 Container status:"
+            sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml ps
+            
+            # Check if services are running
+            if sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 SESSION_SECRET=dev_session_secret_change_this_in_production MAIL_SERVICE=gmail MAIL_USER= MAIL_PASSWORD= DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml ps | grep -q "Up"; then
+              echo "✅ Development deployment successful!"
+              
+              # Test frontend
+              if curl -f -s -m 10 http://localhost:3000 > /dev/null; then
+                echo "✅ Frontend is responding on development server"
+              else
+                echo "❌ Frontend is not responding"
+                sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml logs frontend-dev
+                exit 1
+              fi
+              
+              # Test backend
+              if curl -f -s -m 10 http://localhost:3001 > /dev/null; then
+                echo "✅ Backend is responding on development server"
+              else
+                echo "❌ Backend is not responding"
+                sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml logs backend-dev
+                exit 1
+              fi
+              
+              echo "🎉 All services are healthy on DEVELOPMENT environment!"
+              echo "🌐 Access your development app at:"
+              echo "   Frontend: http://${{ env.EC2_HOST }}:3000"
+              echo "   Backend:  http://${{ env.EC2_HOST }}:3001"
+            else
+              echo "❌ Services failed to start on development server"
+              sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml logs
+              exit 1
+            fi

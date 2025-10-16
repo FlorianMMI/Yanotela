@@ -1,108 +1,99 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthState } from '@/hooks/useAuth';
-import Icons from '@/ui/Icon';
+import NotificationList from '../notificationList/page';
+import Icon from '@/ui/Icon';
 
 interface NavigationSidebarProps {
   user: AuthState['user'];
+  isopen?: boolean;
 }
 
-export default function NavigationSidebar({ user }: NavigationSidebarProps) {
+export default function NavigationSidebar({ user, isopen }: NavigationSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
-
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        router.push('/');
-        router.refresh();
-      }
-    } catch (error) {
-      console.error('Erreur de déconnexion:', error);
-    }
-  };
-
+  const isProfile = pathname.includes('/profil');
   const navItems = [
     {
       href: '/notes',
       label: 'Mes Notes',
-      icon: 'files',
-      isActive: pathname === '/notes',
+      icon: 'docs',
+      isActive: pathname.includes('/notes'),
     },
   ];
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header avec logo et utilisateur */}
-      <div className="p-4 border-b border-gray-300">
-        <Link className="flex items-center h-24 justify-center" href="/">
-          <Icons
-          name="logo"
-          className="text-clrprincipal stroke-25"
-          size={180}
-          >
-          </Icons>
+    <div className="h-full w-full flex flex-col relative">
 
-          
+      <div className="relative flex flex-row items-center p-4 gap-2">
+
+        <Link href="/profil"
+          className={`flex items-center ${isopen ? `flex-1 px-4  ` : `w-fit px-2  `} py-3 gap-3 rounded-lg transition-all text-gray-700 ${isProfile ? 'bg-primary text-white' : ' hover:bg-gray-100 hover:shadow-sm'}`}
+          title='Accéder à mes notes'>
+
+          <Icon
+            name="profile"
+            className={isProfile ? "text-white" : "text-element"}
+            size={30}
+          />
+
+          {isopen ? <div className="flex flex-col flex-1 min-w-0">
+            <p className={`text-sm font-medium text-clrprincipal group-hover:text-primary transition-colors duration-300 ${isProfile ? 'text-white' : ''}`}>
+              Bonjour, <span className={`text-primary capitalize ${isProfile ? 'text-white' : ''}`}>{user?.pseudo}</span>
+            </p>
+            <p className={`text-xs text-element truncate group-hover:text-gray-600 transition-colors duration-300 ${isProfile ? 'text-white' : ''}`}>
+              {user?.email}
+            </p>
+          </div> : ""}
+
         </Link>
-        
-        <div className="bg-beige-foncer rounded-lg p-3">
-          <p className="text-sm font-medium text-clrprincipal">
-            Bonjour, {user?.pseudo}
-          </p>
-          <p className="text-xs text-gray-500 truncate">
-            {user?.email}
-          </p>
-        </div>
+        <NotificationList isOpenSideBar={isopen} />
       </div>
 
-      {/* Navigation */}
+      <hr className="border-t border-element mx-8" />
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navItems.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  item.isActive
-                    ? 'bg-primary text-white'
-                    : 'text-clrprincipal hover:text-black bg-beige-foncer hover:bg-gray-100'
-                }`}
+
+                className={`flex items-center rounded-lg transition-all py-3 gap-3 ${isopen ? `w-full px-4  ` : `w-fit px-2 `} ${item.isActive
+                  ? 'bg-primary text-white'
+                  : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
+                  }`}
+                title='Accéder à mes notes'
               >
-                <Icons
+                <Icon
                   name={item.icon}
-                  size={20}
-                  className={item.isActive ? 'filter brightness-0 invert' : ''}
+                  className={item.isActive ? "text-white" : "text-element"}
+                  size={30}
+
                 />
-                <span className="font-medium">{item.label}</span>
+                <span className={`font-medium ${isopen ? `flex` : `hidden`}`}>{item.label}</span>
               </Link>
             </li>
           ))}
         </ul>
       </nav>
 
-      {/* Footer avec déconnexion */}
-      <div className="p-4 border-t border-gray-300">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-left text-clrprincipal hover:bg-gray-100 rounded-lg transition-colors hover:text-clrsecondaire cursor-pointer"
-        >
-          <Icons
-            name="exit"
-            size={40}
-          />
-          <span className="font-medium">Déconnexion</span>
-        </button>
-      </div>
+
+      <Link className='h-fit flex m-4 justify-center items-center overflow-hidden '
+        href="/"
+        title='retour à l`accueil'
+      >
+        <Icon
+          name={isopen ? `logo` : `logoIcon`}
+          className="text-clrprincipal stroke-25"
+          width={isopen ? 150 : 25}
+          height={isopen ? 50 : 25}
+        />
+      </Link>
+
     </div>
   );
 }

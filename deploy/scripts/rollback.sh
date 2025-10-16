@@ -1,18 +1,13 @@
 #!/bin/bash
-# Rollback Script pour Yanotela
+# Development Rollback Script
 
 set -e
 
-ENVIRONMENT=${1:-"prod"}
-BACKUP_DIR="backup"
+ENVIRONMENT=${1:-"dev"}
 
-if [ "$ENVIRONMENT" = "preprod" ]; then
-    COMPOSE_FILE="docker-compose.preprod.yml"
-    ENV_FILE=".env.preprod"
-else
-    COMPOSE_FILE="docker-compose.prod.yml"
-    ENV_FILE=".env.prod"
-fi
+# Development environment configuration
+COMPOSE_FILE="docker-compose.dev.yml"
+ENV_FILE=".env.dev"
 
 echo "🔄 Starting rollback for $ENVIRONMENT environment..."
 

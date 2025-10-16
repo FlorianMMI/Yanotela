@@ -7,6 +7,9 @@ import Icon from '@/ui/Icon';
 import ReturnButton from '@/ui/returnButton';
 import ConfirmPassword from '@/ui/confirm-password';
 import { Register } from '@/loader/loader';
+import FormField from '@/ui/form/FormField';
+import FormMessage from '@/ui/form/FormMessage';
+import GoogleAuthButton from './GoogleAuthButton';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -151,35 +154,26 @@ export default function RegisterForm({
 
   // Version complète pour les pages dédiées
   return (
-    <div className={`${className} ${!isInSidebar ? 'h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 text-clrprincipal' : 'space-y-4'}`}>
-      {!isInSidebar && <ReturnButton />}
-
+    <div className={`${className} ${!isInSidebar ? 'h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 relative text-clrprincipal' : 'space-y-4'}`}>
+      
       {showTitle && (
         <p className={`${isInSidebar ? 'text-2xl' : 'text-3xl'} font-bold text-primary mb-6 ${
           !isInSidebar ? 'text-center after:content-[\'\'] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8' : ''
         }`}>
-          {isInSidebar ? 'Créer un compte' : 'Bienvenue à bord 👋'}
+          {isInSidebar ? 'Créer un compte' : 'Bienvenue à bord'}
         </p>
       )}
 
       <form
         onSubmit={handleSubmit}
-        className={`${isInSidebar ? 'space-y-4' : 'flex flex-col justify-start items-center gap-5'}`}
+        className={`${isInSidebar ? 'space-y-4' : 'flex flex-col justify-start w-full items-center gap-5'}`}
       >
-        {error && (
-          <div className="w-full p-2.5 bg-red-100 border border-red-400 text-red-700 rounded-[10px] text-sm">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="w-full p-2.5 bg-green-100 border border-green-400 text-green-700 rounded-[10px] text-sm">
-            {success}
-          </div>
-        )}
+        <FormMessage type="error" message={error} />
+        <FormMessage type="success" message={success} />
 
         {/* Champs du formulaire */}
         <div className={`w-full flex flex-col justify-start items-start ${isInSidebar ? 'space-y-4' : 'gap-5'}`}>
+
           {/* Pseudo */}
           <div className={`${isInSidebar ? 'w-full' : 'flex w-full justify-between items-center gap-5'}`}>
             <div className={`${isInSidebar ? 'mb-1' : 'flex flex-col'}`}>
@@ -199,13 +193,14 @@ export default function RegisterForm({
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className={`${isInSidebar ? 'w-full px-3 py-2 bg-clrsecondaire border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500'}`}
+              className={`${isInSidebar ? 'w-full px-3 py-2 bg-clrsecondaire rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500 border-primary border-2'}`}
             />
           </div>
 
-          {/* Prénom */}
+
           <div className={`${isInSidebar ? 'grid grid-cols-2 gap-4' : 'flex w-full justify-between items-center gap-5'}`}>
-            <div>
+
+            <div className='w-full'>
               <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
                 Prénom
               </p>
@@ -216,11 +211,11 @@ export default function RegisterForm({
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500'}`}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
               />
             </div>
 
-            <div>
+            <div className='w-full'>
               <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
                 Nom
               </p>
@@ -231,16 +226,18 @@ export default function RegisterForm({
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500'}`}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
               />
             </div>
           </div>
 
           {/* Email */}
-          <div className={`${isInSidebar ? 'w-full' : 'self-stretch flex flex-col justify-start items-start gap-2.5'}`}>
+          <div className={`${isInSidebar ? 'w-full ' : 'self-stretch flex flex-col justify-start items-start gap-2.5 '}`}>
+
             <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
               Email
             </p>
+
             <input
               type="email"
               name="email"
@@ -248,10 +245,12 @@ export default function RegisterForm({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500'}`}
+              className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
+
             />
           </div>
         </div>
+
         
         <ConfirmPassword
           password={password}
@@ -260,6 +259,7 @@ export default function RegisterForm({
           onConfirmPasswordChange={setConfirmPassword}
           disabled={isLoading}
         />
+
 
         <button
           type="submit"
@@ -288,13 +288,29 @@ export default function RegisterForm({
           />
         </button>
 
+        {/* Séparateur et inscription Google */}
+        <div className="flex flex-col items-center gap-4 w-full">
+          <div className="flex items-center w-full gap-4">
+            <div className="flex-1 h-px bg-gray-300"></div>
+            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+            <div className="flex-1 h-px bg-gray-300"></div>
+          </div>
+          
+          <GoogleAuthButton 
+            mode="register"
+            onSuccess={onSuccess}
+          />
+        </div>
+
         {showLoginLink && (
           <div className="text-center flex justify-start items-center gap-2">
             <p className='text-sm text-gray-600'>Déjà un compte ?</p>
             <button
               type="button"
               onClick={onSwitchToLogin}
-              className="text-sm text-primary hover:underline"
+
+              className="text-sm text-rouge-clair hover:underline"
+
             >
                Se connecter
             </button>

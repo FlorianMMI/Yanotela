@@ -4,8 +4,12 @@ import React from 'react';
 import SideBar from '@/components/sideBar/sideBar';
 import Breadcrumb from '@/components/breadcrumb/Breadcrumb';
 import { useAuth } from '@/hooks/useAuth';
+import { useSidebarToggle } from '@/hooks/useSidebarToggle';
+import ItemBar from '@/components/itemBar/ItemBar';
 import NoteHeader from '@/components/noteHeader/NoteHeader';
 import Icon from '@/ui/Icon';
+import { SwipeNavigationWrapper } from '@/components/navigation/SwipeNavigationWrapper';
+import { Item } from 'yjs';
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
@@ -13,31 +17,35 @@ interface DesktopLayoutProps {
 
 export default function DesktopLayout({ children }: DesktopLayoutProps) {
   const { isAuthenticated, loading } = useAuth();
+  const { isOpen } = useSidebarToggle();
 
 
 
   return (
     <>
-      {/* Mobile: comportement actuel avec vérification d'auth */}
+      {/* Mobile: comportement actuel avec swipe navigation */}
       <div className="md:hidden">
         {loading ? (
           <div className="h-screen flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          children
+          <SwipeNavigationWrapper>
+            {children}
+          </SwipeNavigationWrapper>
         )}
       </div>
 
       {/* Desktop: nouvelle architecture */}
       <div className="hidden md:flex h-screen">
         {/* Sidebar */}
-        <SideBar state="open" />
+        <SideBar />
 
         {/* Contenu principal */}
-        <div className="flex-1 flex flex-col ml-80">
+        <div className={`flex-1 flex flex-col w-full`}>
           {/* Breadcrumb en haut */}
           <Breadcrumb />
+          <ItemBar />
           
 
           {/* Zone de contenu */}
@@ -46,16 +54,16 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
             {!loading && !isAuthenticated ? (
               <div className="h-full flex items-center justify-center">
                 <div className="text-center space-y-4">
-                  <div className="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-                    <div className="w-12 h-12 text-gray-400">
+                  <div className="w-24 h-24 mx-auto bg-beige-foncer rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 text-element">
                       <Icon name="files" size={48} />
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h2 className="text-xl font-semibold text-clrprincipal mb-2">
                       Bienvenue sur Yanotela
                     </h2>
-                    <p className="text-gray-600">
+                    <p className="text-element">
                       Connectez-vous pour accéder à vos notes
                     </p>
                   </div>

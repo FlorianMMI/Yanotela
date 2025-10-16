@@ -1,125 +1,246 @@
-# 🚀 CI/CD Yanotela - Guide de déploiement
+# 🚀 Development Deployment - Yanotela# 🚀 CI/CD Yanotela - Guide de déploiement
 
-Pipeline automatisé pour déployer Yanotela sur AWS EC2 avec Docker.
 
-## 📋 Flux de déploiement
 
-```mermaid
-graph LR
-    A[Push develop] --> B[🧪 Vérification Preprod]
-    B --> C[� Notification]
-    C --> D[� Test local manuel]
-    
-    E[Push main] --> F[🧪 Tests Prod]
-    F --> G[🐳 Build Images]
+Automated development deployment pipeline for Yanotela using Docker and EC2.Pipeline automatisé pour déployer Yanotela sur AWS EC2 avec Docker.
+
+
+
+## 📋 Development Workflow## 📋 Flux de déploiement
+
+
+
+```mermaid```mermaid
+
+graph LRgraph LR
+
+    A[Push to Develop] --> B[🧪 Build Dev Images]    A[Push develop] --> B[🧪 Vérification Preprod]
+
+    B --> C[🐳 Push to Docker Hub]    B --> C[� Notification]
+
+    C --> D[🚀 Deploy to Dev EC2]    C --> D[� Test local manuel]
+
+    D --> E[🏥 Health Check]    
+
+    E --> F[📧 Notification]    E[Push main] --> F[🧪 Tests Prod]
+
+```    F --> G[🐳 Build Images]
+
     G --> H[🚀 Deploy Production]
-    H --> I[🏥 Health Check]
+
+## 🔧 Setup Guide    H --> I[🏥 Health Check]
+
     I --> J[📧 Notification]
-```
+
+### 1. GitHub Secrets```
+
+📁 See complete guide: [`deploy/SETUP-DEV-SECRETS.md`](./SETUP-DEV-SECRETS.md)
 
 ## 🔧 Configuration requise
 
-### 1. Secrets GitHub
-📁 Voir le guide complet : [`deploy/SETUP-GITHUB-SECRETS.md`](./SETUP-GITHUB-SECRETS.md)
+**Required secrets:**
 
-**Secrets obligatoires :**
+- `DOCKER_PASSWORD` - Docker Hub access token### 1. Secrets GitHub
+
+- `EC2_SSH_PRIVATE_KEY` - SSH key for development EC2 (13.39.48.72)📁 Voir le guide complet : [`deploy/SETUP-GITHUB-SECRETS.md`](./SETUP-GITHUB-SECRETS.md)
+
+
+
+### 2. Development EC2 Setup**Secrets obligatoires :**
+
 - `EC2_HOST`, `EC2_USER`, `EC2_SSH_PRIVATE_KEY`
-- `DOCKER_USERNAME`, `DOCKER_PASSWORD` (Docker Hub)
+
+Run the setup script on your development EC2 instance:- `DOCKER_USERNAME`, `DOCKER_PASSWORD` (Docker Hub)
+
 - `NOTIFICATION_EMAIL`, `NOTIFICATION_EMAIL_PASSWORD`
-- `ENV_PROD_FILE`, `ENV_PREPROD_FILE`
 
-### 2. Instance EC2
-```bash
-# Installer Docker sur EC2
+```bash- `ENV_PROD_FILE`, `ENV_PREPROD_FILE`
+
+# On your development EC2 (13.39.48.72)
+
+chmod +x deploy/scripts/setup-ec2.sh### 2. Instance EC2
+
+./deploy/scripts/setup-ec2.sh```bash
+
+```# Installer Docker sur EC2
+
 sudo apt update && sudo apt install -y docker.io docker-compose
-sudo usermod -aG docker ubuntu
 
-# Créer les répertoires
-mkdir -p ~/yanotela ~/yanotela-preprod
-```
+This will:sudo usermod -aG docker ubuntu
 
-## 🎯 Utilisation
+- Install Docker and Docker Compose
 
-### Déploiement automatique
-- **Push sur `develop`** → ✅ Vérification du code (tests + build)
-- **Push sur `main`** → 🚀 Déploiement production automatique
+- Setup development directories# Créer les répertoires
 
-### Test preprod (local)
+- Configure firewall for development ports (3000, 3001)mkdir -p ~/yanotela ~/yanotela-preprod
+
+- Setup development environment```
+
+
+
+### 3. Deployment Process## 🎯 Utilisation
+
+
+
+1. **Automatic**: Push to `Develop` branch triggers deployment### Déploiement automatique
+
+2. **Manual**: Run development build script locally:- **Push sur `develop`** → ✅ Vérification du code (tests + build)
+
+   ```bash- **Push sur `main`** → 🚀 Déploiement production automatique
+
+   ./deploy/scripts/build-and-push-dev.sh
+
+   ```### Test preprod (local)
+
 ```bash
-# Après vérification réussie sur develop :
+
+## 📦 Development Infrastructure# Après vérification réussie sur develop :
+
 git checkout develop && git pull
-docker-compose -f docker-compose.preprod.yml up --build
-# Accès: http://localhost:8080
-```
 
-### Déploiement manuel production
-```bash
-# Via GitHub Actions
-Repository → Actions → Select workflow → Run workflow
+### Docker Imagesdocker-compose -f docker-compose.preprod.yml up --build
 
-# Via scripts locaux (sur EC2)
-./deploy/scripts/deploy.sh prod
-```
+- **Frontend**: `jefee/yanotela-frontend-dev:develop`# Accès: http://localhost:8080
+
+- **Backend**: `jefee/yanotela-backend-dev:develop````
+
+
+
+### Development Server### Déploiement manuel production
+
+- **Host**: 13.39.48.72```bash
+
+- **Frontend**: http://13.39.48.72:3000# Via GitHub Actions
+
+- **Backend**: http://13.39.48.72:3001Repository → Actions → Select workflow → Run workflow
+
+
+
+### Configuration Files# Via scripts locaux (sur EC2)
+
+- **Docker Compose**: `docker-compose.dev.yml`./deploy/scripts/deploy.sh prod
+
+- **Environment**: `.env.dev.template` (copy to `.env.dev`)```
+
+- **Build Script**: `deploy/scripts/build-and-push-dev.sh`
 
 ## 🔍 Monitoring
 
+## 🛠️ Available Scripts
+
 ### Health checks
-```bash
-# Vérifier le statut production
+
+### `deploy/scripts/build-and-push-dev.sh````bash
+
+Builds and pushes development Docker images to Docker Hub.# Vérifier le statut production
+
 ./deploy/scripts/health-check.sh prod
 
-# Test local (preprod)
+### `deploy/scripts/setup-ec2.sh`
+
+Sets up a fresh EC2 instance for development deployment.# Test local (preprod)
+
 curl http://localhost:8080         # Frontend local
-curl http://localhost:8081/health  # Backend local
+
+### `deploy/scripts/ec2-setup-commands.sh`curl http://localhost:8081/health  # Backend local
+
+Commands to run on EC2 after initial setup.
 
 # Production
-curl http://VOTRE_IP              # Prod frontend  
-curl http://VOTRE_IP:3001/health  # Prod backend
+
+### `deploy/scripts/health-check.sh`curl http://VOTRE_IP              # Prod frontend  
+
+Checks if the development application is running correctly.curl http://VOTRE_IP:3001/health  # Prod backend
+
 ```
+
+## 🔧 Troubleshooting
 
 ### Logs
-```bash
-# Logs services locaux (preprod)
-docker-compose -f docker-compose.preprod.yml logs -f
 
-# Logs production
+### Common Issues```bash
+
+# Logs services locaux (preprod)
+
+1. **SSH Connection Failed**docker-compose -f docker-compose.preprod.yml logs -f
+
+   - Verify SSH key permissions: `chmod 600 your-key.pem`
+
+   - Check EC2 security group allows SSH (port 22)# Logs production
+
 docker-compose -f docker-compose.prod.yml logs -f
 
-# Logs GitHub Actions
-Repository → Actions → Cliquer sur le workflow
+2. **Docker Build Failed**
+
+   - Check Docker Hub credentials in GitHub secrets# Logs GitHub Actions
+
+   - Verify repository names match development reposRepository → Actions → Cliquer sur le workflow
+
 ```
 
-## 🔄 Rollback
+3. **Deployment Failed**
+
+   - Check EC2 has Docker installed: `docker --version`## 🔄 Rollback
+
+   - Verify development directories exist: `ls ~/yanotela-dev`
 
 ### Automatique (production uniquement)
-Le rollback s'effectue automatiquement en cas d'échec du health check en production.
 
-### Manuel
-```bash
-# Production seulement
-./deploy/scripts/rollback.sh prod
+### Logs and MonitoringLe rollback s'effectue automatiquement en cas d'échec du health check en production.
 
-# Local (preprod) : pas de rollback nécessaire
-docker-compose -f docker-compose.preprod.yml down
-git checkout previous-commit
-docker-compose -f docker-compose.preprod.yml up --build
+
+
+Check deployment logs:### Manuel
+
+```bash```bash
+
+# On development EC2# Production seulement
+
+sudo docker compose -f docker-compose.dev.yml logs -f./deploy/scripts/rollback.sh prod
+
 ```
 
-## 📧 Notifications
+# Local (preprod) : pas de rollback nécessaire
 
-Vous recevrez des emails automatiques pour :
-- ✅ Déploiement réussi
-- ❌ Déploiement échoué
-- 🔄 Rollback effectué
+Check service status:docker-compose -f docker-compose.preprod.yml down
 
-## 🛠️ Scripts utiles
+```bashgit checkout previous-commit
 
-### Test preprod en local
-```bash
-# Démarrer l'environnement de test
-docker-compose -f docker-compose.preprod.yml up --build -d
+sudo docker compose -f docker-compose.dev.yml psdocker-compose -f docker-compose.preprod.yml up --build
 
-# Vérifier les services
+``````
+
+
+
+## 🔒 Security Notes## 📧 Notifications
+
+
+
+- Development environment uses separate Docker repositoriesVous recevrez des emails automatiques pour :
+
+- Different SSH keys for development vs production- ✅ Déploiement réussi
+
+- Development database credentials should be different- ❌ Déploiement échoué
+
+- Regular rotation of access tokens recommended- 🔄 Rollback effectué
+
+
+
+## 📈 Next Steps## 🛠️ Scripts utiles
+
+
+
+After successful development deployment:### Test preprod en local
+
+1. Test application functionality```bash
+
+2. Verify database connections# Démarrer l'environnement de test
+
+3. Check health endpointsdocker-compose -f docker-compose.preprod.yml up --build -d
+
+4. Review logs for any issues
+
+5. Prepare for production deployment when ready# Vérifier les services
 curl http://localhost:8080        # Frontend
 curl http://localhost:8081/health # Backend
 

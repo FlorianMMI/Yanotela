@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ConfirmPassword from '@/ui/confirm-password';
 import { ResetPassword, ValidateResetToken } from '@/loader/loader';
@@ -190,7 +190,7 @@ export default function ResetPasswordForm({
           <button
             type="button"
             onClick={() => router.push('/login')}
-            className="text-sm text-primary hover:text-primary/80"
+            className="text-sm text-primary hover:text-primary-hover hover:underline cursor-pointer"
           >
             Retour à la connexion
           </button>
