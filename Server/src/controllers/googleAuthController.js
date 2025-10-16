@@ -37,9 +37,7 @@ export const initiateGoogleAuth = (req, res) => {
     res.redirect(authUrl);
   } catch (error) {
     console.error('Erreur lors de l\'initiation Google Auth:', error);
-    res.status(500).render('index', { 
-      error: 'Erreur lors de la connexion avec Google' 
-    });
+      res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur lors de la connexion avec Google')}`);
   }
 };
 
@@ -53,17 +51,13 @@ export const handleGoogleCallback = async (req, res) => {
     // Vérifier s'il y a une erreur OAuth
     if (error) {
       console.error('Erreur OAuth Google:', error);
-      return res.status(400).render('index', { 
-        error: 'Connexion Google annulée ou échouée' 
-      });
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Connexion Google annulée ou échouée')}`);
     }
 
     // Vérifier l'état CSRF
     if (!state || state !== req.session.oauthState) {
       console.error('État CSRF invalide');
-      return res.status(400).render('index', { 
-        error: 'Erreur de sécurité lors de la connexion' 
-      });
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur de sécurité lors de la connexion')}`);
     }
 
     // Échanger le code contre les tokens
@@ -147,9 +141,7 @@ export const handleGoogleCallback = async (req, res) => {
     }
   } catch (error) {
     console.error('Erreur lors du callback Google:', error);
-    res.status(500).render('index', { 
-      error: 'Erreur lors de la connexion avec Google' 
-    });
+      res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur lors de la connexion avec Google')}`);
   } finally {
     // Nettoyer l'état de la session
     delete req.session.oauthState;
@@ -165,9 +157,7 @@ export const googleLogout = async (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         console.error('Erreur lors de la destruction de session:', err);
-        return res.status(500).render('index', { 
-          error: 'Erreur lors de la déconnexion' 
-        });
+        return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur lors de la déconnexion')}`);
       }
       
       
@@ -177,9 +167,7 @@ export const googleLogout = async (req, res) => {
     });
   } catch (error) {
     console.error('Erreur lors de la déconnexion Google:', error);
-    res.status(500).render('index', { 
-      error: 'Erreur lors de la déconnexion' 
-    });
+      res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur lors de la déconnexion')}`);
   }
 };
 
@@ -211,8 +199,6 @@ export const linkGoogleAccount = async (req, res) => {
     res.redirect(authUrl);
   } catch (error) {
     console.error('Erreur lors de la liaison du compte Google:', error);
-    res.status(500).render('index', { 
-      error: 'Erreur lors de la liaison avec Google' 
-    });
+      res.redirect(`${process.env.CLIENT_URL}/settings?error=${encodeURIComponent('Erreur lors de la liaison avec Google')}`);
   }
 };
