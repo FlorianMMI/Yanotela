@@ -1,5 +1,4 @@
-# Docker Compose for Production Environment
-version: '3.8'
+# Docker Compose pour l'environnement Production
 
 services:
   db-prod:
@@ -92,7 +91,6 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      # CRITICAL FIX: Use backend container name for internal communication
       - NEXT_PUBLIC_API_URL=http://${EC2_HOST:-localhost}:3001
     env_file:
       - .env.prod
