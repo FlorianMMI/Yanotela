@@ -12,6 +12,7 @@ interface IconProps {
 
 const Icon = ({ name, className = "", size = 20, width, height }: IconProps) => {
   const [svgContent, setSvgContent] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   if (!width) width = size;
   if (!height) height = size;
   useEffect(() => {

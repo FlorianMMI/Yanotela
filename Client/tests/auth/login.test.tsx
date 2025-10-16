@@ -468,9 +468,9 @@ describe("Login Authentication", () => {
         render(<LoginPage />);
       });
 
-      // Should redirect to /
+      // Should redirect to /notes
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/');
+        expect(mockPush).toHaveBeenCalledWith('/notes');
       });
     });
 

@@ -148,18 +148,20 @@ export default function LoginForm({
         </button>
 
         {/* Séparateur et connexion Google */}
-        <div className="flex flex-col items-center gap-4 w-full">
-          <div className="flex items-center w-full gap-4">
-            <div className="flex-1 h-px bg-gray-300"></div>
-            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
-            <div className="flex-1 h-px bg-gray-300"></div>
+        {!isInSidebar && (
+          <div className="flex flex-col items-center gap-4 w-full">
+            <div className="flex items-center w-full gap-4">
+              <div className="flex-1 h-px bg-gray-300"></div>
+              <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+              <div className="flex-1 h-px bg-gray-300"></div>
+            </div>
+            
+            <GoogleAuthButton 
+              mode="login"
+              onSuccess={onSuccess}
+            />
           </div>
-          
-          <GoogleAuthButton 
-            mode="login"
-            onSuccess={onSuccess}
-          />
-        </div>
+        )}
 
         {/* Lien d'inscription */}
         {showRegisterLink && (
@@ -169,13 +171,11 @@ export default function LoginForm({
               <button
                 type="button"
                 onClick={onSwitchToRegister || (() => router.push('/register'))}
-
                 className="text-rouge-clair hover:underline"
-
               >
                 Inscrivez-vous
               </button>
-            </span>
+            </div>
           </div>
         )}
         

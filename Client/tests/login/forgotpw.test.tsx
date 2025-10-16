@@ -24,10 +24,13 @@ jest.mock("next/link", () => {
 });
 
 // Mock the ForgotPassword function
-const mockForgotPassword = jest.fn();
 jest.mock('@/loader/loader', () => ({
-  ForgotPassword: mockForgotPassword,
+  ForgotPassword: jest.fn(),
 }));
+
+// Get the mocked function
+import { ForgotPassword } from '@/loader/loader';
+const mockForgotPassword = ForgotPassword as jest.MockedFunction<typeof ForgotPassword>;
 
 // Reset mocks before each test
 beforeEach(() => {
