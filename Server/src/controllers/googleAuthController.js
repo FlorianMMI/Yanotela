@@ -91,10 +91,18 @@ export const handleGoogleCallback = async (req, res) => {
       // Créer la session
       req.session.userId = user.id;
       req.session.pseudo = user.pseudo;
+      
+      console.log('🔒 Session créée pour utilisateur existant:', {
+        userId: user.id,
+        pseudo: user.pseudo,
+        sessionID: req.sessionID
+      });
+      
       await req.session.save();
 
       // Redirection vers le client après authentification
       const clientUrl = process.env.CLIENT_URL || 'https://yanotela.fr';
+      console.log('➡️ Redirection vers:', `${clientUrl}/notes`);
       return res.redirect(`${clientUrl}/notes`);
     } else {
       // Nouvel utilisateur - inscription
@@ -133,10 +141,18 @@ export const handleGoogleCallback = async (req, res) => {
       // Créer la session
       req.session.userId = user.id;
       req.session.pseudo = user.pseudo;
+      
+      console.log('🔒 Session créée pour nouvel utilisateur:', {
+        userId: user.id,
+        pseudo: user.pseudo,
+        sessionID: req.sessionID
+      });
+      
       await req.session.save();
 
       // Redirection vers le client après authentification
       const clientUrl = process.env.CLIENT_URL || 'https://yanotela.fr';
+      console.log('➡️ Redirection vers:', `${clientUrl}/notes`);
       return res.redirect(`${clientUrl}/notes`);
     }
   } catch (error) {
@@ -178,9 +194,7 @@ export const linkGoogleAccount = async (req, res) => {
   try {
     // Vérifier que l'utilisateur est connecté
     if (!req.session.userId) {
-      return res.status(401).render('index', { 
-        error: 'Vous devez être connecté pour lier votre compte Google' 
-      });
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Vous devez être connecté pour lier votre compte Google')}`);
     }
 
     // Initier le processus OAuth avec un paramètre spécial
