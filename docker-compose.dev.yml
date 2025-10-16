@@ -92,7 +92,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - NEXT_PUBLIC_API_URL=http://13.39.48.72:3001
+      - NEXT_PUBLIC_API_URL=https://yanotela.fr/api
     env_file:
       - .env.dev
     depends_on:
