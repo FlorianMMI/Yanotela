@@ -25,7 +25,7 @@ export default function ValidatePage() {
       try {
         
         // Appeler l'API de validation du backend
-        const response = await fetch(`http://localhost:3001/validate/${token}`, {
+        const response = await fetch(`https://yanotela.fr/api/validate/${token}`, {
           method: 'GET',
           credentials: 'include', // Important pour les sessions
         });

@@ -11,7 +11,7 @@ export function useAuthRedirect() {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('http://localhost:3001/auth/check', {
+      const response = await fetch('https://yanotela.fr/api/auth/check', {
         method: 'GET',
         credentials: 'include',
       });

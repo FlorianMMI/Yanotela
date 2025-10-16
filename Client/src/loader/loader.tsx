@@ -2,7 +2,7 @@ import { Note } from '@/type/Note';
 import { create } from 'domain';
 import { ID } from 'yjs';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api';
 
 export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note | null; redirectUrl?: string }> {
     try {

@@ -20,8 +20,8 @@
 # Lancer toute la stack (client + serveur + base de données)
 docker compose up --build
 ```
-- Client : http://localhost:3000
-- Serveur : http://localhost:3001
+- Client : https://yanotela.fr
+- Serveur : https://yanotela.fr/api
 
 > **Astuce WSL** : Assurez-vous que Docker Desktop est lancé sous WSL2.  
 > Les volumes et ports sont automatiquement mappés.
@@ -32,8 +32,8 @@ docker compose up --build
 # Installation et lancement des services (client + serveur)
 ./setup.sh
 ```
-- Client : http://localhost:3000
-- Serveur : http://localhost:3001
+- Client : https://yanotela.fr
+- Serveur : https://yanotela.fr/api
 
 ---
 

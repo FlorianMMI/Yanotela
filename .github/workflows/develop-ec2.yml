@@ -204,7 +204,7 @@ jobs:
               echo "✅ Development deployment successful!"
               
               # Test frontend
-              if curl -f -s -m 10 http://localhost:3000 > /dev/null; then
+              if curl -f -s -m 10 https://yanotela.fr > /dev/null; then
                 echo "✅ Frontend is responding on development server"
               else
                 echo "❌ Frontend is not responding"
@@ -213,7 +213,7 @@ jobs:
               fi
               
               # Test backend
-              if curl -f -s -m 10 http://localhost:3001 > /dev/null; then
+              if curl -f -s -m 10 https://yanotela.fr/api > /dev/null; then
                 echo "✅ Backend is responding on development server"
               else
                 echo "❌ Backend is not responding"

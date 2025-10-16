@@ -231,7 +231,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await fetch('http://localhost:3001/user/info', {
+        const response = await fetch('https://yanotela.fr/api/user/info', {
           credentials: 'include'
         });
         if (response.ok) {
