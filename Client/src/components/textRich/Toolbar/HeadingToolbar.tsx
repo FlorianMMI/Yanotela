@@ -2,34 +2,60 @@ import React from 'react';
 // @ts-ignore
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 // @ts-ignore
-import { $createHeadingNode } from '@lexical/rich-text';
+import { $createHeadingNode, $setBlocksType } from '@lexical/rich-text';
 import { $getSelection, $isRangeSelection } from 'lexical';
 import { ToolbarButton } from './ToolbarButton';
 
 export function HeadingToolbar() {
     const [editor] = useLexicalComposerContext();
+    const [fontSize, setFontSize] = React.useState(16);
 
-    const handleHeading = (tag: 'h1' | 'h2' | 'h3') => {
+
+    // Applique la taille de police sur le bloc courant (heading ou paragraphe)
+    const applyFontSize = (size: number) => {
         editor.update(() => {
             const selection = $getSelection();
             if ($isRangeSelection(selection)) {
-                // @ts-ignore
-                selection.insertNodes([$createHeadingNode(tag)]);
+                const nodes = selection.getNodes();
+                nodes.forEach(node => {
+                    if (typeof node.setStyle === 'function') {
+                        node.setStyle(`font-size: ${size}px;`);
+                    }
+                });
             }
         });
     };
 
+    const handleFontSizeChange = (delta: number) => {
+        setFontSize(prev => {
+            let newSize = prev + delta;
+            if (newSize < 12) newSize = 12;
+            if (newSize > 36) newSize = 36;
+            applyFontSize(newSize);
+            return newSize;
+        });
+    };
+
     return (
-        <>
-            <ToolbarButton onClick={() => handleHeading('h1')} title="Titre 1">
-                <span className="font-bold">H1</span>
-            </ToolbarButton>
-            <ToolbarButton onClick={() => handleHeading('h2')} title="Titre 2">
-                <span className="font-bold">H2</span>
-            </ToolbarButton>
-            <ToolbarButton onClick={() => handleHeading('h3')} title="Titre 3">
-                <span className="font-bold">H3</span>
-            </ToolbarButton>
-        </>
+        <div className="flex items-center gap-2">
+            <span className="font-bold">Taille :</span>
+            <button
+                type="button"
+                className="px-2 py-1 border rounded bg-gray-100 hover:bg-gray-200"
+                onClick={() => handleFontSizeChange(-2)}
+                disabled={fontSize <= 12}
+            >
+                -
+            </button>
+            <span className="w-8 text-center">{fontSize}px</span>
+            <button
+                type="button"
+                className="px-2 py-1 border rounded bg-gray-100 hover:bg-gray-200"
+                onClick={() => handleFontSizeChange(2)}
+                disabled={fontSize >= 36}
+            >
+                +
+            </button>
+        </div>
     );
 }

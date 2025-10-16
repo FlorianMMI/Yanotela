@@ -1,3 +1,23 @@
+/* Styles directs pour les balises de titres dans l'éditeur Lexical */
+.editor-root h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 0.67em 0;
+  color: var(--clr-rouge-fonce);
+}
+
+.editor-root h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0.75em 0;
+  color: var(--clr-gris-clair);
+}
+
+.editor-root h3 {
+  font-size: 1.17em;
+  font-weight: bold;
+  margin: 0.83em 0;
+}
 /* Styles pour l'éditeur Lexical */
 
 /* Styles pour les titres */
@@ -26,12 +46,14 @@
   padding: 0;
   margin: 0;
   margin-left: 16px;
+  list-style-type: decimal;
 }
 
 .editor-list-ul {
   padding: 0;
   margin: 0;
   margin-left: 16px;
+  list-style-type: disc;
 }
 
 .editor-listitem {

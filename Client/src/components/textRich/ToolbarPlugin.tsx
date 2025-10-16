@@ -15,7 +15,9 @@ import {
 // @ts-ignore
 import { $isListNode, ListNode, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list';
 // @ts-ignore
-import { $isHeadingNode, $createHeadingNode } from '@lexical/rich-text';
+import { $isHeadingNode, $createHeadingNode, HeadingNode } from '@lexical/rich-text';
+// @ts-ignore
+import { ParagraphNode } from 'lexical';
 // @ts-ignore
 import { $getNearestNodeOfType, mergeRegister, $setBlocksType } from '@lexical/utils';
 
@@ -29,12 +31,39 @@ export default function ToolbarPlugin() {
     const [blockType, setBlockType] = useState('paragraph');
     const [canUndo, setCanUndo] = useState(false);
     const [canRedo, setCanRedo] = useState(false);
-    const [fontSize, setFontSize] = useState('16px');
+    const [fontSize, setFontSize] = useState(16);
+    // Applique la taille de police sur le bloc courant (heading ou paragraphe)
+    const applyFontSize = (size: number) => {
+        editor.update(() => {
+            const selection = $getSelection();
+            if ($isRangeSelection(selection)) {
+                const anchorNode = selection.anchor.getNode();
+                const element = anchorNode.getKey() === 'root'
+                    ? anchorNode
+                    : anchorNode.getTopLevelElementOrThrow();
+                if (
+                    typeof element.setStyle === 'function' &&
+                    (element.getType() === 'paragraph' || element.getType() === 'heading')
+                ) {
+                    element.setStyle(`font-size: ${size}px;`);
+                }
+            }
+        });
+    };
+
+    const handleFontSizeChange = (delta: number) => {
+        setFontSize(prev => {
+            let newSize = prev + delta;
+            if (newSize < 12) newSize = 12;
+            if (newSize > 36) newSize = 36;
+            applyFontSize(newSize);
+            return newSize;
+        });
+    };
 
     const updateToolbar = useCallback(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
-            // Mise à jour des états de formatage
             setIsBold(selection.hasFormat('bold'));
             setIsItalic(selection.hasFormat('italic'));
             setIsUnderline(selection.hasFormat('underline'));
@@ -43,12 +72,26 @@ export default function ToolbarPlugin() {
 
             // Détection du type de bloc (paragraph, h1, h2, liste, etc.)
             const anchorNode = selection.anchor.getNode();
-            const element = anchorNode.getKey() === 'root' 
-                ? anchorNode 
+            const element = anchorNode.getKey() === 'root'
+                ? anchorNode
                 : anchorNode.getTopLevelElementOrThrow();
+
+            // Lecture de la taille de police courante
+            let currentFontSize = 16;
+            if (typeof element.getStyle === 'function') {
+                const style = element.getStyle();
+                if (style) {
+                    const match = style.match(/font-size:\s*(\d+)px/);
+                    if (match) {
+                        currentFontSize = parseInt(match[1], 10);
+                    }
+                }
+            }
+            setFontSize(currentFontSize);
+
+            // BlocType
             const elementKey = element.getKey();
             const elementDOM = editor.getElementByKey(elementKey);
-
             if (elementDOM !== null) {
                 if ($isListNode(element)) {
                     const parentList = $getNearestNodeOfType(anchorNode, ListNode);
@@ -142,7 +185,30 @@ export default function ToolbarPlugin() {
 
     return (
         <div className="flex flex-wrap gap-1.5 p-2.5 border-b border-gray-300 bg-white shadow-sm sticky top-0 z-10 rounded-t-lg">
-            {/* Taille de police / Type de bloc */}
+
+            {/* Taille de police */}
+            <div className="flex items-center gap-2 mr-2">
+                <span className="font-bold">Taille :</span>
+                <button
+                    type="button"
+                    className="px-2 py-1 border rounded bg-gray-100 hover:bg-gray-200"
+                    onClick={() => handleFontSizeChange(-2)}
+                    disabled={fontSize <= 12}
+                >
+                    -
+                </button>
+                <span className="w-8 text-center">{fontSize}px</span>
+                <button
+                    type="button"
+                    className="px-2 py-1 border rounded bg-gray-100 hover:bg-gray-200"
+                    onClick={() => handleFontSizeChange(2)}
+                    disabled={fontSize >= 36}
+                >
+                    +
+                </button>
+            </div>
+
+            {/* Type de bloc */}
             <select 
                 className="px-3 py-1.5 rounded border border-gray-300 text-sm bg-white hover:border-primary transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
                 value={blockType}
