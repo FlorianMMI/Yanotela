@@ -1,7 +1,7 @@
 "use client";
-import React, { useRef } from "react";
+
 import { $getRoot, EditorState } from "lexical";
-import { useEffect, useState, use } from "react";
+import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -12,11 +12,8 @@ import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
-
-import { useCallback } from "react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
-import { useRouter } from "next/navigation";
 import CollaborationPlugin from "@/components/collaboration/CollaborationPlugin";
 import { socketService } from "@/services/socketService";
 
@@ -62,6 +59,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
   const [noteTitle, setNoteTitle] = useState("");
   const [editorContent, setEditorContent] = useState("");
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
@@ -74,7 +72,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [isReadOnly, setIsReadOnly] = useState(false); // Mode lecture seule
   const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
   const [userPseudo, setUserPseudo] = useState<string>(""); // Pseudo pour la collaboration
-  
+
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -369,32 +367,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       (editor as any)._isApplyingRemoteUpdateRef = isApplyingRemoteUpdateRef;
       setEditor(editor);
     }, [editor]);
-
-    // ✅ NOUVEAU: Sauvegarde automatique toutes les 30 secondes (sécurité)
-    useEffect(() => {
-      const autoSaveInterval = setInterval(() => {
-        if (!isReadOnly && editor) {
-          const timeSinceLastSave = Date.now() - lastSaveTimeRef.current;
-          
-          // Sauvegarder seulement si ça fait plus de 30s et qu'il y a eu des changements
-          if (timeSinceLastSave > 30000) {
-            editor.getEditorState().read(() => {
-              const currentState = editor.getEditorState();
-              const currentContent = JSON.stringify(currentState.toJSON());
-              
-              // Vérifier si le contenu a changé depuis la dernière sauvegarde
-              if (currentContent !== editorContent) {
-                console.log('🕐 Sauvegarde automatique (30s)');
-                saveContent(currentState);
-                lastSaveTimeRef.current = Date.now();
-              }
-            });
-          }
-        }
-      }, 30000); // 30 secondes
-
-      return () => clearInterval(autoSaveInterval);
-    }, [editor, isReadOnly, editorContent]);
 
     // Debounced callback: 150ms AVEC minimum 1 caractère
     const debouncedContentEmit = useDebouncedCallback(
