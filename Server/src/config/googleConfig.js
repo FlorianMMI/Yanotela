@@ -6,7 +6,7 @@ export const googleConfig = {
   // Identifiants OAuth2 (à définir dans les variables d'environnement)
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  redirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback',
+  redirectUri: process.env.GOOGLE_REDIRECT_URI,
   
   // Scopes requis pour l'authentification
   scopes: [
@@ -59,18 +59,16 @@ export function validateGoogleConfig() {
  */
 export const environmentConfig = {
   development: {
-    redirectUri: 'http://localhost:3000/auth/google/callback',
-    baseUrl: 'http://localhost:3000'
+    redirectUri: process.env.GOOGLE_REDIRECT_URI,
+    baseUrl: process.env.FRONT_URL
   },
-  
   production: {
     redirectUri: process.env.GOOGLE_REDIRECT_URI,
-    baseUrl: process.env.BASE_URL || 'https://yanotela.com'
+    baseUrl: process.env.FRONT_URL
   },
-  
   test: {
-    redirectUri: 'http://localhost:3000/auth/google/callback',
-    baseUrl: 'http://localhost:3000'
+    redirectUri: process.env.GOOGLE_REDIRECT_URI,
+    baseUrl: process.env.FRONT_URL
   }
 };
 

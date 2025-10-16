@@ -29,7 +29,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
   return (
     <div className="h-full w-full flex flex-col relative">
 
-      <div className="flex flex-row items-center p-4 gap-2">
+      <div className="relative flex flex-row items-center p-4 gap-2">
 
         <Link href="/profil"
           className={`flex items-center ${isopen ? `flex-1 px-4  ` : `w-fit px-2  `} py-3 gap-3 rounded-lg transition-all text-gray-700 ${isProfile ? 'bg-primary text-white' : ' hover:bg-gray-100 hover:shadow-sm'}`}
