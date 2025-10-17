@@ -70,12 +70,6 @@ services:
         condition: service_healthy
     networks:
       - yanotela-dev
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -102,16 +96,9 @@ services:
     env_file:
       - .env.dev
     depends_on:
-      backend-dev:
-        condition: service_healthy
+      - backend-dev
     networks:
       - yanotela-dev
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
     restart: unless-stopped
     logging:
       driver: "json-file"

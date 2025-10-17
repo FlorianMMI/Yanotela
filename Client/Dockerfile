@@ -1,9 +1,6 @@
 # Multi-stage build for Next.js client
 FROM node:20-alpine AS base
 
-# Install wget for healthchecks
-RUN apk add --no-cache wget
-
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
