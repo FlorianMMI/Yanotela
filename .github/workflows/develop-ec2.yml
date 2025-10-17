@@ -154,8 +154,8 @@ jobs:
             SESSION_SECRET=dev_session_secret_change_this_in_production
             
             # Application URLs
-            CLIENT_URL=http://${{ env.EC2_HOST }}:3000
-            SERVER_URL=http://${{ env.EC2_HOST }}:3001
+            CLIENT_URL=https://yanotela.fr
+            SERVER_URL=https://yanotela.fr/api
             
             # Email Configuration (optional for development)
             MAIL_SERVICE=gmail
@@ -223,8 +223,8 @@ jobs:
               
               echo "🎉 All services are healthy on DEVELOPMENT environment!"
               echo "🌐 Access your development app at:"
-              echo "   Frontend: http://${{ env.EC2_HOST }}:3000"
-              echo "   Backend:  http://${{ env.EC2_HOST }}:3001"
+              echo "   Frontend: https://yanotela.fr"
+              echo "   Backend:  https://yanotela.fr/api"
             else
               echo "❌ Services failed to start on development server"
               sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml logs
