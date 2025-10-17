@@ -17,7 +17,7 @@ class SocketService {
       return this.socket;
     }
 
-    const SOCKET_URL = 'https://yanotela.fr/api';
+    const SOCKET_URL = 'https://yanotela.fr/';
 
     this.socket = io(SOCKET_URL, {
       withCredentials: true,

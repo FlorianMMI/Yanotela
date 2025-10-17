@@ -44,8 +44,7 @@ export default function LoginForm({
       error: null as string | null,
       errors: [] as Array<{ msg: string }>
     };
-    console.log('Login data:', loginData);
-    console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+    
     try {
       const result = await Login(loginData);
       
