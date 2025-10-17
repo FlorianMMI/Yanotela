@@ -154,8 +154,8 @@ jobs:
             SESSION_SECRET=dev_session_secret_change_this_in_production
             
             # Application URLs
-            CLIENT_URL=http://${{ env.EC2_HOST }}
-            SERVER_URL=http://${{ env.EC2_HOST }}/api
+            CLIENT_URL=https://${{ env.EC2_HOST }}
+            SERVER_URL=https://${{ env.EC2_HOST }}/api
             
             # Email Configuration (optional for development)
             MAIL_SERVICE=gmail
