@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Icon from '@/ui/Icon';
-import { GetNoteById, SaveNote } from '@/loader/loader';
+import { GetNoteById } from '@/loader/loader';
 import NoteMore from '@/components/noteMore/NoteMore';
 import Icons from '@/ui/Icon';
+import { socketService } from '@/services/socketService';
 
 
 interface BreadcrumbItem {
@@ -96,38 +97,28 @@ export default function Breadcrumb() {
     fetchNoteTitle();
   }, [noteId, lastFetchTime]); // Ajouter lastFetchTime comme dépendance
 
-  // Sauvegarder le titre modifié (récupère le contenu existant pour le préserver)
+  // Sauvegarder le titre modifié via WebSocket
   const updateNoteTitle = async (newTitle: string) => {
     if (noteId) {
       setNoteTitle(newTitle);
       setTempTitle(newTitle);
 
       try {
-        // D'abord récupérer la note complète pour préserver le contenu
-        const note = await GetNoteById(noteId);
-        if (note) {
-          // Sauvegarder avec le nouveau titre et l'ancien contenu
-          const success = await SaveNote(noteId, {
-            Titre: newTitle,
-            Content: 'Content' in note ? note.Content || '' : '' // Préserver le contenu existant
-          });
-
-          if (success) {
-            setSuccess('Titre sauvegardé avec succès');
-            setTimeout(() => setSuccess(null), 3000);
-            // Émettre un événement pour synchroniser avec la page de note
-            window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
-              detail: { noteId, title: newTitle } 
-            }));
-          } else {
-            setError('Erreur lors de la sauvegarde du titre');
-            setTimeout(() => setError(null), 5000);
-          }
-        }
+        // Émettre la mise à jour via WebSocket (synchronisation temps réel)
+        socketService.emitTitleUpdate(noteId, newTitle);
+        
+        // Notification de succès (optionnelle, peut être retirée car le WebSocket est instantané)
+        setSuccess('Titre synchronisé');
+        setTimeout(() => setSuccess(null), 2000);
+        
+        // Émettre un événement pour synchroniser avec la page de note
+        window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
+          detail: { noteId, title: newTitle } 
+        }));
       } catch (error) {
-        console.error('Erreur lors de la sauvegarde du titre:', error);
-        setError('Erreur lors de la sauvegarde du titre');
-        setTimeout(() => setError(null), 5000);
+        console.error('Erreur lors de la synchronisation du titre:', error);
+        setError('Erreur de synchronisation');
+        setTimeout(() => setError(null), 3000);
       }
     }
   };

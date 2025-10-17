@@ -18,7 +18,7 @@ import permissionRoutes from './routes/permissionRoutes.js';
 import googleAuthRoutes from './routes/googleAuthRoutes.js';
 import helmet from 'helmet';
 import { 
-  getOrCreateYDoc, 
+  getOrCreateNoteSession,
   addUserToNote, 
   removeUserFromNote, 
   getActiveUserCount 
@@ -27,6 +27,26 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+/**
+ * Fonction helper pour extraire le texte d'un état Lexical
+ */
+function extractTextFromLexical(lexicalState) {
+  if (!lexicalState || !lexicalState.root || !lexicalState.root.children) {
+    return '';
+  }
+  
+  const extractFromNode = (node) => {
+    if (node.type === 'text') {
+      return node.text || '';
+    }
+    if (node.children && Array.isArray(node.children)) {
+      return node.children.map(extractFromNode).join('');
+    }
+    return '';
+  };
+  
+  return lexicalState.root.children.map(extractFromNode).join('\n');
+}
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -82,12 +102,11 @@ const httpServer = createServer(app);
 // Configuration de Socket.IO avec CORS
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: process.env.CLIENT_URL || 'https://yanotela.fr',
     credentials: true,
     methods: ['GET', 'POST']
   },
-  // Configuration pour supporter les gros messages (deltas Yjs)
-  maxHttpBufferSize: 1e8 // 100 MB
+  maxHttpBufferSize: 1e7 // 10 MB
 });
 
 // Configuration Redis pour le clustering (optionnel mais recommandé en production)
@@ -97,6 +116,7 @@ if (process.env.REDIS_URL) {
 
   Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
     io.adapter(createAdapter(pubClient, subClient));
+    console.log('✅ Redis adapter configuré');
   }).catch((err) => {
     console.warn('⚠️  Redis non disponible, mode standalone:', err.message);
   });
@@ -122,17 +142,19 @@ io.use((socket, next) => {
 
 // Gestion des connexions Socket.IO
 io.on('connection', (socket) => {
+  console.log(`✅ Socket connecté: ${socket.id} (user: ${socket.userPseudo})`);
 
   /**
    * Événement: joinNote
    * L'utilisateur rejoint une room pour collaborer sur une note
    */
   socket.on('joinNote', async ({ noteId }) => {
-    
-    // ✅ CRITIQUE : Vérifier si le socket est déjà dans la room
     const roomName = `note-${noteId}`;
+    
+    // Vérifier si déjà dans la room
     if (socket.rooms.has(roomName)) {
-      return; // Ignorer les joinNote en double
+      console.log(`⚠️  User ${socket.userPseudo} déjà dans room ${roomName}`);
+      return;
     }
     
     try {
@@ -153,9 +175,8 @@ io.on('connection', (socket) => {
 
       // Vérifier les permissions (auteur ou permission existante)
       const isAuthor = note.authorId === socket.userId;
-      const hasPermission = note.permissions.length > 0; // ✅ Accepter même si isAccepted=false
+      const hasPermission = note.permissions.length > 0;
       const hasAccess = isAuthor || hasPermission;
-
 
       if (!hasAccess) {
         socket.emit('error', { message: 'Accès refusé à cette note' });
@@ -165,77 +186,188 @@ io.on('connection', (socket) => {
       // Vérifier le mode lecture seule (role = 3)
       const isReadOnly = note.permissions.length > 0 && note.permissions[0].role === 3;
 
-      // Rejoindre la room Socket.IO
+      // Rejoindre la room Socket.IO (la room est créée automatiquement si elle n'existe pas)
       socket.join(roomName);
+      console.log(`✅ User ${socket.userPseudo} a rejoint room ${roomName}`);
 
-      // Obtenir ou créer le document Yjs
-      const yDoc = getOrCreateYDoc(noteId, note.Content);
-
-      // ✅ Compter les VRAIS utilisateurs connectés dans la room Socket.IO
-      const socketsInRoom = await io.in(roomName).allSockets();
-      const userCount = socketsInRoom.size;
+      // ✅ SIMPLIFIÉ: Créer/obtenir la session de collaboration pour cette note
+      const noteSession = getOrCreateNoteSession(noteId);
       
-      // Ajouter à la tracking list pour le cleanup (optionnel)
-      addUserToNote(noteId, socket.id);
+      // Rejoindre immédiatement - pas besoin d'attendre Yjs
+      setImmediate(async () => {
+        try {
+          // ✅ Compter les VRAIS utilisateurs connectés dans la room Socket.IO  
+          const socketsInRoom = await io.in(roomName).allSockets();
+          const userCount = socketsInRoom.size;
+          
+          // Ajouter à la tracking list pour le cleanup
+          addUserToNote(noteId, socket.id);
+          
+          console.log(`🔄 User ${socket.userPseudo} connecté à la note ${noteId} (${userCount} utilisateur(s))`);
+          
+          // ✅ Envoyer confirmation de connexion (sans données Yjs)
+          socket.emit('noteJoined', {
+            noteId,
+            userCount,
+            isReadOnly,
+            content: note.Content || "" // Envoyer le contenu tel quel de la BDD
+          });
 
-
-      // Envoyer l'état initial du document au client
-      const stateVector = Y.encodeStateAsUpdate(yDoc);
-      socket.emit('sync', {
-        noteId,
-        state: Buffer.from(stateVector).toString('base64'),
-        userCount,
-        isReadOnly
-      });
-
-      // Notifier les autres utilisateurs avec le nombre réel
-      socket.to(`note-${noteId}`).emit('userJoined', {
-        userId: socket.userId,
-        pseudo: socket.userPseudo,
-        userCount
+          // Notifier les autres utilisateurs
+          socket.to(`note-${noteId}`).emit('userJoined', {
+            userId: socket.userId,
+            pseudo: socket.userPseudo,
+            userCount
+          });
+          
+        } catch (syncError) {
+          console.error('Erreur lors de la connexion:', syncError);
+          socket.emit('error', { message: 'Erreur lors de la connexion à la note' });
+        }
       });
 
     } catch (error) {
-      console.error('Erreur lors de joinNote:', error);
+      console.error('❌ Erreur lors de joinNote:', error);
       socket.emit('error', { message: 'Erreur lors de la connexion à la note' });
     }
   });
 
   /**
-   * Événement: yjsUpdate
-   * Synchronisation des changements Yjs entre clients
+   * Événement: titleUpdate
+   * Mise à jour du titre de la note
    */
-  socket.on('yjsUpdate', async ({ noteId, update }) => {
+  socket.on('titleUpdate', async ({ noteId, titre }) => {
+    const roomName = `note-${noteId}`;
+    
+    if (!socket.rooms.has(roomName)) {
+      console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}`);
+      return;
+    }
+
     try {
-      // Récupérer le document Yjs
-      const yDoc = getOrCreateYDoc(noteId);
-
-      // Appliquer la mise à jour au document
-      const updateBuffer = Buffer.from(update, 'base64');
-      Y.applyUpdate(yDoc, updateBuffer);
-
-      
-      // Diffuser la mise à jour aux autres clients dans la room
-      io.in(`note-${noteId}`).emit('yjsUpdate', {
-        noteId,
-        update,
-        userId: socket.userId
+      // 1️⃣ Sauvegarder en base de données
+      await prisma.note.update({
+        where: { id: noteId },
+        data: { 
+          Titre: titre,
+          ModifiedAt: new Date(),
+          modifierId: socket.userId
+        }
       });
+      console.log(`✅ [DB] Titre sauvegardé: "${titre}"`);
+
+      // 2️⃣ Broadcaster aux autres clients de la room
+      socket.to(roomName).emit('titleUpdate', {
+        noteId,
+        titre,
+        userId: socket.userId,
+        pseudo: socket.userPseudo
+      });
+      console.log(`� [Broadcast] Titre propagé dans room ${roomName}`);
 
     } catch (error) {
-      console.error('Erreur lors de yjsUpdate:', error);
+      console.error('❌ Erreur titleUpdate:', error);
+      socket.emit('error', { message: 'Erreur lors de la mise à jour du titre' });
+    }
+  });
+
+  /**
+   * Événement: contentUpdate
+   * Mise à jour du contenu de la note - Sauvegarde directe du JSON Lexical
+   */
+  socket.on('contentUpdate', async ({ noteId, content }) => {
+    const roomName = `note-${noteId}`;
+    
+    if (!socket.rooms.has(roomName)) {
+      console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}`);
+      return;
+    }
+
+    try {
+      // ✅ OPTIMISATION: Broadcaster IMMÉDIATEMENT pour la réactivité temps réel
+      socket.to(roomName).emit('contentUpdate', {
+        noteId,
+        content,
+        userId: socket.userId,
+        pseudo: socket.userPseudo
+      });
+      console.log(`📡 [Broadcast] Contenu propagé dans room ${roomName} (temps réel)`);
+
+      // ✅ CORRECTION: Sauvegarder en BDD avec un petit délai pour éviter la surcharge
+      // En cas de frappe rapide, seule la dernière version sera sauvegardée
+      setTimeout(async () => {
+        try {
+          await prisma.note.update({
+            where: { id: noteId },
+            data: { 
+              Content: content, // Garder le JSON Lexical original
+              ModifiedAt: new Date(),
+              modifierId: socket.userId
+            }
+          });
+          console.log(`✅ [DB] Contenu JSON Lexical sauvegardé (${content.length} chars)`);
+        } catch (dbError) {
+          console.error('❌ Erreur sauvegarde BDD différée:', dbError);
+        }
+      }, 500); // 500ms de délai pour éviter les sauvegardes trop fréquentes
+
+    } catch (error) {
+      console.error('❌ Erreur contentUpdate:', error);
+      socket.emit('error', { message: 'Erreur lors de la mise à jour du contenu' });
     }
   });
 
   /**
    * Événement: cursorUpdate
-   * Synchronisation des positions de curseur
+   * Position du curseur d'un utilisateur
    */
   socket.on('cursorUpdate', ({ noteId, cursor }) => {
-    socket.to(`note-${noteId}`).emit('cursorUpdate', {
+    const roomName = `note-${noteId}`;
+    
+    if (!socket.rooms.has(roomName)) return;
+
+    // Broadcaster la position du curseur aux autres
+    socket.to(roomName).emit('cursorUpdate', {
+      noteId,
+      cursor,
       userId: socket.userId,
-      pseudo: socket.userPseudo,
-      cursor
+      pseudo: socket.userPseudo
+    });
+  });
+
+  /**
+   * Événement: selectionUpdate
+   * Sélection de texte d'un utilisateur
+   */
+  socket.on('selectionUpdate', ({ noteId, selection }) => {
+    const roomName = `note-${noteId}`;
+    
+    if (!socket.rooms.has(roomName)) return;
+
+    // Broadcaster la sélection aux autres
+    socket.to(roomName).emit('selectionUpdate', {
+      noteId,
+      selection,
+      userId: socket.userId,
+      pseudo: socket.userPseudo
+    });
+  });
+
+  /**
+   * Événement: userTyping
+   * Indique qu'un utilisateur est en train de taper
+   */
+  socket.on('userTyping', ({ noteId, isTyping }) => {
+    const roomName = `note-${noteId}`;
+    
+    if (!socket.rooms.has(roomName)) return;
+
+    // Broadcaster l'état de frappe aux autres
+    socket.to(roomName).emit('userTyping', {
+      noteId,
+      isTyping,
+      userId: socket.userId,
+      pseudo: socket.userPseudo
     });
   });
 
@@ -251,6 +383,7 @@ io.on('connection', (socket) => {
    * Déconnexion du socket
    */
   socket.on('disconnect', (reason) => {
+    console.log(`❌ Socket déconnecté: ${socket.id} (raison: ${reason})`);
     
     // Notifier toutes les rooms où l'utilisateur était présent
     const rooms = Array.from(socket.rooms).filter(room => room.startsWith('note-'));
@@ -259,7 +392,6 @@ io.on('connection', (socket) => {
       const noteId = room.replace('note-', '');
       handleUserLeave(socket, noteId);
     });
-    
   });
 });
 
@@ -267,23 +399,22 @@ io.on('connection', (socket) => {
  * Gérer le départ d'un utilisateur d'une note
  */
 async function handleUserLeave(socket, noteId) {
-  // Retirer de la tracking list
-  removeUserFromNote(noteId, socket.id);
+  const roomName = `note-${noteId}`;
   
   // Quitter la room Socket.IO
-  socket.leave(`note-${noteId}`);
+  socket.leave(roomName);
+  console.log(`👋 User ${socket.userPseudo} a quitté room ${roomName}`);
   
-  // ✅ Compter les VRAIS utilisateurs restants dans la room
-  const socketsInRoom = await io.in(`note-${noteId}`).allSockets();
+  // Compter les utilisateurs restants dans la room
+  const socketsInRoom = await io.in(roomName).allSockets();
   const userCount = socketsInRoom.size;
   
-  // Notifier les autres avec le compte réel
-  socket.to(`note-${noteId}`).emit('userLeft', {
+  // Notifier les autres utilisateurs
+  socket.to(roomName).emit('userLeft', {
     userId: socket.userId,
     pseudo: socket.userPseudo,
     userCount
   });
-  
 }
 
 export { app, sessionMiddleware, httpServer, io };

@@ -4,6 +4,7 @@ import Note from '@/ui/note/Note';
 import NoteSkeleton from '@/ui/note/NoteSkeleton';
 import { Note as NoteType } from '@/type/Note';
 import { CreateNote } from '@/loader/loader';
+import { socketService } from '@/services/socketService';
 import { useRouter } from 'next/navigation';
 import Icons from '@/ui/Icon';
 import { motion } from 'framer-motion';
@@ -22,6 +23,12 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
     const { note, redirectUrl } = await CreateNote();
     
     if (note && redirectUrl) {
+      // Essayer de joindre la room socket avant la navigation
+      try {
+        socketService.joinNote(note.id);
+      } catch (err) {
+        console.warn('Could not join socket room after note creation:', err);
+      }
       if (onNoteCreated) {
         onNoteCreated(); // Déclencher le refresh des notes
       }

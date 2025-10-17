@@ -20,8 +20,8 @@
 # Lancer toute la stack (client + serveur + base de données)
 docker compose up --build
 ```
-- Client : http://localhost:3000
-- Serveur : http://localhost:3001
+- Client : https://yanotela.fr
+- Serveur : https://yanotela.fr/api
 
 > **Astuce WSL** : Assurez-vous que Docker Desktop est lancé sous WSL2.  
 > Les volumes et ports sont automatiquement mappés.
@@ -32,8 +32,8 @@ docker compose up --build
 # Installation et lancement des services (client + serveur)
 ./setup.sh
 ```
-- Client : http://localhost:3000
-- Serveur : http://localhost:3001
+- Client : https://yanotela.fr
+- Serveur : https://yanotela.fr/api
 
 ---
 
@@ -122,3 +122,58 @@ Note: id, Titre, Content, authorId, ModifiedAt
 yanotela
 
 ---
+
+
+
+server{
+    listen 80;
+    server_name yanotela.fr www.yanotela.fr;
+
+    client_max_body_size 10M;
+
+    location / {
+        proxy_pass http://frontend-dev:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location /api/ {
+        rewrite ^/api/(.*) /$1 break;
+
+        proxy_pass http://backend-dev:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 75s;
+    }
+
+    location /socket.io/ {
+        proxy_pass http://backend-dev:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remot_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_read_timeout 86400
+       
+    }
+
+    location /health {
+        porxy_pass http://backend-dev:3001/health;
+        proxy_set_header Host $host;
+    }
+}

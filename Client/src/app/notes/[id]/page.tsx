@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
+
 import { $getRoot, EditorState } from "lexical";
-import { useEffect, useState, use } from "react";
+import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -12,11 +12,8 @@ import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
-import OnChangePlugin from "@lexical/react/LexicalOnChangePlugin";
-import { useCallback } from "react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
-import { useRouter } from "next/navigation";
 import CollaborationPlugin from "@/components/collaboration/CollaborationPlugin";
 import { socketService } from "@/services/socketService";
 
@@ -24,6 +21,7 @@ import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 
 import ErrorFetch from "@/ui/note/errorFetch";
+import { useRouter } from "next/navigation";
 
 const theme = {
   // Theme styling goes here
@@ -48,6 +46,21 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
+  // Reload page on breakpoint change (mobile <-> desktop)
+  React.useEffect(() => {
+    // Détection du breakpoint initial
+    let lastIsMobile = window.innerWidth < 768;
+    const onResize = () => {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile !== lastIsMobile) {
+        window.location.reload();
+      }
+      lastIsMobile = isMobile;
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const [noteTitle, setNoteTitle] = useState("");
   const [editorContent, setEditorContent] = useState("");
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
@@ -60,7 +73,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [isReadOnly, setIsReadOnly] = useState(false); // Mode lecture seule
   const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
   const [userPseudo, setUserPseudo] = useState<string>(""); // Pseudo pour la collaboration
-  
+
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -70,58 +83,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // Unwrap params using React.use()
   const { id } = use(params);
 
-  // ✅ Hook pour déconnecter le socket quand on quitte la page note
-  useEffect(() => {
-    return () => {
-      socketService.disconnect();
-    };
-  }, [id]);
-
-  // Reload the page once on first visit to ensure Lexical and collaboration initialize correctly.
-  // Uses sessionStorage per-note to avoid reload loops. This is a client-only effect.
-  useEffect(() => {
-    try {
-      const key = `yanotela:notes:reload:${id}`;
-      const alreadyReloaded = sessionStorage.getItem(key);
-      if (!alreadyReloaded) {
-        // mark as reloaded to avoid loops and reload once
-        sessionStorage.setItem(key, '1');
-        // small timeout to allow navigation to settle before reloading
-        window.setTimeout(() => {
-          // Use location.replace to avoid adding an extra history entry
-          window.location.replace(window.location.href);
-        }, 100);
-      }
-    } catch (e) {
-      // sessionStorage may be unavailable in some environments; ignore failures
-      console.warn('One-time reload skipped (sessionStorage unavailable):', e);
-    }
-  }, [id]);
-
-  // Hook pour détecter les changements de taille d'écran
-  useEffect(() => {
-    const handleResize = () => {
-      // Force le rechargement des données quand on change de taille d'écran
-      setLastFetchTime(Date.now());
-    };
-
-    // Écouter les mises à jour de titre depuis le Breadcrumb
-    const handleTitleUpdate = (event: CustomEvent) => {
-      const { noteId, title } = event.detail;
-      if (noteId === id) {
-        setNoteTitle(title);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
-    };
-  }, [id]);
-
+  // Debounced emit pour le titre (synchronisation rapide quasi-instantanée)
+  const debouncedTitleEmit = useDebouncedCallback(
+    (titre: string) => {
+      socketService.emitTitleUpdate(id, titre);
+    },
+    1000 // 1000ms = synchronisation très rapide, sensation quasi-instantanée
+  );
 
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
@@ -131,16 +99,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     
     setNoteTitle(finalTitle);
     
-    // Sauvegarder le titre avec notification
-    uploadContent(id, finalTitle, editorContent).then((success) => {
-      if (success) {
-        setSuccess('Titre sauvegardé avec succès');
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError('Erreur lors de la sauvegarde du titre');
-        setTimeout(() => setError(null), 5000);
-      }
-    });
+    // Émettre via socket (debounced)
+    debouncedTitleEmit(finalTitle);
     
     // Émettre un événement pour synchroniser avec le Breadcrumb
     window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
@@ -148,12 +108,130 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     }));
   }
 
+  // Callback pour gérer les mises à jour de titre distantes
+  const handleRemoteTitleUpdate = useCallback((titre: string) => {
+    setNoteTitle(titre);
+    // Synchroniser avec le Breadcrumb
+    window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
+      detail: { noteId: id, title: titre } 
+    }));
+  }, [id]);
+
+  // DOM listener fallback: appliquer les updates provenant du socket
+  // (moved) DOM listener will be registered after content callback is defined
+
+  // Callback pour gérer les mises à jour de contenu distantes (temps réel)
+  const handleRemoteContentUpdate = useCallback((content: string) => {
+    if (!editor) return;
+    
+    try {
+      const parsedContent = JSON.parse(content);
+      
+      // ✅ AMÉLIORATION: Comparaison plus robuste pour éviter les boucles infinites
+      editor.getEditorState().read(() => {
+        const currentStateJSON = editor.getEditorState().toJSON();
+        const currentContent = JSON.stringify(currentStateJSON);
+        
+        // Si le contenu est identique, ignorer complètement
+        if (currentContent === content) {
+          console.log('📝 Contenu identique, pas de mise à jour nécessaire');
+          return;
+        }
+        
+        // Vérifier si c'est bien un EditorState Lexical valide
+        if (!parsedContent.root || parsedContent.root.type !== 'root') {
+          console.warn('⚠️ Contenu distant invalide, ignoré');
+          return;
+        }
+        
+        console.log('📝 Application de la mise à jour distante du contenu');
+        
+        // Sauvegarder le focus et la sélection avant mise à jour
+        const hasFocus = editor.getRootElement() === document.activeElement || 
+                         editor.getRootElement()?.contains(document.activeElement);
+        
+        let savedSelection: any = null;
+        if (hasFocus) {
+          savedSelection = editor.getEditorState()._selection?.clone();
+        }
+        
+        // ✅ CORRECTION CRITIQUE: Marquer qu'on applique une mise à jour distante
+        // Ceci permet d'éviter que l'updateListener déclenche une sauvegarde
+        const isApplyingRemoteUpdateRef = (editor as any)._isApplyingRemoteUpdateRef;
+        if (isApplyingRemoteUpdateRef) {
+          isApplyingRemoteUpdateRef.current = true;
+        }
+        
+        // Appliquer la mise à jour dans une transaction séparée
+        setTimeout(() => {
+          const newEditorState = editor.parseEditorState(parsedContent);
+          editor.setEditorState(newEditorState);
+          setEditorContent(content);
+          
+          // ✅ Réinitialiser le flag après application
+          setTimeout(() => {
+            if (isApplyingRemoteUpdateRef) {
+              isApplyingRemoteUpdateRef.current = false;
+            }
+          }, 50);
+          
+          // Restaurer le focus si nécessaire
+          if (hasFocus) {
+            setTimeout(() => {
+              editor.focus();
+              if (savedSelection) {
+                editor.update(() => {
+                  try {
+                    savedSelection.dirty = true;
+                    editor.getEditorState()._selection = savedSelection;
+                  } catch (e) {
+                    console.log('Impossible de restaurer la sélection exacte');
+                  }
+                });
+              }
+            }, 0);
+          }
+        }, 0);
+      });
+    } catch (err) {
+      console.warn('Impossible de parser le contenu distant:', err);
+    }
+  }, [editor]);
+
+  // DOM listener fallback: appliquer les updates provenant du socket
+  useEffect(() => {
+    const onSocketContent = (e: any) => {
+      const { noteId: nid, content } = e.detail || {};
+      if (!nid || nid !== id) return;
+      // Si editor prêt, appliquer via callback sinon buffer via setEditorContent
+      if (editor) {
+        handleRemoteContentUpdate(content);
+      } else {
+        console.log('🔔 Buffering content update until editor is ready (note:', id, ')');
+        setEditorContent(content);
+      }
+    };
+
+    const onSocketTitle = (e: any) => {
+      const { noteId: nid, titre } = e.detail || {};
+      if (!nid || nid !== id) return;
+      handleRemoteTitleUpdate(titre);
+    };
+
+    window.addEventListener('socketContentUpdate', onSocketContent as EventListener);
+    window.addEventListener('socketTitleUpdate', onSocketTitle as EventListener);
+
+    return () => {
+      window.removeEventListener('socketContentUpdate', onSocketContent as EventListener);
+      window.removeEventListener('socketTitleUpdate', onSocketTitle as EventListener);
+    };
+  }, [editor, handleRemoteContentUpdate, handleRemoteTitleUpdate, id]);
+
   // Récupérer les informations utilisateur au chargement
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        const response = await fetch(`${apiUrl}/user/info`, {
+        const response = await fetch('https://yanotela.fr/api/user/info', {
           credentials: 'include'
         });
         if (response.ok) {
@@ -178,43 +256,38 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           setNoteTitle(note.Titre);
           setUserRole((note as any).userRole !== undefined ? (note as any).userRole : null);
           setIsReadOnly((note as any).userRole === 3); // Lecteur = lecture seule
-          // Si on a du contenu, on le parse pour l'éditeur
+          
+          // ✅ CORRECTION: Meilleur traitement du contenu depuis la BDD
           if (note.Content) {
             try {
-              // Vérifier si c'est déjà du JSON valide
+              // Vérifier si c'est déjà du JSON Lexical valide
               const parsedContent = JSON.parse(note.Content);
-              setInitialEditorState(note.Content);
+              
+              // Validation basique pour s'assurer que c'est bien un EditorState Lexical
+              if (parsedContent.root && parsedContent.root.type === 'root') {
+                console.log('✅ JSON Lexical valide trouvé dans la BDD');
+                setInitialEditorState(note.Content);
+                setEditorContent(note.Content);
+              } else {
+                // JSON mais pas Lexical, créer un état valide
+                console.log('⚠️ JSON non-Lexical, conversion...');
+                const simpleState = createSimpleLexicalState(note.Content);
+                setInitialEditorState(simpleState);
+                setEditorContent(simpleState);
+              }
             } catch {
-              // Si ce n'est pas du JSON, on crée un état d'éditeur simple avec le texte
-              const simpleState = {
-                root: {
-                  children: [{
-                    children: [{
-                      detail: 0,
-                      format: 0,
-                      mode: "normal",
-                      style: "",
-                      text: note.Content,
-                      type: "text",
-                      version: 1
-                    }],
-                    direction: "ltr",
-                    format: "",
-                    indent: 0,
-                    type: "paragraph",
-                    version: 1
-                  }],
-                  direction: "ltr",
-                  format: "",
-                  indent: 0,
-                  type: "root",
-                  version: 1
-                }
-              };
-              setInitialEditorState(JSON.stringify(simpleState));
+              // Si ce n'est pas du JSON, créer un état d'éditeur simple avec le texte
+              console.log('⚠️ Contenu texte brut, conversion vers Lexical...');
+              const simpleState = createSimpleLexicalState(note.Content);
+              setInitialEditorState(simpleState);
+              setEditorContent(simpleState);
             }
+          } else {
+            // Pas de contenu, créer un état vide
+            const emptyState = createSimpleLexicalState("");
+            setInitialEditorState(emptyState);
+            setEditorContent(emptyState);
           }
-          setEditorContent(note.Content || "");
         }
         else {
           setHasError(true);
@@ -226,12 +299,43 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     fetchNote();
   }, [id, lastFetchTime]); // Ajouter lastFetchTime comme dépendance
 
+  // ✅ NOUVELLE FONCTION: Créer un EditorState Lexical valide depuis du texte
+  function createSimpleLexicalState(text: string): string {
+    const simpleState = {
+      root: {
+        children: text ? [{
+          children: [{
+            detail: 0,
+            format: 0,
+            mode: "normal",
+            style: "",
+            text: text,
+            type: "text",
+            version: 1
+          }],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1
+        }] : [],
+        direction: "ltr",
+        format: "",
+        indent: 0,
+        type: "root",
+        version: 1
+      }
+    };
+    return JSON.stringify(simpleState);
+  }
+
   const initialConfig = {
     namespace: "Editor",
     theme,
     onError,
-    // Utiliser l'état initial si disponible
-    editorState: initialEditorState ? initialEditorState : undefined,
+    // ✅ CORRECTION: Utiliser l'état initial depuis la BDD pour un chargement immédiat
+    // La collaboration temps-réel viendra s'ajouter par-dessus via les WebSockets
+    editorState: initialEditorState || undefined,
   };
 
   const focusAtEnd = useCallback(() => {
@@ -253,62 +357,114 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   function OnChangeBehavior() {
     const [editor] = useLexicalComposerContext();
+    const charCountRef = useRef(0);
+    const lastContentLengthRef = useRef(0);
+    const lastSaveTimeRef = useRef(Date.now());
+    const isApplyingRemoteUpdateRef = useRef(false); // ✅ Flag pour éviter les boucles
 
     // Register editor in parent component
     useEffect(() => {
+      // ✅ Attacher la référence du flag à l'éditeur pour éviter les boucles
+      (editor as any)._isApplyingRemoteUpdateRef = isApplyingRemoteUpdateRef;
       setEditor(editor);
     }, [editor]);
 
-    // Debounced callback for logging editor state
-    const debouncedLog = useDebouncedCallback(
+    // Debounced callback: 150ms AVEC minimum 1 caractère
+    const debouncedContentEmit = useDebouncedCallback(
       (editorState: EditorState) => {
-        saveContent(editorState);
+        // Vérifier qu'on a au moins 1 caractère modifié
+        if (charCountRef.current >= 1) {
+          charCountRef.current = 0; // Reset
+          saveContent(editorState);
+        }
+        // Indiquer qu'on a arrêté de taper
+        socketService.emitUserTyping(id, false);
       },
-      1000 // 1-second debounce
+      150 // 150ms après inactivité
     );
 
     function saveContent(editorState: EditorState) {
-      if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
+      if (isReadOnly) return;
       
-      // Indiquer que la sauvegarde du contenu est en cours
       setIsSavingContent(true);
-      setIsTyping(false); // L'utilisateur a fini de taper, on passe en mode sauvegarde
+      setIsTyping(false); // L'utilisateur a arrêté de taper
       
-      // Call toJSON on the EditorState object, which produces a serialization safe string
+      // Sérialiser l'état Lexical
       const editorStateJSON = editorState.toJSON();
-      // However, we still have a JavaScript object, so we need to convert it to an actual string with JSON.stringify
       const contentString = JSON.stringify(editorStateJSON);
       setEditorContent(contentString);
       
-      // Sauvegarder avec notification
-      uploadContent(id, noteTitle, contentString).then((success) => {
-        setIsSavingContent(false);
-        if (success) {
-          // Afficher brièvement l'icône de sauvegarde réussie
-          setTimeout(() => {
-            // L'icône de sauvegarde réussie sera gérée par l'état isSavingContent
-          }, 500);
-        } else {
-          setError('Erreur lors de la sauvegarde du contenu');
-          setTimeout(() => setError(null), 5000);
+      // ✅ Mettre à jour le timestamp de dernière sauvegarde
+      lastSaveTimeRef.current = Date.now();
+      
+      // ✅ DOUBLE SAUVEGARDE: WebSocket (temps réel) + HTTP (sécurité)
+      
+      // 1. WebSocket pour la collaboration temps réel
+      socketService.emitContentUpdate(id, contentString);
+      console.log('📡 Contenu émis via WebSocket (temps réel)');
+      
+      // 2. Sauvegarde HTTP en arrière-plan pour la sécurité
+      // (avec un délai pour éviter de surcharger l'API)
+      setTimeout(async () => {
+        try {
+          const result = await uploadContent(id, noteTitle, contentString);
+          console.log('💾 Sauvegarde HTTP confirmée');
+          
+          // Si la sauvegarde HTTP échoue, on peut afficher une notification
+          if (typeof result === 'object' && result && 'error' in result) {
+            console.error('❌ Erreur sauvegarde HTTP:', (result as any).error);
+          }
+        } catch (error) {
+          console.error('❌ Erreur sauvegarde HTTP:', error);
         }
-      });
+      }, 1000); // 1 seconde de délai pour ne pas interférer avec le WebSocket
+      
+      setIsSavingContent(false);
     }
 
     useEffect(() => {
       const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
-        // Only trigger the debounced log if there are changes to the content
+        // ✅ CORRECTION CRITIQUE: Ignorer les mises à jour si on applique du contenu distant
+        if (isApplyingRemoteUpdateRef.current) {
+          console.log('🔄 Mise à jour ignorée (application de contenu distant en cours)');
+          return;
+        }
+
         if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0) {
-          // Indiquer immédiatement que l'utilisateur tape
+          // Indiquer que l'utilisateur tape
           setIsTyping(true);
-          debouncedLog(editorState);
+          socketService.emitUserTyping(id, true);
+          
+          // Calculer le nombre de caractères modifiés
+          const currentContent = editorState.read(() => {
+            const root = $getRoot();
+            return root.getTextContent();
+          });
+          const currentLength = currentContent.length;
+          const charDiff = Math.abs(currentLength - lastContentLengthRef.current);
+          lastContentLengthRef.current = currentLength;
+          
+          // Incrémenter le compteur
+          charCountRef.current += charDiff;
+          
+          // ✅ Double sécurité: 3 caractères OU 150ms avec min 1 char
+          if (charCountRef.current >= 3) {
+            // Envoi immédiat après 3 caractères
+            debouncedContentEmit.cancel(); // Annuler le debounce
+            charCountRef.current = 0;
+            saveContent(editorState);
+            console.log('⚡ Envoi immédiat (3+ caractères)');
+          } else {
+            // Sinon, attendre 150ms (avec min 1 char)
+            debouncedContentEmit(editorState);
+          }
         }
       });
 
       return () => {
         unregisterListener();
       };
-    }, [editor, debouncedLog]);
+    }, [editor, debouncedContentEmit]);
 
     return null;
   }
@@ -462,11 +618,15 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 {!isReadOnly && <OnChangeBehavior />}
                 {!isReadOnly && <AutoFocusPlugin />}
                 {/* Plugin de collaboration temps réel */}
-                <CollaborationPlugin 
-                  noteId={id} 
-                  username={userPseudo}
-                  isReadOnly={isReadOnly}
-                />
+                {userPseudo && (
+                  <CollaborationPlugin 
+                    noteId={id} 
+                    username={userPseudo}
+                    isReadOnly={isReadOnly}
+                    onTitleUpdate={handleRemoteTitleUpdate}
+                    onContentUpdate={handleRemoteContentUpdate}
+                  />
+                )}
               </LexicalComposer>
             </div>
           </>

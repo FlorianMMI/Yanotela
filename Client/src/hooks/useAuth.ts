@@ -21,8 +21,7 @@ export function useAuth(): AuthState {
 
   const checkAuth = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/auth/check`, {
+      const response = await fetch('https://yanotela.fr/api/auth/check', {
         method: 'GET',
         credentials: 'include',
       });

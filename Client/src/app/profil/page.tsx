@@ -11,6 +11,7 @@ import ModificationProfil from "@/components/ModificationProfil/page";
 import ParamModal from "@/components/infoprofil/paramModal";
 import { AnimatePresence } from "motion/react";
 // import Notification from "@/ui/notification";
+import NotificationList from "@/components/notificationList/page";
 
 
 interface UserInfo {
@@ -105,8 +106,8 @@ export default function Profil() {
     <>
       <div className="min-h-screen py-4 md:px-8 px-0 flex flex-col bg-fondpage">
         {/* Boutons settings et déconnexion alignés en haut */}
-        <div className=" flex-row justify-end items-center w-full px-8">
-          <div className=" items-center" title="Paramètres du compte"
+        <div className=" flex flex-row justify-between items-center w-full px-8">
+          <div className=" w-fit" title="Paramètres du compte"
             onClick={openParamModal}
           >
             <Icons
@@ -116,19 +117,13 @@ export default function Profil() {
             />
           </div>
 
-          {/* <div>
-            <Icons 
-              name='notification'
-              size={35}
-              className="ml-4 cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
-
-            />
-          </div> */}
-
+          <div className="md:hidden flex relative">
+        <NotificationList isOpenSideBar={true} />
+        </div>
         </div>
 
         {/* Contenu centré et réparti */}
-        <div className="flex-1 flex flex-col justify-between items-center text-center w-full">
+        <div className="flex-1 flex flex-col justify-start gap-6 items-center text-center w-full">
 
           <div className="flex md:hidden">
             {userInfo && (
@@ -147,17 +142,17 @@ export default function Profil() {
           <div className="flex flex-col md:flex-row gap-8 w-full p-4 md:w-full md:items-start items-center mb-6">
 
             <div className="flex flex-col gap-4 items-center w-fit">
-              <p className="text-clrprincipal font-gant text-center text-2xl w-full">
+              <p className=" whitespace-nowrap text-clrprincipal font-gant text-center md:text-left text-3xl md:text-4xl w-full md:w-auto">
                 Vos notes
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 items-center w-full">
+            <div className="flex flex-col gap-4 items-center md:items-end w-full">
               <TotalNotes totalNotes={totalNotes} />
             </div>
 
             {/* Bouton déconnexion mobile en bas */}
-            <div className="flex flex-col items-center justify-center w-full max-w-1/2">
+            <div className="flex flex-col items-end justify-center w-full max-w-1/2">
               <Logout />
             </div>
 
