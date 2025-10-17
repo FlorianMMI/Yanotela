@@ -8,7 +8,7 @@ env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend-dev
   DOCKER_BACKEND_REPO: jefee/yanotela-backend-dev
-  EC2_HOST: 13.39.48.72
+  EC2_HOST: https://yanotela.fr
   EC2_USER: ubuntu
   DEPLOY_PATH: /var/www/yanotela
 
@@ -41,7 +41,7 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            NEXT_PUBLIC_API_URL=http://13.39.48.72:3001
+            NEXT_PUBLIC_API_URL=https://yanotela.fr/api
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
             ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
@@ -154,8 +154,8 @@ jobs:
             SESSION_SECRET=dev_session_secret_change_this_in_production
             
             # Application URLs
-            CLIENT_URL=http://${{ env.EC2_HOST }}:3000
-            SERVER_URL=http://${{ env.EC2_HOST }}:3001
+            CLIENT_URL=http://${{ env.EC2_HOST }}
+            SERVER_URL=http://${{ env.EC2_HOST }}/api
             
             # Email Configuration (optional for development)
             MAIL_SERVICE=gmail
