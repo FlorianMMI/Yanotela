@@ -6,7 +6,8 @@ RUN apk add --no-cache \
     python3 \
     make \
     g++ \
-    openssl
+    openssl \
+    wget
 
 # Install dependencies
 FROM base AS deps

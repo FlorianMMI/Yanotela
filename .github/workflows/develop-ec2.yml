@@ -191,15 +191,52 @@ jobs:
                  IMAGE_TAG=develop \
                  docker compose -f docker-compose.dev.yml up -d --force-recreate
             
-            # Wait for services to be healthy
-            echo "Waiting for services to start..."
-            sleep 60
+            # Wait for services to be healthy (increased timeout)
+            echo "⏳ Waiting for services to become healthy..."
+            sleep 30
+            
+            # Wait for backend to be healthy
+            echo "🔍 Checking backend health..."
+            for i in {1..30}; do
+              if sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml ps backend-dev | grep -q "healthy"; then
+                echo "✅ Backend is healthy"
+                break
+              fi
+              echo "⏳ Waiting for backend... ($i/30)"
+              sleep 10
+            done
+            
+            # Wait for frontend to be healthy
+            echo "🔍 Checking frontend health..."
+            for i in {1..30}; do
+              if sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml ps frontend-dev | grep -q "healthy"; then
+                echo "✅ Frontend is healthy"
+                break
+              fi
+              echo "⏳ Waiting for frontend... ($i/30)"
+              sleep 10
+            done
             
             # Show container status for debugging
             echo "📊 Container status:"
             sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml ps
             
-            # Check if services are running
+            # Check if services are running and healthy
+            BACKEND_HEALTHY=$(sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml ps backend-dev | grep -c "healthy" || echo "0")
+            FRONTEND_HEALTHY=$(sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml ps frontend-dev | grep -c "healthy" || echo "0")
+            
+            if [ "$BACKEND_HEALTHY" -eq "0" ]; then
+              echo "❌ Backend is not healthy, checking logs..."
+              sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml logs --tail=100 backend-dev
+              exit 1
+            fi
+            
+            if [ "$FRONTEND_HEALTHY" -eq "0" ]; then
+              echo "❌ Frontend is not healthy, checking logs..."
+              sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml logs --tail=100 frontend-dev
+              exit 1
+            fi
+            
             if sudo DB_USER=yanotela_dev DB_PASSWORD=dev_password_123 DB_NAME=yanotela_dev REDIS_PASSWORD=redis_dev_password_123 SESSION_SECRET=dev_session_secret_change_this_in_production MAIL_SERVICE=gmail MAIL_USER= MAIL_PASSWORD= DOCKER_USERNAME=${{ env.DOCKER_USERNAME }} IMAGE_TAG=develop docker compose -f docker-compose.dev.yml ps | grep -q "Up"; then
               echo "✅ Development deployment successful!"
               
