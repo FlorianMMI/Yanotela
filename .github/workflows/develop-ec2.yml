@@ -116,13 +116,42 @@ jobs:
               echo "✅ Repository updated"
             fi
             
-            # Ensure docker-compose.dev.yml exists
+            # Ensure docker-compose.dev.yml and nginx config exist
             if [ ! -f "docker-compose.dev.yml" ]; then
               echo "❌ docker-compose.dev.yml not found in repository"
               ls -la
               exit 1
             fi
             
+            # Ensure nginx configuration directory exists
+            if [ ! -d "nginx/conf.d" ]; then
+              echo "❌ nginx/conf.d directory not found in repository"
+              echo "📋 Current directory structure:"
+              find . -type f -name "*.conf" -o -name "docker-compose*" | head -10
+              exit 1
+            fi
+
+              # Ensure nginx default.conf exists, create minimal if missing
+                  if [ ! -f "nginx/conf.d/default.conf" ]; then
+                    echo "⚠️ nginx/conf.d/default.conf not found, creating minimal default.conf"
+                    mkdir -p nginx/conf.d
+                    cat > nginx/conf.d/default.conf <<'EOF'
+            server {
+              listen 80;
+              server_name yanotela.fr;
+
+              location / {
+                return 200 'Yanotela Development Server';
+                add_header Content-Type text/plain;
+              }
+
+              location /api {
+                return 200 'Yanotela Backend API';
+                add_header Content-Type text/plain;
+              }
+            }
+            EOF
+                  fi
             # Update package cache and clean up disk space
             sudo apt-get update -qq
             # Clean up disk space before pulling images
