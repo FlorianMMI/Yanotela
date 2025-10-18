@@ -118,8 +118,8 @@ nginx:
     - "80:80"
     - "443:443"
   volumes:
-    - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro  # Chemin vers votre fichier local
-    - /etc/letsencrypt:/etc/letsencrypt  # Pour les certificats SSL (en production)
+    - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro 
+    - /etc/letsencrypt:/etc/letsencrypt
   depends_on:
     - frontend-dev
     - backend-dev
