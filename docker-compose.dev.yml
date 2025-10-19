@@ -112,26 +112,26 @@ services:
         reservations:
           memory: 128M
 
-  # nginx:
-  #   image: nginx:latest
-  #   container_name: yanotela-nginx-dev
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
-  #     - /etc/letsencrypt:/etc/letsencrypt
-  #   depends_on:
-  #     - frontend-dev
-  #     - backend-dev
-  #   networks:
-  #     - yanotela-dev
-  #   restart: unless-stopped
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "10m"
-  #       max-file: "3"
+  nginx:
+    image: nginx:latest
+    container_name: yanotela-nginx-dev
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - frontend-dev
+      - backend-dev
+    networks:
+      - yanotela-dev
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_dev_data:
