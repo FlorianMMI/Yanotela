@@ -36,7 +36,7 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            NEXT_PUBLIC_API_URL=https://yanotela.fr/api  # Changé pour le développement local
+            NEXT_PUBLIC_API_URL=https://yanotela.fr/api
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
             ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
