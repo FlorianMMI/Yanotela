@@ -117,8 +117,7 @@ jobs:
             fi
             
            
-            EOF
-                  fi
+            
             # Update package cache and clean up disk space
             sudo apt-get update -qq
             # Clean up disk space before pulling images
