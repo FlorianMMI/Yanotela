@@ -36,7 +36,7 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            NEXT_PUBLIC_API_URL=http://localhost/api  # Changé pour le développement local
+            NEXT_PUBLIC_API_URL=https://yanotela.fr/api  # Changé pour le développement local
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
             ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
@@ -233,7 +233,7 @@ jobs:
                 ports:
                   - "80:80"
                 volumes:
-                  - ./nginx/default.conf:/etc/nginx/defaut.conf:ro
+                  - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
                 depends_on:
                   - frontend-dev
                   - backend-dev
@@ -274,7 +274,7 @@ jobs:
             if docker compose ps | grep -q "Up"; then
               echo "✅ Services démarrés avec succès"
               echo "🎉 Déploiement terminé !"
-              echo "🌐 Accédez à votre application : http://localhost"
+              echo "🌐 Accédez à votre application : https://yanotela.fr"
             else
               echo "❌ Échec du démarrage des services"
               docker compose logs
