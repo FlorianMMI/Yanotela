@@ -28,7 +28,7 @@ export default function GoogleAuthButton({
     try {
       // L'API serveur redirige automatiquement vers Google OAuth
       // puis gère l'inscription ou la connexion selon que l'utilisateur existe
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://15.236.208.91/api';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://15236.208.91/api';
       
       // Redirection directe vers la route Google OAuth du serveur
       window.location.href = `${baseUrl}/auth/google`;

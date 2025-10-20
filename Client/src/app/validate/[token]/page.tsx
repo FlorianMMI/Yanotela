@@ -25,7 +25,7 @@ export default function ValidatePage() {
       try {
         
         // Appeler l'API de validation du backend
-        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://15.236.208.91/api';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://15236.208.91/api';
         const response = await fetch(`${API_URL}/auth/check`, {
           method: 'GET',
           credentials: 'include', // Important pour les sessions

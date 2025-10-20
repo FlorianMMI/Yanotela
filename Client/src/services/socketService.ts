@@ -17,7 +17,7 @@ class SocketService {
       return this.socket;
     }
 
-    const SOCKET_URL = 'https://15.236.208.91';
+    const SOCKET_URL = 'http://15236.208.91';
 
     this.socket = io(SOCKET_URL, {
       path: '/socket.io/',

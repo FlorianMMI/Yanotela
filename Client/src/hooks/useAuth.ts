@@ -21,7 +21,7 @@ export function useAuth(): AuthState {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('https://15.236.208.91/api/auth/check', {
+      const response = await fetch('http://15236.208.91/api/auth/check', {
         method: 'GET',
         credentials: 'include',
       });

@@ -20,8 +20,8 @@
 # Lancer toute la stack (client + serveur + base de données)
 docker compose up --build
 ```
-- Client : https://15.236.208.91
-- Serveur : https://15.236.208.91/api
+- Client : http://15236.208.91
+- Serveur : http://15236.208.91/api
 
 > **Astuce WSL** : Assurez-vous que Docker Desktop est lancé sous WSL2.  
 > Les volumes et ports sont automatiquement mappés.
@@ -32,8 +32,8 @@ docker compose up --build
 # Installation et lancement des services (client + serveur)
 ./setup.sh
 ```
-- Client : https://15.236.208.91
-- Serveur : https://15.236.208.91/api
+- Client : http://15236.208.91
+- Serveur : http://15236.208.91/api
 
 ---
 

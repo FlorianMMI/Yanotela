@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI || 'https://15.236.208.91/auth/google/callback'
+  process.env.GOOGLE_REDIRECT_URI || 'http://15236.208.91/auth/google/callback'
 );
 
 // Scopes nécessaires pour obtenir les informations de profil
@@ -101,7 +101,7 @@ export const handleGoogleCallback = async (req, res) => {
       await req.session.save();
 
       // Redirection vers le client après authentification
-      const clientUrl = process.env.CLIENT_URL || 'https://15.236.208.91';
+      const clientUrl = process.env.CLIENT_URL || 'http://15236.208.91';
       console.log('➡️ Redirection vers:', `${clientUrl}/notes`);
       return res.redirect(`${clientUrl}/notes`);
     } else {
@@ -151,7 +151,7 @@ export const handleGoogleCallback = async (req, res) => {
       await req.session.save();
 
       // Redirection vers le client après authentification
-      const clientUrl = process.env.CLIENT_URL || 'https://15.236.208.91';
+      const clientUrl = process.env.CLIENT_URL || 'http://15236.208.91';
       console.log('➡️ Redirection vers:', `${clientUrl}/notes`);
       return res.redirect(`${clientUrl}/notes`);
     }
