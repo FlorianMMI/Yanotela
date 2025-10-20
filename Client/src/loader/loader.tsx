@@ -610,3 +610,132 @@ export async function RefuseNotification(invitationId: string): Promise<{ succes
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
+
+// ============== FOLDER  FUNCTIONS ==============
+
+export async function GetFolders(): Promise<{ folders: any[]; totalFolders: number }> {
+    try {
+        const response = await fetch(`${apiUrl}/folder/get`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return { 
+            folders: data.folders || [], 
+            totalFolders: data.totalFolders || 0 
+        };
+    } catch (error) {
+        console.error("Error loading folders:", error);
+        return { folders: [], totalFolders: 0 };
+    }
+}
+
+export async function GetFolderById(id: string): Promise<{ folder: any; error?: string } | null> {
+    try {
+        const response = await fetch(`${apiUrl}/folder/get/${id}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { folder: null, error: errorData.error || 'Dossier introuvable' };
+        }
+
+        const data = await response.json();
+        return { folder: data.folder };
+    } catch (error) {
+        console.error("Error loading folder:", error);
+        return { folder: null, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function CreateFolder(folderData?: { Nom?: string; Description?: string; CouleurTag?: string }): Promise<{ folder: any | null; redirectUrl?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/folder/create`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                Nom: folderData?.Nom || "Nouveau dossier",
+                Description: folderData?.Description || "",
+                CouleurTag: folderData?.CouleurTag || "#D4AF37",
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error("Error creating folder:", errorData);
+            return { folder: null };
+        }
+
+        const data = await response.json();
+        return { 
+            folder: data.folder, 
+            redirectUrl: `/folder/${data.folder.id}` 
+        };
+    } catch (error) {
+        console.error("Error creating folder:", error);
+        return { folder: null };
+    }
+}
+
+export async function UpdateFolder(id: string, folderData: { Nom?: string; Description?: string; CouleurTag?: string }): Promise<{ success: boolean; folder?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/folder/update/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify(folderData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la mise à jour du dossier' };
+        }
+
+        const data = await response.json();
+        return { success: true, folder: data.folder };
+    } catch (error) {
+        console.error("Error updating folder:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function DeleteFolder(id: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/folder/delete/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la suppression du dossier' };
+        }
+
+        const data = await response.json();
+        return { success: true, message: data.message };
+    } catch (error) {
+        console.error("Error deleting folder:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}

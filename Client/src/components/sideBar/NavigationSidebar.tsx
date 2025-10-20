@@ -24,6 +24,12 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       icon: 'docs',
       isActive: pathname.includes('/notes'),
     },
+    {
+      href: '/folder',
+      label: 'Mes Dossiers',
+      icon: 'folder',
+      isActive: pathname.includes('/folder'),
+    },
   ];
 
   return (
