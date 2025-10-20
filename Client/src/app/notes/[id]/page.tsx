@@ -591,13 +591,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           <>
             <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
               {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
-              <div className="absolute bottom-4 right-4 z-10">
+              {/* <div className="absolute bottom-4 right-4 z-10">
                 {(isSavingContent || isTyping) ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
                 ) : (
                   <Icons name="save" size={20} className="h-5 w-5 text-primary" />
                 )}
-              </div>
+              </div> */}
               
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <RichTextPlugin
