@@ -36,8 +36,9 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
 
   return (
     <div className="h-full w-full flex flex-col">
+
       {/* Profile Section */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-gray-200 flex flex-row items-center gap-4 align-middle justify-center">
         <Link 
           href="/profil"
           className={`flex items-center ${isopen ? 'w-full px-4' : 'w-fit px-3'} py-3 gap-3 rounded-xl transition-all duration-200 ${
