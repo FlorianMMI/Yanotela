@@ -16,10 +16,10 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
     const [loading, setLoading] = useState(false);
     const notificationRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
-    
+
     // Déterminer si on est sur la page profil
     const isProfilePage = pathname.includes('/profil');
-    
+
     // Déterminer si on doit afficher l'indicateur rouge
     const shouldShowRedIndicator = notifications.length > 0;
 
@@ -116,46 +116,46 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                     <Icon
                         name="notification"
                         size={22}
-                        className="text-primary "
+                        className={isProfilePage ? "md:text-white text-primary hover:text-primary" : "text-primary"}
                     />
                 </button>
 
-                {/* Dropdown */}
-                {open && (
-                    <div className=" absolute md:left-0 left-auto right-0 md:right-auto  top-full mt-2 sm:mt-3 w-[18.5rem] max-w-[calc(100vw-3rem)] sm:w-80 sm:max-h-[calc(100vh-10rem)] z-100">
-                        <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[calc(100vh-10rem)]">
-                            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                                <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
-                                <span className="text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded-full">{notifications.length}</span>
+                {open ? (
+                    loading ? (
+                        <div className="bg-white md:relative absolute top-8 md:top-0 rounded-xl w-[18.5rem] md:w-full shadow-lg overflow-hidden h-auto flex flex-col items-center justify-center p-6" aria-busy="true">
+                            <Icon name="notification" size={36} className="text-gray-400 mb-3 animate-spin" />
+                            <p className="text-gray-600 mb-4">Chargement...</p>
+                            <button
+                                className="px-3 py-1 bg-[#882626] text-white rounded opacity-60 cursor-not-allowed"
+                                onClick={fetchNotifications}
+                                aria-label="Rafraîchir les notifications"
+                                disabled
+                            >
+                                Rafraîchir
+                            </button>
+                        </div>
+                    ) : notifications.length > 0 ? (
+                        <div className="bg-white rounded-xl md:w-full shadow-lg overflow-hidden md:relative absolute top-8 md:top-0 w-[18.5rem] h-auto flex flex-col">
+                            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-800">Notification</h3>
+                                <span className="text-sm text-gray-500">{notifications.length}</span>
                             </div>
 
-                            <div className="p-4 space-y-3 overflow-y-auto flex-1 min-h-0">
-                                {loading ? (
-                                    <div className="flex flex-col items-center justify-center py-6">
-                                        <Icon name="notification" size={36} className="text-gray-400 mb-3 animate-spin" />
-                                        <p className="text-gray-600">Chargement...</p>
-                                    </div>
-                                ) : notifications.length > 0 ? (
-                                    notifications.map((n: any) => (
-                                        <Notification
-                                            key={n.id}
-                                            id={n.id}
-                                            title={n.Titre}
-                                            author={n.author}
-                                            onNotificationUpdate={fetchNotifications}
-                                        />
-                                    ))
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-6 gap-3">
-                                        <Icon name="notification" size={36} className="text-gray-400" />
-                                        <p className="text-gray-600">Aucune notification</p>
-                                    </div>
-                                )}
+                            <div className="p-4 space-y-3 max-h-72 overflow-y-auto">
+                                {notifications.map((n: any) => (
+                                    <Notification
+                                        key={n.id}
+                                        id={n.id}
+                                        title={n.Titre}
+                                        author={n.author}
+                                        onNotificationUpdate={fetchNotifications}
+                                    />
+                                ))}
                             </div>
 
-                            <div className="px-4 py-3 border-t border-gray-100 flex justify-end bg-gray-50">
+                            <div className="px-4 py-3 border-t border-gray-100 flex justify-end">
                                 <button
-                                    className="px-4 py-2 bg-[#882626] text-white rounded-lg hover:bg-[#792121] transition-colors shadow-sm"
+                                    className="px-3 py-1 bg-[#882626] text-white rounded hover:bg-[#792121] transition-colors"
                                     onClick={fetchNotifications}
                                     aria-label="Rafraîchir les notifications"
                                 >
@@ -163,8 +163,20 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                                 </button>
                             </div>
                         </div>
-                    </div>
-                )}
+                    ) : (
+                        <div className="bg-white rounded-xl md:w-full shadow-lg overflow-hidden md:relative absolute top-8 md:top-0 w-[18.5rem] h-auto flex flex-col items-center justify-center p-6 gap-3">
+                            <Icon name="notification" size={36} className="text-gray-400 " />
+                            <p className="text-gray-600 ">Aucune notification</p>
+                            <button
+                                className="px-3 py-1 bg-[#882626] text-white rounded hover:bg-[#792121] transition-colors"
+                                onClick={fetchNotifications}
+                                aria-label="Rafraîchir les notifications"
+                            >
+                                Rafraîchir
+                            </button>
+                        </div>
+                    )
+                ) : null}
             </div>
         </>
     );
