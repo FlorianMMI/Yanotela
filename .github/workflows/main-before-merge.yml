@@ -68,6 +68,18 @@ jobs:
             # Enable error handling
             set -e
 
+            # Check what's using port 80
+            echo "🔍 Checking what's using port 80:"
+            sudo netstat -tlnp | grep :80 || echo "No process found on port 80"
+            sudo lsof -i :80 || echo "No files open on port 80"
+            
+            # Stop any nginx or apache processes that might be using port 80
+            echo "🛑 Stopping any existing web servers..."
+            sudo systemctl stop nginx 2>/dev/null || true
+            sudo systemctl stop apache2 2>/dev/null || true
+            sudo killall nginx 2>/dev/null || true
+            sudo killall apache2 2>/dev/null || true
+            
             # Check available disk space
             echo "📊 Initial disk space:"
             df -h
@@ -176,9 +188,19 @@ jobs:
             }
             EOF
 
+            # Check if port 80 is still in use and decide which port to use
+            if sudo netstat -tlnp | grep :80 > /dev/null 2>&1; then
+              echo "⚠️ Port 80 is still in use, using port 8080 instead"
+              NGINX_PORT="8080"
+              APP_URL="http://15.236.208.91:8080"
+            else
+              echo "✅ Port 80 is available"
+              NGINX_PORT="80"
+              APP_URL="http://15.236.208.91"
+            fi
+
             # Créer le fichier docker-compose.yml (version complète)
-            cat > docker-compose.yml << 'EOF'
-            version: '3.8'
+            cat > docker-compose.yml << EOF
             services:
               db:
                 image: postgres:15-alpine
@@ -223,8 +245,8 @@ jobs:
                   - DATABASE_URL=postgresql://yanotela:password_123@db:5432/yanotela
                   - REDIS_URL=redis://:redis_password_123@redis:6379
                   - SESSION_SECRET=session_secret_change_this_in_production
-                  - CLIENT_URL=http://15.236.208.91
-                  - SERVER_URL=http://15.236.208.91/api
+                  - CLIENT_URL=\${APP_URL}
+                  - SERVER_URL=\${APP_URL}/api
                 depends_on:
                   db:
                     condition: service_healthy
@@ -242,7 +264,7 @@ jobs:
                   - "3000:3000"
                 environment:
                   - NODE_ENV=production
-                  - NEXT_PUBLIC_API_URL=http://15.236.208.91/api
+                  - NEXT_PUBLIC_API_URL=\${APP_URL}/api
                 depends_on:
                   - backend
                 networks:
@@ -253,7 +275,7 @@ jobs:
                 image: nginx:latest
                 container_name: yanotela-nginx
                 ports:
-                  - "80:80"
+                  - "\${NGINX_PORT}:80"
                 volumes:
                   - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
                 depends_on:
@@ -346,24 +368,35 @@ jobs:
             if docker compose ps | grep -E "(Up|running)"; then
               echo "✅ Services démarrés avec succès"
               
-              # Test de connectivité
-              echo "🧪 Testing connectivity..."
-              if curl -f -s -m 10 http://localhost > /dev/null; then
-                echo "✅ Nginx is responding"
-              else
-                echo "⚠️ Nginx not responding yet"
-              fi
-              
-              if curl -f -s -m 10 http://localhost:3001/health > /dev/null; then
-                echo "✅ Backend is responding"
-              else
-                echo "⚠️ Backend not responding yet"
-              fi
-              
-              echo "🎉 Déploiement terminé !"
-              echo "🌐 Accédez à votre application : http://15.236.208.91"
-              
-              # Final cleanup to free up space
+            # Test de connectivité
+            echo "🧪 Testing connectivity..."
+            if curl -f -s -m 10 http://localhost > /dev/null; then
+              echo "✅ Nginx is responding"
+            else
+              echo "⚠️ Nginx not responding yet"
+            fi
+            
+            if curl -f -s -m 10 http://localhost:3001/health > /dev/null; then
+              echo "✅ Backend is responding"
+            else
+              echo "⚠️ Backend not responding yet"
+            fi
+            
+            # Final deployment status report
+            echo ""
+            echo "🎉 DEPLOYMENT COMPLETE! 🎉"
+            echo "========================================="
+            if [ "$NGINX_PORT" = "80" ]; then
+              echo "✅ Application: http://15.236.208.91"
+              echo "🔗 API Endpoint: http://15.236.208.91/api"
+            else
+              echo "✅ Application: http://15.236.208.91:8080"
+              echo "🔗 API Endpoint: http://15.236.208.91:8080/api"
+              echo "⚠️  Note: Using port 8080 due to port conflict"
+            fi
+            echo "🖥️  Direct Frontend: http://15.236.208.91:3000"
+            echo "🔧 Direct Backend: http://15.236.208.91:3001"
+            echo "========================================="              # Final cleanup to free up space
               echo "🧹 Final cleanup..."
               docker system prune -f || true
               
