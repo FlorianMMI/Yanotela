@@ -21,7 +21,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: Audit npm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install & audit Client dependencies
+        working-directory: ./Client
+        run: |
+          npm ci
+          npm audit --audit-level=high
+
+      - name: Install & audit Server dependencies
+        working-directory: ./Server
+        run: |
+          npm ci
+          npm audit --audit-level=high - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
