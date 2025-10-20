@@ -17,9 +17,10 @@ class SocketService {
       return this.socket;
     }
 
-    const SOCKET_URL = 'https://yanotela.fr/';
+    const SOCKET_URL = 'https://yanotela.fr';
 
     this.socket = io(SOCKET_URL, {
+      path: '/socket.io/',
       withCredentials: true,
       transports: ['websocket', 'polling'], // WebSocket prioritaire, polling en fallback
       reconnection: true,
