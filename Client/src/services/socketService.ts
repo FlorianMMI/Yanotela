@@ -17,7 +17,7 @@ class SocketService {
       return this.socket;
     }
 
-    const SOCKET_URL = 'https://yanotela.fr';
+    const SOCKET_URL = 'https://15.236.208.91';
 
     this.socket = io(SOCKET_URL, {
       path: '/socket.io/',
@@ -271,5 +271,3 @@ if (typeof window !== 'undefined') {
     socketService.disconnect();
   });
 }
-
-
