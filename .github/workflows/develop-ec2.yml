@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-       - name: Remove console logs from source code
+      - name: Remove console logs from source code
         run: |
           # Créer le script
           cat > remove-console-logs.js << 'EOF'
