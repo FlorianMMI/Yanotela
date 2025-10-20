@@ -159,9 +159,6 @@ interface AuthResponse {
 
 export async function Login(credentials: LoginCredentials): Promise<AuthResponse> {
 
-
-    
-
     try {
         
         const response = await fetch(`${apiUrl}/login`, {

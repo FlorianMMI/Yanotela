@@ -118,21 +118,38 @@ const login = async (req, res) => {
     }
 
     if (!user.is_verified) {
-      return res.status(401).json({
-        error: "Compte non activé"
-      });
+      try {
+        // Générer un nouveau token de validation si nécessaire
+        let validationToken = user.token;
+        if (!validationToken || validationToken.startsWith("VALIDATED_")) {
+          validationToken = crypto.randomBytes(32).toString("hex");
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { token: validationToken }
+          });
+        }
+        
+        // Envoyer l'email de validation
+        await sendValidationEmail(user.email, validationToken);
+        
+        return res.status(401).json({
+          error: "Compte non activé. Un nouvel email de validation vient d'être envoyé à votre adresse email."
+        });
+      } catch (emailError) {
+        console.error("Erreur lors de l'envoi de l'email de validation:", emailError);
+        return res.status(401).json({
+          error: "Compte non activé. Veuillez vérifier votre email ou contacter le support."
+        });
+      }
     }
 
-    // Vérifier si le compte est marqué pour suppression
     if (user.deleted_at) {
       
-      // Calculer si le compte a expiré (1 minute pour test)
       const deletionDate = new Date(user.deleted_at);
-      const expirationDate = new Date(deletionDate.getTime() + (1 * 60 * 1000)); // 1 minute en millisecondes
+      const expirationDate = new Date(deletionDate.getTime() + (1 * 60 * 1000));
       const now = new Date();
       
       if (now > expirationDate) {
-        // Le compte a expiré
         return res.status(410).json({
           error: "Votre compte a expiré et sera supprimé définitivement. Vous ne pouvez plus vous connecter.",
           accountExpired: true
@@ -202,7 +219,7 @@ const validate = async (req, res) => {
       where: { id: user.id },
       data: {
         is_verified: true,
-        token: "VALIDATED_" + user.token, // Marquer le token comme utilisé
+        token: "VALIDATED_" + user.token,
       },
     });
     req.session.userId = user.id;
