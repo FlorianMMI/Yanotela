@@ -25,10 +25,11 @@ export default function ValidatePage() {
       try {
         
         // Appeler l'API de validation du backend
-        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://yanotela.fr/api';
-        const response = await fetch(`${API_URL}/auth/check`, {
+        // Le serveur définit la route de validation en GET /validate/:token (voir Server/src/routes/authRoutes.js)
+        const API_URL = 'http://localhost:3001';
+        const response = await fetch(`${API_URL}/validate/${token}`, {
           method: 'GET',
-          credentials: 'include', // Important pour les sessions
+          credentials: 'include', // Important pour les sessions et la création de cookie côté serveur
         });
 
         const data = await response.json();

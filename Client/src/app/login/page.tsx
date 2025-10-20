@@ -18,7 +18,7 @@ export default function Login() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const base = (process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api').replace(/\/$/, '');
+        const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '');
         const res = await fetch(`${base}/auth/check`, {
           method: 'GET',
           credentials: 'include',

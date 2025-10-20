@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-const FRONT_URL = process.env.FRONT_URL || 'https://yanotela.fr';
+const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
 
 // Configuration du transporteur email
 function createEmailTransporter() {
