@@ -48,15 +48,9 @@ services:
         max-size: "10m"
         max-file: "3"
 
-<<<<<<< HEAD:docker-compose.prod.yml
-  backend-prod:
-    image: ${DOCKER_USERNAME:-yourusername}/yanotela-backend:${IMAGE_TAG:-latest}
-    container_name: yanotela-backend-prod
-=======
   backend-dev:
     image: ${DOCKER_USERNAME:-jefee}/yanotela-backend-dev:${IMAGE_TAG:-develop}
     container_name: yanotela-backend-dev
->>>>>>> f79399d81774a69424353239fa6a51e855562df5:docker-compose.dev.yml
     ports:
       - "3001:3001"
     environment:
@@ -90,15 +84,9 @@ services:
         reservations:
           memory: 256M
 
-<<<<<<< HEAD:docker-compose.prod.yml
-  frontend-prod:
-    image: ${DOCKER_USERNAME:-yourusername}/yanotela-frontend:${IMAGE_TAG:-latest}
-    container_name: yanotela-frontend-prod
-=======
   frontend-dev:
     image: ${DOCKER_USERNAME:-jefee}/yanotela-frontend-dev:${IMAGE_TAG:-develop}
     container_name: yanotela-frontend-dev
->>>>>>> f79399d81774a69424353239fa6a51e855562df5:docker-compose.dev.yml
     ports:
       - "3000:3000"
     environment:
@@ -152,9 +140,5 @@ volumes:
     driver: local
 
 networks:
-<<<<<<< HEAD:docker-compose.prod.yml
-  yanotela-prod:
-=======
   yanotela-dev:
->>>>>>> f79399d81774a69424353239fa6a51e855562df5:docker-compose.dev.yml
     driver: bridge
