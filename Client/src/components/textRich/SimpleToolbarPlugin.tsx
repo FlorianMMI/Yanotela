@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+
 // @ts-ignore
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { 
@@ -49,14 +51,32 @@ export default function SimpleToolbarPlugin() {
     const [showListMenu, setShowListMenu] = useState(false);
     const [showFontSizeMenu, setShowFontSizeMenu] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [desktopContainer, setDesktopContainer] = useState<HTMLElement | null>(null);
 
-    // Détecter si on est sur mobile
+    // Détecter si on est sur mobile et trouver le conteneur desktop
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
         checkMobile();
         window.addEventListener('resize', checkMobile);
+
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    // Chercher le conteneur desktop de manière répétée
+    useEffect(() => {
+        if (!isMobile) {
+            const findContainer = () => {
+                const container = document.getElementById('desktop-toolbar-container');
+                if (container) {
+                    setDesktopContainer(container);
+                } else {
+                    // Réessayer après un court délai si le conteneur n'est pas encore monté
+                    setTimeout(findContainer, 100);
+                }
+            };
+            findContainer();
+        }
+    }, [isMobile]);
 
     const updateToolbar = useCallback(() => {
         const selection = $getSelection();
@@ -247,11 +267,12 @@ export default function SimpleToolbarPlugin() {
         }, 10);
     };
 
-    // Toujours afficher la toolbar en bas de page avec des SVG
-    return (
-        <div className="fixed bottom-4 left-4 right-4 border-t shadow-lg p-2 z-50 rounded-2xl md:bottom-0 md:left-0 md:right-0 md:rounded-none md:bg-white md:border-t" 
-             style={{ background: '#0000005c' }}>
-            <div className="flex flex-wrap gap-3 justify-center items-center max-w-4xl mx-auto">
+    // Contenu de la toolbar à réutiliser
+    const toolbarContent = (
+        <div className={isMobile ? 
+            "flex flex-wrap gap-3 justify-center items-center max-w-4xl mx-auto" : 
+            "flex gap-2 items-center"
+        }>
                 {/* Font Size Selector */}
                 {isMobile ? (
                     // Version mobile avec menu déroulant vers le haut
@@ -288,12 +309,12 @@ export default function SimpleToolbarPlugin() {
                         )}
                     </div>
                 ) : (
-                    // Version desktop avec select classique
+                    // Version desktop inline (sélecteur simple)
                     <select
                         value={fontSize}
                         onChange={(e) => handleFontSizeChange(e.target.value)}
-                        className="px-3 py-2 border rounded-lg text-sm bg-white"
-                        title="Changer la taille du texte sélectionné"
+                        className="px-2 py-1 border rounded text-xs text-black bg-white"
+                        title="Taille"
                     >
                         {FONT_SIZES.map((size) => (
                             <option key={size.value} value={size.value}>
@@ -490,139 +511,157 @@ export default function SimpleToolbarPlugin() {
                         </div>
                     </>
                 ) : (
-                    // Version Desktop (comme avant)
+                    // Version Desktop inline pour ItemBar (boutons compacts)
                     <>
                         {/* Text Formatting */}
                         <button
                             onClick={() => formatText('bold')}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-1 rounded transition-colors ${
                                 activeState.isBold 
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    ? 'bg-white text-primary' 
+                                    : 'text-white hover:bg-white hover:text-primary'
                             }`}
                             title="Gras"
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/>
                             </svg>
                         </button>
                         <button
                             onClick={() => formatText('italic')}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-1 rounded transition-colors ${
                                 activeState.isItalic 
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    ? 'bg-white text-primary' 
+                                    : 'text-white hover:bg-white hover:text-primary'
                             }`}
                             title="Italique"
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4h-8z"/>
                             </svg>
                         </button>
                         <button
                             onClick={() => formatText('underline')}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-1 rounded transition-colors ${
                                 activeState.isUnderline 
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    ? 'bg-white text-primary' 
+                                    : 'text-white hover:bg-white hover:text-primary'
                             }`}
                             title="Souligné"
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 17c3.31 0 6-2.69 6-6V3h-2.5v8c0 1.93-1.57 3.5-3.5 3.5S8.5 12.93 8.5 11V3H6v8c0 3.31 2.69 6 6 6zm-7 2v2h14v-2H5z"/>
                             </svg>
                         </button>
 
                         {/* Separator */}
-                        <div className="w-px h-6 bg-gray-300"></div>
+                        <div className="w-px h-4 bg-white/30"></div>
 
-                        {/* Alignment */}
+                        {/* Alignment - compact */}
                         <button
                             onClick={() => formatAlignment('left')}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-1 rounded transition-colors ${
                                 activeState.alignment === 'left' 
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    ? 'bg-white text-primary' 
+                                    : 'text-white hover:bg-white hover:text-primary'
                             }`}
                             title="Aligner à gauche"
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/>
                             </svg>
                         </button>
                         <button
                             onClick={() => formatAlignment('center')}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-1 rounded transition-colors ${
                                 activeState.alignment === 'center' 
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    ? 'bg-white text-primary' 
+                                    : 'text-white hover:bg-white hover:text-primary'
                             }`}
                             title="Centrer"
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"/>
                             </svg>
                         </button>
                         <button
                             onClick={() => formatAlignment('right')}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-1 rounded transition-colors ${
                                 activeState.alignment === 'right' 
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    ? 'bg-white text-primary' 
+                                    : 'text-white hover:bg-white hover:text-primary'
                             }`}
                             title="Aligner à droite"
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"/>
                             </svg>
                         </button>
                         <button
                             onClick={() => formatAlignment('justify')}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-1 rounded transition-colors ${
                                 activeState.alignment === 'justify' 
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    ? 'bg-white text-primary' 
+                                    : 'text-white hover:bg-white hover:text-primary'
                             }`}
                             title="Justifier"
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V7H3v2zm0-6v2h18V3H3z"/>
                             </svg>
                         </button>
 
                         {/* Separator */}
-                        <div className="w-px h-6 bg-gray-300"></div>
+                        <div className="w-px h-4 bg-white/30"></div>
 
-                        {/* Lists */}
+                        {/* Lists - compact */}
                         <button
                             onClick={() => insertList('bullet')}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-1 rounded transition-colors ${
                                 activeState.isInBulletList 
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    ? 'bg-white text-primary' 
+                                    : 'text-white hover:bg-white hover:text-primary'
                             }`}
                             title={activeState.isInBulletList ? 'Retirer la liste à puces' : 'Liste à puces'}
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/>
                             </svg>
                         </button>
                         <button
                             onClick={() => insertList('number')}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-1 rounded transition-colors ${
                                 activeState.isInNumberedList 
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    ? 'bg-white text-primary' 
+                                    : 'text-white hover:bg-white hover:text-primary'
                             }`}
                             title={activeState.isInNumberedList ? 'Retirer la liste numérotée' : 'Liste numérotée'}
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/>
                             </svg>
                         </button>
                     </>
                 )}
-            </div>
         </div>
     );
+
+    // Retour conditionnel : portail pour desktop, affichage normal pour mobile
+    if (isMobile) {
+        // Version mobile : toolbar fixe en bas
+        return (
+            <div className="fixed bottom-4 left-4 right-4 border-t shadow-lg p-2 z-50 rounded-2xl md:bottom-0 md:left-0 md:right-0 md:rounded-none md:bg-white md:border-t" 
+                 style={{ background: '#0000005c' }}>
+                {toolbarContent}
+            </div>
+        );
+    } else {
+        // Version desktop : UNIQUEMENT portail vers ItemBar, jamais d'affichage direct
+        if (desktopContainer) {
+            return createPortal(toolbarContent, desktopContainer);
+        } else {
+            // Attendre que le conteneur soit trouvé, ne rien afficher en attendant
+            return null;
+        }
+    }
 }

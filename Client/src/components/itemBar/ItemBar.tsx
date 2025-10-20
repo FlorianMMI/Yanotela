@@ -37,11 +37,10 @@ export default function ItemBar() {
     return (
         <div className='h-8 bg-primary text-white flex items-center text-sm'>
             <p className='ml-2'>
-                {isReadOnly ? "📖 Mode lecture seule - Vous ne pouvez pas modifier cette note" : 
-                // Importer les outils de modification de texte
-                ""
-                }
+                {isReadOnly ? "📖 Mode lecture seule - Vous ne pouvez pas modifier cette note" : ""}
             </p>
+            {/* Conteneur pour la toolbar desktop (portail) */}
+            <div id="desktop-toolbar-container" className="flex-1 flex justify-end items-center pr-2"></div>
         </div>
     );
 }
