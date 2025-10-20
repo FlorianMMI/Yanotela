@@ -259,7 +259,7 @@ jobs:
 
             # Créer le fichier .env.dev
             cat > .env.dev << 'EOF'
-            {{secrets.ENV_PREPROD_FILE}}
+            ${{secrets.ENV_PREPROD_FILE}}
             EOF
 
             # Démarrer les services
