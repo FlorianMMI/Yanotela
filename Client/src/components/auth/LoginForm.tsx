@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
 import { Login } from '@/loader/loader';
+import GoogleAuthButton from './GoogleAuthButton';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -43,7 +44,7 @@ export default function LoginForm({
       error: null as string | null,
       errors: [] as Array<{ msg: string }>
     };
-
+    
     try {
       const result = await Login(loginData);
       
@@ -152,26 +153,19 @@ export default function LoginForm({
           <Icon name="arrow-barre" className="text-white pointer-events-none" size={40} />
         </button>
 
-        {/* Séparateur et connexion Google - seulement sur page complète */}
-        {/* {!isInSidebar && (
-          <div className="flex flex-col items-center gap-4 w-full">
-            <div className="flex items-center w-full gap-4">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
-              <div className="flex-1 h-px bg-gray-300"></div>
-            </div>
-            
-            <button 
-              type="button" 
-              className="w-full p-2.5 bg-white border border-gray-300 rounded-[10px] flex justify-center items-center gap-3 hover:bg-gray-200 active:bg-gray-50 transition-colors cursor-pointer"
-            >
-              <Icon name="google" className="text-primary" size={20} />
-              <span className="text-black text-sm font-medium font-gant">
-                Se connecter avec Google
-              </span>
-            </button>
+        {/* Séparateur et connexion Google */}
+        <div className="flex flex-col items-center gap-4 w-full">
+          <div className="flex items-center w-full gap-4">
+            <div className="flex-1 h-px bg-gray-300"></div>
+            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+            <div className="flex-1 h-px bg-gray-300"></div>
           </div>
-        )} */}
+          
+          <GoogleAuthButton 
+            mode="login"
+            onSuccess={onSuccess}
+          />
+        </div>
 
         {/* Lien d'inscription */}
         {showRegisterLink && (

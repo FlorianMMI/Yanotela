@@ -18,7 +18,8 @@ export default function Login() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch('http://localhost:3001/auth/check', {
+        const base = (process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api').replace(/\/$/, '');
+        const res = await fetch(`${base}/auth/check`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -28,7 +29,7 @@ export default function Login() {
 
           // Vérifier les deux formats possibles de la réponse
           if (data.authenticated || data.isAuthenticated) {
-            router.push('/');
+            router.push('/notes');
             return;
           }
         }

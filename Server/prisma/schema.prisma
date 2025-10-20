@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,6 +11,8 @@ datasource db {
 model User {
   id              Int         @id @default(autoincrement())
   notes           Note[]      
+  modifiedNotes   Note[]      @relation("NoteModifier")
+  permissions     Permission[]
   pseudo          String      @unique
   prenom          String
   password        String
@@ -24,17 +20,33 @@ model User {
   email           String      @unique
   token           String      @unique
   is_verified     Boolean     @default(false)
+  deleted_at      DateTime?               
 
 }
-
 
 model Note {
-
   id              String         @id 
   Titre           String      
-  Content         String
+  Content         String 
   authorId        Int
   author          User        @relation(fields: [authorId], references: [id])
+  modifierId      Int?
+  modifier        User?       @relation("NoteModifier", fields: [modifierId], references: [id])
+  permissions     Permission[]
   ModifiedAt       DateTime    @default(now())
-
+  
 }
+
+model Permission {
+  noteId String   @map("id_note")
+  userId Int      @map("id_user")
+  role   Int
+  isAccepted Boolean @default(false)
+
+  note   Note   @relation(fields: [noteId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@id([noteId, userId])
+  
+}
+

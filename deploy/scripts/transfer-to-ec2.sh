@@ -12,9 +12,9 @@ echo "🚀 Transferring files to EC2 instance..."
 echo "📁 Transferring deploy-ec2.sh..."
 scp -i "$SSH_KEY" deploy/scripts/deploy-ec2.sh $EC2_USER@$EC2_IP:~/
 
-# Transfer docker-compose production file
-echo "📁 Transferring docker-compose.prod.yml..."
-scp -i "$SSH_KEY" docker-compose.prod.yml $EC2_USER@$EC2_IP:~/
+# Transfer docker-compose development file
+echo "📁 Transferring docker-compose.dev.yml..."
+scp -i "$SSH_KEY" docker-compose.dev.yml $EC2_USER@$EC2_IP:~/
 
 echo "✅ Files transferred successfully!"
 echo ""

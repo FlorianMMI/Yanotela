@@ -9,6 +9,7 @@ import ConfirmPassword from '@/ui/confirm-password';
 import { Register } from '@/loader/loader';
 import FormField from '@/ui/form/FormField';
 import FormMessage from '@/ui/form/FormMessage';
+import GoogleAuthButton from './GoogleAuthButton';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -165,7 +166,7 @@ export default function RegisterForm({
 
       <form
         onSubmit={handleSubmit}
-        className={`${isInSidebar ? 'space-y-4' : 'flex flex-col justify-start items-center gap-5'}`}
+        className={`${isInSidebar ? 'space-y-4' : 'flex flex-col justify-start w-full items-center gap-5'}`}
       >
         <FormMessage type="error" message={error} />
         <FormMessage type="success" message={success} />
@@ -192,14 +193,14 @@ export default function RegisterForm({
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className={`${isInSidebar ? 'w-full px-3 py-2 bg-clrsecondaire rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500 border-primary border-2'}`}
+              className={`${isInSidebar ? 'w-full px-3 py-2 bg-clrsecondaire rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500 border-primary border-2'}`}
             />
           </div>
 
 
           <div className={`${isInSidebar ? 'grid grid-cols-2 gap-4' : 'flex w-full justify-between items-center gap-5'}`}>
 
-            <div>
+            <div className='w-full'>
               <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
                 Prénom
               </p>
@@ -210,11 +211,11 @@ export default function RegisterForm({
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal border-primary border-2' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
               />
             </div>
 
-            <div>
+            <div className='w-full'>
               <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
                 Nom
               </p>
@@ -225,16 +226,18 @@ export default function RegisterForm({
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 max-w-36 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
+                className={`${isInSidebar ? 'w-full bg-clrsecondaire px-3 py-2 border-primary border-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-clrprincipal' : 'w-full p-2 px-3 text-xs rounded-lg bg-clrsecondaire text-clrprincipal font-light outline-none placeholder-zinc-500  border-primary border-2 '}`}
               />
             </div>
           </div>
 
           {/* Email */}
           <div className={`${isInSidebar ? 'w-full ' : 'self-stretch flex flex-col justify-start items-start gap-2.5 '}`}>
+
             <p className={`${isInSidebar ? 'block text-sm font-medium text-clrprincipal mb-1' : 'justify-start text-clrprincipal font-bold text-sm'}`}>
               Email
             </p>
+
             <input
               type="email"
               name="email"
@@ -246,16 +249,6 @@ export default function RegisterForm({
 
             />
           </div>
-
-          <FormField
-            label="Email"
-            name="email"
-            placeholder={isInSidebar ? "votre@email.com" : "Exemple@mail.com"}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            isInSidebar={isInSidebar}
-          />
         </div>
 
         
@@ -294,6 +287,20 @@ export default function RegisterForm({
             size={40}
           />
         </button>
+
+        {/* Séparateur et inscription Google */}
+        <div className="flex flex-col items-center gap-4 w-full">
+          <div className="flex items-center w-full gap-4">
+            <div className="flex-1 h-px bg-gray-300"></div>
+            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+            <div className="flex-1 h-px bg-gray-300"></div>
+          </div>
+          
+          <GoogleAuthButton 
+            mode="register"
+            onSuccess={onSuccess}
+          />
+        </div>
 
         {showLoginLink && (
           <div className="text-center flex justify-start items-center gap-2">

@@ -28,7 +28,6 @@ const register = async (req, res) => {
   const errors = validationResult(req);
   
   if (!errors.isEmpty()) {
-    console.log("Erreurs de validation:", errors.array());
     return res.status(400).json({
       errors: errors.array(),
       message: "Erreurs de validation"
@@ -53,11 +52,9 @@ const register = async (req, res) => {
     }
 
     const token = crypto.randomBytes(32).toString("hex");
-    console.log("Envoi de l'email de validation...");
     
     try {
       await sendValidationEmail(email, token);
-      console.log("Email de validation envoyé avec succès");
     } catch (emailError) {
       console.error("Erreur lors de l'envoi de l'email:", emailError);
       // On continue quand même pour créer l'utilisateur
@@ -77,7 +74,6 @@ const register = async (req, res) => {
       },
     });
 
-    console.log("Utilisateur créé:", user.pseudo);
     
     return res.status(201).json({
       success: true,
@@ -114,33 +110,50 @@ const login = async (req, res) => {
       where: { email: identifiant },
     });
     const user = userByPseudo || userByEmail;
-    
-    if (!user) {
-      console.log("Utilisateur non trouvé pour", identifiant);
+    const ok = user ? await bcrypt.compare(password, user.password) : false;
+    if (!user || !ok) {
       return res.status(401).json({
-        error: "Utilisateur non trouvé"
-      });
-    }
-
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
-      console.log("Mot de passe incorrect pour", identifiant);
-      return res.status(401).json({
-        error: "Mot de passe incorrect"
+        error: "Utilisateur ou mot de passe incorrect"
       });
     }
 
     if (!user.is_verified) {
-      console.log("Compte non activé pour", user.pseudo);
       return res.status(401).json({
         error: "Compte non activé"
       });
     }
 
+    // Vérifier si le compte est marqué pour suppression
+    if (user.deleted_at) {
+      
+      // Calculer si le compte a expiré (1 minute pour test)
+      const deletionDate = new Date(user.deleted_at);
+      const expirationDate = new Date(deletionDate.getTime() + (1 * 60 * 1000)); // 1 minute en millisecondes
+      const now = new Date();
+      
+      if (now > expirationDate) {
+        // Le compte a expiré
+        return res.status(410).json({
+          error: "Votre compte a expiré et sera supprimé définitivement. Vous ne pouvez plus vous connecter.",
+          accountExpired: true
+        });
+      } else {
+        // Le compte est en attente de suppression, calculer le temps restant
+        const timeRemaining = expirationDate - now;
+        const secondsRemaining = Math.ceil(timeRemaining / 1000);
+        
+        return res.status(403).json({
+          error: `Votre compte sera supprimé dans ${secondsRemaining} seconde${secondsRemaining > 1 ? 's' : ''}. Contactez le support pour annuler.`,
+          accountScheduledForDeletion: true,
+          deletedAt: user.deleted_at,
+          secondsRemaining: secondsRemaining
+        });
+      }
+    }
+
     req.session.userId = user.id;
     req.session.pseudo = user.pseudo;
     await req.session.save();
-    console.log("Session après login:", req.session);
     
     return res.json({
       success: true,
@@ -153,7 +166,8 @@ const login = async (req, res) => {
   } catch (err) {
     console.error("Erreur connexion", err);
     return res.status(500).json({
-      error: "Erreur serveur"
+      error: "Erreur serveur",
+      details: err.message
     });
   }
 };
@@ -177,15 +191,9 @@ const logout = (req, res) => {
 
 const validate = async (req, res) => {
   const { token } = req.params;
-  console.log("Tentative de validation avec token:", token);
   try {
     const user = await prisma.user.findFirst({ where: { token } });
-    console.log("Utilisateur trouvé:", user);
     if (!user || user.token.startsWith("VALIDATED_")) {
-      console.log(
-        "Lien de validation invalide ou déjà utilisé pour token:",
-        token
-      );
       return res.status(400).json({
         error: "Lien invalide, expiré ou déjà utilisé."
       });
@@ -200,7 +208,6 @@ const validate = async (req, res) => {
     req.session.userId = user.id;
     req.session.pseudo = user.pseudo;
     await req.session.save();
-    console.log("Session après validation:", req.session);
     
     return res.json({
       success: true,
@@ -327,7 +334,6 @@ const resetPasswordPost = async (req, res) => {
       }
     });
     
-    console.log("Mot de passe réinitialisé pour:", user.pseudo);
     
     return res.json({
       success: true,

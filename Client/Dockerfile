@@ -21,8 +21,14 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Disable telemetry during build
-ENV NEXT_TELEMETRY_DISABLED=1
+# Accept build arguments for Next.js environment variables
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+# Next.js collects completely anonymous telemetry data about general usage
+# Learn more here: https://nextjs.org/telemetry
+# Disable telemetry during the build
+ENV NEXT_TELEMETRY_DISABLED 1
 
 # Build the application
 RUN npm run build
@@ -52,13 +58,7 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
-ENV HOSTNAME="0.0.0.0"
-
-# Vérifier que server.js existe avant de le lancer
-CMD ["sh", "-c", "ls -la server.js && node server.js"]
+CMD ["node", "server.js"]

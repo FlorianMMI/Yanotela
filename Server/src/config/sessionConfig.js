@@ -12,13 +12,13 @@ const sessionMiddleware = session({
   resave: false, // Ne pas sauvegarder la session si elle n'a pas été modifiée
   saveUninitialized: false, // Ne pas sauvegarder les sessions non initialisées
   cookie: {
-    secure: false, // false en développement (HTTP)
+    secure: true, // false en développement (HTTP)
     httpOnly: true, // Empêche l'accès au cookie via JavaScript côté client
     sameSite: 'lax',
-    
+    domain: 'yanotela.fr', // Domaine pour lequel le cookie est valides
     // Chemin d'application du cookie (toute l'application)
     path: '/',
-    maxAge: 3600000, // 1 heure en millisecondes
+    maxAge:1000 * 60 * 60 * 24 * 365 * 10, // 10 ans en ms
   }
 });
 

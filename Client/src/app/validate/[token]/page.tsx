@@ -25,7 +25,8 @@ export default function ValidatePage() {
       try {
         
         // Appeler l'API de validation du backend
-        const response = await fetch(`http://localhost:3001/validate/${token}`, {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://yanotela.fr/api';
+        const response = await fetch(`${API_URL}/auth/check`, {
           method: 'GET',
           credentials: 'include', // Important pour les sessions
         });
@@ -34,12 +35,14 @@ export default function ValidatePage() {
 
         if (response.ok && data.success) {
           setStatus('success');
-          setMessage('Votre compte a été validé avec succès !');
-          
-          // Rediriger vers la racine après 2 secondes
+          setMessage('Votre compte a été validé avec succès ! Connexion automatique...');
+
+          // Délai pour permettre la synchronisation de l'état
           setTimeout(() => {
-            router.push('/');
-          }, 2000);
+            // Forcer un rechargement complet pour s'assurer que l'état d'auth est mis à jour
+            window.location.href = '/notes';
+          }, 1500);
+         
         } else {
           setStatus('error');
           setMessage(data.error || 'Erreur lors de la validation du compte');
@@ -84,8 +87,12 @@ export default function ValidatePage() {
                     <p className="text-sm font-medium text-green-800">
                       {message}
                     </p>
-                      <Link href="/notes" className="mt-2 text-sm text-green-700 hover:text-green-500 underline">
-                        Accéder à mes notes
+                    <div className="mt-2 flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                      <span className="text-xs text-green-700">Redirection en cours...</span>
+                    </div>
+                      <Link href="/notes" className="mt-2 block text-sm text-green-700 hover:text-green-500 underline">
+                        Accéder à mes notes maintenant
                       </Link>
                   </div>
                 </div>
