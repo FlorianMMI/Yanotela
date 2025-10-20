@@ -11,8 +11,8 @@ export function useAuthRedirect() {
 
   const checkAuth = async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
-      const response = await fetch(`${API_URL}/api/auth/check`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
+      const response = await fetch(`${API_URL}/auth/check`, {
         method: 'GET',
         credentials: 'include',
       });

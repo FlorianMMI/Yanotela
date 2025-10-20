@@ -15,11 +15,12 @@ export default function Login() {
     router.refresh();
   };
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '');
-        const res = await fetch(`${base}/auth/check`, {
+        const res = await fetch(`${API_URL}/auth/check`, {
           method: 'GET',
           credentials: 'include',
         });
