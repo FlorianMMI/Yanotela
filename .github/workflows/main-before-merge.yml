@@ -298,15 +298,7 @@ jobs:
 
             # Créer le fichier .env.prod
             cat > .env.prod << 'EOF'
-            NODE_ENV=production
-            DB_USER=yanotela
-            DB_PASSWORD=password_123
-            DB_NAME=yanotela
-            REDIS_PASSWORD=redis_password_123
-            SESSION_SECRET=session_secret_change_this_in_production
-            CLIENT_URL=http://15.236.208.91
-            SERVER_URL=http://15.236.208.91/api
-            NEXT_PUBLIC_API_URL=http://15.236.208.91/api
+            ${{secrets.ENV_PREPROD_FILE}}
             EOF
 
             # Arrêter les anciens conteneurs
