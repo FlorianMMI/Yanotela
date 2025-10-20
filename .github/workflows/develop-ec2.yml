@@ -2,7 +2,7 @@ name: Deploy App to EC2 (Development)
 
 on:
   push:
-    branches: [ "Develop" ]
+    branches: [ "preprod" ]
 
 env:
   DOCKER_USERNAME: jefee
