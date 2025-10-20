@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+// Système de verrou global pour éviter les duplications
+let desktopToolbarLock = false;
+
 // @ts-ignore
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { 
@@ -52,6 +55,7 @@ export default function SimpleToolbarPlugin() {
     const [showFontSizeMenu, setShowFontSizeMenu] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [desktopContainer, setDesktopContainer] = useState<HTMLElement | null>(null);
+    const [isDesktopToolbarOwner, setIsDesktopToolbarOwner] = useState(false);
 
     // Détecter si on est sur mobile et trouver le conteneur desktop
     useEffect(() => {
@@ -62,21 +66,44 @@ export default function SimpleToolbarPlugin() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Chercher le conteneur desktop de manière répétée
+    // Chercher le conteneur desktop et gérer le verrou
     useEffect(() => {
+        let timeoutId: NodeJS.Timeout | null = null;
+        
         if (!isMobile) {
             const findContainer = () => {
                 const container = document.getElementById('desktop-toolbar-container');
-                if (container) {
+                if (container && !desktopToolbarLock) {
+                    // Prendre le verrou
+                    desktopToolbarLock = true;
                     setDesktopContainer(container);
-                } else {
+                    setIsDesktopToolbarOwner(true);
+                } else if (!container) {
                     // Réessayer après un court délai si le conteneur n'est pas encore monté
-                    setTimeout(findContainer, 100);
+                    timeoutId = setTimeout(findContainer, 100);
                 }
             };
             findContainer();
+        } else {
+            // Reset quand on passe en mobile
+            if (isDesktopToolbarOwner) {
+                desktopToolbarLock = false;
+                setIsDesktopToolbarOwner(false);
+            }
+            setDesktopContainer(null);
         }
-    }, [isMobile]);
+
+        // Nettoyer au démontage
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            // Libérer le verrou si cette instance l'avait
+            if (isDesktopToolbarOwner) {
+                desktopToolbarLock = false;
+            }
+        };
+    }, [isMobile, isDesktopToolbarOwner]);
 
     const updateToolbar = useCallback(() => {
         const selection = $getSelection();
@@ -290,7 +317,7 @@ export default function SimpleToolbarPlugin() {
                             {FONT_SIZES.find(size => size.value === fontSize)?.label || fontSize}
                         </button>
                         {showFontSizeMenu && (
-                            <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-1 max-h-48 overflow-y-auto">
+                            <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-1 max-h-48 overflow-y-auto z-50">
                                 {FONT_SIZES.map((size) => (
                                     <button
                                         key={size.value}
@@ -344,7 +371,7 @@ export default function SimpleToolbarPlugin() {
                                 </svg>
                             </button>
                             {showFormatMenu && (
-                                <div className="fixed bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-2">
+                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-2 z-50">
                                     <button
                                         onClick={() => formatText('bold')}
                                         className={`p-2 rounded-lg transition-colors ${
@@ -405,7 +432,7 @@ export default function SimpleToolbarPlugin() {
                                 </svg>
                             </button>
                             {showAlignMenu && (
-                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-2">
+                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-2 z-50">
                                     <button
                                         onClick={() => formatAlignment('left')}
                                         className={`p-2 rounded-lg transition-colors ${
@@ -479,7 +506,7 @@ export default function SimpleToolbarPlugin() {
                                 </svg>
                             </button>
                             {showListMenu && (
-                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-2">
+                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-2 z-50">
                                     <button
                                         onClick={() => insertList('bullet')}
                                         className={`p-2 rounded-lg transition-colors ${
@@ -656,11 +683,11 @@ export default function SimpleToolbarPlugin() {
             </div>
         );
     } else {
-        // Version desktop : UNIQUEMENT portail vers ItemBar, jamais d'affichage direct
-        if (desktopContainer) {
+        // Version desktop : UNIQUEMENT portail vers ItemBar si on possède le verrou
+        if (desktopContainer && isDesktopToolbarOwner) {
             return createPortal(toolbarContent, desktopContainer);
         } else {
-            // Attendre que le conteneur soit trouvé, ne rien afficher en attendant
+            // Pas de conteneur ou pas le propriétaire du verrou, ne rien afficher
             return null;
         }
     }

@@ -40,7 +40,7 @@ export default function ItemBar() {
                 {isReadOnly ? "📖 Mode lecture seule - Vous ne pouvez pas modifier cette note" : ""}
             </p>
             {/* Conteneur pour la toolbar desktop (portail) */}
-            <div id="desktop-toolbar-container" className="flex-1 flex justify-end items-center pr-2"></div>
+            <div id="desktop-toolbar-container" className="flex-1 flex justify-start items-center pr-2"></div>
         </div>
     );
 }
