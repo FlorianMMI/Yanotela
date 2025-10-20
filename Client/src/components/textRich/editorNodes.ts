@@ -4,6 +4,7 @@ import { ListItemNode, ListNode } from '@lexical/list';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 // @ts-ignore
 import { CodeHighlightNode, CodeNode } from '@lexical/code';
+import { FontSizeNode } from './FontSizeNode';
 
 export const editorNodes = [
     ListNode,
@@ -12,4 +13,5 @@ export const editorNodes = [
     QuoteNode,
     CodeNode,
     CodeHighlightNode,
+    FontSizeNode,
 ];

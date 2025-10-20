@@ -30,6 +30,7 @@ import { SaveNote } from "@/loader/loader";
 
 import ErrorFetch from "@/ui/note/errorFetch";
 import ToolbarPlugin from "@/components/textRich/ToolbarPlugin";
+import SimpleToolbarPlugin from '@/components/textRich/SimpleToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 // @ts-ignore
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
@@ -82,6 +83,16 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
+  // Détection mobile
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Reload page on breakpoint change (mobile <-> desktop)
   React.useEffect(() => {
     // Détection du breakpoint initial
@@ -339,8 +350,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   function createSimpleLexicalState(text: string): string {
     const simpleState = {
       root: {
-        children: text ? [{
-          children: [{
+        children: [{
+          children: text ? [{
             detail: 0,
             format: 0,
             mode: "normal",
@@ -348,13 +359,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
             text: text,
             type: "text",
             version: 1
-          }],
+          }] : [],
           direction: "ltr",
           format: "",
           indent: 0,
           type: "paragraph",
           version: 1
-        }] : [],
+        }],
         direction: "ltr",
         format: "",
         indent: 0,
@@ -369,10 +380,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     namespace: "Editor",
     theme,
     onError,
-    nodes: editorNodes,
+    nodes: editorNodes as any,
     // ✅ CORRECTION: Utiliser l'état initial depuis la BDD pour un chargement immédiat
     // La collaboration temps-réel viendra s'ajouter par-dessus via les WebSockets
-    editorState: initialEditorState || undefined,
+    editorState: initialEditorState || createSimpleLexicalState(""),
   };
 
   const focusAtEnd = useCallback(() => {
@@ -625,7 +636,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
+            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
               {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
               <div className="absolute bottom-4 right-4 z-10">
                 {(isSavingContent || isTyping) ? (
@@ -636,7 +647,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               </div>
               
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
-                {!isReadOnly && <ToolbarPlugin />}
+                {!isReadOnly && <SimpleToolbarPlugin />}
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
@@ -646,7 +657,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                            "Commencez à écrire..."
                         </p>
                       }
-                      className={`h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                      className={`editor-root h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
                       contentEditable={!isReadOnly}
                     />
                   }

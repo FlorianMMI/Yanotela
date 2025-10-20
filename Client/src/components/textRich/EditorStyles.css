@@ -18,6 +18,9 @@
   font-weight: bold;
   margin: 0.83em 0;
 }
+
+
+
 /* Styles pour l'éditeur Lexical */
 
 /* Styles pour les titres */
@@ -39,6 +42,74 @@
   font-size: 1.17em;
   font-weight: bold;
   margin: 0.83em 0;
+}
+
+/* Styles pour l'alignement du texte */
+.editor-text-left {
+  text-align: left;
+}
+
+.editor-text-center {
+  text-align: center;
+}
+
+.editor-text-right {
+  text-align: right;
+}
+
+.editor-text-justify {
+  text-align: justify;
+}
+
+/* Styles pour les tailles de police personnalisées */
+.editor-text-small {
+  font-size: 14px;
+}
+
+.editor-text-normal {
+  font-size: 16px;
+}
+
+.editor-text-large {
+  font-size: 20px;
+}
+
+.editor-text-xlarge {
+  font-size: 24px;
+}
+
+/* Classes pour les tailles de police spécifiques */
+.editor-text-14px {
+  font-size: 14px !important;
+}
+
+.editor-text-16px {
+  font-size: 16px !important; 
+}
+
+.editor-text-20px {
+  font-size: 20px !important;
+}
+
+.editor-text-24px {
+  font-size: 24px !important;
+}
+
+/* Styles dynamiques pour la taille de police */
+.lexical-editor [data-font-size="14px"] {
+  font-size: 14px !important;
+}
+
+.lexical-editor [data-font-size="16px"] {
+  font-size: 16px !important;
+}
+
+.lexical-editor [data-font-size="20px"] {
+  font-size: 20px !important;
+}
+
+.lexical-editor [data-font-size="24px"] {
+  font-size: 24px !important;
 }
 
 /* Styles pour les listes */
@@ -97,6 +168,45 @@
 .editor-paragraph {
   margin: 0;
   position: relative;
+}
+
+/* Styles globaux pour l'éditeur avec taille par défaut */
+.editor-root {
+  font-size: 16px; /* Taille par défaut */
+}
+
+/* Styles pour les spans avec des tailles de police personnalisées (notre FontSizeNode) */
+.editor-root span.editor-text-14px {
+  font-size: 14px !important;
+}
+
+.editor-root span.editor-text-16px {
+  font-size: 16px !important;
+}
+
+.editor-root span.editor-text-20px {
+  font-size: 20px !important;
+}
+
+.editor-root span.editor-text-24px {
+  font-size: 24px !important;
+}
+
+/* Styles pour les éléments inline avec taille de police */
+.editor-root [style*="font-size: 14px"] {
+  font-size: 14px !important;
+}
+
+.editor-root [style*="font-size: 16px"] {
+  font-size: 16px !important;
+}
+
+.editor-root [style*="font-size: 20px"] {
+  font-size: 20px !important;
+}
+
+.editor-root [style*="font-size: 24px"] {
+  font-size: 24px !important;
 }
 
 /* Styles pour les quotes */
