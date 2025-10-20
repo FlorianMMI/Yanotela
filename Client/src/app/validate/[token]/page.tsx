@@ -25,11 +25,10 @@ export default function ValidatePage() {
       try {
         
         // Appeler l'API de validation du backend
-        // Le serveur définit la route de validation en GET /validate/:token (voir Server/src/routes/authRoutes.js)
         const API_URL = 'http://localhost:3001';
-        const response = await fetch(`${API_URL}/validate/${token}`, {
+        const response = await fetch(`${API_URL}/auth/check`, {
           method: 'GET',
-          credentials: 'include', // Important pour les sessions et la création de cookie côté serveur
+          credentials: 'include', // Important pour les sessions
         });
 
         const data = await response.json();
