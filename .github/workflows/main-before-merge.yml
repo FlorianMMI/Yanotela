@@ -265,13 +265,8 @@ jobs:
                 container_name: yanotela-backend
                 ports:
                   - "3001:3001"
-                environment:
-                  - NODE_ENV=production
-                  - DATABASE_URL=postgresql://yanotela:password_123@db:5432/yanotela
-                  - REDIS_URL=redis://:redis_password_123@redis:6379
-                  - SESSION_SECRET=session_secret_change_this_in_production
-                  - CLIENT_URL=\${APP_URL}
-                  - SERVER_URL=\${APP_URL}/api
+                env_file:
+                  - .env
                 depends_on:
                   db:
                     condition: service_healthy
