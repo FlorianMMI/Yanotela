@@ -20,8 +20,8 @@
 # Lancer toute la stack (client + serveur + base de données)
 docker compose up --build
 ```
-- Client : http://15236.208.91
-- Serveur : http://15236.208.91/api
+- Client : https://yanotela.fr
+- Serveur : https://yanotela.fr/api
 
 > **Astuce WSL** : Assurez-vous que Docker Desktop est lancé sous WSL2.  
 > Les volumes et ports sont automatiquement mappés.
@@ -32,8 +32,8 @@ docker compose up --build
 # Installation et lancement des services (client + serveur)
 ./setup.sh
 ```
-- Client : http://15236.208.91
-- Serveur : http://15236.208.91/api
+- Client : https://yanotela.fr
+- Serveur : https://yanotela.fr/api
 
 ---
 
@@ -127,7 +127,7 @@ MIT
 
 server{
     listen 80;
-    server_name 15.236.208.91 www.15.236.208.91;
+    server_name yanotela.fr www.yanotela.fr;
 
     client_max_body_size 10M;
 

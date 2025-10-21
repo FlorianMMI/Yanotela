@@ -42,7 +42,7 @@ graph LRgraph LR
 
 - `DOCKER_PASSWORD` - Docker Hub access token### 1. Secrets GitHub
 
-- `EC2_SSH_PRIVATE_KEY` - SSH key for development EC2 (15.236.208.91)📁 Voir le guide complet : [`deploy/SETUP-GITHUB-SECRETS.md`](./SETUP-GITHUB-SECRETS.md)
+- `EC2_SSH_PRIVATE_KEY` - SSH key for development EC2 (yanotela.fr)📁 Voir le guide complet : [`deploy/SETUP-GITHUB-SECRETS.md`](./SETUP-GITHUB-SECRETS.md)
 
 
 
@@ -56,7 +56,7 @@ Run the setup script on your development EC2 instance:- `DOCKER_USERNAME`, `DOCK
 
 ```bash- `ENV_PROD_FILE`, `ENV_PREPROD_FILE`
 
-# On your development EC2 (15.236.208.91)
+# On your development EC2 (yanotela.fr)
 
 chmod +x deploy/scripts/setup-ec2.sh### 2. Instance EC2
 
@@ -108,11 +108,11 @@ git checkout develop && git pull
 
 ### Development Server### Déploiement manuel production
 
-- **Host**: 15.236.208.91```bash
+- **Host**: yanotela.fr```bash
 
-- **Frontend**: http://15.236.208.91:3000# Via GitHub Actions
+- **Frontend**: https://yanotela.fr:3000# Via GitHub Actions
 
-- **Backend**: http://15.236.208.91:3001Repository → Actions → Select workflow → Run workflow
+- **Backend**: https://yanotela.fr:3001Repository → Actions → Select workflow → Run workflow
 
 
 

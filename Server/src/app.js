@@ -102,7 +102,7 @@ const httpServer = createServer(app);
 // Configuration de Socket.IO avec CORS
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://15236.208.91',
+    origin: process.env.CLIENT_URL || 'https://yanotela.fr',
     credentials: true,
     methods: ['GET', 'POST']
   },

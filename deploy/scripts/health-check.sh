@@ -7,7 +7,7 @@ ENVIRONMENT=${1:-"dev"}
 
 # Development environment configuration
 COMPOSE_FILE="docker-compose.dev.yml"
-BASE_URL="http://15.236.208.91"
+BASE_URL="https://yanotela.fr"
 
 echo "🏥 Starting health checks for $ENVIRONMENT environment..."
 

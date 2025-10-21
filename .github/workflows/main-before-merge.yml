@@ -6,7 +6,7 @@ env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend
   DOCKER_BACKEND_REPO: jefee/yanotela-backend
-  EC2_HOST: 15.236.208.91
+  EC2_HOST: yanotela.fr
   EC2_USER: ubuntu
   DEPLOY_PATH: /var/www/yanotela
 permissions:
@@ -36,7 +36,7 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            NEXT_PUBLIC_API_URL=http://15.236.208.91/api
+            NEXT_PUBLIC_API_URL=https://yanotela.fr/api
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:production
             ${{ env.DOCKER_FRONTEND_REPO }}:production-${{ github.sha }}
@@ -138,7 +138,7 @@ jobs:
             cat > ./nginx/conf.d/default.conf << 'EOF'
             server {
                 listen 80;
-                server_name 15.236.208.91;
+                server_name yanotela.fr;
 
                 client_max_body_size 10M;
 
@@ -192,11 +192,11 @@ jobs:
             if sudo netstat -tlnp | grep :80 > /dev/null 2>&1; then
               echo "⚠️ Port 80 is still in use, using port 8080 instead"
               NGINX_PORT="8080"
-              APP_URL="http://15.236.208.91:8080"
+              APP_URL="https://yanotela.fr:8080"
             else
               echo "✅ Port 80 is available"
               NGINX_PORT="80"
-              APP_URL="http://15.236.208.91"
+              APP_URL="https://yanotela.fr"
             fi
 
             # Créer le fichier docker-compose.yml (version complète)
@@ -379,15 +379,15 @@ jobs:
             echo "🎉 DEPLOYMENT COMPLETE! 🎉"
             echo "========================================="
             if [ "$NGINX_PORT" = "80" ]; then
-              echo "✅ Application: http://15.236.208.91"
-              echo "🔗 API Endpoint: http://15.236.208.91/api"
+              echo "✅ Application: https://yanotela.fr"
+              echo "🔗 API Endpoint: https://yanotela.fr/api"
             else
-              echo "✅ Application: http://15.236.208.91:8080"
-              echo "🔗 API Endpoint: http://15.236.208.91:8080/api"
+              echo "✅ Application: https://yanotela.fr:8080"
+              echo "🔗 API Endpoint: https://yanotela.fr:8080/api"
               echo "⚠️  Note: Using port 8080 due to port conflict"
             fi
-            echo "🖥️  Direct Frontend: http://15.236.208.91:3000"
-            echo "🔧 Direct Backend: http://15.236.208.91:3001"
+            echo "🖥️  Direct Frontend: https://yanotela.fr:3000"
+            echo "🔧 Direct Backend: https://yanotela.fr:3001"
             echo "========================================="              # Final cleanup to free up space
               echo "🧹 Final cleanup..."
               docker system prune -f || true

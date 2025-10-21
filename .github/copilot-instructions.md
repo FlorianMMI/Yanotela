@@ -23,7 +23,7 @@
 - **Server middleware**: `authMiddleware.js` protects routes, no client-side auth state
 
 ### API Communication Patterns
-- **Base URL**: Client calls `http://15236.208.91/api` (hardcoded in `loader.tsx`, fallback for env var)
+- **Base URL**: Client calls `https://yanotela.fr/api` (hardcoded in `loader.tsx`, fallback for env var)
 - **Route structure**: `/` (auth routes), `/note` (CRUD operations)  
 - **Error handling**: Express-validator on server → structured error responses → client displays
 - **Content-Type**: Always `application/json` with `credentials: 'include'`

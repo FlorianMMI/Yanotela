@@ -12,7 +12,7 @@ yarn dev
 bun dev
 ```
 
-Open [http://15236.208.91](http://15236.208.91) with your browser to see the result.
+Open [https://yanotela.fr](https://yanotela.fr) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

@@ -11,7 +11,7 @@ export function useAuthRedirect() {
 
   const checkAuth = async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://15236.208.91';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://yanotela.fr';
       const response = await fetch(`${API_URL}/api/auth/check`, {
         method: 'GET',
         credentials: 'include',

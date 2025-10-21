@@ -15,7 +15,7 @@ const sessionMiddleware = session({
     secure: true, // false en développement (HTTP)
     httpOnly: true, // Empêche l'accès au cookie via JavaScript côté client
     sameSite: 'lax',
-    domain: '15.236.208.91', // Domaine pour lequel le cookie est valides
+    domain: 'yanotela.fr', // Domaine pour lequel le cookie est valides
     // Chemin d'application du cookie (toute l'application)
     path: '/',
     maxAge:1000 * 60 * 60 * 24 * 365 * 10, // 10 ans en ms
