@@ -13,6 +13,10 @@ env:
 permissions:
   contents: read
 jobs:
+
+  cleanup:
+    uses : ./.github/workflows/jobs/cleanup-console-logs.yml
+
   build-and-deploy:
     name: Build and Deploy to Development
     runs-on: ubuntu-latest

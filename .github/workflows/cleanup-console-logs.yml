@@ -1,0 +1,115 @@
+# .github/workflows/cleanup-console-logs.yml
+name: Cleanup Console Logs
+
+on:
+  workflow_call:
+    inputs:
+      frontend-path:
+        description: 'Chemin vers le dossier frontend'
+        required: false
+        type: string
+        default: 'Client'
+      backend-path:
+        description: 'Chemin vers le dossier backend'
+        required: false
+        type: string
+        default: 'Server'
+
+jobs:
+  remove-console-logs:
+    name: Remove console.log()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove console.log from Frontend
+        run: |
+          cd ${{ inputs.frontend-path }}
+          node << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          function removeConsoleLogs(content) {
+            let result = content;
+            let hasChanges = true;
+            while (hasChanges) {
+              const before = result;
+              result = result.replace(/console\.log\s*\([^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.log\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
+              hasChanges = before !== result;
+            }
+            return result.replace(/\n\s*\n\s*\n/g, '\n\n');
+          }
+
+          function processDirectory(dirPath) {
+            let count = 0;
+            function walk(dir) {
+              fs.readdirSync(dir).forEach(file => {
+                const filePath = path.join(dir, file);
+                const stat = fs.statSync(filePath);
+                if (stat.isDirectory()) {
+                  if (!['node_modules', '.git', 'dist', 'build', '.next'].includes(file)) walk(filePath);
+                } else if (['.js', '.jsx', '.ts', '.tsx'].includes(path.extname(file))) {
+                  const content = fs.readFileSync(filePath, 'utf8');
+                  const cleaned = removeConsoleLogs(content);
+                  if (content !== cleaned) {
+                    fs.writeFileSync(filePath, cleaned, 'utf8');
+                    console.log(`✓ ${filePath}`);
+                    count++;
+                  }
+                }
+              });
+            }
+            walk(dirPath);
+            return count;
+          }
+
+          console.log('🧹 Frontend...');
+          const count = processDirectory('.');
+          console.log(`✅ ${count} fichier(s) nettoyé(s)\n`);
+          EOF
+
+      - name: Remove console.log from Backend
+        run: |
+          cd ${{ inputs.backend-path }}
+          node << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          function removeConsoleLogs(content) {
+            let result = content;
+            let hasChanges = true;
+            while (hasChanges) {
+              const before = result;
+              result = result.replace(/console\.log\s*\([^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.log\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
+              hasChanges = before !== result;
+            }
+            return result.replace(/\n\s*\n\s*\n/g, '\n\n');
+          }
+
+          function processDirectory(dirPath) {
+            let count = 0;
+            function walk(dir) {
+              fs.readdirSync(dir).forEach(file => {
+                const filePath = path.join(dir, file);
+                const stat = fs.statSync(filePath);
+                if (stat.isDirectory()) {
+                  if (!['node_modules', '.git', 'dist', 'build', '.next'].includes(file)) walk(filePath);
+                } else if (['.js', '.jsx', '.ts', '.tsx'].includes(path.extname(file))) {
+                  const content = fs.readFileSync(filePath, 'utf8');
+                  const cleaned = removeConsoleLogs(content);
+                  if (content !== cleaned) {
+                    fs.writeFileSync(filePath, cleaned, 'utf8');
+                    console.log(`✓ ${filePath}`);
+                    count++;
+                  }
+                }
+              });
+            }
+            walk(dirPath);
+            return count;
+          }
+
+          console.log('🧹 Backend...');
+          const count = processDirectory('.');
+          console.log(`✅ ${count} fichier(s) nettoyé(s)`);
+          EOF
