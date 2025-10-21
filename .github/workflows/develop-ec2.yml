@@ -80,6 +80,45 @@ jobs:
             echo "🚀 Starting deployment to DEVELOPMENT environment"
             cd ${{ env.DEPLOY_PATH }}
 
+            # Check available disk space
+            echo "📊 Initial disk space:"
+            df -h
+
+            # Aggressive cleanup to free up space
+            echo "🧹 Cleaning up disk space..."
+            
+            # Clean Docker system (remove all unused containers, networks, images, cache)
+            docker system prune -a -f --volumes || true
+            
+            # Remove all stopped containers
+            docker container prune -f || true
+            
+            # Remove all unused images
+            docker image prune -a -f || true
+            
+            # Remove all unused volumes
+            docker volume prune -f || true
+            
+            # Remove all unused networks
+            docker network prune -f || true
+            
+            # Clean package cache
+            sudo apt-get clean || true
+            sudo apt-get autoremove -y || true
+            
+            # Remove old logs
+            sudo journalctl --vacuum-time=3d || true
+            
+            # Clear temporary files
+            sudo rm -rf /tmp/* || true
+            sudo rm -rf /var/tmp/* || true
+            
+            # Remove old kernels (keep current and one backup)
+            sudo apt-get autoremove --purge -y || true
+
+            echo "📊 Disk space after cleanup:"
+            df -h
+
             # Clone ou mise à jour du dépôt
             if [ ! -d ".git" ]; then
               git clone -b Develop https://github.com/FlorianMMI/Yanotela.git .
