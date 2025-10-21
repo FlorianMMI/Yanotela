@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
 import { CreateNote, SaveNote } from '@/loader/loader';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SaveFlashNoteButtonProps {
   className?: string;
@@ -17,7 +18,9 @@ export default function SaveFlashNoteButton({
   currentTitle 
 }: SaveFlashNoteButtonProps) {
   const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [showSavePopup, setShowSavePopup] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [saveTitle, setSaveTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -79,6 +82,12 @@ export default function SaveFlashNoteButton({
   };
 
   const handleOpenPopup = () => {
+    // Vérifier d'abord si l'utilisateur est connecté
+    if (!isAuthenticated) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
     // Récupérer le titre le plus récent depuis localStorage
     const currentStoredTitle = localStorage.getItem("yanotela:flashnote:title") || '';
     
@@ -165,6 +174,50 @@ export default function SaveFlashNoteButton({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Popup de connexion requise */}
+      {showLoginPrompt && (
+        <div className="fixed inset-0 bg-[#00000050] flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-full">
+              <Icon name="user" size={24} className="text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
+              Connexion requise
+            </h3>
+            <p className="text-gray-600 mb-6 text-center">
+              Pour sauvegarder votre Flash Note comme une note permanente, vous devez être connecté.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  // Sauvegarder l'intention de revenir à Flash Note après connexion
+                  localStorage.setItem('yanotela:redirect-after-login', '/flashnote');
+                  router.push('/login');
+                }}
+                className="w-full px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+              >
+                Se connecter
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.setItem('yanotela:redirect-after-login', '/flashnote');
+                  router.push('/register');
+                }}
+                className="w-full px-4 py-2.5 border border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors font-medium"
+              >
+                Créer un compte
+              </button>
+              <button
+                onClick={() => setShowLoginPrompt(false)}
+                className="w-full px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Continuer sans sauvegarder
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

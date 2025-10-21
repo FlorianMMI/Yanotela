@@ -35,7 +35,7 @@ export default function FlashNoteButton({ isOpen = true, isActive = false, onCli
         onClick={handleClick}
         className={`group flex items-center justify-center md:justify-normal border-2 rounded-lg py-3 gap-3 ${isOpen ? `w-full px-4` : `w-fit px-2`} ${isActive
           ? 'bg-primary text-white border-primary'
-          : 'border-primary text-primary hover:text-white bg-none hover:bg-primary'
+          : 'border-primary text-primary hover:text-white bg-deskbackground hover:bg-primary shadow-xl '
           }`}
         title='Flash Note'
       >
@@ -51,7 +51,7 @@ export default function FlashNoteButton({ isOpen = true, isActive = false, onCli
                 }`}
               size={30}
             />
-            <span className={`font-medium ${isOpen ? `flex` : `hidden`}`}>Flash Notes</span>
+            <span className={`font-medium ${isOpen ? `flex` : `hidden`}`}>Flash Note</span>
           </>
         )}
       </motion.button>
