@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import LoginForm from '@/components/auth/LoginForm';
 import { useEffect, useState } from "react";
+import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
 
 export default function Login() {
   const router = useRouter();
@@ -54,6 +55,8 @@ export default function Login() {
   }
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      <MobileFlashNoteButton />
+      
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center">

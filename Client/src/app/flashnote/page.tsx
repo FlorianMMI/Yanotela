@@ -16,6 +16,7 @@ import OnChangePlugin from "@lexical/react/LexicalOnChangePlugin";
 import { useCallback } from "react";
 import Icons from '@/ui/Icon';
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
+import { useAuth } from "@/hooks/useAuth";
 
 const theme = {
   // Theme styling goes here
@@ -36,6 +37,7 @@ export default function FlashNoteEditor() {
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editor, setEditor] = useState<any>(null);
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
@@ -211,6 +213,32 @@ export default function FlashNoteEditor() {
 
   return (
     <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
+      {/* Bandeau d'information pour les utilisateurs non connectés */}
+      {!authLoading && !isAuthenticated && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3"
+        >
+          <Icons name="info" size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-blue-900 mb-1">
+              Mode hors ligne
+            </h3>
+            <p className="text-xs text-blue-800">
+              Vos notes sont enregistrées localement sur votre appareil. 
+              Pour synchroniser vos notes en ligne et y accéder depuis n'importe où, 
+              <button 
+                onClick={() => window.location.href = '/login'} 
+                className="underline font-medium hover:text-blue-600 ml-1"
+              >
+                connectez-vous
+              </button>.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Zone de notifications */}
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md">

@@ -20,6 +20,12 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
   const pathname = usePathname();
   const isProfile = pathname.includes('/profil');
   const navItems = [
+        {
+      href: '/flashnote',
+      label: 'Flash Note',
+      icon: 'flash',
+      isActive: pathname.includes('/flashnote'),
+    },
     {
       href: '/flashnote',
       label: 'Flash Note',
@@ -32,6 +38,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       icon: 'docs',
       isActive: pathname.includes('/notes'),
     }
+
   ];
 
   return (
