@@ -110,8 +110,8 @@ jobs:
                 client_max_body_size 10M;
 
 
-                ssl_certificate /etc/letsencrypt/live/preprod.yanotela.fr/fullchain.pem;
-                ssl_certificate_key /etc/letsencrypt/live/preprod.yanotela.fr/privkey.pem;
+                ssl_certificate /etc/letsencrypt/live/yanotela.fr/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/yanotela.fr/privkey.pem;
 
                 ssl_protocols TLSv1.2 TLSv1.3;
                 ssl_ciphers HIGH:!aNULL:!MD5;
