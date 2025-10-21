@@ -297,7 +297,7 @@ export default function SimpleToolbarPlugin() {
     // Contenu de la toolbar à réutiliser
     const toolbarContent = (
         <div className={isMobile ? 
-            "flex flex-wrap gap-3 justify-center items-center max-w-4xl mx-auto" : 
+            "flex flex-row gap-3 justify-center items-center" : 
             "flex gap-2 items-center"
         }>
                 {/* Font Size Selector */}
@@ -311,13 +311,13 @@ export default function SimpleToolbarPlugin() {
                                 setShowAlignMenu(false);
                                 setShowListMenu(false);
                             }}
-                            className="px-3 py-2 border rounded-lg text-sm bg-white hover:bg-gray-100 transition-colors"
+                            className="px-3 py-2 border rounded-lg text-sm text-white bg-none hover:bg-gray-800 transition-colors"
                             title="Changer la taille du texte"
                         >
                             {FONT_SIZES.find(size => size.value === fontSize)?.label || fontSize}
                         </button>
                         {showFontSizeMenu && (
-                            <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-1 max-h-48 overflow-y-auto z-50">
+                            <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-lg shadow-lg border border-gray-600 p-2 flex flex-col gap-1 max-h-48 overflow-y-auto z-50">
                                 {FONT_SIZES.map((size) => (
                                     <button
                                         key={size.value}
@@ -325,8 +325,8 @@ export default function SimpleToolbarPlugin() {
                                             handleFontSizeChange(size.value);
                                             setShowFontSizeMenu(false);
                                         }}
-                                        className={`px-3 py-2 rounded text-sm text-left hover:bg-gray-100 transition-colors ${
-                                            fontSize === size.value ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                                        className={`px-3 py-2 rounded text-sm text-left hover:bg-gray-600 transition-colors ${
+                                            fontSize === size.value ? 'bg-primary text-white' : 'text-white bg-gray-700'
                                         }`}
                                     >
                                         {size.label}
@@ -340,11 +340,11 @@ export default function SimpleToolbarPlugin() {
                     <select
                         value={fontSize}
                         onChange={(e) => handleFontSizeChange(e.target.value)}
-                        className="px-2 py-1 border rounded text-xs text-black bg-white"
+                        className="px-2 py-1 border rounded text-xs text-white bg-none"
                         title="Taille"
                     >
                         {FONT_SIZES.map((size) => (
-                            <option key={size.value} value={size.value}>
+                            <option key={size.value} value={size.value} className='text-black'>
                                 {size.label}
                             </option>
                         ))}
@@ -363,7 +363,7 @@ export default function SimpleToolbarPlugin() {
                                     setShowListMenu(false);
                                     setShowFontSizeMenu(false);
                                 }}
-                                className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 transition-colors"
+                                className="p-2 rounded-lg bg-none hover:bg-gray-800 text-white transition-colors"
                                 title="Formatage"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -371,13 +371,13 @@ export default function SimpleToolbarPlugin() {
                                 </svg>
                             </button>
                             {showFormatMenu && (
-                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-2 z-50">
+                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-lg shadow-lg border border-gray-600 p-2 flex flex-col gap-2 z-50">
                                     <button
                                         onClick={() => formatText('bold')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isBold 
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Gras"
                                     >
@@ -389,8 +389,8 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatText('italic')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isItalic 
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Italique"
                                     >
@@ -402,8 +402,8 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatText('underline')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isUnderline 
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Souligné"
                                     >
@@ -424,7 +424,7 @@ export default function SimpleToolbarPlugin() {
                                     setShowListMenu(false);
                                     setShowFontSizeMenu(false);
                                 }}
-                                className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 transition-colors"
+                                className="p-2 rounded-lg bg-none hover:bg-gray-800 text-white transition-colors"
                                 title="Alignement"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -432,13 +432,13 @@ export default function SimpleToolbarPlugin() {
                                 </svg>
                             </button>
                             {showAlignMenu && (
-                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-2 z-50">
+                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-lg shadow-lg border border-gray-600 p-2 flex flex-col gap-2 z-50">
                                     <button
                                         onClick={() => formatAlignment('left')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.alignment === 'left' 
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Aligner à gauche"
                                     >
@@ -450,8 +450,8 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatAlignment('center')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.alignment === 'center' 
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Centrer"
                                     >
@@ -463,8 +463,8 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatAlignment('right')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.alignment === 'right' 
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Aligner à droite"
                                     >
@@ -476,8 +476,8 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatAlignment('justify')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.alignment === 'justify' 
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Justifier"
                                     >
@@ -498,7 +498,7 @@ export default function SimpleToolbarPlugin() {
                                     setShowAlignMenu(false);
                                     setShowFontSizeMenu(false);
                                 }}
-                                className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 transition-colors"
+                                className="p-2 rounded-lg bg-none hover:bg-gray-800 text-white transition-colors"
                                 title="Listes"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -506,13 +506,13 @@ export default function SimpleToolbarPlugin() {
                                 </svg>
                             </button>
                             {showListMenu && (
-                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex flex-col gap-2 z-50">
+                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-lg shadow-lg border border-gray-600 p-2 flex flex-col gap-2 z-50">
                                     <button
                                         onClick={() => insertList('bullet')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isInBulletList 
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title={activeState.isInBulletList ? 'Retirer la liste à puces' : 'Liste à puces'}
                                     >
@@ -524,8 +524,8 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => insertList('number')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isInNumberedList 
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title={activeState.isInNumberedList ? 'Retirer la liste numérotée' : 'Liste numérotée'}
                                     >
@@ -545,8 +545,8 @@ export default function SimpleToolbarPlugin() {
                             onClick={() => formatText('bold')}
                             className={`p-1 rounded transition-colors ${
                                 activeState.isBold 
-                                    ? 'bg-white text-primary' 
-                                    : 'text-white hover:bg-white hover:text-primary'
+                                    ? 'bg-gray-800 text-white' 
+                                    : 'text-white hover:bg-gray-800 hover:text-white'
                             }`}
                             title="Gras"
                         >
@@ -558,8 +558,8 @@ export default function SimpleToolbarPlugin() {
                             onClick={() => formatText('italic')}
                             className={`p-1 rounded transition-colors ${
                                 activeState.isItalic 
-                                    ? 'bg-white text-primary' 
-                                    : 'text-white hover:bg-white hover:text-primary'
+                                    ? 'bg-gray-800 text-white' 
+                                    : 'text-white hover:bg-gray-800 hover:text-white'
                             }`}
                             title="Italique"
                         >
@@ -571,8 +571,8 @@ export default function SimpleToolbarPlugin() {
                             onClick={() => formatText('underline')}
                             className={`p-1 rounded transition-colors ${
                                 activeState.isUnderline 
-                                    ? 'bg-white text-primary' 
-                                    : 'text-white hover:bg-white hover:text-primary'
+                                    ? 'bg-gray-800 text-white' 
+                                    : 'text-white hover:bg-gray-800 hover:text-white'
                             }`}
                             title="Souligné"
                         >
@@ -582,15 +582,15 @@ export default function SimpleToolbarPlugin() {
                         </button>
 
                         {/* Separator */}
-                        <div className="w-px h-4 bg-white/30"></div>
+                        <div className="w-px h-4 bg-none/30"></div>
 
                         {/* Alignment - compact */}
                         <button
                             onClick={() => formatAlignment('left')}
                             className={`p-1 rounded transition-colors ${
                                 activeState.alignment === 'left' 
-                                    ? 'bg-white text-primary' 
-                                    : 'text-white hover:bg-white hover:text-primary'
+                                    ? 'bg-gray-800 text-white' 
+                                    : 'text-white hover:bg-gray-800 hover:text-white'
                             }`}
                             title="Aligner à gauche"
                         >
@@ -602,8 +602,8 @@ export default function SimpleToolbarPlugin() {
                             onClick={() => formatAlignment('center')}
                             className={`p-1 rounded transition-colors ${
                                 activeState.alignment === 'center' 
-                                    ? 'bg-white text-primary' 
-                                    : 'text-white hover:bg-white hover:text-primary'
+                                    ? 'bg-gray-800 text-white' 
+                                    : 'text-white hover:bg-gray-800 hover:text-white'
                             }`}
                             title="Centrer"
                         >
@@ -615,8 +615,8 @@ export default function SimpleToolbarPlugin() {
                             onClick={() => formatAlignment('right')}
                             className={`p-1 rounded transition-colors ${
                                 activeState.alignment === 'right' 
-                                    ? 'bg-white text-primary' 
-                                    : 'text-white hover:bg-white hover:text-primary'
+                                    ? 'bg-gray-800 text-white' 
+                                    : 'text-white hover:bg-gray-800 hover:text-white'
                             }`}
                             title="Aligner à droite"
                         >
@@ -628,8 +628,8 @@ export default function SimpleToolbarPlugin() {
                             onClick={() => formatAlignment('justify')}
                             className={`p-1 rounded transition-colors ${
                                 activeState.alignment === 'justify' 
-                                    ? 'bg-white text-primary' 
-                                    : 'text-white hover:bg-white hover:text-primary'
+                                    ? 'bg-gray-800 text-white' 
+                                    : 'text-white hover:bg-gray-800 hover:text-white'
                             }`}
                             title="Justifier"
                         >
@@ -639,15 +639,15 @@ export default function SimpleToolbarPlugin() {
                         </button>
 
                         {/* Separator */}
-                        <div className="w-px h-4 bg-white/30"></div>
+                        <div className="w-px h-4 bg-none/30"></div>
 
                         {/* Lists - compact */}
                         <button
                             onClick={() => insertList('bullet')}
                             className={`p-1 rounded transition-colors ${
                                 activeState.isInBulletList 
-                                    ? 'bg-white text-primary' 
-                                    : 'text-white hover:bg-white hover:text-primary'
+                                    ? 'bg-gray-800 text-white' 
+                                    : 'text-white hover:bg-gray-800 hover:text-white'
                             }`}
                             title={activeState.isInBulletList ? 'Retirer la liste à puces' : 'Liste à puces'}
                         >
@@ -659,8 +659,8 @@ export default function SimpleToolbarPlugin() {
                             onClick={() => insertList('number')}
                             className={`p-1 rounded transition-colors ${
                                 activeState.isInNumberedList 
-                                    ? 'bg-white text-primary' 
-                                    : 'text-white hover:bg-white hover:text-primary'
+                                    ? 'bg-gray-800 text-white' 
+                                    : 'text-white hover:bg-gray-800 hover:text-white'
                             }`}
                             title={activeState.isInNumberedList ? 'Retirer la liste numérotée' : 'Liste numérotée'}
                         >
@@ -677,8 +677,8 @@ export default function SimpleToolbarPlugin() {
     if (isMobile) {
         // Version mobile : toolbar fixe en bas
         return (
-            <div className="fixed bottom-4 left-4 right-4 border-t shadow-lg p-2 z-50 rounded-2xl md:bottom-0 md:left-0 md:right-0 md:rounded-none md:bg-white md:border-t" 
-                 style={{ background: '#0000005c' }}>
+            <div className="fixed w-fit bottom-4 left-1/2 transform px-6 -translate-x-1/2 border-t shadow-lg p-2 z-50 rounded-2xl md:bottom-0 md:left-0 md:right-0 md:rounded-none md:bg-none md:border-t" 
+                 style={{ background: '#000000cc' }}>
                 {toolbarContent}
             </div>
         );
