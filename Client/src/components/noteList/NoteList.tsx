@@ -52,6 +52,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
           <Icons
             name="plus"
             size={48}
+            strokeWidth={1}
             className="group-hover:scale-110 transition-transform"
           />
         </motion.div>

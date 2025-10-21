@@ -332,13 +332,13 @@ export default function Breadcrumb() {
           {/* Icône de la page courante */}
           {(() => {
             if (pathname.includes('/notes')) {
-              return <Icon name="docs" size={20} className="text-primary" />;
+              return <Icon name="docs" size={20} strokeWidth={12} className="text-primary" />;
             }
             if (pathname.includes('/profil')) {
-              return <Icon name="profile" size={20} className="text-primary" />;
+              return <Icon name="profile" size={20} strokeWidth={12} className="text-primary" />;
             }
             if (pathname === '/flashnote') {
-              return <Icon name="flash" size={30} className="text-primary stroke-[10]" />;
+              return <Icon name="flash" size={30} strokeWidth={12} className="text-primary" />;
             }
             return null;
           })()}

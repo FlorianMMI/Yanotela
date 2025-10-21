@@ -28,12 +28,6 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       label: 'Mes Notes',
       icon: 'docs',
       isActive: pathname.includes('/notes'),
-    },
-    {
-      href: '/flashnote',
-      label: 'Flash Note',
-      icon: 'flash',
-      isActive: pathname.includes('/flashnote'),
     }
 
   ];
@@ -86,6 +80,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
                   name={item.icon}
                   className={item.isActive ? "text-white" : "text-element"}
                   size={30}
+                  strokeWidth={12}
 
                 />
                 <span className={`font-medium ${isopen ? `flex` : `hidden`}`}>{item.label}</span>
