@@ -231,8 +231,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://yanotela.fr";
-        const response = await fetch(`${API_URL}/api/auth/check`, {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://preprod.yanotela.fr";
+        const response = await fetch(`${API_URL}/auth/check`, {
           credentials: "include",
         });
         if (response.ok) {
