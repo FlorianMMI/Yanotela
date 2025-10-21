@@ -15,7 +15,7 @@ permissions:
 jobs:
 
   cleanup:
-    uses : ./.github/workflows/jobs/cleanup-console-logs.yml
+    uses : ./.github/workflows/cleanup-console-logs.yml
 
   build-and-deploy:
     name: Build and Deploy to Development
