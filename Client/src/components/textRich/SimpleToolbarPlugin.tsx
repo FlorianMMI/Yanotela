@@ -182,6 +182,16 @@ export default function SimpleToolbarPlugin() {
             
             // Mettre à jour la taille de police affichée dans le sélecteur
             setFontSize(currentFontSize);
+        } else {
+            // Si pas de sélection range, garder l'état actuel mais vérifier les formats pendants
+            const selection = $getSelection();
+            if (selection) {
+                // Essayer de détecter les formats même sans sélection range
+                setActiveState(prev => ({
+                    ...prev,
+                    // Garder les états de formatage actuels si pas de sélection
+                }));
+            }
         }
     }, []);
 
@@ -197,7 +207,18 @@ export default function SimpleToolbarPlugin() {
     }, [editor, updateToolbar]);
 
     const formatText = (format: 'bold' | 'italic' | 'underline') => {
-        editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
+        editor.update(() => {
+            const selection = $getSelection();
+            if ($isRangeSelection(selection)) {
+                // Si c'est une sélection vide (curseur), on toggle le format pour le prochain texte
+                if (selection.isCollapsed()) {
+                    selection.toggleFormat(format);
+                } else {
+                    // Si du texte est sélectionné, on applique le format normalement
+                    selection.toggleFormat(format);
+                }
+            }
+        });
         
         // Mise à jour immédiate de l'état local pour un feedback instantané
         setActiveState(prev => ({
