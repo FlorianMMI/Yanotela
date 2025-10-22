@@ -231,9 +231,9 @@ jobs:
                 image: postgres:15-alpine
                 container_name: yanotela-db
                 environment:
-                  POSTGRES_USER: yanotela
-                  POSTGRES_PASSWORD: password_123
-                  POSTGRES_DB: yanotela
+                  POSTGRES_USER: yanotela_dev
+                  POSTGRES_PASSWORD: dev_password_123
+                  POSTGRES_DB: yanotela_dev
                 volumes:
                   - postgres_data:/var/lib/postgresql/data
                 networks:
