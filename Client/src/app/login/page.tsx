@@ -15,6 +15,8 @@ export default function Login() {
     router.refresh();
   };
 
+  console.log('Rendering Login page');
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
