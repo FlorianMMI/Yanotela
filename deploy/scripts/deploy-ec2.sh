@@ -5,7 +5,7 @@
 set -e
 
 # Configuration
-DOCKER_USERNAME=${DOCKER_USERNAME:-"yourusername"}
+DOCKER_USERNAME=${DOCKER_USERNAME:-"jefee"}
 IMAGE_TAG=${IMAGE_TAG:-"latest"}
 PROJECT_DIR="/var/www/yanotela"
 COMPOSE_FILE="docker-compose.prod.yml"

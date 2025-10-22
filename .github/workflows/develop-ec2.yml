@@ -1,7 +1,8 @@
 name: Deploy App to EC2 (Development)
 on:
   push:
-    branches: ["Develop"]
+    branches: [ "preprod" ]
+
 env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend-dev
@@ -12,6 +13,10 @@ env:
 permissions:
   contents: read
 jobs:
+
+  cleanup:
+    uses : ./.github/workflows/cleanup-console-logs.yml
+
   build-and-deploy:
     name: Build and Deploy to Development
     runs-on: ubuntu-latest
@@ -19,6 +24,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Audit npm
+        run: |
+          cd Server
+          npm install
+          npm audit --audit-level=high || true
+          cd ../Client
+          npm install
+          npm audit --audit-level=high || true
+          cd ..
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -36,7 +51,7 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            NEXT_PUBLIC_API_URL=https://yanotela.fr/api
+            NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
             ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
@@ -65,6 +80,45 @@ jobs:
             echo "🚀 Starting deployment to DEVELOPMENT environment"
             cd ${{ env.DEPLOY_PATH }}
 
+            # Check available disk space
+            echo "📊 Initial disk space:"
+            df -h
+
+            # Aggressive cleanup to free up space
+            echo "🧹 Cleaning up disk space..."
+            
+            # Clean Docker system (remove all unused containers, networks, images, cache)
+            docker system prune -a -f --volumes || true
+            
+            # Remove all stopped containers
+            docker container prune -f || true
+            
+            # Remove all unused images
+            docker image prune -a -f || true
+            
+            # Remove all unused volumes
+            docker volume prune -f || true
+            
+            # Remove all unused networks
+            docker network prune -f || true
+            
+            # Clean package cache
+            sudo apt-get clean || true
+            sudo apt-get autoremove -y || true
+            
+            # Remove old logs
+            sudo journalctl --vacuum-time=3d || true
+            
+            # Clear temporary files
+            sudo rm -rf /tmp/* || true
+            sudo rm -rf /var/tmp/* || true
+            
+            # Remove old kernels (keep current and one backup)
+            sudo apt-get autoremove --purge -y || true
+
+            echo "📊 Disk space after cleanup:"
+            df -h
+
             # Clone ou mise à jour du dépôt
             if [ ! -d ".git" ]; then
               git clone -b Develop https://github.com/FlorianMMI/Yanotela.git .
@@ -80,7 +134,7 @@ jobs:
             cat > ./nginx/conf.d/default.conf << 'EOF'
             server {
                 listen 80;
-                server_name yanotela.fr www.yanotela.fr yanotela.fr/api www.yanotela.fr/api ;
+                server_name preprod.yanotela.fr www.preprod.yanotela.fr;
 
                 location ^~ /.well-known/acme-challenge/ {
                     root /var/www/yanotela;
@@ -94,7 +148,7 @@ jobs:
 
             server {
                 listen 443 ssl http2;
-                server_name yanotela.fr www.yanotela.fr;
+                server_name preprod.yanotela.fr www.preprod.yanotela.fr;
 
                 client_max_body_size 10M;
 
@@ -196,13 +250,8 @@ jobs:
                 container_name: yanotela-backend-dev
                 ports:
                   - "3001:3001"
-                environment:
-                  - NODE_ENV=development
-                  - DATABASE_URL=postgresql://yanotela_dev:dev_password_123@db-dev:5432/yanotela_dev
-                  - REDIS_URL=redis://:redis_dev_password_123@redis-dev:6379
-                  - SESSION_SECRET=dev_session_secret_change_this_in_production
-                  - CLIENT_URL=https://yanotela.fr
-                  - SERVER_URL=https://yanotela.fr/api
+                env_file:
+                  - .env.dev
                 depends_on:
                   db-dev:
                     condition: service_healthy
@@ -220,7 +269,9 @@ jobs:
                   - "3000:3000"
                 environment:
                   - NODE_ENV=development
-                  - NEXT_PUBLIC_API_URL=https://yanotela.fr/api
+                  - NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
+                env_file:
+                  - .env.dev
                 depends_on:
                   - backend-dev
                 networks:
@@ -232,14 +283,21 @@ jobs:
                 container_name: yanotela-nginx-dev
                 ports:
                   - "80:80"
+                  - "443:443"
                 volumes:
                   - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+                  - /etc/letsencrypt:/etc/letsencrypt
                 depends_on:
                   - frontend-dev
                   - backend-dev
                 networks:
                   - yanotela-dev
                 restart: unless-stopped
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
 
             volumes:
               postgres_dev_data:
@@ -254,14 +312,7 @@ jobs:
 
             # Créer le fichier .env.dev
             cat > .env.dev << 'EOF'
-            NODE_ENV=development
-            DB_USER=yanotela_dev
-            DB_PASSWORD=dev_password_123
-            DB_NAME=yanotela_dev
-            REDIS_PASSWORD=redis_dev_password_123
-            SESSION_SECRET=dev_session_secret_change_this_in_production
-            CLIENT_URL=https://yanotela.fr
-            SERVER_URL=https://yanotela.fr/api
+            ${{secrets.PREPROD}}
             EOF
 
             # Démarrer les services
@@ -274,7 +325,7 @@ jobs:
             if docker compose ps | grep -q "Up"; then
               echo "✅ Services démarrés avec succès"
               echo "🎉 Déploiement terminé !"
-              echo "🌐 Accédez à votre application : https://yanotela.fr"
+              echo "🌐 Accédez à votre application : https://preprod.yanotela.fr"
             else
               echo "❌ Échec du démarrage des services"
               docker compose logs
