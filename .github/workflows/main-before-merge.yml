@@ -1,7 +1,7 @@
 name: Deploy App to EC2 (production)
 on:
   push:
-    branches: ["main-before-merge"]
+    branches: ["main"]
 env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend
