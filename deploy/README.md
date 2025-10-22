@@ -1,8 +1,30 @@
-# 🚀 CI/CD Yanotela - Guide de déploiement
+# 🚀 Development Deployment - Yanotela# 🚀 CI/CD Yanotela - Guide de déploiement
 
-Pipeline automatisé pour déployer Yanotela sur AWS EC2 avec Docker.
 
-## 📋 Flux de déploiement
+
+Automated development deployment pipeline for Yanotela using Docker and EC2.Pipeline automatisé pour déployer Yanotela sur AWS EC2 avec Docker.
+
+
+
+## 📋 Development Workflow## 📋 Flux de déploiement
+
+
+
+```mermaid```mermaid
+
+graph LRgraph LR
+
+    A[Push to Develop] --> B[🧪 Build Dev Images]    A[Push develop] --> B[🧪 Vérification Preprod]
+
+    B --> C[🐳 Push to Docker Hub]    B --> C[� Notification]
+
+    C --> D[🚀 Deploy to Dev EC2]    C --> D[� Test local manuel]
+
+    D --> E[🏥 Health Check]    
+
+    E --> F[📧 Notification]    E[Push main] --> F[🧪 Tests Prod]
+
+```    F --> G[🐳 Build Images]
 
 ```mermaid
 graph LR
@@ -15,12 +37,22 @@ graph LR
     G --> H[🚀 Deploy Production]
     H --> I[🏥 Health Check]
     I --> J[📧 Notification]
-```
+
+### 1. GitHub Secrets```
+
+📁 See complete guide: [`deploy/SETUP-DEV-SECRETS.md`](./SETUP-DEV-SECRETS.md)
 
 ## 🔧 Configuration requise
 
-### 1. Secrets GitHub
-📁 Voir le guide complet : [`deploy/SETUP-GITHUB-SECRETS.md`](./SETUP-GITHUB-SECRETS.md)
+**Required secrets:**
+
+- `DOCKER_PASSWORD` - Docker Hub access token### 1. Secrets GitHub
+
+- `EC2_SSH_PRIVATE_KEY` - SSH key for development EC2 (yanotela.fr)📁 Voir le guide complet : [`deploy/SETUP-GITHUB-SECRETS.md`](./SETUP-GITHUB-SECRETS.md)
+
+
+
+### 2. Development EC2 Setup**Secrets obligatoires :**
 
 **Secrets obligatoires :**
 - `EC2_HOST`, `EC2_USER`, `EC2_SSH_PRIVATE_KEY`
@@ -28,7 +60,44 @@ graph LR
 - `NOTIFICATION_EMAIL`, `NOTIFICATION_EMAIL_PASSWORD`
 - `ENV_PROD_FILE`, `ENV_PREPROD_FILE`
 
-### 2. Instance EC2
+```bash- `ENV_PROD_FILE`, `ENV_PREPROD_FILE`
+
+# On your development EC2 (yanotela.fr)
+
+chmod +x deploy/scripts/setup-ec2.sh### 2. Instance EC2
+
+./deploy/scripts/setup-ec2.sh```bash
+
+```# Installer Docker sur EC2
+
+sudo apt update && sudo apt install -y docker.io docker-compose
+
+This will:sudo usermod -aG docker ubuntu
+
+- Install Docker and Docker Compose
+
+- Setup development directories# Créer les répertoires
+
+- Configure firewall for development ports (3000, 3001)mkdir -p ~/yanotela ~/yanotela-preprod
+
+- Setup development environment```
+
+
+
+### 3. Deployment Process## 🎯 Utilisation
+
+
+
+1. **Automatic**: Push to `Develop` branch triggers deployment### Déploiement automatique
+
+2. **Manual**: Run development build script locally:- **Push sur `develop`** → ✅ Vérification du code (tests + build)
+
+   ```bash- **Push sur `main`** → 🚀 Déploiement production automatique
+
+   ./deploy/scripts/build-and-push-dev.sh
+
+   ```### Test preprod (local)
+
 ```bash
 # Installer Docker sur EC2
 sudo apt update && sudo apt install -y docker.io docker-compose
@@ -57,9 +126,29 @@ docker-compose -f docker-compose.preprod.yml up --build
 # Via GitHub Actions
 Repository → Actions → Select workflow → Run workflow
 
-# Via scripts locaux (sur EC2)
-./deploy/scripts/deploy.sh prod
-```
+- **Frontend**: `jefee/yanotela-frontend-dev:develop`# Accès: http://localhost:8080
+
+- **Backend**: `jefee/yanotela-backend-dev:develop````
+
+
+
+### Development Server### Déploiement manuel production
+
+- **Host**: yanotela.fr```bash
+
+- **Frontend**: https://yanotela.fr:3000# Via GitHub Actions
+
+- **Backend**: https://yanotela.fr:3001Repository → Actions → Select workflow → Run workflow
+
+
+
+### Configuration Files# Via scripts locaux (sur EC2)
+
+- **Docker Compose**: `docker-compose.dev.yml`./deploy/scripts/deploy.sh prod
+
+- **Environment**: `.env.dev.template` (copy to `.env.dev`)```
+
+- **Build Script**: `deploy/scripts/build-and-push-dev.sh`
 
 ## 🔍 Monitoring
 

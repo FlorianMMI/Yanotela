@@ -48,11 +48,9 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  backend-prod:
-    build: 
-      context: ./Server
-      target: runner
-    container_name: yanotela-backend-prod
+  backend-dev:
+    image: ${DOCKER_USERNAME:-jefee}/yanotela-backend-dev:${IMAGE_TAG:-develop}
+    container_name: yanotela-backend-dev
     ports:
       - "3001:3001"
     environment:
@@ -94,7 +92,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - NEXT_PUBLIC_API_URL=https://yanotela.fr/api
+      - NEXT_PUBLIC_API_URL=http://15236.208.91/api
     env_file:
       - .env.dev
     depends_on:

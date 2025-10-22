@@ -119,6 +119,6 @@ Note: id, Titre, Content, authorId, ModifiedAt
 
 ## Licence
 
-yanotela
+MIT
 
 ---

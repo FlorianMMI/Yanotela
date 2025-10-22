@@ -20,7 +20,7 @@ Your Docker Hub personal access token for pushing development images.
 - Value: `your-docker-hub-token`
 
 ### `EC2_SSH_PRIVATE_KEY`
-The private SSH key for accessing your **development EC2 instance** (13.39.48.72).
+The private SSH key for accessing your **development EC2 instance** (yanotela.fr).
 
 **Format:** Complete private key including headers:
 ```
@@ -39,7 +39,7 @@ The `develop-ec2.yml` workflow will automatically:
    - `jefee/yanotela-frontend-dev:develop`
    - `jefee/yanotela-backend-dev:develop`
 
-2. **Deploy**: SSH into development EC2 (13.39.48.72) and:
+2. **Deploy**: SSH into development EC2 (yanotela.fr) and:
    - Pull latest development images
    - Update containers using `docker-compose.dev.yml`
    - Start services on ports 3000 (frontend) and 3001 (backend)
@@ -51,8 +51,8 @@ After setting up the secrets:
 1. Push changes to the `Develop` branch
 2. Check the Actions tab for the "Development EC2 Deployment" workflow
 3. Verify deployment success by accessing:
-   - Frontend: http://13.39.48.72:3000
-   - Backend: http://13.39.48.72:3001
+   - Frontend: https://yanotela.fr:3000
+   - Backend: https://yanotela.fr:3001
 
 ## Security Notes
 

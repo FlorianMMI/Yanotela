@@ -2,8 +2,8 @@ import cors from 'cors';
 
 export const corsConfig = cors({
   origin: [
-    process.env.CLIENT_URL || 'https://preprod.yanotela.fr',
-    'https://preprod.yanotela.fr/api',
+    process.env.CLIENT_URL || 'https://yanotela.fr',
+    'https://yanotela.fr/api',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:3001'
   ],

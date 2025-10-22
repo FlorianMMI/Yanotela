@@ -7,7 +7,7 @@ env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend-dev
   DOCKER_BACKEND_REPO: jefee/yanotela-backend-dev
-  EC2_HOST: 13.39.48.72
+  EC2_HOST: yanotela.fr
   EC2_USER: ubuntu
   DEPLOY_PATH: /var/www/yanotela
 permissions:

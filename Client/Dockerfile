@@ -60,9 +60,5 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ENV NEXT_PUBLIC_WS_URL=ws://13.36.209.205:3001
-ENV NEXT_PUBLIC_SOCKET_URL=http://13.36.209.205:3002
-ENV NEXT_PUBLIC_API_URL=http://13.36.209.205:3001
 
-# Vérifier que server.js existe avant de le lancer
-CMD ["sh", "-c", "ls -la server.js && node server.js"]
+CMD ["node", "server.js"]

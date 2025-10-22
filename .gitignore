@@ -31,3 +31,4 @@ logs/
 
 # Test coverage
 coverage/
+.env.prod
