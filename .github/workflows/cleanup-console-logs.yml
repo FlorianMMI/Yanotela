@@ -19,9 +19,13 @@ jobs:
   remove-console-logs:
     name: Remove console.log()
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Remove console.log from Frontend
         run: |
           if [ -d "${{ inputs.frontend-path }}" ]; then
