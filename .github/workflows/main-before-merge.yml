@@ -266,7 +266,7 @@ jobs:
                 ports:
                   - "3001:3001"
                 env_file:
-                  - .env
+                  - .env.prod
                 depends_on:
                   db:
                     condition: service_healthy
@@ -282,6 +282,8 @@ jobs:
                 container_name: yanotela-frontend
                 ports:
                   - "3000:3000"
+                env_file:
+                  - .env.prod
                 environment:
                   - NODE_ENV=production
                   - NEXT_PUBLIC_API_URL=\${APP_URL}/api
