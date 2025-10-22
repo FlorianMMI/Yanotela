@@ -320,7 +320,7 @@ jobs:
 
             # Créer le fichier .env.prod
             cat > .env.prod << 'EOF'
-            ${{secrets.ENV_PREPROD_FILE}}
+            ${{secrets.ENV_PROD_FILE}}
             EOF
 
             # Arrêter les anciens conteneurs
