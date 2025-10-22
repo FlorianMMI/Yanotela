@@ -297,7 +297,7 @@ export default function SimpleToolbarPlugin() {
     // Contenu de la toolbar à réutiliser
     const toolbarContent = (
         <div className={isMobile ? 
-            "flex flex-row gap-3 justify-center items-center" : 
+            "flex flex-row gap-3 justify-center items-center max-w-4xl mx-auto" : 
             "flex gap-2 items-center"
         }>
                 {/* Font Size Selector */}
@@ -311,7 +311,7 @@ export default function SimpleToolbarPlugin() {
                                 setShowAlignMenu(false);
                                 setShowListMenu(false);
                             }}
-                            className="px-3 py-2 border rounded-lg text-sm text-white bg-none hover:bg-gray-800 transition-colors"
+                            className="px-3 py-2 border rounded-lg text-sm bg-none text-white hover:bg-gray-800 transition-colors"
                             title="Changer la taille du texte"
                         >
                             {FONT_SIZES.find(size => size.value === fontSize)?.label || fontSize}
@@ -376,7 +376,7 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatText('bold')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isBold 
-                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                ? 'bg-primary text-white hover:bg-blue-600' 
                                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Gras"
@@ -389,7 +389,7 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatText('italic')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isItalic 
-                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                ? 'bg-primary text-white hover:bg-blue-600' 
                                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Italique"
@@ -402,7 +402,7 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatText('underline')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isUnderline 
-                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                ? 'bg-primary text-white hover:bg-blue-600' 
                                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Souligné"
@@ -437,7 +437,7 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatAlignment('left')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.alignment === 'left' 
-                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                ? 'bg-primary text-white hover:bg-blue-600' 
                                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Aligner à gauche"
@@ -450,7 +450,7 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatAlignment('center')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.alignment === 'center' 
-                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                ? 'bg-primary text-white hover:bg-blue-600' 
                                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Centrer"
@@ -463,7 +463,7 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatAlignment('right')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.alignment === 'right' 
-                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                ? 'bg-primary text-white hover:bg-blue-600' 
                                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Aligner à droite"
@@ -476,7 +476,7 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => formatAlignment('justify')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.alignment === 'justify' 
-                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                ? 'bg-primary text-white hover:bg-blue-600' 
                                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title="Justifier"
@@ -511,7 +511,7 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => insertList('bullet')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isInBulletList 
-                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                ? 'bg-primary text-white hover:bg-blue-600' 
                                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title={activeState.isInBulletList ? 'Retirer la liste à puces' : 'Liste à puces'}
@@ -524,7 +524,7 @@ export default function SimpleToolbarPlugin() {
                                         onClick={() => insertList('number')}
                                         className={`p-2 rounded-lg transition-colors ${
                                             activeState.isInNumberedList 
-                                                ? 'bg-primary text-white hover:bg-primary' 
+                                                ? 'bg-primary text-white hover:bg-blue-600' 
                                                 : 'bg-gray-700 hover:bg-gray-600 text-white'
                                         }`}
                                         title={activeState.isInNumberedList ? 'Retirer la liste numérotée' : 'Liste numérotée'}
@@ -677,7 +677,7 @@ export default function SimpleToolbarPlugin() {
     if (isMobile) {
         // Version mobile : toolbar fixe en bas
         return (
-            <div className="fixed w-fit bottom-4 left-1/2 transform px-6 -translate-x-1/2 border-t shadow-lg p-2 z-50 rounded-2xl md:bottom-0 md:left-0 md:right-0 md:rounded-none md:bg-none md:border-t" 
+            <div className="fixed w-fit bottom-4 left-1/2 transform -translate-x-1/2 border-t shadow-lg p-2 z-50 rounded-2xl md:bottom-0 md:left-0 md:right-0 md:rounded-none md:bg-none md:border-t" 
                  style={{ background: '#000000cc' }}>
                 {toolbarContent}
             </div>
