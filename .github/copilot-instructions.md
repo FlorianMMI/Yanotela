@@ -1,3 +1,208 @@
+Yanotela — AI coding instructions (concise)
+
+This repo is a full‑stack collaborative note app with a strict client/server separation. Keep guidance short, actionable and repository‑specific.
+
+Key architecture
+- Client: Client/ — Next.js 15 (App Router), TypeScript, TailwindCSS v4, Lexical editor. Client pages live under Client/src/app/.
+- Server: Server/ — Node.js + Express (ES modules), Prisma ORM, PostgreSQL. Controllers live in Server/src/controllers and routes in Server/src/routes.
+- DB: Prisma schema in Server/prisma/schema.prisma. Run npx prisma generate after schema changes.
+
+API & auth patterns (explicit)
+- Session-based auth via express-session (no JWT). All client fetches that require auth must include credentials: 'include'. See Client/src/loader/loader.tsx for examples.
+- Client auth guard: Client/src/hooks/useAuthRedirect.ts calls ${process.env.NEXT_PUBLIC_API_URL}/auth/check and redirects to /login when unauthenticated. It listens to storage events and a custom "auth-refresh" event.
+- API error shapes: validation errors -> { errors: [], message: "" }; other errors -> { error: "" }. Client code commonly checks response headers for JSON before parsing.
+
+Conventions & examples
+- Data helpers: keep network helpers in Client/src/loader/loader.tsx (they are .tsx files but not React components). Example pattern: fetch(`${apiUrl}/note/get`, { credentials: 'include' }).
+- Note content: stored as a string in the DB. Client loader tries JSON.parse and extracts plain text from Lexical-like structures (see GetNotes in loader.tsx).
+- Types: client types live in Client/src/type/ (PascalCase filenames). Server uses ES modules; imports require .js file extensions.
+
+Dev workflows (quick)
+- Docker (recommended): docker compose up --build — starts client:3000, server:3001, postgres.
+- Manual dev: run client and server in separate shells: cd Client && npm run dev and cd Server && npm run dev.
+- DB: after schema edits run cd Server && npx prisma generate then create a migration with npx prisma migrate dev.
+- Tests (server): cd Server && npm run test (tests use a shared Prisma test utils helper; keep maxWorkers low to avoid DB collisions).
+
+Project gotchas
+- Server package.json uses "type": "module" — imports must use .js extensions.
+- Many client modules expect NEXT_PUBLIC_API_URL to be set. Loader falls back but runtime/tests depend on it.
+- yjs/socket.io deps exist but collaborative syncing is not fully implemented — don't assume CRDT code is production-ready.
+
+Where to look
+- Auth: Client/src/loader/loader.tsx, Client/src/hooks/useAuthRedirect.ts
+- Notes: Client/src/loader/loader.tsx (GetNotes, GetNoteById, SaveNote)
+- Server controllers & routes: Server/src/controllers/* and Server/src/routes/*
+
+If you want this shortened further, or expanded with explicit code snippets (fetch examples, sample env), tell me which area to adjust.
+Yanotela — AI coding instructions (concise)
+
+This repo is a full‑stack collaborative note app with a strict client/server separation. Keep guidance short, actionable and repository‑specific.
+
+Key architecture
+- Client: Client/ — Next.js 15 (App Router), TypeScript, TailwindCSS v4, Lexical editor. Client pages live under Client/src/app/.
+- Server: Server/ — Node.js + Express (ES modules), Prisma ORM, PostgreSQL. Controllers live in Server/src/controllers and routes in Server/src/routes.
+- DB: Prisma schema in Server/prisma/schema.prisma. Run `npx prisma generate` after schema changes.
+
+API & auth patterns (explicit)
+- Session-based auth via express-session (no JWT). All client fetches that require auth must include `credentials: 'include'`. See Client/src/loader/loader.tsx for examples.
+- Client auth guard: Client/src/hooks/useAuthRedirect.ts calls `${process.env.NEXT_PUBLIC_API_URL}/auth/check` and redirects to /login when unauthenticated. It listens to storage events and a custom "auth-refresh" event.
+- API error shapes: validation errors -> `{ errors: [], message: "" }`; other errors -> `{ error: "" }`. Client code commonly checks response headers for JSON before parsing.
+
+Conventions & examples
+- Data helpers: keep network helpers in Client/src/loader/loader.tsx (they are .tsx files but not React components). Example pattern: `fetch(`${apiUrl}/note/get`, { credentials: 'include' })`.
+- Note content: stored as a string in the DB. Client loader tries JSON.parse and extracts plain text from Lexical-like structures (see GetNotes in loader.tsx).
+- Types: client types live in Client/src/type/ (PascalCase filenames). Server uses ES modules; imports require .js file extensions.
+
+Dev workflows (quick)
+- Docker (recommended): `docker compose up --build` — starts client:3000, server:3001, postgres.
+- Manual dev: run client and server in separate shells: `cd Client && npm run dev` and `cd Server && npm run dev`.
+- DB: after schema edits run `cd Server && npx prisma generate` then create a migration with `npx prisma migrate dev`.
+- Tests (server): `cd Server && npm run test` (tests use a shared Prisma test utils helper; keep maxWorkers low to avoid DB collisions).
+
+Project gotchas
+- Server package.json uses "type": "module" — imports must use .js extensions.
+- Many client modules expect NEXT_PUBLIC_API_URL to be set. Loader falls back but runtime/tests depend on it.
+- yjs/socket.io deps exist but collaborative syncing is not fully implemented — don't assume CRDT code is production-ready.
+
+Where to look
+- Auth: Client/src/loader/loader.tsx, Client/src/hooks/useAuthRedirect.ts
+- Notes: Client/src/loader/loader.tsx (GetNotes, GetNoteById, SaveNote)
+- Server controllers & routes: Server/src/controllers/* and Server/src/routes/*
+
+If you want this shortened further, or expanded with explicit code snippets (fetch examples, sample env), tell me which area to adjust.
+# Yanotela — AI coding instructions (concise)
+
+This project is a full‑stack collaborative note app with a strict client/server separation. Keep guidance short, actionable and repository‑specific.
+
+Key architecture
+- Client: Client/ — Next.js 15 (App Router), TypeScript, TailwindCSS v4, Lexical editor. Example: pages under Client/src/app/* (e.g. login/page.tsx).
+- Server: Server/ — Node.js + Express (ES modules), Prisma ORM, PostgreSQL. Controllers live in Server/src/controllers.
+- Database: Prisma schema in Server/prisma/schema.prisma. Run `npx prisma generate` after schema changes.
+
+API & auth patterns (explicit)
+- Session-based auth (no JWT). Server uses express-session; client must include cookies: always use fetch with credentials: 'include' (see Client/src/loader/loader.tsx).
+- Client auth guard: Client/src/hooks/useAuthRedirect.ts calls ${NEXT_PUBLIC_API_URL}/auth/check and redirects to /login on failure. Use storage events or custom auth-refresh events to trigger re-checks.
+- API responses: validation errors -> { errors: [], message: "" }; other errors -> { error: "" }. Client code expects JSON most of the time but sometimes checks content-type.
+
+Conventions and examples
+- Client data helpers live in Client/src/loader/loader.tsx (not React components). They use env var NEXT_PUBLIC_API_URL (example: fetch(`${apiUrl}/note/get`, { credentials: 'include' })).
+- Note Content: stored as string in DB. Loader parses JSON content and extracts text from Lexical-like structures (see GetNotes logic in loader.tsx).
+- File layout: client components → Client/src/components/*; client types → Client/src/type/* (PascalCase filenames such as Note.ts). Server controllers → Server/src/controllers/* and routes under Server/src/routes.
+
+Developer workflows (how to run)
+- Recommended (Docker): docker compose up --build — starts client:3000, server:3001, postgres.
+- Manual dev: in separate shells:
+  - cd Client && npm run dev (Next.js with turbopack)
+  - cd Server && npm run dev
+- Database: cd Server && npx prisma generate after schema edits; cd Server && npx prisma migrate dev to apply migrations.
+- Tests (server): cd Server && npm run test. Tests use a shared Prisma test utils file and run with maxWorkers: 1 to avoid DB collisions.
+
+Quality gates / gotchas
+- Server is ESM ("type": "module") — imports use .js extensions.
+- Environment: many client modules expect NEXT_PUBLIC_API_URL to be set; loader falls back but tests and runtime rely on it.
+- Lexical & YJS: yjs and socket.io deps exist but real-time collaboration is not fully implemented; avoid making heavy assumptions about CRDT syncing.
+
+When contributing
+- Preserve session cookie behavior: never remove credentials: 'include' from fetch calls unless switching auth approach.
+- For DB/schema changes: update Server/prisma/schema.prisma, run npx prisma generate, and add a migration.
+- Tests: follow existing server test patterns in Server/tests/* and use Server/tests/testUtils.js for shared setup/teardown.
+
+Where to look for examples
+- Auth flows: Client/src/loader/loader.tsx, Client/src/hooks/useAuthRedirect.ts.
+- Note fetching/sanitization: Client/src/loader/loader.tsx GetNotes & GetNoteById.
+- Server structure: Server/src/controllers/*, Server/src/routes/*, Server/index.js or Server/server.js for entry points.
+
+If anything is unclear or you need extra detail (scripts, env examples, or more file examples), tell me which area to expand and I will iterate.
+```markdown
+# Yanotela — AI coding instructions (concise)
+
+This project is a full‑stack collaborative note app with a strict client/server separation. Keep guidance short, actionable and repository‑specific.
+
+Key architecture
+- Client: `Client/` — Next.js 15 (App Router), TypeScript, TailwindCSS v4, Lexical editor. Example: pages under `Client/src/app/*` (e.g. `login/page.tsx`).
+- Server: `Server/` — Node.js + Express (ES modules), Prisma ORM, PostgreSQL. Controllers live in `Server/src/controllers`.
+- Database: Prisma schema in `Server/prisma/schema.prisma`. Run `npx prisma generate` after schema changes.
+
+API & auth patterns (explicit)
+- Session-based auth (no JWT). Server uses `express-session`; client must include cookies: always use fetch with `credentials: 'include'` (see `Client/src/loader/loader.tsx`).
+- Client auth guard: `Client/src/hooks/useAuthRedirect.ts` calls `${NEXT_PUBLIC_API_URL}/auth/check` and redirects to `/login` on failure. Use storage events or custom `auth-refresh` events to trigger re-checks.
+- API responses: validation errors -> `{ errors: [], message: "" }`; other errors -> `{ error: "" }`. Client code expects JSON most of the time but sometimes checks content-type.
+
+Conventions and examples
+- Client data helpers live in `Client/src/loader/loader.tsx` (not React components). They use env var `NEXT_PUBLIC_API_URL` (example: `fetch(`${apiUrl}/note/get`, { credentials: 'include' })`).
+- Note Content: stored as string in DB. Loader parses JSON content and extracts text from Lexical-like structures (see `GetNotes` logic in `loader.tsx`).
+- File layout: client components → `Client/src/components/*`; client types → `Client/src/type/*` (PascalCase filenames such as `Note.ts`). Server controllers → `Server/src/controllers/*` and routes under `Server/src/routes`.
+
+Developer workflows (how to run)
+- Recommended (Docker): `docker compose up --build` — starts client:3000, server:3001, postgres.
+- Manual dev: in separate shells:
+  - `cd Client && npm run dev` (Next.js with turbopack)
+  - `cd Server && npm run dev`
+- Database: `cd Server && npx prisma generate` after schema edits; `cd Server && npx prisma migrate dev` to apply migrations.
+- Tests (server): `cd Server && npm run test`. Tests use a shared Prisma test utils file and run with `maxWorkers: 1` to avoid DB collisions.
+
+Quality gates / gotchas
+- Server is ESM ("type": "module") — imports use `.js` extensions.
+- Environment: many client modules expect `NEXT_PUBLIC_API_URL` to be set; loader falls back but tests and runtime rely on it.
+- Lexical & YJS: `yjs` and `socket.io` deps exist but real-time collaboration is not fully implemented; avoid making heavy assumptions about CRDT syncing.
+
+When contributing
+- Preserve session cookie behavior: never remove `credentials: 'include'` from fetch calls unless switching auth approach.
+- For DB/schema changes: update `Server/prisma/schema.prisma`, run `npx prisma generate`, and add a migration.
+- Tests: follow existing server test patterns in `Server/tests/*` and use `Server/tests/testUtils.js` for shared setup/teardown.
+
+Where to look for examples
+- Auth flows: `Client/src/loader/loader.tsx`, `Client/src/hooks/useAuthRedirect.ts`.
+- Note fetching/sanitization: `Client/src/loader/loader.tsx` GetNotes & GetNoteById.
+- Server structure: `Server/src/controllers/*`, `Server/src/routes/*`, `Server/index.js` or `Server/server.js` for entry points.
+
+If anything is unclear or you need extra detail (scripts, env examples, or more file examples), tell me which area to expand and I will iterate.
+```
+```markdown
+# Yanotela — AI coding instructions (concise)
+
+This project is a full‑stack collaborative note app with a strict client/server separation. Keep guidance short, actionable and repository‑specific.
+
+Key architecture
+- Client: `Client/` — Next.js 15 (App Router), TypeScript, TailwindCSS v4, Lexical editor. Example: pages under `Client/src/app/*` (e.g. `login/page.tsx`).
+- Server: `Server/` — Node.js + Express (ES modules), Prisma ORM, PostgreSQL. Controllers live in `Server/src/controllers`.
+- Database: Prisma schema in `Server/prisma/schema.prisma`. Run `npx prisma generate` after schema changes.
+
+API & auth patterns (explicit)
+- Session-based auth (no JWT). Server uses `express-session`; client must include cookies: always use fetch with `credentials: 'include'` (see `Client/src/loader/loader.tsx`).
+- Client auth guard: `Client/src/hooks/useAuthRedirect.ts` calls `${NEXT_PUBLIC_API_URL}/auth/check` and redirects to `/login` on failure. Use storage events or custom `auth-refresh` events to trigger re-checks.
+- API responses: validation errors -> `{ errors: [], message: "" }`; other errors -> `{ error: "" }`. Client code expects JSON most of the time but sometimes checks content-type.
+
+Conventions and examples
+- Client data helpers live in `Client/src/loader/loader.tsx` (not React components). They use env var `NEXT_PUBLIC_API_URL` (example: `fetch(`${apiUrl}/note/get`, { credentials: 'include' })`).
+- Note Content: stored as string in DB. Loader parses JSON content and extracts text from Lexical-like structures (see `GetNotes` logic in `loader.tsx`).
+- File layout: client components → `Client/src/components/*`; client types → `Client/src/type/*` (PascalCase filenames such as `Note.ts`). Server controllers → `Server/src/controllers/*` and routes under `Server/src/routes`.
+
+Developer workflows (how to run)
+- Recommended (Docker): `docker compose up --build` — starts client:3000, server:3001, postgres.
+- Manual dev: in separate shells:
+  - `cd Client && npm run dev` (Next.js with turbopack)
+  - `cd Server && npm run dev`
+- Database: `cd Server && npx prisma generate` after schema edits; `cd Server && npx prisma migrate dev` to apply migrations.
+- Tests (server): `cd Server && npm run test`. Tests use a shared Prisma test utils file and run with `maxWorkers: 1` to avoid DB collisions.
+
+Quality gates / gotchas
+- Server is ESM (`"type": "module"`) — imports use `.js` extensions.
+- Environment: many client modules expect `NEXT_PUBLIC_API_URL` to be set; loader falls back but tests and runtime rely on it.
+- Lexical & YJS: `yjs` and `socket.io` deps exist but real-time collaboration is not fully implemented; avoid making heavy assumptions about CRDT syncing.
+
+When contributing
+- Preserve session cookie behavior: never remove `credentials: 'include'` from fetch calls unless switching auth approach.
+- For DB/schema changes: update `Server/prisma/schema.prisma`, run `npx prisma generate`, and add a migration.
+- Tests: follow existing server test patterns in `Server/tests/*` and use `Server/tests/testUtils.js` for shared setup/teardown.
+
+Where to look for examples
+- Auth flows: `Client/src/loader/loader.tsx`, `Client/src/hooks/useAuthRedirect.ts`.
+- Note fetching/sanitization: `Client/src/loader/loader.tsx` GetNotes & GetNoteById.
+- Server structure: `Server/src/controllers/*`, `Server/src/routes/*`, `Server/index.js` or `Server/server.js` for entry points.
+
+If anything is unclear or you need extra detail (scripts, env examples, or more file examples), tell me which area to expand and I will iterate.
+```
 # Yanotela - AI Coding Instructions
 
 ## Project Architecture

@@ -330,11 +330,17 @@ export default function FlashNoteEditor() {
         <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
           {/* Indicateur de sauvegarde */}
           <div className="absolute bottom-4 right-4 z-10">
-            {(isSavingContent || isTyping) ? (
+            <div className="group relative">
+              {(isSavingContent || isTyping) ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-            ) : (
+              ) : (
               <Icons name="save" size={20} className="h-5 w-5 text-primary" />
-            )}
+              )}
+              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-primary text-background text-xs rounded py-1 px-2 whitespace-nowrap">
+                Sauvegardé dans la mémoire de votre machine
+                <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary"></div>
+              </div>
+            </div>
           </div>
 
           <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>

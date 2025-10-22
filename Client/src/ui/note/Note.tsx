@@ -14,14 +14,14 @@ export default function Note({ note }: NoteProps) {
   const handleNoteClick = () => {
     router.push(`/notes/${note.id}`);
   };
- 
+
 
   return (
-    
-    <motion.div 
-    whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)"}}
-    whileTap={{ scale: 1 }}
-    
+
+    <motion.div
+      whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
+      whileTap={{ scale: 1 }}
+
       className="bg-fondcardNote rounded-xl shadow-sm border border-clrsecondaire cursor-pointer group overflow-hidden"
       onClick={handleNoteClick}
     >
@@ -38,19 +38,19 @@ export default function Note({ note }: NoteProps) {
         </h3>
 
         {/* Collaborateurs */}
-        
-        
-       <div
-          className="flex items-center min-w-[56px]  h-full gap-1 px-3 flex-shrink-0"
-        >{/*}
-          <p className='text-white font-bold'>8</p>
-          <Image
-            src="/share.svg"
-            alt="Participants"
-            width={20}
-            height={20}
-            className="filter brightness-0 invert"
-          />*/}
+        <div>
+          {note.collaboratorCount && note.collaboratorCount > 1 && (
+            <div className="flex items-center min-w-[56px] h-full gap-1 px-3 flex-shrink-0">
+              <p className='text-white font-bold'>{note.collaboratorCount}</p>
+              <Image
+                src="/share.svg"
+                alt="Participants"
+                width={20}
+                height={20}
+                className="filter brightness-0 invert"
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -65,17 +65,17 @@ export default function Note({ note }: NoteProps) {
               // @ts-expect-error Les notes sont au format attendu par Lexical
               // eslint-disable-next-line
               : note.Content.root.children.map((child: any, childIndex: number) => (
-                  <div key={`child-${childIndex}`} id={`child-${childIndex}`}>
-                    {
-                      // eslint-disable-next-line
-                      child.children.map((grandChild: any, grandChildIndex: number) => (
-                        <p key={`child-${childIndex}-grandChild-${grandChildIndex}`} id={`paragraph-${childIndex}-${grandChildIndex}`}>
-                          {grandChild.text}
-                        </p>
-                      ))
-                    }
-                  </div>
-                ))
+                <div key={`child-${childIndex}`} id={`child-${childIndex}`}>
+                  {
+                    // eslint-disable-next-line
+                    child.children.map((grandChild: any, grandChildIndex: number) => (
+                      <p key={`child-${childIndex}-grandChild-${grandChildIndex}`} id={`paragraph-${childIndex}-${grandChildIndex}`}>
+                        {grandChild.text}
+                      </p>
+                    ))
+                  }
+                </div>
+              ))
           }
         </div>
 
@@ -91,6 +91,6 @@ export default function Note({ note }: NoteProps) {
         </div>
       </div>
     </motion.div>
-    
+
   );
 }

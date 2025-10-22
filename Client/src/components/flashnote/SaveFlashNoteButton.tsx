@@ -105,7 +105,7 @@ export default function SaveFlashNoteButton({
         className={variant === 'mobile' ? "text-primary" : "text-white"} 
       />
       <span className={`${variant === 'mobile' ? 'text-base text-primary' : 'text-sm text-white'} font-medium`}>
-        Sauvegarder
+        Enregistré dans le cloud
       </span>
     </>
   );
@@ -282,7 +282,7 @@ export default function SaveFlashNoteButton({
       <button
         onClick={handleOpenPopup}
         className={buttonClasses}
-        title="Sauvegarder Flash Note"
+        title="Sauvegarder comme une note"
       >
         {buttonContent}
       </button>
