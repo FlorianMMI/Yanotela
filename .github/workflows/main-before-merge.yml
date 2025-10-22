@@ -239,7 +239,7 @@ jobs:
                 networks:
                   - yanotela
                 healthcheck:
-                  test: ["CMD-SHELL", "pg_isready -U yanotela -d yanotela"]
+                  test: ["CMD-SHELL", "pg_isready -U yanotela_dev -d yanotela_dev"]
                   interval: 30s
                   timeout: 10s
                   retries: 3
@@ -248,7 +248,7 @@ jobs:
               redis:
                 image: redis:7-alpine
                 container_name: yanotela-redis
-                command: redis-server --requirepass redis_password_123
+                command: redis-server --requirepass redis_dev_password_123
                 volumes:
                   - redis_data:/data
                 networks:
