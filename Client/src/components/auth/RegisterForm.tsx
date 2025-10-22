@@ -197,7 +197,6 @@ export default function RegisterForm({
             />
           </div>
 
-
           <div className={`${isInSidebar ? 'grid grid-cols-2 gap-4' : 'flex w-full justify-between items-center gap-5'}`}>
 
             <div className='w-full'>
@@ -251,7 +250,6 @@ export default function RegisterForm({
           </div>
         </div>
 
-        
         <ConfirmPassword
           password={password}
           confirmPassword={confirmPassword}
@@ -259,7 +257,6 @@ export default function RegisterForm({
           onConfirmPasswordChange={setConfirmPassword}
           disabled={isLoading}
         />
-
 
         <button
           type="submit"

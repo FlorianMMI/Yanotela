@@ -19,8 +19,6 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
   const { isAuthenticated, loading } = useAuth();
   const { isOpen } = useSidebarToggle();
 
-
-
   return (
     <>
       {/* Mobile: comportement actuel avec swipe navigation */}
@@ -46,7 +44,6 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
           {/* Breadcrumb en haut */}
           <Breadcrumb />
           <ItemBar />
-          
 
           {/* Zone de contenu */}
           <main className="flex-1 overflow-auto bg-background md:bg-deskbackground">
@@ -78,7 +75,6 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
               </div>
             )}
 
-            
           </main>
         </div>
       </div>

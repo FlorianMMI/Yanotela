@@ -11,8 +11,6 @@ class ConsoleLogRemover {
     const excludeDirs = ['node_modules', '.git', 'dist', 'build', '.next', 'coverage'];
     const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 
-    console.log(`🔍 Scanning: ${directory}\n`);
-
     const processFile = (filePath) => {
       try {
         let content = fs.readFileSync(filePath, 'utf8');
@@ -35,7 +33,7 @@ class ConsoleLogRemover {
 
         if (content !== originalContent) {
           fs.writeFileSync(filePath, content, 'utf8');
-          console.log(`✅ ${filePath} (${count} console statements removed)`);
+          
           this.filesProcessed++;
           this.consolesRemoved += count;
         }
@@ -71,9 +69,6 @@ class ConsoleLogRemover {
 
     scanDirectory(directory);
 
-    console.log('\n📊 Summary:');
-    console.log(`   Files modified: ${this.filesProcessed}`);
-    console.log(`   Console statements removed: ${this.consolesRemoved}`);
   }
 }
 
@@ -88,4 +83,3 @@ if (!fs.existsSync(targetDir)) {
 const remover = new ConsoleLogRemover();
 remover.removeConsoleLogs(targetDir);
 
-console.log('\n✨ Done!');

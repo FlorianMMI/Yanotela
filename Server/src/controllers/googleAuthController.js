@@ -68,7 +68,6 @@ export const handleGoogleCallback = async (req, res) => {
     const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
     const { data: userInfo } = await oauth2.userinfo.get();
 
-
     // Vérifier si l'utilisateur existe déjà
     let user = await prisma.user.findUnique({
       where: { email: userInfo.email }
@@ -91,18 +90,12 @@ export const handleGoogleCallback = async (req, res) => {
       // Créer la session
       req.session.userId = user.id;
       req.session.pseudo = user.pseudo;
-      
-      console.log('🔒 Session créée pour utilisateur existant:', {
-        userId: user.id,
-        pseudo: user.pseudo,
-        sessionID: req.sessionID
-      });
-      
+
       await req.session.save();
 
       // Redirection vers le client après authentification
       const clientUrl = process.env.CLIENT_URL || 'https://yanotela.fr';
-      console.log('➡️ Redirection vers:', `${clientUrl}/notes`);
+      
       return res.redirect(`${clientUrl}/notes`);
     } else {
       // Nouvel utilisateur - inscription
@@ -141,18 +134,12 @@ export const handleGoogleCallback = async (req, res) => {
       // Créer la session
       req.session.userId = user.id;
       req.session.pseudo = user.pseudo;
-      
-      console.log('🔒 Session créée pour nouvel utilisateur:', {
-        userId: user.id,
-        pseudo: user.pseudo,
-        sessionID: req.sessionID
-      });
-      
+
       await req.session.save();
 
       // Redirection vers le client après authentification
       const clientUrl = process.env.CLIENT_URL || 'https://yanotela.fr';
-      console.log('➡️ Redirection vers:', `${clientUrl}/notes`);
+      
       return res.redirect(`${clientUrl}/notes`);
     }
   } catch (error) {
@@ -175,8 +162,7 @@ export const googleLogout = async (req, res) => {
         console.error('Erreur lors de la destruction de session:', err);
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur lors de la déconnexion')}`);
       }
-      
-      
+
       // Rediriger vers la page de déconnexion Google (optionnel)
       // ou simplement vers la page d'accueil
       res.redirect('/');

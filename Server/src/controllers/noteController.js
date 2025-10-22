@@ -97,7 +97,6 @@ export const noteController = {
         .json({ message: "Aucune donnée reçue dans req.body" });
     }
 
-
     let { Titre, Content } = req.body;
     // Récupérer l'authorId depuis la session au lieu du body
     const authorId = parseInt(req.session.userId); // Convertir en Int pour la DB
@@ -324,7 +323,7 @@ export const noteController = {
           isAccepted: perm.isAccepted,
         };
       });
-      console.log("[getNoteNotAccepted] Retrieved notes:", notes);
+      
       res.status(200).json({ notes });
     } catch (error) {
       console.error("[getNoteNotAccepted] Error:", error);

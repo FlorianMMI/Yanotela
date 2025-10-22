@@ -13,7 +13,7 @@ const activeUsers = new Map();
 export function getOrCreateNoteSession(noteId) {
   if (!activeUsers.has(noteId)) {
     activeUsers.set(noteId, new Set());
-    console.log(`📝 Session créée pour note ${noteId}`);
+    
   }
   
   return {
@@ -21,8 +21,6 @@ export function getOrCreateNoteSession(noteId) {
     userCount: activeUsers.get(noteId).size
   };
 }
-
-
 
 /**
  * ✅ SUPPRIMÉ: Plus besoin de ces fonctions Yjs car la sauvegarde 
@@ -82,7 +80,7 @@ function cleanupNote(noteId) {
 
   // Nettoyer les utilisateurs
   activeUsers.delete(noteId);
-  console.log(`🧹 Note ${noteId} nettoyée (inactivité)`);
+  
 }
 
 /**

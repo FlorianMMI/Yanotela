@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 //     {id: 3, role: 2}, // Editeur
 //     {id: 4, role: 3} // Lecteur
 
-
 const getPermission = async (userId, noteId) => {
     try {
         const permission = await prisma.permission.findFirst({
@@ -45,7 +44,6 @@ export async function FetchPermission(req, res) {
     res.status(500).json({ error: 'Erreur lors de la récupération des permissions' });
   }
 }
-
 
 // Handler Express pour changer le rôle d'un utilisateur sur une note spécifique
 const UpdatePermission = async (req, res) => {
@@ -181,7 +179,6 @@ async function AddPermission(req, res) {
   }
 }
 
-
 // Handler Express pour retirer une permission d'un utilisateur sur une note
 async function RemovePermission(req, res) {
   const { noteId, userId } = req.params;
@@ -201,7 +198,6 @@ async function RemovePermission(req, res) {
     if (!adminPermission || adminPermission.role > 1) {
       return res.status(403).json({ error: "Permissions insuffisantes pour retirer un utilisateur" });
     }
-
 
     // Permission de l'utilisateur cible
     const userPermission = await prisma.permission.findFirst({
