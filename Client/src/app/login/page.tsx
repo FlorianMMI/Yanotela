@@ -22,7 +22,7 @@ export default function Login() {
     const checkAuth = async () => {
       try {
         const res = await fetch(`${API_URL}/auth/check`, {
-          method: 'GET',
+          method: 'GET', 
           credentials: 'include',
         });
 
