@@ -267,6 +267,8 @@ jobs:
                   - "3001:3001"
                 env_file:
                   - .env
+                environment:
+                  - PORT=3001
                 depends_on:
                   db:
                     condition: service_healthy
@@ -286,6 +288,7 @@ jobs:
                   - .env
                 environment:
                   - NODE_ENV=production
+                  - PORT=3000
                   - NEXT_PUBLIC_API_URL=\${APP_URL}/api
                 depends_on:
                   - backend
