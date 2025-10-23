@@ -7,6 +7,7 @@ import {
   SerializedTextNode,
   Spread,
   TextNode,
+  TextFormatType,
 } from 'lexical';
 
 export type SerializedFontSizeNode = Spread<
@@ -24,7 +25,13 @@ export class FontSizeNode extends TextNode {
   }
 
   static clone(node: FontSizeNode): FontSizeNode {
-    return new FontSizeNode(node.__text, node.__fontSize, node.__key);
+    const clonedNode = new FontSizeNode(node.__text, node.__fontSize, node.__key);
+    // Copier tous les attributs du TextNode parent
+    clonedNode.__format = node.__format;
+    clonedNode.__detail = node.__detail;
+    clonedNode.__mode = node.__mode;
+    clonedNode.__style = node.__style;
+    return clonedNode;
   }
 
   constructor(text: string, fontSize: string, key?: NodeKey) {
@@ -40,15 +47,16 @@ export class FontSizeNode extends TextNode {
   }
 
   updateDOM(
-    prevNode: FontSizeNode,
+    prevNode: TextNode,
     dom: HTMLElement,
     config: any
   ): boolean {
-    const isUpdated = super.updateDOM(prevNode, dom, config);
-    if (prevNode.__fontSize !== this.__fontSize) {
+    // @ts-expect-error - TypeScript limitation with generic 'this' type
+    const isUpdated: boolean = super.updateDOM(prevNode, dom, config);
+    if ($isFontSizeNode(prevNode) && (prevNode as FontSizeNode).__fontSize !== this.__fontSize) {
       dom.style.fontSize = this.__fontSize;
       // Supprimer l'ancienne classe
-      dom.classList.remove(`editor-text-${prevNode.__fontSize.replace('px', '')}px`);
+      dom.classList.remove(`editor-text-${(prevNode as FontSizeNode).__fontSize.replace('px', '')}px`);
       // Ajouter la nouvelle classe
       dom.classList.add(`editor-text-${this.__fontSize.replace('px', '')}px`);
     }
@@ -91,6 +99,18 @@ export class FontSizeNode extends TextNode {
     const writable = this.getWritable();
     writable.__fontSize = fontSize;
     return writable;
+  }
+
+  // Override setFormat pour préserver la taille de police lors des changements de format
+  setFormat(format: number): this {
+    const self = super.setFormat(format);
+    return self;
+  }
+
+  // Override toggleFormat pour préserver la taille de police
+  toggleFormat(type: TextFormatType): this {
+    const self = super.toggleFormat(type);
+    return self;
   }
 }
 

@@ -29,9 +29,9 @@ import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 
 import ErrorFetch from "@/ui/note/errorFetch";
-import ToolbarPlugin from "@/components/textRich/ToolbarPlugin";
 import SimpleToolbarPlugin from '@/components/textRich/SimpleToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
+import { StyledTextPlugin } from '@/components/textRich/StyledTextPlugin';
 // @ts-ignore
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 // @ts-ignore
@@ -648,6 +648,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 {!isReadOnly && <SimpleToolbarPlugin />}
+                <StyledTextPlugin />
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
