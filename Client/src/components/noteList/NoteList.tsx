@@ -13,9 +13,10 @@ interface NoteListProps {
   notes: NoteType[];
   onNoteCreated?: () => void; // Callback pour refresh après création
   isLoading?: boolean; // État de chargement
+  allowCreateNote?: boolean; // Autoriser la création de note (par défaut: true)
 }
 
-export default function NoteList({ notes, onNoteCreated, isLoading = false }: NoteListProps) {
+export default function NoteList({ notes, onNoteCreated, isLoading = false, allowCreateNote = true }: NoteListProps) {
 
   const router = useRouter();
 
@@ -42,19 +43,21 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
     <main className="p-4">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
 
-        {/* Add Note Button */}
-        <motion.div
-          whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
-          whileTap={{ scale: 0.95 }}
-          className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary"
-          onClick={handleCreateNote}
-        >
-          <Icons
-            name="plus"
-            size={48}
-            className="group-hover:scale-110 transition-transform"
-          />
-        </motion.div>
+        {/* Add Note Button - Only shown if allowCreateNote is true */}
+        {allowCreateNote && (
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
+            whileTap={{ scale: 0.95 }}
+            className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary"
+            onClick={handleCreateNote}
+          >
+            <Icons
+              name="plus"
+              size={48}
+              className="group-hover:scale-110 transition-transform"
+            />
+          </motion.div>
+        )}
 
         {/* Exemple d'affichage d'une note avec vos données */}
         {/* <Note

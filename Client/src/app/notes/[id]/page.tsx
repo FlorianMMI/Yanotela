@@ -312,7 +312,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       150 // 150ms = envoi après inactivité
     );
 
-    function saveContent(editorState: EditorState) {
+    async function saveContent(editorState: EditorState) {
       if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
       
       // Indiquer que la sauvegarde du contenu est en cours
@@ -324,11 +324,31 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       const contentString = JSON.stringify(editorStateJSON);
       setEditorContent(contentString);
       
-      // Émettre via socket pour synchronisation temps réel
-      socketService.emitContentUpdate(id, contentString);
+      console.log('🔄 Début sauvegarde contenu:', {
+        noteId: id,
+        contentLength: contentString.length,
+        title: noteTitle
+      });
       
-      setIsSavingContent(false);
-      setIsTyping(false); // Marquer immédiatement comme terminé
+      try {
+        // Sauvegarder dans la base de données PostgreSQL
+        console.log('📡 Appel SaveNote...');
+        const result = await SaveNote(id, {
+          Titre: noteTitle,
+          Content: contentString,
+        });
+        console.log('✅ Résultat SaveNote:', result);
+        
+        // Émettre via socket pour synchronisation temps réel
+        socketService.emitContentUpdate(id, contentString);
+        console.log('📡 Socket émis avec succès');
+      } catch (error) {
+        console.error('❌ Erreur lors de la sauvegarde du contenu:', error);
+      } finally {
+        setIsSavingContent(false);
+        setIsTyping(false); // Marquer immédiatement comme terminé
+        console.log('🏁 Fin sauvegarde contenu');
+      }
     }
 
     useEffect(() => {

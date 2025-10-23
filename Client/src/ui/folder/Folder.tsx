@@ -16,63 +16,53 @@ export default function Folder({ folder }: FolderProps) {
   };
 
   // Couleur par défaut si non définie
-  const backgroundColor = folder.CouleurTag || '#D4AF37'; // Or par défaut
+  const backgroundColor = folder.CouleurTag || '#D4AF37';
 
   return (
-    <motion.div 
-      whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
-      whileTap={{ scale: 1 }}
-      className="bg-fondcardNote rounded-xl shadow-sm border border-clrsecondaire cursor-pointer group overflow-hidden"
+    <motion.div
+      className="relative w-full aspect-[4/3] cursor-pointer group"
+      whileHover={{ scale: 1.05, transition: { duration: 0.2, ease: "easeOut" } }}
+      whileTap={{ scale: 0.98, transition: { duration: 0.1, ease: "easeInOut" } }}
       onClick={handleFolderClick}
+      role="button"
+      tabIndex={0}
+      aria-label={`Ouvrir le dossier ${folder.Nom}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleFolderClick();
+        }
+      }}
+      style={{ color: backgroundColor }}
     >
-      {/* Header - Nom du dossier avec icône */}
-      <div 
-        className="flex justify-between m-2 items-center gap-3 rounded-lg h-[2rem] px-3"
-        style={{ backgroundColor }}
-      >
-        {/* Icône dossier */}
-        <Icon 
-          name="folder" 
-          size={20} 
-          className="text-white flex-shrink-0"
-        />
+      {/* Icône du dossier qui sert de conteneur */}
+      <Icon
+        name="folder"
+        size={200}
+        className="w-full h-full transition-all duration-200 ease-out group-hover:brightness-110"
+      />
 
-        {/* Folder Name */}
+      {/* Container du texte - positionné en bas à gauche de l'icône */}
+      <div className="absolute bottom-2 left-2 md:bottom-3 md:left-3 lg:bottom-4 lg:left-4 pointer-events-none z-10">
+        {/* Nombre de notes */}
+        <p className="font-geologica italic text-white font-medium drop-shadow-lg text-sm md:text-base lg:text-lg leading-tight mb-0.5">
+          {folder.noteCount || 0} notes
+        </p>
+
+        {/* Nom du dossier */}
         <h3
-          className="font-geologica text-xs md:text-base text-white h-fit w-full align-middle truncate flex-1"
+          className="font-geologica text-white font-bold truncate drop-shadow-md text-xs md:text-sm lg:text-base leading-tight max-w-[80px] md:max-w-[100px] lg:max-w-[120px]"
           title={folder.Nom}
         >
           {folder.Nom}
         </h3>
-
-        {/* Nombre de notes */}
-        <div className="flex items-center min-w-[32px] h-full gap-1 flex-shrink-0">
-          <p className='text-white font-bold text-xs'>{folder.noteCount || 0}</p>
-        </div>
       </div>
 
-      {/* Content - Description du dossier */}
-      <div className="p-4 bg-fondcardNote flex flex-col h-32">
-        {/* Folder Description */}
-        <div className="font-gantari text-sm text-textcardNote leading-relaxed mb-auto line-clamp-2 flex-grow">
-          {folder.Description ? (
-            <p>{folder.Description}</p>
-          ) : (
-            <p className="text-element italic">Aucune description</p>
-          )}
-        </div>
-
-        {/* Date de modification */}
-        <div className="mt-4 pt-2 border-t border-gray-100">
-          <p className="font-gantari text-xs text-element italic">
-            Modifié le {new Date(folder.ModifiedAt).toLocaleDateString('fr-FR', {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric'
-            })}
-          </p>
-        </div>
-      </div>
+      {/* Overlay subtil pour améliorer la lisibilité du texte */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/30 via-black/15 to-transparent 
+                   pointer-events-none opacity-60 group-hover:opacity-80 transition-opacity duration-200"
+      />
     </motion.div>
   );
 }

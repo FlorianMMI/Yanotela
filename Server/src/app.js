@@ -13,7 +13,7 @@ import {corsConfig} from './config/corsConfig.js';
 import authRoutes from './routes/authRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-import DossierRoutes from './routes/DossierRoutes.js';
+import FolderRoutes from './routes/FolderRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import permissionRoutes from './routes/permissionRoutes.js';
 import googleAuthRoutes from './routes/googleAuthRoutes.js';
@@ -49,7 +49,7 @@ app.use('/user', userRoutes);
 app.use('/permission', permissionRoutes);
 app.use('/auth', googleAuthRoutes); // Routes Google OAuth
 app.use('/notification', notificationRoutes);
-app.use('/folder', DossierRoutes); // Routes pour les dossiers
+app.use('/folder', FolderRoutes); // Routes pour les dossiers
 
 // Route de health check pour Docker
 app.get('/health', (req, res) => {
@@ -223,32 +223,19 @@ io.on('connection', (socket) => {
     
     // Vérifier que l'utilisateur est dans la room
     if (!socket.rooms.has(roomName)) {
+      console.warn(`⚠️ Socket ${socket.id} essaie d'update note ${noteId} sans être dans la room`);
       return;
     }
 
     try {
-      // ✅ IMPORTANTE: Vérifier que le socket est bien dans la room
-      const roomName = `note-${noteId}`;
-      if (!socket.rooms.has(roomName)) {
-        console.warn(`⚠️ Socket ${socket.id} essaie d'update note ${noteId} sans être dans la room`);
-        return;
-      }
-
-      // Obtenir le document Yjs existant
-      const yDoc = getOrCreateYDoc(noteId);
-      
-      // Appliquer la mise à jour au document serveur
-      const updateBuffer = Buffer.from(update, 'base64');
-      Y.applyUpdate(yDoc, updateBuffer);
-      
-      // ✅ CRITIQUE: Propager la mise à jour à TOUS les autres clients de la room
-      // Utiliser broadcast pour éviter de renvoyer à l'expéditeur
-      socket.to(roomName).emit('yjsUpdate', {
-        noteId,
-        update // Transmettre l'update tel quel
+      // Mettre à jour le titre dans la base de données
+      await prisma.note.update({
+        where: { id: noteId },
+        data: { 
+          Titre: titre,
+          ModifiedAt: new Date()
+        }
       });
-      
-      console.log(`📡 Update propagé pour note ${noteId} vers ${socket.to(roomName).compress(false).adapter.rooms.get(roomName)?.size || 0} autres clients`);
 
       // Diffuser le changement de titre à tous les autres utilisateurs dans la room
       socket.to(roomName).emit('titleUpdate', {
@@ -260,8 +247,8 @@ io.on('connection', (socket) => {
 
       console.log(`📝 Titre mis à jour par ${socket.userPseudo}: "${titre}"`);
     } catch (error) {
-      console.error('Erreur lors de yjsUpdate:', error);
-      socket.emit('error', { message: 'Erreur lors de la synchronisation' });
+      console.error('❌ Erreur lors de titleUpdate:', error);
+      socket.emit('error', { message: 'Erreur lors de la mise à jour du titre' });
     }
   });
 

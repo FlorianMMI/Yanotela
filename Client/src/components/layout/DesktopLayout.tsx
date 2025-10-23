@@ -6,10 +6,8 @@ import Breadcrumb from '@/components/breadcrumb/Breadcrumb';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarToggle } from '@/hooks/useSidebarToggle';
 import ItemBar from '@/components/itemBar/ItemBar';
-import NoteHeader from '@/components/noteHeader/NoteHeader';
 import Icon from '@/ui/Icon';
 import { SwipeNavigationWrapper } from '@/components/navigation/SwipeNavigationWrapper';
-import { Item } from 'yjs';
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
@@ -46,7 +44,7 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
           {/* Breadcrumb en haut */}
           <Breadcrumb />
           <ItemBar />
-          
+
 
           {/* Zone de contenu */}
           <main className="flex-1 overflow-auto bg-background md:bg-deskbackground">
@@ -71,14 +69,14 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
               </div>
             ) : (
               // Si connecté, afficher le contenu
-              
+
               <div className="h-full">
-                
+
                 {children}
               </div>
             )}
 
-            
+
           </main>
         </div>
       </div>
