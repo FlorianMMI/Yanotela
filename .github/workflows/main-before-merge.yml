@@ -278,12 +278,12 @@ jobs:
               backend:
                 image: ${{ env.DOCKER_BACKEND_REPO }}:production
                 container_name: yanotela-backend
-                ports:
-                  - "3001:3001"
                 env_file:
                   - .env
                 environment:
                   - PORT=3001
+                expose:
+                  - "3001"
                 depends_on:
                   db:
                     condition: service_healthy
@@ -297,14 +297,14 @@ jobs:
               frontend:
                 image: ${{ env.DOCKER_FRONTEND_REPO }}:production
                 container_name: yanotela-frontend
-                ports:
-                  - "3000:3000"
                 env_file:
                   - .env
                 environment:
                   - NODE_ENV=production
                   - PORT=3000
                   - NEXT_PUBLIC_API_URL=\${{ secrets.APP_URL }}/api
+                expose:
+                  - "3000"
                 depends_on:
                   - backend
                 networks:
