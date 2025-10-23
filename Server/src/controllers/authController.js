@@ -238,8 +238,9 @@ const forgotPassword = async (req, res) => {
     // Vérifier si l'utilisateur existe
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(404).json({
-        error: "Aucun compte associé à cet email"
+      return res.json({
+        success: true,
+        message: "Si votre adresse email est valide, vous recevrez un email de réinitialisation."
       });
     }
 
@@ -256,7 +257,7 @@ const forgotPassword = async (req, res) => {
     await sendResetPasswordEmail(email, resetToken);
     return res.json({
       success: true,
-      message: "Un lien de réinitialisation a été envoyé à votre adresse email."
+      message: "Si votre adresse email est valide, vous recevrez un email de réinitialisation"
     });
   } catch (err) {
     console.error("Erreur forgot password:", err);
