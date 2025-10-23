@@ -60,6 +60,7 @@ app.use(corsConfig);
 app.use(express.static(join(__dirname, '../public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.disable('x-powered-by');
 
 // Routes
 app.use('/', authRoutes);

@@ -136,6 +136,8 @@ jobs:
 
             # Créer le fichier de configuration Nginx (version HTTP seulement pour le moment)
             cat > ./nginx/conf.d/default.conf << 'EOF'
+            server_tokens off;
+
             server {
               listen 80;
               server_name yanotela.fr www.yanotela.fr;
@@ -153,6 +155,11 @@ jobs:
             server {
                 listen 443 ssl http2;
                 server_name yanotela.fr www.yanotela.fr;
+
+                proxy_hide_header X-Powered-By;
+                proxy_hide_header X-NextJS-Cache;
+                proxy_hide_header X-NextJS-Prerender;
+                proxy_hide_header X-NextJS-Stale-Time;
 
                 client_max_body_size 10M;
 
