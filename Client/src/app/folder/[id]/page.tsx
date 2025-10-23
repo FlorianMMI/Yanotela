@@ -4,10 +4,9 @@ import { useRouter } from "next/navigation";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
-import Icon from "@/ui/Icon";
 import NoteList from "@/components/noteList/NoteList";
-import { motion } from "framer-motion";
 import { GetFolderById, UpdateFolder, DeleteFolder } from "@/loader/loader";
+import FolderDeleteModal from "@/ui/folder/FolderDeleteModal";
 
 interface FolderDetailProps {
     params: Promise<{
@@ -23,12 +22,36 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [folder, setFolder] = useState<Folder | null>(null);
     const [notes, setNotes] = useState<Note[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
-    const [folderName, setFolderName] = useState("");
-    const [folderDescription, setFolderDescription] = useState("");
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     useEffect(() => {
         fetchFolderData();
+
+        // Écouter les événements de mise à jour depuis le breadcrumb
+        const handleUpdateRequest = async (event: Event) => {
+            const customEvent = event as CustomEvent;
+            const { folderId: eventFolderId, name, description, color } = customEvent.detail;
+            if (eventFolderId === id) {
+                await handleUpdateFolder(name, description, color);
+            }
+        };
+
+        // Écouter les événements de suppression depuis le breadcrumb
+        const handleDeleteRequest = (event: Event) => {
+            const customEvent = event as CustomEvent;
+            const { folderId: eventFolderId } = customEvent.detail;
+            if (eventFolderId === id) {
+                handleDeleteFolder();
+            }
+        };
+
+        window.addEventListener('folderUpdateRequested', handleUpdateRequest);
+        window.addEventListener('folderDeleteRequested', handleDeleteRequest);
+
+        return () => {
+            window.removeEventListener('folderUpdateRequested', handleUpdateRequest);
+            window.removeEventListener('folderDeleteRequested', handleDeleteRequest);
+        };
     }, [id]);
 
     const fetchFolderData = async () => {
@@ -36,11 +59,9 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             setLoading(true);
 
             const response = await GetFolderById(id);
-            
+
             if (response && response.folder) {
                 setFolder(response.folder);
-                setFolderName(response.folder.Nom);
-                setFolderDescription(response.folder.Description || "");
                 // Les notes seront récupérées séparément plus tard via une relation
                 setNotes([]);
             } else {
@@ -54,27 +75,32 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         }
     };
 
-    const handleSaveFolder = async () => {
+    const handleUpdateFolder = async (name: string, description: string, color: string) => {
         const response = await UpdateFolder(id, {
-            Nom: folderName,
-            Description: folderDescription,
+            Nom: name,
+            Description: description,
+            CouleurTag: color,
         });
 
         if (response.success && response.folder) {
             setFolder(response.folder);
-            setIsEditing(false);
+            // Émettre un événement pour synchroniser avec le Breadcrumb
+            window.dispatchEvent(new CustomEvent('folderTitleUpdated', { 
+                detail: { folderId: id, title: name } 
+            }));
         } else {
             console.error("Erreur lors de la sauvegarde:", response.error);
-            alert(response.error || "Erreur lors de la mise à jour du dossier");
+            throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
         }
     };
 
-    const handleDeleteFolder = async () => {
-        const confirmed = confirm("Êtes-vous sûr de vouloir supprimer ce dossier ?");
-        if (!confirmed) return;
+    const handleDeleteFolder = () => {
+        setIsDeleteModalOpen(true);
+    };
 
+    const confirmDeleteFolder = async () => {
         const response = await DeleteFolder(id);
-        
+
         if (response.success) {
             router.push("/folder");
         } else {
@@ -105,125 +131,23 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     }
 
     return (
-        <div className="h-full w-full flex flex-col">
-            {/* Header du dossier */}
-            <div className="border-b border-gray-200 bg-background">
-                <div className="p-6">
-                    {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 mb-4 text-sm text-element">
-                        <button
-                            onClick={() => router.push("/folder")}
-                            className="hover:text-primary transition-colors"
-                        >
-                            Mes Dossiers
-                        </button>
-                        <Icon name="arrow-ss-barre" size={16} className="-rotate-90" />
-                        <span className="text-primary font-medium">{folder.Nom}</span>
-                    </div>
+        <div className="h-full w-full flex flex-col relative">
+            {/* Modale de confirmation de suppression */}
+            {isDeleteModalOpen && (
+                <FolderDeleteModal
+                    folderName={folder?.Nom || "ce dossier"}
+                    onConfirm={confirmDeleteFolder}
+                    onCancel={() => setIsDeleteModalOpen(false)}
+                />
+            )}
 
-                    {/* Informations du dossier */}
-                    <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                            {isEditing ? (
-                                <div className="space-y-3">
-                                    <input
-                                        type="text"
-                                        value={folderName}
-                                        onChange={(e) => setFolderName(e.target.value)}
-                                        className="text-3xl font-bold text-primary bg-white border-2 border-primary rounded-lg px-3 py-2 w-full max-w-2xl"
-                                        placeholder="Nom du dossier"
-                                    />
-                                    <textarea
-                                        value={folderDescription}
-                                        onChange={(e) => setFolderDescription(e.target.value)}
-                                        className="text-base text-element bg-white border border-gray-300 rounded-lg px-3 py-2 w-full max-w-2xl resize-none"
-                                        placeholder="Description du dossier"
-                                        rows={2}
-                                    />
-                                    <div className="flex gap-2">
-                                        <motion.button
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={handleSaveFolder}
-                                            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors"
-                                        >
-                                            Enregistrer
-                                        </motion.button>
-                                        <motion.button
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => {
-                                                setIsEditing(false);
-                                                setFolderName(folder.Nom);
-                                                setFolderDescription(folder.Description || "");
-                                            }}
-                                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                                        >
-                                            Annuler
-                                        </motion.button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div>
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="w-3 h-3 rounded-full"
-                                            style={{ backgroundColor: folder.CouleurTag }}
-                                        />
-                                        <h1 className="text-3xl font-bold text-primary">{folder.Nom}</h1>
-                                    </div>
-                                    {folder.Description && (
-                                        <p className="text-element mt-2">{folder.Description}</p>
-                                    )}
-                                    <div className="flex items-center gap-4 mt-3 text-sm text-element">
-                                        <span>{folder.noteCount || notes.length} note(s)</span>
-                                        <span>•</span>
-                                        <span>
-                                            Modifié le {new Date(folder.ModifiedAt).toLocaleDateString('fr-FR', {
-                                                day: 'numeric',
-                                                month: 'long',
-                                                year: 'numeric'
-                                            })}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Actions */}
-                        {!isEditing && (
-                            <div className="flex gap-2">
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setIsEditing(true)}
-                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                    title="Modifier le dossier"
-                                >
-                                    <Icon name="docs" size={24} className="text-primary" />
-                                </motion.button>
-
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={handleDeleteFolder}
-                                    className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Supprimer le dossier"
-                                >
-                                    <Icon name="close" size={24} className="text-red-500" />
-                                </motion.button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Liste des notes dans le dossier */}
+            {/* Liste des notes dans le dossier - Plein écran */}
             <div className="flex-1 overflow-y-auto">
                 <NoteList
                     notes={notes}
                     onNoteCreated={fetchFolderData}
                     isLoading={loading}
+                    allowCreateNote={false}
                 />
             </div>
         </div>

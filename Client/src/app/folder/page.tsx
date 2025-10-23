@@ -7,6 +7,8 @@ import FolderList from "@/components/folderList/FolderList";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { GetFolders } from "@/loader/loader";
 
+// Métadonnées SEO gérées côté serveur dans layout.tsx
+
 export default function FoldersPage() {
   const { isAuthenticated, loading: authLoading } = useAuthRedirect();
   const [searchTerm, setSearchTerm] = useState("");

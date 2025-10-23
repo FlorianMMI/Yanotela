@@ -18,4 +18,7 @@ router.get('/get/:id', requireAuth, noteController.getNoteById);
 // Route Post pour mettre à jour une note par son ID (vérification des droits d'écriture)
 router.post('/update/:id', requireWriteAccess, noteController.updateNoteById);
 
+// Route Post pour supprimer une note par son ID (vérification des droits d'écriture)
+// router.post('/delete/:id', requireWriteAccess, noteController.deleteNoteById);
+
 export default router;

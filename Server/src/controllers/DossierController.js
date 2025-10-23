@@ -2,160 +2,151 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const DossierController = {
-    // Créer un nouveau dossier
-    createDossier: async (req, res) => {
-        try {
-            const { Nom, Description, CouleurTag } = req.body;
-            const userId = req.session.userId;
+// Controller for folder management
+export const FolderController = {
+  // Create a new folder
+  createFolder: async (req, res) => {
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
 
-            if (!userId) {
-                return res.status(401).json({ error: 'Utilisateur non authentifié' });
-            }
+    const { Nom, Description, CouleurTag } = req.body || {};
 
-            // Validation du nom
-            if (!Nom || Nom.trim() === '') {
-                return res.status(400).json({ error: 'Le nom du dossier est requis' });
-            }
+    if (!Nom || Nom.trim() === "") {
+      return res.status(400).json({ message: "Le nom du dossier est requis" });
+    }
 
-            // Convertir userId en Int pour Prisma
-            const authorId = parseInt(userId);
-            
-            if (isNaN(authorId)) {
-                return res.status(400).json({ error: 'ID utilisateur invalide' });
-            }
+    const authorId = parseInt(req.session.userId);
+    if (isNaN(authorId)) {
+      return res.status(400).json({ message: "ID utilisateur invalide" });
+    }
 
-            // Créer le dossier
-            const newDossier = await prisma.dossier.create({
-                data: {
-                    Nom: Nom.trim(),
-                    Description: Description?.trim() || null,
-                    CouleurTag: CouleurTag || '#D4AF37',
-                    authorId: authorId,
-                },
-            });
+    try {
+      const newFolder = await prisma.folder.create({
+        data: {
+          Nom: Nom.trim(),
+          Description: Description?.trim() || null,
+          CouleurTag: CouleurTag || "#D4AF37",
+          authorId,
+        },
+      });
 
-            res.status(201).json({ 
-                message: 'Dossier créé avec succès',
-                folder: newDossier 
-            });
-        } catch (error) {
-            console.error('Erreur lors de la création du dossier:', error);
-            console.error('Stack:', error.stack);
-            res.status(500).json({ 
-                error: 'Erreur serveur lors de la création du dossier',
-                details: process.env.NODE_ENV === 'development' ? error.message : undefined
-            });
-        }
-    },
+      return res.status(201).json({ message: "Dossier créé avec succès", folder: newFolder });
+    } catch (error) {
+      console.error("[createFolder] Error:", error);
+      return res.status(500).json({ message: "Erreur lors de la création du dossier", error: error.message });
+    }
+  },
 
-    // Récupérer tous les dossiers de l'utilisateur
-    getDossiers: async (req, res) => {
-        try {
-            const userId = req.session.userId;
+  // Get all folders for the authenticated user
+  getFolders: async (req, res) => {
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
 
-            if (!userId) {
-                return res.status(401).json({ error: 'Utilisateur non authentifié' });
-            }
+    const authorId = parseInt(req.session.userId);
+    if (isNaN(authorId)) {
+      return res.status(400).json({ message: "ID utilisateur invalide" });
+    }
 
-            // Convertir userId en Int
-            const authorId = parseInt(userId);
+    try {
+      const folders = await prisma.folder.findMany({
+        where: {
+          authorId,
+          deletedAt: null,
+        },
+        orderBy: {
+          ModifiedAt: "desc",
+        },
+      });
 
-            // Récupérer les dossiers avec le nombre de notes (à implémenter plus tard)
-            const dossiers = await prisma.dossier.findMany({
-                where: {
-                    authorId: authorId,
-                    deletedAt: null,
-                },
-                orderBy: {
-                    ModifiedAt: 'desc',
-                },
-            });
+      const foldersFormatted = folders.map((f) => ({ ...f, noteCount: 0 }));
+      return res.status(200).json({ folders: foldersFormatted, totalFolders: foldersFormatted.length });
+    } catch (error) {
+      console.error("[getFolders] Error:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération des dossiers", error: error.message, stack: error.stack });
+    }
+  },
 
-            // Pour l'instant, noteCount sera 0 (relation notes à implémenter)
-            const dossiersWithCount = dossiers.map(dossier => ({
-                ...dossier,
-                noteCount: 0,
-            }));
+  // Get folder by id
+  getFolderById: async (req, res) => {
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
 
-            res.status(200).json({ 
-                folders: dossiersWithCount,
-                totalFolders: dossiersWithCount.length 
-            });
-        } catch (error) {
-            console.error('Erreur lors de la récupération des dossiers:', error);
-            res.status(500).json({ error: 'Erreur serveur lors de la récupération des dossiers' });
-        }
-    },
+    const { id } = req.params;
+    const authorId = parseInt(req.session.userId);
 
-    // Récupérer un dossier spécifique par ID
-    getDossierById: async (req, res) => {
-        try {
-            const { id } = req.params;
-            const userId = req.session.userId;
+    try {
+      const folder = await prisma.folder.findFirst({
+        where: {
+          id,
+          authorId,
+          deletedAt: null,
+        },
+      });
 
-            if (!userId) {
-                return res.status(401).json({ error: 'Utilisateur non authentifié' });
-            }
+      if (!folder) {
+        return res.status(404).json({ message: "Dossier introuvable" });
+      }
 
-            // Convertir userId en Int
-            const authorId = parseInt(userId);
+      return res.status(200).json({ folder: { ...folder, noteCount: 0 } });
+    } catch (error) {
+      console.error("[getFolderById] Error:", error);
+      return res.status(500).json({ message: "Erreur lors de la récupération du dossier", error: error.message });
+    }
+  },
 
-            const dossier = await prisma.dossier.findFirst({
-                where: {
-                    id: id,
-                    authorId: authorId,
-                    deletedAt: null,
-                },
-            });
+  // Update folder
+  updateFolder: async (req, res) => {
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
 
-            if (!dossier) {
-                return res.status(404).json({ error: 'Dossier introuvable' });
-            }
+    const { id } = req.params;
+    const { Nom, Description, CouleurTag } = req.body || {};
+    const authorId = parseInt(req.session.userId);
 
-            res.status(200).json({ 
-                folder: {
-                    ...dossier,
-                    noteCount: 0, // À implémenter avec la relation notes
-                }
-            });
-        } catch (error) {
-            console.error('Erreur lors de la récupération du dossier:', error);
-            res.status(500).json({ error: 'Erreur serveur lors de la récupération du dossier' });
-        }
-    },
+    try {
+      const existing = await prisma.folder.findFirst({ where: { id, authorId, deletedAt: null } });
+      if (!existing) {
+        return res.status(404).json({ message: "Dossier introuvable ou accès non autorisé" });
+      }
 
-    // Mettre à jour un dossier
-    updateDossier: async (req, res) => {
-        try {
-            const { id } = req.params;
-            const { Nom, Description, CouleurTag } = req.body;
-            const userId = req.session.userId;
+      if (Nom !== undefined && Nom.trim() === "") {
+        return res.status(400).json({ message: "Le nom du dossier ne peut pas être vide" });
+      }
 
-            if (!userId) {
-                return res.status(401).json({ error: 'Utilisateur non authentifié' });
-            }
+      const updated = await prisma.folder.update({
+        where: { id },
+        data: {
+          ...(Nom !== undefined && { Nom: Nom.trim() }),
+          ...(Description !== undefined && { Description: Description?.trim() || null }),
+          ...(CouleurTag !== undefined && { CouleurTag }),
+        },
+      });
 
-            // Convertir userId en Int
-            const authorId = parseInt(userId);
+      return res.status(200).json({ message: "Dossier mis à jour avec succès", folder: updated });
+    } catch (error) {
+      console.error("[updateFolder] Error:", error);
+      return res.status(500).json({ message: "Erreur lors de la mise à jour du dossier", error: error.message });
+    }
+  },
 
-            // Vérifier que le dossier existe et appartient à l'utilisateur
-            const existingDossier = await prisma.dossier.findFirst({
-                where: {
-                    id: id,
-                    authorId: authorId,
-                    deletedAt: null,
-                },
-            });
+  // Soft delete folder
+  deleteFolder: async (req, res) => {
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
 
-            if (!existingDossier) {
-                return res.status(404).json({ error: 'Dossier introuvable ou accès non autorisé' });
-            }
+    const { id } = req.params;
+    const authorId = parseInt(req.session.userId);
 
-            // Validation du nom si fourni
-            if (Nom !== undefined && Nom.trim() === '') {
-                return res.status(400).json({ error: 'Le nom du dossier ne peut pas être vide' });
-            }
+    try {
+      const existing = await prisma.folder.findFirst({ where: { id, authorId, deletedAt: null } });
+      if (!existing) {
+        return res.status(404).json({ message: "Dossier introuvable ou accès non autorisé" });
+      }
 
             // Mettre à jour le dossier
             const updatedDossier = await prisma.dossier.update({
