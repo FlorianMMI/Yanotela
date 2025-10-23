@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { $getRoot, EditorState } from "lexical";
+import { $getRoot, EditorState, $getSelection, $isRangeSelection } from "lexical";
 import { useEffect, useState, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -14,6 +14,9 @@ import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 import Icons from '@/ui/Icon';
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
+import DrawingBoard, { DrawingData } from "../drawingBoard/drawingBoard";
+import { ImageNode, $createImageNode } from "./ImageNode";
+import { $insertNodes } from "lexical";
 
 const theme = {};
 
@@ -83,6 +86,7 @@ export default function FlashNoteWidget() {
     namespace: "FlashNoteWidget",
     theme,
     onError,
+    nodes: [ImageNode], // Register the ImageNode
     editorState: initialEditorState ? initialEditorState : undefined,
   };
 
@@ -91,6 +95,31 @@ export default function FlashNoteWidget() {
     editor.update(() => {
       const root = $getRoot();
       root.selectEnd();
+    });
+  }, [editor]);
+
+  const handleDrawingSave = useCallback((drawingData: DrawingData) => {
+    if (!editor) return;
+    
+    editor.update(() => {
+      const selection = $getSelection();
+      
+      // Create a new image node with the drawing
+      const imageNode = $createImageNode({
+        src: drawingData.dataUrl,
+        altText: "Drawing",
+        width: Math.min(drawingData.width, 600), // Limit max width
+        height: Math.min(drawingData.height, 600),
+      });
+      
+      // Insert the image node at the current selection or at the end
+      if ($isRangeSelection(selection)) {
+        $insertNodes([imageNode]);
+      } else {
+        const root = $getRoot();
+        root.selectEnd();
+        $insertNodes([imageNode]);
+      }
     });
   }, [editor]);
 
@@ -209,6 +238,8 @@ export default function FlashNoteWidget() {
               </div>
             </div>
           </div>
+
+          <DrawingBoard isOpen={false} onSave={handleDrawingSave} />
 
           <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
             <RichTextPlugin
