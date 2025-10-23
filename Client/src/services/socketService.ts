@@ -30,7 +30,7 @@ class SocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log('✅ Socket connecté');
+      
     });
 
     this.socket.on('connect_error', (error) => {
@@ -38,7 +38,7 @@ class SocketService {
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('❌ Socket déconnecté:', reason);
+      
     });
 
     return this.socket;
@@ -65,7 +65,7 @@ class SocketService {
 
     // Rejoindre la room
     socket.emit('joinNote', { noteId });
-    console.log(`📥 Demande de join pour note ${noteId}`);
+    
   }
 
   /**
@@ -75,7 +75,7 @@ class SocketService {
     if (!this.currentNoteId || !this.socket) return;
 
     this.socket.emit('leaveNote', { noteId: this.currentNoteId });
-    console.log(`📤 Quitte la note ${this.currentNoteId}`);
+    
     this.currentNoteId = null;
   }
 
@@ -244,7 +244,7 @@ class SocketService {
     this.socket.disconnect();
     this.socket = null;
     this.currentNoteId = null;
-    console.log('🔌 Socket déconnecté');
+    
   }
 
   /**

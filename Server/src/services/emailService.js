@@ -4,14 +4,7 @@ const FRONT_URL = process.env.FRONT_URL || 'https://yanotela.fr';
 
 // Configuration du transporteur email
 function createEmailTransporter() {
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🔍 DEBUG VARIABLES ENVIRONNEMENT');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('EMAIL_SERVICE:', process.env.EMAIL_SERVICE);
-  console.log('GMAIL_USER:', process.env.GMAIL_USER);
-  console.log('GMAIL_APP_PASSWORD existe:', !!process.env.GMAIL_APP_PASSWORD);
-  console.log('GMAIL_APP_PASSWORD longueur:', process.env.GMAIL_APP_PASSWORD?.length);
-  
+
   // Vérifier si les variables sont définies
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     console.error('❌ ERREUR: Variables d\'environnement manquantes!');
@@ -19,9 +12,6 @@ function createEmailTransporter() {
     console.error('GMAIL_APP_PASSWORD:', process.env.GMAIL_APP_PASSWORD ? 'défini' : 'MANQUANT');
     throw new Error('Variables d\'environnement EMAIL manquantes');
   }
-  
-  console.log('✅ Variables OK, création du transporter...');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   return nodemailer.createTransport({
     service: 'gmail',
@@ -38,9 +28,9 @@ function createEmailTransporter() {
 async function testTransporter() {
   try {
     const transporter = createEmailTransporter();
-    console.log('🔌 Test de connexion SMTP...');
+    
     await transporter.verify();
-    console.log('✅ Connexion SMTP réussie!\n');
+    
     return transporter;
   } catch (error) {
     console.error('❌ Erreur:', error.message);

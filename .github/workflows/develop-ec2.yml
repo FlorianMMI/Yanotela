@@ -11,27 +11,41 @@ env:
   EC2_USER: ubuntu
   DEPLOY_PATH: /var/www/yanotela
 permissions:
-  contents: read
+  contents: write
 jobs:
 
   cleanup:
     uses : ./.github/workflows/cleanup-console-logs.yml
+    permissions:
+      contents: write
 
   build-and-deploy:
     name: Build and Deploy to Development
     runs-on: ubuntu-latest
     environment: development
+    needs: cleanup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: preprod
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            Server/package-lock.json
+            Client/package-lock.json
 
       - name: Audit npm
         run: |
           cd Server
-          npm install
+          npm ci --no-audit --progress=false
           npm audit --audit-level=high || true
           cd ../Client
-          npm install
+          npm ci --no-audit --progress=false
           npm audit --audit-level=high || true
           cd ..
 
@@ -248,8 +262,6 @@ jobs:
               backend-dev:
                 image: ${{ env.DOCKER_BACKEND_REPO }}:develop
                 container_name: yanotela-backend-dev
-                ports:
-                  - "3001:3001"
                 env_file:
                   - .env.dev
                 depends_on:
@@ -265,8 +277,6 @@ jobs:
               frontend-dev:
                 image: ${{ env.DOCKER_FRONTEND_REPO }}:develop
                 container_name: yanotela-frontend-dev
-                ports:
-                  - "3000:3000"
                 environment:
                   - NODE_ENV=development
                   - NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api

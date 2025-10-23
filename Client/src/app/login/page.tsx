@@ -23,7 +23,6 @@ export default function Login() {
           credentials: 'include',
         });
 
-
         if (res.ok) {
           const data = await res.json();
 

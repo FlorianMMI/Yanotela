@@ -97,7 +97,6 @@ export const noteController = {
         .json({ message: "Aucune donnée reçue dans req.body" });
     }
 
-
     let { Titre, Content } = req.body;
     // Récupérer l'authorId depuis la session au lieu du body
     const authorId = parseInt(req.session.userId); // Convertir en Int pour la DB
@@ -233,9 +232,7 @@ export const noteController = {
 
     const { userId } = req.session;
 
-    if (!userId) {
-      return res.status(401).json({ message: "Utilisateur non authentifié" });
-    }
+    // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
     if (!Titre || !Content) {
       return res.status(400).json({ message: "Champs requis manquants" });
@@ -246,25 +243,6 @@ export const noteController = {
     }
 
     try {
-      // Vérifier les permissions (await car async)
-      const userPermission = await getPermission(userId, id);
-
-      if (!userPermission) {
-        return res
-          .status(403)
-          .json({ message: "Vous n'avez pas accès à cette note" });
-      }
-
-      // Seuls propriétaire (0), admin (1) et éditeur (2) peuvent modifier
-      if (userPermission.role > 2) {
-        return res
-          .status(403)
-          .json({
-            message:
-              "Vous n'avez pas la permission de modifier cette note (lecture seule)",
-          });
-      }
-
       const note = await prisma.note.update({
         where: { id: id },
         data: {
@@ -324,7 +302,7 @@ export const noteController = {
           isAccepted: perm.isAccepted,
         };
       });
-      console.log("[getNoteNotAccepted] Retrieved notes:", notes);
+      
       res.status(200).json({ notes });
     } catch (error) {
       console.error("[getNoteNotAccepted] Error:", error);

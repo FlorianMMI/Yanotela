@@ -74,7 +74,6 @@ const register = async (req, res) => {
       },
     });
 
-    
     return res.status(201).json({
       success: true,
       message: "Compte créé avec succès. Veuillez cliquer sur le lien envoyé par mail.",
@@ -334,8 +333,7 @@ const resetPasswordPost = async (req, res) => {
         token: "USED_RESET_" + token // Marquer le token comme utilisé
       }
     });
-    
-    
+
     return res.json({
       success: true,
       message: "Mot de passe réinitialisé avec succès"
@@ -386,6 +384,5 @@ const checkAuth = async (req, res) => {
     });
   }
 };
-
 
 export { register, login, logout, validate, validateRegistration, forgotPassword, resetPasswordGet, resetPasswordPost, checkAuth };

@@ -19,9 +19,13 @@ jobs:
   remove-console-logs:
     name: Remove console.log()
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Remove console.log from Frontend
         run: |
           if [ -d "${{ inputs.frontend-path }}" ]; then
@@ -122,4 +126,19 @@ jobs:
           EOF
           else
             echo "❌ Backend directory '${{ inputs.backend-path }}' not found, skipping..."
+          fi
+
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Vérifier s'il y a des changements
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "✅ Aucun console.log trouvé - rien à commiter"
+          else
+            git add .
+            git commit -m "🧹 chore: Remove console.logs [automated cleanup]"
+            git push
+            echo "✅ Console.logs supprimés et changements poussés"
           fi

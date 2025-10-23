@@ -14,7 +14,6 @@ export default function Note({ note }: NoteProps) {
   const handleNoteClick = () => {
     router.push(`/notes/${note.id}`);
   };
- 
 
   return (
     
@@ -38,8 +37,7 @@ export default function Note({ note }: NoteProps) {
         </h3>
 
         {/* Collaborateurs */}
-        
-        
+
        <div
           className="flex items-center min-w-[56px]  h-full gap-1 px-3 flex-shrink-0"
         >{/*}

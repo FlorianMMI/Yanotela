@@ -117,7 +117,7 @@ if (process.env.REDIS_URL) {
 
   Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
     io.adapter(createAdapter(pubClient, subClient));
-    console.log('✅ Redis adapter configuré');
+    
   }).catch((err) => {
     console.warn('⚠️  Redis non disponible, mode standalone:', err.message);
   });
@@ -143,7 +143,6 @@ io.use((socket, next) => {
 
 // Gestion des connexions Socket.IO
 io.on('connection', (socket) => {
-  console.log(`✅ Socket connecté: ${socket.id} (user: ${socket.userPseudo})`);
 
   /**
    * Événement: joinNote
@@ -154,7 +153,7 @@ io.on('connection', (socket) => {
     
     // Vérifier si déjà dans la room
     if (socket.rooms.has(roomName)) {
-      console.log(`⚠️  User ${socket.userPseudo} déjà dans room ${roomName}`);
+      
       return;
     }
     
@@ -189,7 +188,6 @@ io.on('connection', (socket) => {
 
       // Rejoindre la room Socket.IO (la room est créée automatiquement si elle n'existe pas)
       socket.join(roomName);
-      console.log(`✅ User ${socket.userPseudo} a rejoint room ${roomName}`);
 
       // ✅ SIMPLIFIÉ: Créer/obtenir la session de collaboration pour cette note
       const noteSession = getOrCreateNoteSession(noteId);
@@ -255,7 +253,6 @@ io.on('connection', (socket) => {
           modifierId: socket.userId
         }
       });
-      console.log(`✅ [DB] Titre sauvegardé: "${titre}"`);
 
       // 2️⃣ Broadcaster aux autres clients de la room
       socket.to(roomName).emit('titleUpdate', {
@@ -264,7 +261,6 @@ io.on('connection', (socket) => {
         userId: socket.userId,
         pseudo: socket.userPseudo
       });
-      console.log(`� [Broadcast] Titre propagé dans room ${roomName}`);
 
     } catch (error) {
       console.error('❌ Erreur titleUpdate:', error);
@@ -292,7 +288,6 @@ io.on('connection', (socket) => {
         userId: socket.userId,
         pseudo: socket.userPseudo
       });
-      console.log(`📡 [Broadcast] Contenu propagé dans room ${roomName} (temps réel)`);
 
       // ✅ CORRECTION: Sauvegarder en BDD avec un petit délai pour éviter la surcharge
       // En cas de frappe rapide, seule la dernière version sera sauvegardée
@@ -306,7 +301,7 @@ io.on('connection', (socket) => {
               modifierId: socket.userId
             }
           });
-          console.log(`✅ [DB] Contenu JSON Lexical sauvegardé (${content.length} chars)`);
+          
         } catch (dbError) {
           console.error('❌ Erreur sauvegarde BDD différée:', dbError);
         }
@@ -384,8 +379,7 @@ io.on('connection', (socket) => {
    * Déconnexion du socket
    */
   socket.on('disconnect', (reason) => {
-    console.log(`❌ Socket déconnecté: ${socket.id} (raison: ${reason})`);
-    
+
     // Notifier toutes les rooms où l'utilisateur était présent
     const rooms = Array.from(socket.rooms).filter(room => room.startsWith('note-'));
     
@@ -404,8 +398,7 @@ async function handleUserLeave(socket, noteId) {
   
   // Quitter la room Socket.IO
   socket.leave(roomName);
-  console.log(`👋 User ${socket.userPseudo} a quitté room ${roomName}`);
-  
+
   // Compter les utilisateurs restants dans la room
   const socketsInRoom = await io.in(roomName).allSockets();
   const userCount = socketsInRoom.size;

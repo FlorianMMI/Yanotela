@@ -35,7 +35,6 @@ export const requireNoteOwnership = async (req, res, next) => {
         return res.status(401).json({ message: "Pas authentifié" });
     }
 
-
     try {
         const { PrismaClient } = await import('@prisma/client');
         const prisma = new PrismaClient();
@@ -57,7 +56,6 @@ export const requireNoteOwnership = async (req, res, next) => {
                 authorId: sessionUserId // Utiliser la version convertie
             }
         });
-
 
         if (!note) {
             return res.status(403).json({ 

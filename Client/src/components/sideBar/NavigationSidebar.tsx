@@ -81,7 +81,6 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
         </ul>
       </nav>
 
-
       <Link className='h-fit flex m-4 justify-center items-center overflow-hidden '
         href="/"
         title='retour à l`accueil'
