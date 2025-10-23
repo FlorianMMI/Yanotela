@@ -49,7 +49,13 @@ export default function LoginForm({
       const result = await Login(loginData);
       
       if (result.success) {
-        if (onSuccess) {
+        // Vérifier s'il y a une redirection enregistrée
+        const redirectAfterLogin = localStorage.getItem('yanotela:redirect-after-login');
+        
+        if (redirectAfterLogin) {
+          localStorage.removeItem('yanotela:redirect-after-login');
+          router.push(redirectAfterLogin);
+        } else if (onSuccess) {
           onSuccess();
         } else {
           router.push('/notes');

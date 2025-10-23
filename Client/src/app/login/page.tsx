@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import LoginForm from '@/components/auth/LoginForm';
 import { useEffect, useState } from "react";
+import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
 
 export default function Login() {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function Login() {
     router.refresh();
   };
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -52,6 +55,8 @@ export default function Login() {
   }
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      <MobileFlashNoteButton />
+      
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center">

@@ -44,18 +44,30 @@ export const noteController = {
       });
 
       // Extraire les notes et formater author/modifier en pseudo
-      const notes = permissions.map((perm) => {
-        const note = perm.note;
-        return {
-          id: note.id,
-          Titre: note.Titre,
-          Content: note.Content,
-          author: note.author ? note.author.pseudo : null,
-          modifier: note.modifier ? note.modifier.pseudo : null,
-          ModifiedAt: note.ModifiedAt,
-          userRole: perm.role,
-        };
-      });
+      const notes = await Promise.all(
+        permissions.map(async (perm) => {
+          const note = perm.note;
+          
+          // Compter le nombre de collaborateurs (permissions acceptées)
+          const collaboratorCount = await prisma.permission.count({
+            where: {
+              noteId: note.id,
+              isAccepted: true,
+            },
+          });
+
+          return {
+            id: note.id,
+            Titre: note.Titre,
+            Content: note.Content,
+            author: note.author ? note.author.pseudo : null,
+            modifier: note.modifier ? note.modifier.pseudo : null,
+            ModifiedAt: note.ModifiedAt,
+            userRole: perm.role,
+            collaboratorCount: collaboratorCount,
+          };
+        })
+      );
 
       // Trier par date de modification
       notes.sort((a, b) => new Date(b.ModifiedAt) - new Date(a.ModifiedAt));
@@ -116,7 +128,7 @@ export const noteController = {
                   format: 0,
                   mode: "normal",
                   style: "",
-                  text: "Commencez à écrire...",
+                  text: "",
                   type: "text",
                   version: 1
                 }
