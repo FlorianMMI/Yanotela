@@ -44,8 +44,8 @@ POSTGRES_USER=yanotela_dev
 POSTGRES_PASSWORD=dev_secure_password_123
 
 # Application URLs  
-CLIENT_URL=http://13.39.48.72:3000
-SERVER_URL=http://13.39.48.72:3001
+CLIENT_URL=https://yanotela.fr:3000
+SERVER_URL=https://yanotela.fr:3001
 
 # Development settings
 DEBUG=true

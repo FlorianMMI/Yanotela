@@ -26,10 +26,16 @@ graph LRgraph LR
 
 ```    F --> G[🐳 Build Images]
 
+```mermaid
+graph LR
+    A[Push develop] --> B[🧪 Vérification Preprod]
+    B --> C[� Notification]
+    C --> D[� Test local manuel]
+    
+    E[Push main] --> F[🧪 Tests Prod]
+    F --> G[🐳 Build Images]
     G --> H[🚀 Deploy Production]
-
-## 🔧 Setup Guide    H --> I[🏥 Health Check]
-
+    H --> I[🏥 Health Check]
     I --> J[📧 Notification]
 
 ### 1. GitHub Secrets```
@@ -42,21 +48,21 @@ graph LRgraph LR
 
 - `DOCKER_PASSWORD` - Docker Hub access token### 1. Secrets GitHub
 
-- `EC2_SSH_PRIVATE_KEY` - SSH key for development EC2 (13.39.48.72)📁 Voir le guide complet : [`deploy/SETUP-GITHUB-SECRETS.md`](./SETUP-GITHUB-SECRETS.md)
+- `EC2_SSH_PRIVATE_KEY` - SSH key for development EC2 (yanotela.fr)📁 Voir le guide complet : [`deploy/SETUP-GITHUB-SECRETS.md`](./SETUP-GITHUB-SECRETS.md)
 
 
 
 ### 2. Development EC2 Setup**Secrets obligatoires :**
 
+**Secrets obligatoires :**
 - `EC2_HOST`, `EC2_USER`, `EC2_SSH_PRIVATE_KEY`
-
-Run the setup script on your development EC2 instance:- `DOCKER_USERNAME`, `DOCKER_PASSWORD` (Docker Hub)
-
+- `DOCKER_USERNAME`, `DOCKER_PASSWORD` (Docker Hub)
 - `NOTIFICATION_EMAIL`, `NOTIFICATION_EMAIL_PASSWORD`
+- `ENV_PROD_FILE`, `ENV_PREPROD_FILE`
 
 ```bash- `ENV_PROD_FILE`, `ENV_PREPROD_FILE`
 
-# On your development EC2 (13.39.48.72)
+# On your development EC2 (yanotela.fr)
 
 chmod +x deploy/scripts/setup-ec2.sh### 2. Instance EC2
 
@@ -93,12 +99,32 @@ This will:sudo usermod -aG docker ubuntu
    ```### Test preprod (local)
 
 ```bash
+# Installer Docker sur EC2
+sudo apt update && sudo apt install -y docker.io docker-compose
+sudo usermod -aG docker ubuntu
 
-## 📦 Development Infrastructure# Après vérification réussie sur develop :
+# Créer les répertoires
+mkdir -p ~/yanotela ~/yanotela-preprod
+```
 
+## 🎯 Utilisation
+
+### Déploiement automatique
+- **Push sur `develop`** → ✅ Vérification du code (tests + build)
+- **Push sur `main`** → 🚀 Déploiement production automatique
+
+### Test preprod (local)
+```bash
+# Après vérification réussie sur develop :
 git checkout develop && git pull
+docker-compose -f docker-compose.preprod.yml up --build
+# Accès: http://localhost:8080
+```
 
-### Docker Imagesdocker-compose -f docker-compose.preprod.yml up --build
+### Déploiement manuel production
+```bash
+# Via GitHub Actions
+Repository → Actions → Select workflow → Run workflow
 
 - **Frontend**: `jefee/yanotela-frontend-dev:develop`# Accès: http://localhost:8080
 
@@ -108,11 +134,11 @@ git checkout develop && git pull
 
 ### Development Server### Déploiement manuel production
 
-- **Host**: 13.39.48.72```bash
+- **Host**: yanotela.fr```bash
 
-- **Frontend**: http://13.39.48.72:3000# Via GitHub Actions
+- **Frontend**: https://yanotela.fr:3000# Via GitHub Actions
 
-- **Backend**: http://13.39.48.72:3001Repository → Actions → Select workflow → Run workflow
+- **Backend**: https://yanotela.fr:3001Repository → Actions → Select workflow → Run workflow
 
 
 

@@ -21,7 +21,7 @@ export function useAuth(): AuthState {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('https://preprod.yanotela.fr/api/auth/check', {
+      const response = await fetch('https://yanotela.fr/api/auth/check', {
         method: 'GET',
         credentials: 'include',
       });

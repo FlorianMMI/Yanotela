@@ -1,0 +1,447 @@
+name: Deploy App to EC2 (production)
+on:
+  push:
+    branches: ["main"]
+env:
+  DOCKER_USERNAME: jefee
+  DOCKER_FRONTEND_REPO: jefee/yanotela-frontend
+  DOCKER_BACKEND_REPO: jefee/yanotela-backend
+  EC2_HOST: yanotela.fr
+  EC2_USER: ubuntu
+  DEPLOY_PATH: /var/www/yanotela
+permissions:
+  contents: read
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push frontend image (prod)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Client
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://yanotela.fr/api
+          tags: |
+            ${{ env.DOCKER_FRONTEND_REPO }}:production
+            ${{ env.DOCKER_FRONTEND_REPO }}:production-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push backend image (prod)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Server
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.DOCKER_BACKEND_REPO }}:production
+            ${{ env.DOCKER_BACKEND_REPO }}:production-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to Production EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ${{ env.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "🚀 Starting deployment to PRODUCTION environment"
+            cd ${{ env.DEPLOY_PATH }}
+
+            # Enable error handling
+            set -e
+
+            # Check what's using port 80
+            echo "🔍 Checking what's using port 80:"
+            sudo netstat -tlnp | grep :80 || echo "No process found on port 80"
+            sudo lsof -i :80 || echo "No files open on port 80"
+            
+            # Stop any nginx or apache processes that might be using port 80
+            echo "🛑 Stopping any existing web servers..."
+            sudo systemctl stop nginx 2>/dev/null || true
+            sudo systemctl stop apache2 2>/dev/null || true
+            sudo killall nginx 2>/dev/null || true
+            sudo killall apache2 2>/dev/null || true
+            
+            # Check available disk space
+            echo "📊 Initial disk space:"
+            df -h
+
+            # Aggressive cleanup to free up space
+            echo "🧹 Cleaning up disk space..."
+            
+            # Clean Docker system (remove all unused containers, networks, images, cache)
+            docker system prune -a -f --volumes || true
+            
+            # Remove all stopped containers
+            docker container prune -f || true
+            
+            # Remove all unused images
+            docker image prune -a -f || true
+            
+            # Remove all unused volumes
+            docker volume prune -f || true
+            
+            # Remove all unused networks
+            docker network prune -f || true
+            
+            # Clean package cache
+            sudo apt-get clean || true
+            sudo apt-get autoremove -y || true
+            
+            # Remove old logs
+            sudo journalctl --vacuum-time=3d || true
+            
+            # Clear temporary files
+            sudo rm -rf /tmp/* || true
+            sudo rm -rf /var/tmp/* || true
+            
+            # Remove old kernels (keep current and one backup)
+            sudo apt-get autoremove --purge -y || true
+
+            echo "📊 Disk space after cleanup:"
+            df -h
+
+            # Log in to Docker Hub to pull images
+            echo "🔑 Logging in to Docker Hub..."
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ env.DOCKER_USERNAME }} --password-stdin
+
+            # Clone ou mise à jour du dépôt
+            if [ ! -d ".git" ]; then
+              git clone -b main https://github.com/FlorianMMI/Yanotela.git .
+            else
+              git fetch origin
+              git reset --hard origin/main
+            fi
+
+            # Créer le dossier pour la configuration Nginx
+            mkdir -p ./nginx/conf.d
+
+            # Créer le fichier de configuration Nginx (version HTTP seulement pour le moment)
+            cat > ./nginx/conf.d/default.conf << 'EOF'
+            server_tokens off;
+
+            server {
+              listen 80;
+              server_name yanotela.fr www.yanotela.fr;
+
+              location ^~ /.well-known/acme-challenge/ {
+                  root /var/www/yanotela;
+                  try_files $uri =404;
+              }
+
+              location / {
+                  return 301 https://$server_name$request_uri;
+              }
+            }
+            
+            server {
+                listen 443 ssl http2;
+                server_name yanotela.fr www.yanotela.fr;
+
+
+                proxy_hide_header X-Powered-By;
+                proxy_hide_header X-NextJS-Cache;
+                proxy_hide_header X-NextJS-Prerender;
+                proxy_hide_header X-NextJS-Stale-Time;
+                proxy_hide_header X-NextJS-Response-Time;
+                proxy_hide_header Server;
+                
+                add_header Server "" always;
+
+                  add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' wss://yanotela.fr https://yanotela.fr; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" always;
+
+
+                client_max_body_size 10M;
+
+
+                ssl_certificate /etc/letsencrypt/live/yanotela.fr/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/yanotela.fr/privkey.pem;
+
+                ssl_protocols TLSv1.2 TLSv1.3;
+                ssl_ciphers HIGH:!aNULL:!MD5;
+                ssl_prefer_server_ciphers on;
+
+
+
+                location / {
+                    proxy_pass http://frontend:3000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_cache_bypass $http_upgrade;
+                }
+
+                location /api/ {
+                    rewrite ^/api/(.*) /$1 break;
+
+                    proxy_pass http://backend:3001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_cache_bypass $http_upgrade;
+
+                    proxy_read_timeout 300s;
+                    proxy_connect_timeout 75s;
+                }
+
+                location /socket.io/ {
+                    proxy_pass http://backend:3001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+
+                    proxy_read_timeout 86400;
+            }
+
+                location /health {
+                    proxy_pass http://backend:3001/health;
+                    proxy_set_header Host $host;
+                }
+            }
+            EOF
+
+            # Check if port 80 is still in use and decide which port to use
+            if sudo netstat -tlnp | grep :80 > /dev/null 2>&1; then
+              echo "⚠️ Port 80 is still in use, using port 8080 instead"
+              NGINX_PORT="8080"
+              APP_URL="https://yanotela.fr:8080"
+            else
+              echo "✅ Port 80 is available"
+              NGINX_PORT="80"
+              APP_URL="https://yanotela.fr"
+            fi
+
+            # Créer le fichier docker-compose.yml (version complète)
+            cat > docker-compose.yml << EOF
+            services:
+              db:
+                image: postgres:15-alpine
+                container_name: yanotela-db
+                environment:
+                  POSTGRES_USER: yanotela_dev
+                  POSTGRES_PASSWORD: dev_password_123
+                  POSTGRES_DB: yanotela_dev
+                volumes:
+                  - postgres_data:/var/lib/postgresql/data
+                networks:
+                  - yanotela
+                healthcheck:
+                  test: ["CMD-SHELL", "pg_isready -U yanotela_dev -d yanotela_dev"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                restart: unless-stopped
+
+              redis:
+                image: redis:7-alpine
+                container_name: yanotela-redis
+                command: redis-server --requirepass redis_dev_password_123
+                volumes:
+                  - redis_data:/data
+                networks:
+                  - yanotela
+                healthcheck:
+                  test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                restart: unless-stopped
+
+              backend:
+                image: ${{ env.DOCKER_BACKEND_REPO }}:production
+                container_name: yanotela-backend
+                env_file:
+                  - .env
+                environment:
+                  - PORT=3001
+                expose:
+                  - "3001"
+                depends_on:
+                  db:
+                    condition: service_healthy
+                  redis:
+                    condition: service_healthy
+                networks:
+                  - yanotela
+                restart: unless-stopped
+                command: sh -c "npx prisma migrate deploy && npm start"
+
+              frontend:
+                image: ${{ env.DOCKER_FRONTEND_REPO }}:production
+                container_name: yanotela-frontend
+                env_file:
+                  - .env
+                environment:
+                  - NODE_ENV=production
+                  - PORT=3000
+                  - NEXT_PUBLIC_API_URL=\${{ secrets.APP_URL }}/api
+                expose:
+                  - "3000"
+                depends_on:
+                  - backend
+                networks:
+                  - yanotela
+                restart: unless-stopped
+
+              nginx:
+                image: nginx:latest
+                container_name: yanotela-nginx
+                ports:
+                  - "\${NGINX_PORT}:80"
+                  - "443:443"
+                volumes:
+                  - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+                  - /etc/letsencrypt:/etc/letsencrypt
+                depends_on:
+                  - frontend
+                  - backend
+                networks:
+                  - yanotela
+                restart: unless-stopped
+
+            volumes:
+              postgres_data:
+                driver: local
+              redis_data:
+                driver: local
+
+            networks:
+              yanotela:
+                driver: bridge
+            EOF
+
+            # Créer le fichier .env
+            cat > .env << 'EOF'
+            ${{secrets.ENV_PROD_FILE}}
+            EOF
+
+            # Arrêter les anciens conteneurs
+            echo "🛑 Stopping existing containers..."
+            docker compose down || true
+            
+            # More aggressive cleanup
+            echo "🧹 Aggressive cleanup of Docker resources..."
+            docker system prune -a -f --volumes || true
+            
+            # Remove any dangling images specifically
+            docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null || true
+            
+            # Check disk space before proceeding
+            echo "📊 Disk space before pulling images:"
+            df -h
+            
+            # Ensure we have enough space (at least 2GB free)
+            AVAILABLE_SPACE=$(df / | tail -1 | awk '{print $4}')
+            if [ "$AVAILABLE_SPACE" -lt 2000000 ]; then
+              echo "❌ Insufficient disk space: ${AVAILABLE_SPACE}KB available"
+              echo "🆘 Emergency cleanup..."
+              
+              # Emergency cleanup - remove everything
+              docker system prune -a -f --volumes
+              docker container prune -f
+              docker image prune -a -f
+              docker volume prune -f
+              
+              # Check if we freed enough space
+              AVAILABLE_SPACE=$(df / | tail -1 | awk '{print $4}')
+              if [ "$AVAILABLE_SPACE" -lt 1000000 ]; then
+                echo "❌ Still insufficient disk space after cleanup: ${AVAILABLE_SPACE}KB"
+                echo "📋 Please manually clean up the EC2 instance"
+                exit 1
+              fi
+            fi
+
+            # Tirer les nouvelles images une par une pour économiser l'espace
+            echo "📥 Pulling images one by one..."
+            docker pull ${{ env.DOCKER_BACKEND_REPO }}:production
+            docker pull ${{ env.DOCKER_FRONTEND_REPO }}:production
+            docker pull postgres:15-alpine
+            docker pull redis:7-alpine
+            docker pull nginx:latest
+
+            # Démarrer les services
+            echo "🚀 Starting services..."
+            docker compose up -d --force-recreate
+
+            # Attendre que les services démarrent
+            echo "⏳ Waiting for services to start..."
+            sleep 60
+
+            # Vérifier que les services sont démarrés
+            echo "🔍 Checking service status..."
+            docker compose ps
+            
+            if docker compose ps | grep -E "(Up|running)"; then
+              echo "✅ Services démarrés avec succès"
+              
+            # Test de connectivité
+            echo "🧪 Testing connectivity..."
+            if curl -f -s -m 10 http://localhost > /dev/null; then
+              echo "✅ Nginx is responding"
+            else
+              echo "⚠️ Nginx not responding yet"
+            fi
+            
+            if curl -f -s -m 10 http://localhost:3001/health > /dev/null; then
+              echo "✅ Backend is responding"
+            else
+              echo "⚠️ Backend not responding yet"
+            fi
+            
+            # Final deployment status report
+            echo ""
+            echo "🎉 DEPLOYMENT COMPLETE! 🎉"
+            echo "========================================="
+            if [ "$NGINX_PORT" = "80" ]; then
+              echo "✅ Application: https://yanotela.fr"
+              echo "🔗 API Endpoint: https://yanotela.fr/api"
+            else
+              echo "✅ Application: https://yanotela.fr:8080"
+              echo "🔗 API Endpoint: https://yanotela.fr:8080/api"
+              echo "⚠️  Note: Using port 8080 due to port conflict"
+            fi
+            echo "🖥️  Direct Frontend: https://yanotela.fr:3000"
+            echo "🔧 Direct Backend: https://yanotela.fr:3001"
+            echo "========================================="              # Final cleanup to free up space
+              echo "🧹 Final cleanup..."
+              docker system prune -f || true
+              
+              echo "📊 Final disk space:"
+              df -h
+            else
+              echo "❌ Échec du démarrage des services"
+              echo "📋 Container logs:"
+              docker compose logs --tail=50
+              echo "📊 System resources:"
+              df -h
+              free -h
+              exit 1
+            fi
