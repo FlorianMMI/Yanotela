@@ -80,7 +80,6 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
           </div>
         )}
 
-
       </div>
     </main>
   );

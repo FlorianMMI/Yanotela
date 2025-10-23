@@ -139,7 +139,7 @@ export const handleGoogleCallback = async (req, res) => {
 
       // Redirection vers le client après authentification
       const clientUrl = process.env.CLIENT_URL || 'https://yanotela.fr';
-      console.log('➡️ Redirection vers:', `${clientUrl}/notes`);
+      
       return res.redirect(`${clientUrl}/notes`);
     }
   } catch (error) {
