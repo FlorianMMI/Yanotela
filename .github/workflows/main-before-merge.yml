@@ -156,10 +156,18 @@ jobs:
                 listen 443 ssl http2;
                 server_name yanotela.fr www.yanotela.fr;
 
+
                 proxy_hide_header X-Powered-By;
                 proxy_hide_header X-NextJS-Cache;
                 proxy_hide_header X-NextJS-Prerender;
                 proxy_hide_header X-NextJS-Stale-Time;
+                proxy_hide_header X-NextJS-Response-Time;
+                proxy_hide_header Server;
+                
+                add_header Server "" always;
+
+                  add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' wss://yanotela.fr https://yanotela.fr; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" always;
+
 
                 client_max_body_size 10M;
 
