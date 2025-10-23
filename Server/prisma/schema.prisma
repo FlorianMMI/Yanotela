@@ -13,6 +13,7 @@ model User {
   notes           Note[]      
   modifiedNotes   Note[]      @relation("NoteModifier")
   dossier         Dossier[]   
+  notesFolders    NoteDossier[]
   permissions     Permission[]
   pseudo          String      @unique
   prenom          String
@@ -34,6 +35,7 @@ model Note {
   modifierId      Int?
   modifier        User?       @relation("NoteModifier", fields: [modifierId], references: [id])
   permissions     Permission[]
+  notesFolders    NoteDossier[]
   ModifiedAt       DateTime    @default(now())
   
 }
@@ -58,8 +60,24 @@ model Dossier {
   CouleurTag  String    @default("#D4AF37")
   authorId    Int
   author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  notesFolders NoteDossier[]
   CreatedAt   DateTime  @default(now())
   ModifiedAt  DateTime  @updatedAt
   deletedAt   DateTime?
+}
+
+model NoteDossier {
+  id         String   @id @default(uuid())
+  noteId     String   @map("note_id")
+  dossierId  String   @map("dossier_id") 
+  userId     Int      @map("user_id")
+  CreatedAt  DateTime @default(now())
+  
+  note       Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  dossier    Dossier  @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([noteId, userId])
+  @@map("note_dossier")
 }
 

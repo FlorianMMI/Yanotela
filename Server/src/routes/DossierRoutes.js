@@ -21,4 +21,13 @@ router.post('/update/:id', requireAuth, DossierController.updateDossier);
 // Route Post pour supprimer un dossier par son ID (authentification requise)
 router.post('/delete/:id', requireAuth, DossierController.deleteDossier);
 
+// Route Post pour ajouter une note à un dossier (authentification requise)
+router.post('/add-note', requireAuth, DossierController.addNoteToFolder);
+
+// Route Post pour retirer une note d'un dossier (authentification requise)
+router.post('/remove-note', requireAuth, DossierController.removeNoteFromFolder);
+
+// Route Get pour obtenir le dossier d'une note (authentification requise)
+router.get('/note-folder/:noteId', requireAuth, DossierController.getNoteFolder);
+
 export default router;

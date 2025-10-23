@@ -219,4 +219,161 @@ export const DossierController = {
             res.status(500).json({ error: 'Erreur serveur lors de la suppression du dossier' });
         }
     },
+
+    // Ajouter une note à un dossier
+    addNoteToFolder: async (req, res) => {
+        try {
+            const { noteId, dossierId } = req.body;
+            const userId = req.session.userId;
+
+            if (!userId) {
+                return res.status(401).json({ error: 'Utilisateur non authentifié' });
+            }
+
+            if (!noteId || !dossierId) {
+                return res.status(400).json({ error: 'ID note et ID dossier requis' });
+            }
+
+            const authorId = parseInt(userId);
+            if (isNaN(authorId)) {
+                return res.status(400).json({ error: 'ID utilisateur invalide' });
+            }
+
+            // Vérifier que l'utilisateur a accès à la note
+            const noteAccess = await prisma.note.findFirst({
+                where: {
+                    id: noteId,
+                    OR: [
+                        { authorId: authorId },
+                        { 
+                            permissions: {
+                                some: {
+                                    userId: authorId,
+                                    isAccepted: true
+                                }
+                            }
+                        }
+                    ]
+                }
+            });
+
+            if (!noteAccess) {
+                return res.status(404).json({ error: 'Note introuvable ou accès non autorisé' });
+            }
+
+            // Vérifier que l'utilisateur a accès au dossier
+            const folderAccess = await prisma.dossier.findFirst({
+                where: {
+                    id: dossierId,
+                    authorId: authorId,
+                    deletedAt: null
+                }
+            });
+
+            if (!folderAccess) {
+                return res.status(404).json({ error: 'Dossier introuvable ou accès non autorisé' });
+            }
+
+            // Supprimer l'ancienne assignation si elle existe
+            await prisma.noteDossier.deleteMany({
+                where: {
+                    noteId: noteId,
+                    userId: authorId
+                }
+            });
+
+            // Créer la nouvelle assignation
+            const assignment = await prisma.noteDossier.create({
+                data: {
+                    noteId: noteId,
+                    dossierId: dossierId,
+                    userId: authorId
+                }
+            });
+
+            res.status(200).json({ 
+                message: 'Note ajoutée au dossier avec succès',
+                assignment: assignment 
+            });
+        } catch (error) {
+            console.error('Erreur lors de l\'ajout de la note au dossier:', error);
+            res.status(500).json({ error: 'Erreur serveur lors de l\'ajout de la note au dossier' });
+        }
+    },
+
+    // Retirer une note d'un dossier
+    removeNoteFromFolder: async (req, res) => {
+        try {
+            const { noteId } = req.body;
+            const userId = req.session.userId;
+
+            if (!userId) {
+                return res.status(401).json({ error: 'Utilisateur non authentifié' });
+            }
+
+            if (!noteId) {
+                return res.status(400).json({ error: 'ID note requis' });
+            }
+
+            const authorId = parseInt(userId);
+            if (isNaN(authorId)) {
+                return res.status(400).json({ error: 'ID utilisateur invalide' });
+            }
+
+            // Supprimer l'assignation
+            const deleted = await prisma.noteDossier.deleteMany({
+                where: {
+                    noteId: noteId,
+                    userId: authorId
+                }
+            });
+
+            if (deleted.count === 0) {
+                return res.status(404).json({ error: 'Aucune assignation trouvée pour cette note' });
+            }
+
+            res.status(200).json({ 
+                message: 'Note retirée du dossier avec succès' 
+            });
+        } catch (error) {
+            console.error('Erreur lors de la suppression de l\'assignation:', error);
+            res.status(500).json({ error: 'Erreur serveur lors de la suppression de l\'assignation' });
+        }
+    },
+
+    // Obtenir le dossier d'une note
+    getNoteFolder: async (req, res) => {
+        try {
+            const { noteId } = req.params;
+            const userId = req.session.userId;
+
+            if (!userId) {
+                return res.status(401).json({ error: 'Utilisateur non authentifié' });
+            }
+
+            const authorId = parseInt(userId);
+            if (isNaN(authorId)) {
+                return res.status(400).json({ error: 'ID utilisateur invalide' });
+            }
+
+            const assignment = await prisma.noteDossier.findFirst({
+                where: {
+                    noteId: noteId,
+                    userId: authorId
+                },
+                include: {
+                    dossier: true
+                }
+            });
+
+            if (!assignment) {
+                return res.status(200).json({ folder: null });
+            }
+
+            res.status(200).json({ folder: assignment.dossier });
+        } catch (error) {
+            console.error('Erreur lors de la récupération du dossier de la note:', error);
+            res.status(500).json({ error: 'Erreur serveur lors de la récupération du dossier' });
+        }
+    },
 };
