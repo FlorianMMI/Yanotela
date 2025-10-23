@@ -262,8 +262,6 @@ jobs:
               backend-dev:
                 image: ${{ env.DOCKER_BACKEND_REPO }}:develop
                 container_name: yanotela-backend-dev
-                ports:
-                  - "3001:3001"
                 env_file:
                   - .env.dev
                 depends_on:
@@ -279,8 +277,6 @@ jobs:
               frontend-dev:
                 image: ${{ env.DOCKER_FRONTEND_REPO }}:develop
                 container_name: yanotela-frontend-dev
-                ports:
-                  - "3000:3000"
                 environment:
                   - NODE_ENV=development
                   - NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
