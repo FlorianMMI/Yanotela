@@ -638,7 +638,7 @@ export async function GetFolders(): Promise<{ folders: any[]; totalFolders: numb
     }
 }
 
-export async function GetFolderById(id: string): Promise<{ folder: any; error?: string } | null> {
+export async function GetFolderById(id: string): Promise<{ folder: any; notes?: any[]; error?: string } | null> {
     try {
         const response = await fetch(`${apiUrl}/folder/get/${id}`, {
             method: "GET",
@@ -654,7 +654,7 @@ export async function GetFolderById(id: string): Promise<{ folder: any; error?: 
         }
 
         const data = await response.json();
-        return { folder: data.folder };
+        return { folder: data.folder, notes: data.notes || [] };
     } catch (error) {
         console.error("Error loading folder:", error);
         return { folder: null, error: 'Erreur de connexion au serveur' };
@@ -736,6 +736,78 @@ export async function DeleteFolder(id: string): Promise<{ success: boolean; mess
         return { success: true, message: data.message };
     } catch (error) {
         console.error("Error deleting folder:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// ============== NOTE FOLDER FUNCTIONS ==============
+
+export async function AssignNoteToFolder(noteId: string, folderId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/assign-folder/${noteId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ folderId })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de l\'assignation de la note au dossier' };
+        }
+
+        const data = await response.json();
+        return { success: true, message: data.message };
+    } catch (error) {
+        console.error("Error assigning note to folder:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function RemoveNoteFromFolder(noteId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/remove-folder/${noteId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors du retrait de la note du dossier' };
+        }
+
+        const data = await response.json();
+        return { success: true, message: data.message };
+    } catch (error) {
+        console.error("Error removing note from folder:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function GetNoteFolder(noteId: string): Promise<{ success: boolean; folder?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/folder/${noteId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la récupération du dossier de la note' };
+        }
+
+        const data = await response.json();
+        return { success: true, folder: data.folder };
+    } catch (error) {
+        console.error("Error getting note folder:", error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }

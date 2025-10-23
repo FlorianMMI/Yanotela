@@ -62,8 +62,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
             if (response && response.folder) {
                 setFolder(response.folder);
-                // Les notes seront récupérées séparément plus tard via une relation
-                setNotes([]);
+                setNotes(response.notes || []);
             } else {
                 console.error("Dossier introuvable");
                 setFolder(null);
