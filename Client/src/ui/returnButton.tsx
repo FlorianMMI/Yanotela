@@ -8,7 +8,7 @@ export default function ReturnButton() {
   return (
     <button
       onClick={() => router.back()}
-      className="self-start p-0 h-8 cursor-pointer"
+      className="self-start p-0 h-8 cursor-pointer items-center"
     >
       <Icon
         name="arrow-ss-barre"

@@ -5,12 +5,14 @@ import Icon from "@/ui/Icon";
 import { useRouter } from "next/navigation";
 import ReturnButton from "@/ui/returnButton";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
 
 export default function Register() {
   const router = useRouter();
 
   return (
     <div className="h-full p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal">
+      <MobileFlashNoteButton />
       <ReturnButton />
 
       <div className="flex flex-col justify-center items-center gap-6 mt-4">

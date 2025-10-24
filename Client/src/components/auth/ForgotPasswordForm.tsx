@@ -49,7 +49,7 @@ export default function ForgotPasswordForm({
       const result = await ForgotPassword(email);
       
       if (result.success) {
-        setSuccess('Un lien de réinitialisation a été envoyé à votre adresse email.');
+        setSuccess('Si votre adresse email est valide, vous recevrez un email de réinitialisation');
         setEmail(''); // Vider le champ
         if (onSuccess) {
           setTimeout(onSuccess, 2000);

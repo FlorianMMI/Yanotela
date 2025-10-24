@@ -8,6 +8,7 @@ import NoteList from "@/components/noteList/NoteList";
 import { GetNotes } from "@/loader/loader";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import SearchBar from "@/ui/searchbar";
+import FlashNoteButton from '@/ui/flash-note-button'; 
 
 export default function Home() {
   const { isAuthenticated, loading: authLoading } = useAuthRedirect();
@@ -47,12 +48,12 @@ export default function Home() {
   return (
     <div className="h-full w-full">
 
-    <NoteHeader
-      searchTerm={searchTerm}
-      setSearchTerm={setSearchTerm}
-      sortBy={sortBy}
-      setSortBy={setSortBy}
-    />
+      <NoteHeader
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+      />
 
       <Suspense fallback={
         <div className="p-4">
@@ -65,7 +66,19 @@ export default function Home() {
           isLoading={loading}
         />
       </Suspense>
-      
+
+      {/* Flash Note Button - Mobile Only - Full width */}
+      <div className="fixed inset-x-4 bottom-6 md:hidden z-50">
+        <FlashNoteButton
+          isOpen={true}
+          isActive={false}
+          onClick={() => {
+            window.location.href = '/flashnote';
+          }}
+          className="w-full"
+        />
+      </div>
+
     </div>
   );
 }

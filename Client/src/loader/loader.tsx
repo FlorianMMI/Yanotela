@@ -2,7 +2,7 @@ import { Note } from '@/type/Note';
 import { create } from 'domain';
 import { ID } from 'yjs';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ||'https://yanotela.fr/api';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note | null; redirectUrl?: string }> {
     try {
@@ -240,9 +240,9 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            return { success: true, message: 'Un lien de réinitialisation a été envoyé à votre adresse email.' };
+            return { success: true, message: 'Si votre adresse email est valide, vous recevrez un email de réinitialisation' };
         } else {
-            return { success: false, error: data.error || 'Erreur lors de l\'envoi du lien de réinitialisation' };
+            return { success: true, message: 'Si votre adresse email est valide, vous recevrez un email de réinitialisation' };
         }
     } catch (error) {
         console.error('Erreur:', error);

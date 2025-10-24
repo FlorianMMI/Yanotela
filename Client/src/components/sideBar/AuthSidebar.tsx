@@ -6,6 +6,8 @@ import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import ResetPasswordForm from '../auth/ResetPasswordForm';
+import Icon from '@/ui/Icon';
+import Link from 'next/link';
 
 export default function AuthSidebar() {
   const pathname = usePathname();

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import "../../globals.css";
+import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
 
 export default function ValidatePage() {
   const params = useParams();
@@ -25,7 +26,7 @@ export default function ValidatePage() {
       try {
         
         // Appeler l'API de validation du backend avec le token
-        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://yanotela.fr/api';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://preprod.yanotela.fr/api';
         const response = await fetch(`${API_URL}/validate/${token}`, {
           method: 'GET',
           credentials: 'include', // Important pour les sessions
@@ -59,6 +60,8 @@ export default function ValidatePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
+      <MobileFlashNoteButton />
+      
       <div className="max-w-md w-full">
         <div className="text-center">
           <h2 className="text-3xl font-extrabold text-clrprincipal">

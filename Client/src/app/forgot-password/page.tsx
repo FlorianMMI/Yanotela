@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
+import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      <MobileFlashNoteButton />
+      
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center">
