@@ -2,10 +2,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Controller for folder management
-export const FolderController = {
-  // Create a new folder
-  createFolder: async (req, res) => {
+export const DossierController = {
+    // Créer un nouveau dossier
+    createDossier: async (req, res) => {
     if (!req.session || !req.session.userId) {
       return res.status(401).json({ message: "Utilisateur non authentifié" });
     }
@@ -22,7 +21,7 @@ export const FolderController = {
     }
 
     try {
-      const newFolder = await prisma.folder.create({
+      const newFolder = await prisma.dossier.create({
         data: {
           Nom: Nom.trim(),
           Description: Description?.trim() || null,
@@ -50,7 +49,7 @@ export const FolderController = {
     }
 
     try {
-      const folders = await prisma.folder.findMany({
+      const folders = await prisma.dossier.findMany({
         where: {
           authorId,
           deletedAt: null,
@@ -60,8 +59,52 @@ export const FolderController = {
         },
       });
 
-      const foldersFormatted = folders.map((f) => ({ ...f, noteCount: 0 }));
-      return res.status(200).json({ folders: foldersFormatted, totalFolders: foldersFormatted.length });
+      console.log(`[DEBUG] Found ${folders.length} folders for user ${authorId}`);
+      
+      // Vérifier s'il y a des entrées dans noteDossier pour cet utilisateur
+      const totalNoteDossierEntries = await prisma.noteDossier.count({
+        where: {
+          userId: authorId
+        }
+      });
+      console.log(`[DEBUG] Total noteDossier entries for user ${authorId}: ${totalNoteDossierEntries}`);
+
+      // Calculer le nombre de notes pour chaque dossier
+      const foldersWithNoteCounts = await Promise.all(
+        folders.map(async (folder) => {
+          console.log(`[DEBUG] Calculating noteCount for folder: ${folder.id}, authorId: ${authorId}`);
+          
+          // Première requête : compter avec les vrais noms de colonnes
+          const noteCount = await prisma.noteDossier.count({
+            where: {
+              dossierId: folder.id,
+              userId: authorId
+            }
+          });
+          
+          console.log(`[DEBUG] Found ${noteCount} notes in folder ${folder.id} (${folder.Nom})`);
+          
+          // Requête de débogage : voir toutes les entrées pour ce dossier
+          const allEntriesForFolder = await prisma.noteDossier.findMany({
+            where: {
+              dossierId: folder.id
+            }
+          });
+          console.log(`[DEBUG] All entries for folder ${folder.id}:`, allEntriesForFolder);
+          
+          return {
+            ...folder,
+            noteCount
+          };
+        })
+      );
+
+      console.log(`[DEBUG] Final folders with counts:`, foldersWithNoteCounts.map(f => ({ id: f.id, name: f.Nom, noteCount: f.noteCount })));
+
+      return res.status(200).json({ 
+        folders: foldersWithNoteCounts, 
+        totalFolders: foldersWithNoteCounts.length 
+      });
     } catch (error) {
       console.error("[getFolders] Error:", error);
       return res.status(500).json({ message: "Erreur lors de la récupération des dossiers", error: error.message, stack: error.stack });
@@ -78,7 +121,7 @@ export const FolderController = {
     const authorId = parseInt(req.session.userId);
 
     try {
-      const folder = await prisma.folder.findFirst({
+      const folder = await prisma.dossier.findFirst({
         where: {
           id,
           authorId,
@@ -90,7 +133,24 @@ export const FolderController = {
         return res.status(404).json({ message: "Dossier introuvable" });
       }
 
-      return res.status(200).json({ folder: { ...folder, noteCount: 0 } });
+      // Calculer le nombre de notes dans ce dossier
+      console.log(`[DEBUG getFolderById] Calculating noteCount for folder: ${folder.id}, authorId: ${authorId}`);
+      
+      const noteCount = await prisma.noteDossier.count({
+        where: {
+          dossierId: folder.id,
+          userId: authorId
+        }
+      });
+
+      console.log(`[DEBUG getFolderById] Found ${noteCount} notes in folder ${folder.id} (${folder.Nom})`);
+
+      return res.status(200).json({ 
+        folder: { 
+          ...folder, 
+          noteCount 
+        } 
+      });
     } catch (error) {
       console.error("[getFolderById] Error:", error);
       return res.status(500).json({ message: "Erreur lors de la récupération du dossier", error: error.message });
@@ -108,7 +168,7 @@ export const FolderController = {
     const authorId = parseInt(req.session.userId);
 
     try {
-      const existing = await prisma.folder.findFirst({ where: { id, authorId, deletedAt: null } });
+      const existing = await prisma.dossier.findFirst({ where: { id, authorId, deletedAt: null } });
       if (!existing) {
         return res.status(404).json({ message: "Dossier introuvable ou accès non autorisé" });
       }
@@ -117,7 +177,7 @@ export const FolderController = {
         return res.status(400).json({ message: "Le nom du dossier ne peut pas être vide" });
       }
 
-      const updated = await prisma.folder.update({
+      const updated = await prisma.dossier.update({
         where: { id },
         data: {
           ...(Nom !== undefined && { Nom: Nom.trim() }),
@@ -143,7 +203,7 @@ export const FolderController = {
     const authorId = parseInt(req.session.userId);
 
     try {
-      const existing = await prisma.folder.findFirst({ where: { id, authorId, deletedAt: null } });
+      const existing = await prisma.dossier.findFirst({ where: { id, authorId, deletedAt: null } });
       if (!existing) {
         return res.status(404).json({ message: "Dossier introuvable ou accès non autorisé" });
       }
@@ -365,6 +425,94 @@ export const FolderController = {
         } catch (error) {
             console.error('Erreur lors de la récupération du dossier de la note:', error);
             res.status(500).json({ error: 'Erreur serveur lors de la récupération du dossier' });
+        }
+    },
+
+    // Récupérer toutes les notes d'un dossier
+    getFolderNotes: async (req, res) => {
+        try {
+            const { folderId } = req.params;
+            const userId = req.session.userId;
+
+            if (!userId) {
+                return res.status(401).json({ error: 'Utilisateur non authentifié' });
+            }
+
+            const authorId = parseInt(userId);
+            if (isNaN(authorId)) {
+                return res.status(400).json({ error: 'ID utilisateur invalide' });
+            }
+
+            // Vérifier que l'utilisateur a accès au dossier
+            const folderAccess = await prisma.dossier.findFirst({
+                where: {
+                    id: folderId,
+                    authorId: authorId,
+                    deletedAt: null
+                }
+            });
+
+            if (!folderAccess) {
+                return res.status(404).json({ error: 'Dossier introuvable ou accès non autorisé' });
+            }
+
+            // Récupérer toutes les notes du dossier
+            const assignments = await prisma.noteDossier.findMany({
+                where: {
+                    dossierId: folderId,
+                    userId: authorId
+                },
+                include: {
+                    note: {
+                        include: {
+                            author: {
+                                select: {
+                                    id: true,
+                                    pseudo: true
+                                }
+                            },
+                            permissions: {
+                                where: {
+                                    userId: authorId
+                                },
+                                select: {
+                                    role: true,
+                                    isAccepted: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Formater les notes
+            const notes = assignments.map(assignment => {
+                const note = assignment.note;
+                const permission = note.permissions[0];
+                
+                // Déterminer le rôle de l'utilisateur
+                let userRole = 1; // Propriétaire par défaut
+                if (note.authorId !== authorId && permission) {
+                    userRole = permission.role;
+                }
+
+                return {
+                    id: note.id,
+                    Titre: note.Titre,
+                    Content: note.Content,
+                    ModifiedAt: note.ModifiedAt,
+                    author: note.author,
+                    userRole: userRole
+                };
+            });
+
+            res.status(200).json({ 
+                notes: notes,
+                totalNotes: notes.length 
+            });
+        } catch (error) {
+            console.error('Erreur lors de la récupération des notes du dossier:', error);
+            res.status(500).json({ error: 'Erreur serveur lors de la récupération des notes' });
         }
     },
 };

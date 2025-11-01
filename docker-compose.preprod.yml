@@ -52,6 +52,7 @@ services:
       # Mount source code for hot reload
       - ./Server/src:/app/src
       - ./Server/prisma:/app/prisma
+      - ./Server/scripts:/app/scripts
       - ./Server/package.json:/app/package.json
       - ./Server/package-lock.json:/app/package-lock.json
       - ./Server/jest.config.json:/app/jest.config.json
@@ -63,7 +64,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: sh -c "npx prisma migrate deploy && npx nodemon index.js"
+    command: sh -c "npx prisma migrate deploy && npm run create-test-user && npx nodemon index.js"
 
   # Frontend Next.js
   frontend:

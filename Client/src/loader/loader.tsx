@@ -739,3 +739,101 @@ export async function DeleteFolder(id: string): Promise<{ success: boolean; mess
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
+
+export async function GetFolderNotes(folderId: string): Promise<{ notes: Note[]; totalNotes: number; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/folder/${folderId}/notes`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { 
+                notes: [], 
+                totalNotes: 0, 
+                error: errorData.error || 'Erreur lors de la récupération des notes' 
+            };
+        }
+
+        const data = await response.json();
+
+        // Traitement du contenu des notes comme dans GetNotes()
+        for (const note of data.notes) {
+            try {
+                const parsedContent = JSON.parse(note.Content);
+                if (typeof parsedContent === 'object' && parsedContent !== null) {
+                    if (parsedContent.root && parsedContent.root.children) {
+                        const extractText = (children: any[]): string => {
+                            return children.map((child: any) => {
+                                if (child.type === 'paragraph' && child.children) {
+                                    return extractText(child.children);
+                                } else if (child.type === 'text' && child.text) {
+                                    return child.text;
+                                }
+                                return '';
+                            }).join(' ');
+                        };
+                        note.Content = extractText(parsedContent.root.children) || 'Contenu vide';
+                    } else {
+                        note.Content = JSON.stringify(parsedContent);
+                    }
+                }
+            } catch {
+                console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
+                note.Content = String(note.Content);
+            }
+        }
+
+        return { 
+            notes: data.notes, 
+            totalNotes: data.totalNotes 
+        };
+    } catch (error) {
+        console.error("Error fetching folder notes:", error);
+        return { 
+            notes: [], 
+            totalNotes: 0, 
+            error: 'Erreur de connexion au serveur' 
+        };
+    }
+}
+
+export async function AddNoteToFolder(noteId: string, folderId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/folder/add-note`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                noteId: noteId,
+                dossierId: folderId
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { 
+                success: false, 
+                error: errorData.error || 'Erreur lors de l\'ajout de la note au dossier' 
+            };
+        }
+
+        const data = await response.json();
+        return { 
+            success: true, 
+            message: data.message 
+        };
+    } catch (error) {
+        console.error("Error adding note to folder:", error);
+        return { 
+            success: false, 
+            error: 'Erreur de connexion au serveur' 
+        };
+    }
+}

@@ -16,11 +16,11 @@ import { motion } from "motion/react";
 import { useCallback } from "react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import CollaborationPlugin from "@/components/collaboration/CollaborationPlugin";
 import { socketService } from "@/services/socketService";
 
-import { GetNoteById } from "@/loader/loader";
+import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 
 import ErrorFetch from "@/ui/note/errorFetch";
@@ -53,6 +53,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [hasError, setHasError] = useState(false);
   const [editor, setEditor] = useState<any>(null);
   const [showNoteMore, setShowNoteMore] = useState(false);
@@ -266,6 +267,31 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
     fetchNote();
   }, [id, lastFetchTime]); // Ajouter lastFetchTime comme dépendance
+
+  // Gestion de l'association automatique au dossier via le paramètre folderId
+  useEffect(() => {
+    const folderId = searchParams.get('folderId');
+    if (folderId && !isLoading) {
+      // Associer automatiquement la note au dossier
+      const associateToFolder = async () => {
+        try {
+          const result = await AddNoteToFolder(id, folderId);
+          if (result.success) {
+            setSuccess(`Note associée au dossier avec succès`);
+            // Retirer le paramètre de l'URL après association
+            const newUrl = window.location.pathname;
+            router.replace(newUrl);
+          } else {
+            console.warn('Erreur lors de l\'association au dossier:', result.error);
+          }
+        } catch (error) {
+          console.error('Erreur lors de l\'association au dossier:', error);
+        }
+      };
+      
+      associateToFolder();
+    }
+  }, [id, searchParams, isLoading, router]);
 
   const initialConfig = {
     namespace: "Editor",

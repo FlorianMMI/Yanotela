@@ -42,7 +42,7 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
 
     const loadFolders = async () => {
         try {
-            const response = await fetch('http://localhost:3001/dossier/get', {
+            const response = await fetch('http://localhost:3001/folder/get', {
                 credentials: 'include'
             });
             
@@ -57,7 +57,7 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
 
     const loadCurrentFolder = async () => {
         try {
-            const response = await fetch(`http://localhost:3001/dossier/note-folder/${noteId}`, {
+            const response = await fetch(`http://localhost:3001/folder/note-folder/${noteId}`, {
                 credentials: 'include'
             });
             
@@ -73,7 +73,7 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
     const assignNoteToFolder = async (folderId: string) => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3001/dossier/add-note', {
+            const response = await fetch('http://localhost:3001/folder/add-note', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
     const removeNoteFromFolder = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3001/dossier/remove-note', {
+            const response = await fetch('http://localhost:3001/folder/remove-note', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

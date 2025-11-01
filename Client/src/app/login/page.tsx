@@ -9,10 +9,41 @@ import { useEffect, useState } from "react";
 export default function Login() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const [isAutoLogin, setIsAutoLogin] = useState(false);
 
   const handleLoginSuccess = () => {
     router.push('/notes');
     router.refresh();
+  };
+
+  const handleAutoLogin = async () => {
+    setIsAutoLogin(true);
+    try {
+      const response = await fetch('http://localhost:3001/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: 'test@yanotela.com',
+          password: 'test123'
+        }),
+      });
+
+      if (response.ok) {
+        handleLoginSuccess();
+      } else {
+        const errorData = await response.json();
+        console.error('Erreur de connexion automatique:', errorData);
+        alert('Erreur de connexion automatique. Vérifiez que le compte test existe.');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la connexion automatique:', error);
+      alert('Erreur de connexion automatique');
+    } finally {
+      setIsAutoLogin(false);
+    }
   };
 
   useEffect(() => {
@@ -60,6 +91,27 @@ export default function Login() {
           </h1>
           <p className="text-clrprincipal">
             Connectez-vous à votre compte Yanotela
+          </p>
+        </div>
+
+        {/* Bouton de connexion automatique pour les tests */}
+        <div className="text-center">
+          <button
+            onClick={handleAutoLogin}
+            disabled={isAutoLogin}
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+          >
+            {isAutoLogin ? (
+              <span className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Connexion en cours...
+              </span>
+            ) : (
+              "🚀 Connexion Test Rapide"
+            )}
+          </button>
+          <p className="text-sm text-gray-500 mb-6">
+            Compte test : test@yanotela.com / test123
           </p>
         </div>
 

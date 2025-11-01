@@ -12,8 +12,8 @@ model User {
   id              Int         @id @default(autoincrement())
   notes           Note[]      
   modifiedNotes   Note[]      @relation("NoteModifier")
-  folders         Folder[]  
-  notesFolders    NoteDossier[] 
+  dossier         Dossier[]   
+  notesFolders    NoteDossier[]
   permissions     Permission[]
   pseudo          String      @unique
   prenom          String
@@ -53,7 +53,7 @@ model Permission {
   
 }
 
-model Folder {
+model Dossier {
   id          String    @id @default(uuid())
   Nom         String
   Description String?
@@ -64,8 +64,6 @@ model Folder {
   CreatedAt   DateTime  @default(now())
   ModifiedAt  DateTime  @updatedAt
   deletedAt   DateTime?
-  
-  @@map("Dossier")
 }
 
 model NoteDossier {

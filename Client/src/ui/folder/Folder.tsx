@@ -11,6 +11,9 @@ interface FolderProps {
 export default function Folder({ folder }: FolderProps) {
   const router = useRouter();
 
+  // Log des informations du dossier pour déboguer
+  console.log(`[DEBUG Folder] Dossier: "${folder.Nom}", noteCount: ${folder.noteCount || 0}, ID: ${folder.id}`);
+
   const handleFolderClick = () => {
     router.push(`/folder/${folder.id}`);
   };
@@ -36,11 +39,9 @@ export default function Folder({ folder }: FolderProps) {
       style={{ color: backgroundColor }}
     >
       {/* Icône du dossier qui sert de conteneur */}
-      <Icon
-        name="folder"
-        size={200}
-        className="w-full h-full transition-all duration-200 ease-out group-hover:brightness-110"
-      />
+      <svg width="100%" height="100%" viewBox="0 0 108 87" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3.1752 82.8919C5.2884 84.9965 7.83 86.0488 10.8 86.0488H97.2C100.174 86.0524 102.717 85.0001 104.83 82.8919C106.943 80.7837 108 78.2506 108 75.2927V21C108 15 103 11 98 11H54L43.2 0H10.8C7.8336 0.00358537 5.292 1.05768 3.1752 3.16229C1.0584 5.2669 0 7.79817 0 10.7561V75.2927C0.0036 78.2542 1.062 80.7873 3.1752 82.8919Z" fill="currentColor"/>
+</svg>
 
       {/* Container du texte - positionné en bas à gauche de l'icône */}
       <div className="absolute bottom-2 left-2 md:bottom-3 md:left-3 lg:bottom-4 lg:left-4 pointer-events-none z-10">
@@ -58,11 +59,8 @@ export default function Folder({ folder }: FolderProps) {
         </h3>
       </div>
 
-      {/* Overlay subtil pour améliorer la lisibilité du texte */}
-      <div 
-        className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/30 via-black/15 to-transparent 
-                   pointer-events-none opacity-60 group-hover:opacity-80 transition-opacity duration-200"
-      />
+      
+      
     </motion.div>
   );
 }

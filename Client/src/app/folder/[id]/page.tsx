@@ -5,7 +5,7 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
 import NoteList from "@/components/noteList/NoteList";
-import { GetFolderById, UpdateFolder, DeleteFolder } from "@/loader/loader";
+import { GetFolderById, UpdateFolder, DeleteFolder, GetFolderNotes, CreateNote } from "@/loader/loader";
 import FolderDeleteModal from "@/ui/folder/FolderDeleteModal";
 
 interface FolderDetailProps {
@@ -21,6 +21,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
     const [folder, setFolder] = useState<Folder | null>(null);
     const [notes, setNotes] = useState<Note[]>([]);
+    const [totalNotes, setTotalNotes] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -58,12 +59,22 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         try {
             setLoading(true);
 
+            // Récupérer les informations du dossier
             const response = await GetFolderById(id);
 
             if (response && response.folder) {
                 setFolder(response.folder);
-                // Les notes seront récupérées séparément plus tard via une relation
-                setNotes([]);
+                
+                // Récupérer les notes du dossier
+                const notesResponse = await GetFolderNotes(id);
+                if (notesResponse && !notesResponse.error) {
+                    setNotes(notesResponse.notes);
+                    setTotalNotes(notesResponse.totalNotes);
+                } else {
+                    console.warn('Erreur lors du chargement des notes:', notesResponse?.error);
+                    setNotes([]);
+                    setTotalNotes(0);
+                }
             } else {
                 console.error("Dossier introuvable");
                 setFolder(null);
@@ -108,6 +119,18 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         }
     };
 
+    const handleCreateNote = async () => {
+        try {
+            const result = await CreateNote();
+            if (result.note && result.redirectUrl) {
+                // Rediriger vers la note créée avec un paramètre pour l'associer au dossier
+                router.push(`${result.redirectUrl}?folderId=${id}`);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la création de la note:', error);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -147,7 +170,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                     notes={notes}
                     onNoteCreated={fetchFolderData}
                     isLoading={loading}
-                    allowCreateNote={false}
+                    allowCreateNote={true}
                 />
             </div>
         </div>
