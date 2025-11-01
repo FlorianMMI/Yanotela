@@ -64,17 +64,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
             if (response && response.folder) {
                 setFolder(response.folder);
-                
-                // Récupérer les notes du dossier
-                const notesResponse = await GetFolderNotes(id);
-                if (notesResponse && !notesResponse.error) {
-                    setNotes(notesResponse.notes);
-                    setTotalNotes(notesResponse.totalNotes);
-                } else {
-                    console.warn('Erreur lors du chargement des notes:', notesResponse?.error);
-                    setNotes([]);
-                    setTotalNotes(0);
-                }
+                setNotes(response.notes || []);
             } else {
                 console.error("Dossier introuvable");
                 setFolder(null);

@@ -55,12 +55,38 @@ export const FolderController = {
           authorId,
           deletedAt: null,
         },
+        include: {
+          noteFolders: {
+            include: {
+              note: {
+                include: {
+                  permissions: {
+                    where: {
+                      userId: authorId,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         orderBy: {
           ModifiedAt: "desc",
         },
       });
 
-      const foldersFormatted = folders.map((f) => ({ ...f, noteCount: 0 }));
+      // Calculer le nombre de notes pour chaque dossier (seulement celles accessibles)
+      const foldersFormatted = folders.map((f) => ({
+        id: f.id,
+        Nom: f.Nom,
+        Description: f.Description,
+        CouleurTag: f.CouleurTag,
+        authorId: f.authorId,
+        CreatedAt: f.CreatedAt,
+        ModifiedAt: f.ModifiedAt,
+        noteCount: f.noteFolders.filter(nf => nf.note.permissions.length > 0).length,
+      }));
+
       return res.status(200).json({ folders: foldersFormatted, totalFolders: foldersFormatted.length });
     } catch (error) {
       console.error("[getFolders] Error:", error);
@@ -90,7 +116,46 @@ export const FolderController = {
         return res.status(404).json({ message: "Dossier introuvable" });
       }
 
-      return res.status(200).json({ folder: { ...folder, noteCount: 0 } });
+      // Récupérer les notes liées à ce dossier
+      const noteFolders = await prisma.noteFolder.findMany({
+        where: {
+          folderId: id,
+        },
+        include: {
+          note: {
+            include: {
+              author: true,
+              modifier: true,
+              permissions: {
+                where: {
+                  userId: authorId,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Filtrer seulement les notes auxquelles l'utilisateur a accès
+      const notes = noteFolders
+        .filter((nf) => nf.note.permissions.length > 0)
+        .map((nf) => ({
+          id: nf.note.id,
+          Titre: nf.note.Titre,
+          Content: nf.note.Content,
+          author: nf.note.author ? nf.note.author.pseudo : null,
+          modifier: nf.note.modifier ? nf.note.modifier.pseudo : null,
+          ModifiedAt: nf.note.ModifiedAt,
+          userRole: nf.note.permissions[0]?.role || null,
+        }));
+
+      return res.status(200).json({ 
+        folder: { 
+          ...folder, 
+          noteCount: notes.length 
+        },
+        notes 
+      });
     } catch (error) {
       console.error("[getFolderById] Error:", error);
       return res.status(500).json({ message: "Erreur lors de la récupération du dossier", error: error.message });

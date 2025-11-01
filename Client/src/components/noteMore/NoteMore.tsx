@@ -1,15 +1,13 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import Icons from "@/ui/Icon";
-import { NoteShareUI, NoteInfoUI } from "@/ui/note-modal";
-import { Folder } from "@/type/Folder";
+import { NoteShareUI, NoteInfoUI, NoteFolderUI } from "@/ui/note-modal";
 
 interface NoteMoreProps {
     noteId: string;
     onClose: () => void;
 }
 
-type ModalView = "menu" | "share" | "info" | "folders";
+type ModalView = "menu" | "share" | "info" | "folder";
 
 export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
     const [currentView, setCurrentView] = useState<ModalView>("menu");
@@ -131,8 +129,8 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                 return "Partager la note";
             case "info":
                 return "Infos de la note";
-            case "folders":
-                return "Organiser dans un dossier";
+            case "folder":
+                return "Dossiers";
             default:
                 return "Option de la note";
         }
@@ -144,88 +142,21 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                 return <NoteShareUI noteId={noteId} />;
             case "info":
                 return <NoteInfoUI noteId={noteId} />;
-            case "folders":
-                return (
-                    <div className="flex-1 overflow-y-auto p-4">
-                        <div className="flex flex-col gap-3">
-                            {/* Dossier actuel */}
-                            {currentFolder && (
-                                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                                    <p className="text-sm text-gray-600 mb-2">Actuellement dans :</p>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <div 
-                                                className="w-4 h-4 rounded-full" 
-                                                style={{ backgroundColor: currentFolder.CouleurTag }}
-                                            ></div>
-                                            <span className="font-medium text-gray-800">{currentFolder.Nom}</span>
-                                        </div>
-                                        <button
-                                            onClick={removeNoteFromFolder}
-                                            disabled={loading}
-                                            className="text-sm text-red-600 hover:text-red-800 underline disabled:opacity-50"
-                                        >
-                                            Retirer
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Option "Aucun dossier" */}
-                            <button
-                                onClick={() => removeNoteFromFolder()}
-                                disabled={loading}
-                                className={`flex items-center gap-3 px-3 py-3 rounded-lg text-left text-base font-medium transition-colors ${
-                                    !currentFolder 
-                                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
-                            >
-                                <div className="w-4 h-4 rounded-full bg-gray-300"></div>
-                                <span>Aucun dossier</span>
-                                {!currentFolder && <span className="ml-auto text-sm">✓</span>}
-                            </button>
-
-                            {/* Liste des dossiers */}
-                            <div className="space-y-1">
-                                {folders.map((folder) => (
-                                    <button
-                                        key={folder.id}
-                                        onClick={() => assignNoteToFolder(folder.id)}
-                                        disabled={loading}
-                                        className={`flex items-center gap-3 px-3 py-3 rounded-lg text-left text-base font-medium transition-colors w-full disabled:opacity-50 ${
-                                            currentFolder?.id === folder.id 
-                                                ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                                                : 'text-gray-700 hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        <div 
-                                            className="w-4 h-4 rounded-full" 
-                                            style={{ backgroundColor: folder.CouleurTag }}
-                                        ></div>
-                                        <span>{folder.Nom}</span>
-                                        {currentFolder?.id === folder.id && (
-                                            <span className="ml-auto text-sm">✓</span>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {folders.length === 0 && (
-                                <div className="text-center py-8 text-gray-500">
-                                    <p>Aucun dossier disponible</p>
-                                    <p className="text-sm mt-1">Créez un dossier pour organiser vos notes</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                );
+            case "folder":
+                return <NoteFolderUI noteId={noteId} />;
             default:
                 return (
                     <div className="flex-1 overflow-y-auto p-4">
                         <div className="flex flex-col gap-1 py-2">
                             <button
                                 className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium transition-colors"
+                                onClick={() => setCurrentView("folder")}
+                            >
+                                <Icons name="folder" size={22} className="text-primary" />
+                                Dossiers
+                            </button>
+                            <button
+                                className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium border-t border-gray-100 transition-colors"
                                 onClick={() => setCurrentView("share")}
                             >
                                 <Icons name="partage" size={22} className="text-primary" />
