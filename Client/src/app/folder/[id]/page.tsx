@@ -61,16 +61,23 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
             // Récupérer les informations du dossier
             const response = await GetFolderById(id);
+            
+            console.log('[DEBUG FolderDetail] Response from GetFolderById:', response);
 
             if (response && response.folder) {
+                console.log('[DEBUG FolderDetail] Folder data:', response.folder);
+                console.log('[DEBUG FolderDetail] Notes data:', response.notes);
                 setFolder(response.folder);
-                setNotes(response.notes || []);
+                setNotes(Array.isArray(response.notes) ? response.notes : []);
             } else {
                 console.error("Dossier introuvable");
                 setFolder(null);
+                setNotes([]);
             }
         } catch (error) {
             console.error("Error loading folder:", error);
+            setFolder(null);
+            setNotes([]);
         } finally {
             setLoading(false);
         }

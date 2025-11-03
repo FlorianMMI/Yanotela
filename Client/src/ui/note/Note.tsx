@@ -11,8 +11,44 @@ interface NoteProps {
 export default function Note({ note }: NoteProps) {
   const router = useRouter();
 
+  // Log pour déboguer
+  console.log('[DEBUG Note] Rendering note:', note);
+
   const handleNoteClick = () => {
     router.push(`/notes/${note.id}`);
+  };
+
+  // Fonction pour render le contenu de manière sécurisée
+  const renderContent = () => {
+    try {
+      if (typeof note.Content === 'string') {
+        return <p>{note.Content}</p>;
+      }
+      
+      // Vérifier que le contenu a la structure attendue
+      if (note.Content && typeof note.Content === 'object' && 'root' in note.Content) {
+        const content = note.Content as any;
+        if (content.root && Array.isArray(content.root.children)) {
+          return content.root.children.map((child: any, childIndex: number) => (
+            <div key={`child-${childIndex}`} id={`child-${childIndex}`}>
+              {
+                Array.isArray(child.children) && child.children.map((grandChild: any, grandChildIndex: number) => (
+                  <p key={`child-${childIndex}-grandChild-${grandChildIndex}`} id={`paragraph-${childIndex}-${grandChildIndex}`}>
+                    {grandChild.text || ''}
+                  </p>
+                ))
+              }
+            </div>
+          ));
+        }
+      }
+      
+      // Si le format n'est pas reconnu, essayer de convertir en JSON string
+      return <p>{JSON.stringify(note.Content)}</p>;
+    } catch (error) {
+      console.error('[Note] Error rendering content:', error, note.Content);
+      return <p className="text-red-500">Erreur d'affichage du contenu</p>;
+    }
   };
 
 
@@ -59,24 +95,7 @@ export default function Note({ note }: NoteProps) {
 
         {/* Note Content */}
         <div className="font-gantari text-sm text-textcardNote leading-relaxed mb-auto line-clamp-2 flex-grow">
-          {
-            typeof note.Content === 'string'
-              ? <p>{note.Content}</p>
-              // @ts-expect-error Les notes sont au format attendu par Lexical
-              // eslint-disable-next-line
-              : note.Content.root.children.map((child: any, childIndex: number) => (
-                <div key={`child-${childIndex}`} id={`child-${childIndex}`}>
-                  {
-                    // eslint-disable-next-line
-                    child.children.map((grandChild: any, grandChildIndex: number) => (
-                      <p key={`child-${childIndex}-grandChild-${grandChildIndex}`} id={`paragraph-${childIndex}-${grandChildIndex}`}>
-                        {grandChild.text}
-                      </p>
-                    ))
-                  }
-                </div>
-              ))
-          }
+          {renderContent()}
         </div>
 
         {/* Date de modification */}

@@ -654,6 +654,40 @@ export async function GetFolderById(id: string): Promise<{ folder: any; notes?: 
         }
 
         const data = await response.json();
+        
+        // Transformation du JSON stringifié en objet lisible (même traitement que GetNotes)
+        if (data.notes && Array.isArray(data.notes)) {
+            for (const note of data.notes) {
+                try {
+                    const parsedContent = JSON.parse(note.Content);
+                    if (typeof parsedContent === 'object' && parsedContent !== null) {
+                        // Si c'est un objet Lexical, extraire le texte
+                        if (parsedContent.root && parsedContent.root.children) {
+                            // Extraction du texte depuis la structure Lexical
+                            const extractText = (children: any[]): string => {
+                                return children.map((child: any) => {
+                                    if (child.type === 'paragraph' && child.children) {
+                                        return extractText(child.children);
+                                    } else if (child.type === 'text' && child.text) {
+                                        return child.text;
+                                    }
+                                    return '';
+                                }).join(' ');
+                            };
+                            note.Content = extractText(parsedContent.root.children) || 'Contenu vide';
+                        } else {
+                            // Si c'est un autre type d'objet, convertir en string lisible
+                            note.Content = JSON.stringify(parsedContent);
+                        }
+                    }
+                } catch {
+                    // Si le parsing échoue, garder le contenu tel quel
+                    console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
+                    note.Content = String(note.Content);
+                }
+            }
+        }
+        
         return { folder: data.folder, notes: data.notes || [] };
     } catch (error) {
         console.error("Error loading folder:", error);
