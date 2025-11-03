@@ -32,13 +32,13 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
   return (
     <main className="p-4">
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-[1400px] mx-auto gap-3 md:gap-4 justify-items-center">
 
         {/* Add Folder Button */}
         <motion.button
           whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
           whileTap={{ scale: 0.95 }}
-          className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary"
+          className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-[110px] md:w-65 md:h-50"
           onClick={handleCreateFolder}
           aria-label="Créer un nouveau dossier"
           title="Créer un nouveau dossier"
