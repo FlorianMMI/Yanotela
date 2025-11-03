@@ -13,7 +13,6 @@ import { socketService } from '@/services/socketService';
 import { useRouter } from 'next/navigation';
 import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 
-
 interface BreadcrumbItem {
   label: string;
   href?: string;

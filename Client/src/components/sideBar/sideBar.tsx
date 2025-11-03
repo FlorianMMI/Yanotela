@@ -25,7 +25,6 @@ export default function SideBar({ className }: SideBarProps) {
       setOpen(true);
     }
   }, [isAuthenticated, user, setOpen]);
- 
 
   // Loading state 
 

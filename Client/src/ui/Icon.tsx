@@ -11,7 +11,6 @@ interface IconProps {
   strokeWidth?: number; // Ajout pour contrôler l'épaisseur du trait
 }
 
-
 const Icon = ({ name, className = "", size = 20, width, height, strokeWidth }: IconProps) => {
   const [svgContent, setSvgContent] = useState<string>('');
   if (!width) width = size;

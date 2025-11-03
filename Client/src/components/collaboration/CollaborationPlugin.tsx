@@ -39,7 +39,7 @@ export default function CollaborationPlugin({
 
   // Log username pour debug cross-browser
   useEffect(() => {
-    console.log('[CollabPlugin] username:', username);
+    
   }, [username]);
 
   useEffect(() => {
@@ -49,12 +49,10 @@ export default function CollaborationPlugin({
         
     // Attendre que l'éditeur soit complètement monté
     const initTimeout = setTimeout(() => {
-      console.log('🚀 Démarrage connexion socket pour note:', noteId);
-      console.log('🔍 Callbacks disponibles - onContentUpdate:', !!onContentUpdate, 'onTitleUpdate:', !!onTitleUpdate, 'isReadOnly:', isReadOnly);
-      
+
       // Rejoindre la note et écouter l'initialisation
       socketService.joinNote(noteId, (data) => {
-        console.log('📥 Note initialisée:', data);
+        
         setUserCount(data.userCount || 1);
         setIsConnected(true);
       });
@@ -70,19 +68,19 @@ export default function CollaborationPlugin({
 
       // Écouter les nouveaux utilisateurs
       socketService.onUserJoined((data) => {
-        console.log('👋 Utilisateur rejoint:', data.pseudo);
+        
         setUserCount(data.userCount || 1);
       });        
 
       socketService.onUserLeft((data) => {
-        console.log('👋 Utilisateur parti:', data.pseudo);
+        
         setUserCount(data.userCount || 1);
       });
 
       // Écouter les mises à jour du contenu (si callback fourni et pas en lecture seule)
       if (!isReadOnly) {
         socketService.onContentUpdate((data) => {
-          console.log('📝 Contenu reçu de:', data.pseudo, '- Longueur:', data.content?.length);
+          
           // Mettre à jour le parent si le callback est fourni
           try {
             if (onContentUpdate) onContentUpdate(data.content);
@@ -105,7 +103,7 @@ export default function CollaborationPlugin({
       // Écouter les mises à jour du titre (toujours, même en lecture seule)
       if (onTitleUpdate) {
         socketService.onTitleUpdate((data) => {
-          console.log('📝 Titre reçu de:', data.pseudo, '- Nouveau titre:', data.titre);
+          
           try {
             onTitleUpdate(data.titre);
           } catch (e) {
@@ -164,12 +162,11 @@ export default function CollaborationPlugin({
   // Effet séparé pour enregistrer les listeners de contenu/titre
   // Se réexécute quand les callbacks changent (notamment quand editor devient disponible)
   useEffect(() => {
-    console.log('� Mise à jour des listeners - onContentUpdate:', !!onContentUpdate, 'onTitleUpdate:', !!onTitleUpdate);
-    
+
     // Écouter les mises à jour du contenu (si callback fourni et pas en lecture seule)
     if (onContentUpdate && !isReadOnly) {
       socketService.onContentUpdate((data) => {
-        console.log('📝 Contenu mis à jour par:', data.pseudo, '- Longueur:', data.content.length);
+        
         onContentUpdate(data.content);
       });
     }
@@ -177,7 +174,7 @@ export default function CollaborationPlugin({
     // Écouter les mises à jour du titre (toujours, même en lecture seule)
     if (onTitleUpdate) {
       socketService.onTitleUpdate((data) => {
-        console.log('📝 Titre mis à jour par:', data.pseudo, '- Nouveau titre:', data.titre);
+        
         onTitleUpdate(data.titre);
       });
     }

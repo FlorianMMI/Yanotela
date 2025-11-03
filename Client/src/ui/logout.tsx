@@ -8,7 +8,6 @@ import LogoutConfirm from './logout-confirm';
 
 export default function Logout(){
 
-    
     const router = useRouter();
     const [showConfirm, setShowConfirm] = useState(false);
 
@@ -62,5 +61,4 @@ export default function Logout(){
         </>
     );
 }
-
 

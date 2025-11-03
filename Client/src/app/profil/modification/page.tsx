@@ -121,7 +121,6 @@ export default function ModificationProfil() {
       setLoading(false);
     }
   };
-  
 
   return (
     <>

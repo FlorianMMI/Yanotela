@@ -11,13 +11,9 @@
  * - La validation de la présence de tous les champs requis (erreur 500 attendue si des champs manquent).
  */
 
-
 import request from 'supertest';
 import { jest } from '@jest/globals';
 import {app} from '../../src/app.js';
-
-
-
 
 // Mock Prisma
 const mockPrismaClient = {
@@ -70,7 +66,6 @@ test('devrait créer une note avec succès', async () => {
       message: 'Aucune donnée reçue dans req.body'
     });
 
-
   });
 
   test('devrait valider que tous les champs requis sont présents', async () => {
@@ -86,5 +81,4 @@ test('devrait créer une note avec succès', async () => {
 
   });
 });
-
 

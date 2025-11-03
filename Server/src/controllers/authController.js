@@ -74,7 +74,6 @@ const register = async (req, res) => {
       },
     });
 
-    
     return res.status(201).json({
       success: true,
       message: "Compte créé avec succès. Veuillez cliquer sur le lien envoyé par mail.",
@@ -257,7 +256,7 @@ const forgotPassword = async (req, res) => {
     if (!user) {
       return res.json({
         success: true,
-        message: "Si votre adresse email est valide, vous recevrez un email de réinitialisation"
+        message: "Si votre adresse email est valide, vous recevrez un email de réinitialisation."
       });
     }
 
@@ -274,7 +273,7 @@ const forgotPassword = async (req, res) => {
     await sendResetPasswordEmail(email, resetToken);
     return res.json({
       success: true,
-      message: "Un lien de réinitialisation a été envoyé à votre adresse email."
+      message: "Si votre adresse email est valide, vous recevrez un email de réinitialisation"
     });
   } catch (err) {
     console.error("Erreur forgot password:", err);
@@ -351,8 +350,7 @@ const resetPasswordPost = async (req, res) => {
         token: "USED_RESET_" + token // Marquer le token comme utilisé
       }
     });
-    
-    
+
     return res.json({
       success: true,
       message: "Mot de passe réinitialisé avec succès"
@@ -403,6 +401,5 @@ const checkAuth = async (req, res) => {
     });
   }
 };
-
 
 export { register, login, logout, validate, validateRegistration, forgotPassword, resetPasswordGet, resetPasswordPost, checkAuth };

@@ -24,8 +24,6 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
   // Vérifier si on est sur la Flash Note (accessible sans auth)
   const isFlashNotePage = pathname === '/flashnote';
 
-
-
   return (
     <>
       {/* Mobile: comportement actuel avec swipe navigation */}
