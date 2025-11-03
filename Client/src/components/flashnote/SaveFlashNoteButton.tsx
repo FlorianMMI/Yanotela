@@ -182,7 +182,7 @@ export default function SaveFlashNoteButton({
         <div className="fixed inset-0 bg-[#00000050] flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-full">
-              <Icon name="user" size={24} className="text-primary" />
+              <Icon name="alert" size={24} className="text-primary" />
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
               Connexion requise
@@ -196,6 +196,7 @@ export default function SaveFlashNoteButton({
                   // Sauvegarder l'intention de revenir à Flash Note après connexion
                   localStorage.setItem('yanotela:redirect-after-login', '/flashnote');
                   router.push('/login');
+                  setShowLoginPrompt(false);
                 }}
                 className="w-full px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
               >
@@ -205,6 +206,7 @@ export default function SaveFlashNoteButton({
                 onClick={() => {
                   localStorage.setItem('yanotela:redirect-after-login', '/flashnote');
                   router.push('/register');
+                  setShowLoginPrompt(false);
                 }}
                 className="w-full px-4 py-2.5 border border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors font-medium"
               >

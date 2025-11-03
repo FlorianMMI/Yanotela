@@ -123,38 +123,6 @@ export default function FlashNoteEditor() {
     }
   };
 
-  // Sauvegarder le titre dans localStorage
-  function updateNoteTitle(newTitle: string) {
-    const finalTitle = newTitle.trim() === '' ? 'Flash:' : newTitle;
-    setNoteTitle(finalTitle);
-
-    try {
-      localStorage.setItem(FLASH_NOTE_TITLE_KEY, finalTitle);
-      // Émettre un événement pour synchroniser avec le breadcrumb
-      window.dispatchEvent(new CustomEvent('flashnote-title-updated'));
-      setSuccess('Titre sauvegardé localement');
-      setTimeout(() => setSuccess(null), 2000);
-    } catch (error) {
-      console.error('Erreur localStorage titre:', error);
-      setError('Erreur lors de la sauvegarde du titre');
-      setTimeout(() => setError(null), 3000);
-    }
-  }
-
-  // Gérer les changements de titre en temps réel
-  const handleTitleChange = (newTitle: string) => {
-    setNoteTitle(newTitle);
-    // Sauvegarder immédiatement dans localStorage pour que le composant SaveFlashNoteButton puisse y accéder
-    try {
-      // Ne pas sauvegarder une chaîne vide, garder au moins "Flash:"
-      const titleToSave = newTitle.trim() === '' ? 'Flash:' : newTitle;
-      localStorage.setItem(FLASH_NOTE_TITLE_KEY, titleToSave);
-      // Émettre un événement pour synchroniser avec le breadcrumb
-      window.dispatchEvent(new CustomEvent('flashnote-title-updated'));
-    } catch (error) {
-      console.error('Erreur localStorage titre:', error);
-    }
-  };
 
   function OnChangeBehavior() {
     const [editor] = useLexicalComposerContext();
@@ -226,7 +194,7 @@ export default function FlashNoteEditor() {
               Mode hors ligne
             </h3>
             <p className="text-xs text-blue-800">
-              Vos notes sont enregistrées localement sur votre appareil. 
+              Vos notes sont automatiquement enregistrées localement sur votre appareil. 
               Pour synchroniser vos notes en ligne et y accéder depuis n'importe où, 
               <button 
                 onClick={() => window.location.href = '/login'} 
@@ -337,7 +305,7 @@ export default function FlashNoteEditor() {
               <Icons name="save" size={20} className="h-5 w-5 text-primary" />
               )}
               <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-primary text-background text-xs rounded py-1 px-2 whitespace-nowrap">
-                Sauvegardé dans la mémoire de votre machine
+                Sauvegarder dans la mémoire de votre machine
                 <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary"></div>
               </div>
             </div>
