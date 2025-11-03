@@ -134,7 +134,6 @@ export default function FlashNoteWidget() {
         const contentString = JSON.stringify(editorStateJSON);
         setEditorContent(contentString);
         localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
-        console.log('Drawing saved to localStorage');
         
         // Reset saving state after a short delay
         setTimeout(() => {

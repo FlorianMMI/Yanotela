@@ -132,7 +132,6 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
     
     // Check if anything was drawn
     if (minX > maxX || minY > maxY) {
-      console.log("No drawing detected");
       return;
     }
     
@@ -176,10 +175,6 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
       width: croppedWidth,
       height: croppedHeight,
     };
-
-    // Log for debugging
-    console.log("Drawing saved (cropped):", drawingData);
-    console.log(`Original: ${canvas.width}x${canvas.height}, Cropped: ${croppedWidth}x${croppedHeight}`);
     
     // Call the callback if provided
     if (onSave) {
