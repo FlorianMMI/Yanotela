@@ -5,7 +5,7 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
 import NoteList from "@/components/noteList/NoteList";
-import { GetFolderById, UpdateFolder, DeleteFolder, GetFolderNotes, CreateNote } from "@/loader/loader";
+import { GetFolderById, UpdateFolder, DeleteFolder, CreateNote } from "@/loader/loader";
 import FolderDeleteModal from "@/ui/folder/FolderDeleteModal";
 
 interface FolderDetailProps {
@@ -161,6 +161,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                     onNoteCreated={fetchFolderData}
                     isLoading={loading}
                     allowCreateNote={true}
+                    folderId={id}
                 />
             </div>
         </div>

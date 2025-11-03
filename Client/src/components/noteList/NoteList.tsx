@@ -14,13 +14,21 @@ interface NoteListProps {
   onNoteCreated?: () => void; // Callback pour refresh après création
   isLoading?: boolean; // État de chargement
   allowCreateNote?: boolean; // Autoriser la création de note (par défaut: true)
+  folderId?: string; // ID du dossier pour créer la note directement dedans
+  onCreateNote?: () => void; // Callback personnalisé pour la création de note
 }
 
-export default function NoteList({ notes, onNoteCreated, isLoading = false, allowCreateNote = true }: NoteListProps) {
+export default function NoteList({ notes, onNoteCreated, isLoading = false, allowCreateNote = true, folderId, onCreateNote }: NoteListProps) {
 
   const router = useRouter();
 
   const handleCreateNote = async () => {
+    // Si un callback personnalisé est fourni, l'utiliser
+    if (onCreateNote) {
+      onCreateNote();
+      return;
+    }
+
     const { note, redirectUrl } = await CreateNote();
     
     if (note && redirectUrl) {
@@ -33,7 +41,10 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
       if (onNoteCreated) {
         onNoteCreated(); // Déclencher le refresh des notes
       }
-      router.push(redirectUrl);
+      
+      // Si un folderId est fourni, l'ajouter à l'URL
+      const url = folderId ? `${redirectUrl}?folderId=${folderId}` : redirectUrl;
+      router.push(url);
     } else {
       console.error("Erreur : Impossible de récupérer l'ID de la note créée.");
     }

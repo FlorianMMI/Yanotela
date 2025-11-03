@@ -11,9 +11,6 @@ type ModalView = "menu" | "share" | "info" | "folder";
 
 export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
     const [currentView, setCurrentView] = useState<ModalView>("menu");
-    const [folders, setFolders] = useState<Folder[]>([]);
-    const [currentFolder, setCurrentFolder] = useState<Folder | null>(null);
-    const [loading, setLoading] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
 
     // Gérer les clics en dehors du modal
@@ -30,98 +27,23 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
         };
     }, [onClose]);
 
-    // Charger les dossiers et le dossier actuel de la note
-    useEffect(() => {
-        if (currentView === "folders") {
-            loadFolders();
-            loadCurrentFolder();
-        }
-    }, [currentView, noteId]);
 
     const loadFolders = async () => {
-        try {
-            const response = await fetch('http://localhost:3001/folder/get', {
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                setFolders(data.folders || []);
-            }
-        } catch (error) {
-            console.error('Erreur lors du chargement des dossiers:', error);
-        }
+        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
     };
 
     const loadCurrentFolder = async () => {
-        try {
-            const response = await fetch(`http://localhost:3001/folder/note-folder/${noteId}`, {
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                setCurrentFolder(data.folder);
-            }
-        } catch (error) {
-            console.error('Erreur lors du chargement du dossier actuel:', error);
-        }
+        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
     };
 
     const assignNoteToFolder = async (folderId: string) => {
-        setLoading(true);
-        try {
-            const response = await fetch('http://localhost:3001/folder/add-note', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    noteId: noteId,
-                    dossierId: folderId
-                })
-            });
-
-            if (response.ok) {
-                await loadCurrentFolder(); // Recharger le dossier actuel
-                // Optionnel: message de succès
-            } else {
-                console.error('Erreur lors de l\'assignation de la note');
-            }
-        } catch (error) {
-            console.error('Erreur lors de l\'assignation:', error);
-        } finally {
-            setLoading(false);
-        }
+        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
     };
 
     const removeNoteFromFolder = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('http://localhost:3001/folder/remove-note', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    noteId: noteId
-                })
-            });
-
-            if (response.ok) {
-                setCurrentFolder(null);
-                // Optionnel: message de succès
-            } else {
-                console.error('Erreur lors de la suppression de l\'assignation');
-            }
-        } catch (error) {
-            console.error('Erreur lors de la suppression:', error);
-        } finally {
-            setLoading(false);
-        }
+        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
     };
+
 
     const getModalTitle = () => {
         switch (currentView) {
@@ -161,13 +83,6 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                             >
                                 <Icons name="partage" size={22} className="text-primary" />
                                 Partager la note
-                            </button>
-                            <button
-                                className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium border-t border-gray-100 transition-colors"
-                                onClick={() => setCurrentView("folders")}
-                            >
-                                <Icons name="folder" size={22} className="text-primary" />
-                                Dossiers
                             </button>
                             <button
                                 className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium border-t border-gray-100 transition-colors"

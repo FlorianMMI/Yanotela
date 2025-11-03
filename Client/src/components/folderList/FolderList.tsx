@@ -32,7 +32,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
   return (
     <main className="p-4">
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 md:gap-4">
 
         {/* Add Folder Button */}
         <motion.button

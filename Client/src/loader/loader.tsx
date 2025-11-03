@@ -742,6 +742,30 @@ export async function DeleteFolder(id: string): Promise<{ success: boolean; mess
 
 // ============== NOTE FOLDER FUNCTIONS ==============
 
+export async function AddNoteToFolder(noteId: string, folderId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/folder/add-note`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ noteId, dossierId: folderId })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de l\'ajout de la note au dossier' };
+        }
+
+        const data = await response.json();
+        return { success: true, message: data.message };
+    } catch (error) {
+        console.error("Error adding note to folder:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
 export async function AssignNoteToFolder(noteId: string, folderId: string): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/assign-folder/${noteId}`, {
