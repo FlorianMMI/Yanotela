@@ -1,6 +1,6 @@
 "use client";
 
-import { $getRoot, EditorState } from "lexical";
+import { $getRoot, EditorState, $getSelection, $isRangeSelection } from "lexical";
 import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -16,6 +16,9 @@ import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import CollaborationPlugin from "@/components/collaboration/CollaborationPlugin";
 import { socketService } from "@/services/socketService";
+import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
+import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
+import { $insertNodes } from "lexical";
 
 import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
@@ -334,6 +337,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     namespace: "Editor",
     theme,
     onError,
+    nodes: [ImageNode], // Register the ImageNode
     // ✅ CORRECTION: Utiliser l'état initial depuis la BDD pour un chargement immédiat
     // La collaboration temps-réel viendra s'ajouter par-dessus via les WebSockets
     editorState: initialEditorState || undefined,
@@ -346,6 +350,31 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       root.selectEnd();
     });
   }, [editor]);
+
+  const handleDrawingSave = useCallback((drawingData: DrawingData) => {
+    if (!editor || isReadOnly) return;
+    
+    editor.update(() => {
+      const selection = $getSelection();
+      
+      // Create a new image node with the drawing
+      const imageNode = $createImageNode({
+        src: drawingData.dataUrl,
+        altText: "Drawing",
+        width: Math.min(drawingData.width, 600), // Limit max width
+        height: Math.min(drawingData.height, 600),
+      });
+      
+      // Insert the image node at the current selection or at the end
+      if ($isRangeSelection(selection)) {
+        $insertNodes([imageNode]);
+      } else {
+        const root = $getRoot();
+        root.selectEnd();
+        $insertNodes([imageNode]);
+      }
+    });
+  }, [editor, isReadOnly]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!editor) return;
@@ -598,6 +627,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                   <Icons name="save" size={20} className="h-5 w-5 text-primary" />
                 )}
               </div> */}
+              
+              {/* Drawing Board */}
+              {!isReadOnly && <DrawingBoard isOpen={false} onSave={handleDrawingSave} />}
               
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
                 <div className="flex-1 relative">
