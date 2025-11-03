@@ -672,7 +672,7 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
             body: JSON.stringify({
                 Nom: folderData?.Nom || "Nouveau dossier",
                 Description: folderData?.Description || "",
-                CouleurTag: folderData?.CouleurTag || "#D4AF37",
+                CouleurTag: folderData?.CouleurTag || "#882626",
             })
         });
 

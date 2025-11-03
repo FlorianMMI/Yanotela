@@ -26,7 +26,7 @@ export const FolderController = {
         data: {
           Nom: Nom.trim(),
           Description: Description?.trim() || null,
-          CouleurTag: CouleurTag || "#D4AF37",
+          CouleurTag: CouleurTag || "#882626",
           authorId,
         },
       });

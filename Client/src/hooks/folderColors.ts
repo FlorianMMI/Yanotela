@@ -1,4 +1,5 @@
 export const FOLDER_COLORS = [
+  { id: 'darkred', value: '#882626', label: 'Rouge foncé' },
   { id: 'gold', value: '#D4AF37', label: 'Or' },
   { id: 'blue', value: '#3B82F6', label: 'Bleu' },
   { id: 'green', value: '#10B981', label: 'Vert' },

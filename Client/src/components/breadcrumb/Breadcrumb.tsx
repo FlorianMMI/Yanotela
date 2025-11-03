@@ -555,7 +555,7 @@ export default function Breadcrumb() {
                             folderId={folderId!} 
                             folderName={folderData.Nom || folderName}
                             folderDescription={folderData.Description || ""}
-                            folderColor={folderData.CouleurTag || "#D4AF37"}
+                            folderColor={folderData.CouleurTag || "#882626"}
                             onUpdate={async (name: string, description: string, color: string) => {
                               // La mise à jour sera gérée par la page folder/[id]
                               // On émet juste un événement pour synchroniser

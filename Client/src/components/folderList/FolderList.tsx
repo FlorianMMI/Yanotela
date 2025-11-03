@@ -31,8 +31,17 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
   };
 
   return (
-    <main className="p-4">
-      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] max-w-full gap-3 md:gap-4 justify-items-center">
+    <main className="p-4 relative min-h-[calc(100vh-200px)]">
+      {/* Message si aucun dossier et pas en chargement - Centré sur la page */}
+      {!isLoading && folders.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <p className="text-element text-lg font-gant">
+            Aucun dossier trouvé. Créez votre premier dossier !
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-3 md:gap-4 justify-items-start">
 
         {/* Add Folder Button */}
         <motion.button
@@ -46,6 +55,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
           <Icon
             name="plus"
             size={48}
+            strokeWidth={1}
             className="group-hover:scale-110 transition-transform"
           />
         </motion.button>
@@ -63,15 +73,6 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
         {!isLoading && folders.map((folder) => (
           <Folder key={folder.id} folder={folder} />
         ))}
-
-        {/* Message si aucun dossier et pas en chargement */}
-        {!isLoading && folders.length === 0 && (
-          <div className="col-span-full text-center py-12">
-            <p className="text-element text-lg font-gant">
-              Aucun dossier trouvé. Créez votre premier dossier !
-            </p>
-          </div>
-        )}
       </div>
     </main>
   );

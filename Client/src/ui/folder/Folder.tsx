@@ -19,7 +19,7 @@ export default function Folder({ folder }: FolderProps) {
   };
 
   // Couleur par défaut si non définie
-  const backgroundColor = folder.CouleurTag || '#D4AF37';
+  const backgroundColor = folder.CouleurTag || '#882626';
 
   return (
     <motion.div
