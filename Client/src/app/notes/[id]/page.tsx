@@ -304,8 +304,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   function createSimpleLexicalState(text: string): string {
     const simpleState = {
       root: {
-        children: text ? [{
-          children: [{
+        children: [{
+          children: text ? [{
             detail: 0,
             format: 0,
             mode: "normal",
@@ -313,13 +313,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
             text: text,
             type: "text",
             version: 1
-          }],
+          }] : [],
           direction: "ltr",
           format: "",
           indent: 0,
           type: "paragraph",
           version: 1
-        }] : [],
+        }],
         direction: "ltr",
         format: "",
         indent: 0,
@@ -589,7 +589,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
+            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] overflow-auto">
               {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
               {/* <div className="absolute bottom-4 right-4 z-10">
                 {(isSavingContent || isTyping) ? (
@@ -600,21 +600,23 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               </div> */}
               
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
-                <RichTextPlugin
-                  contentEditable={
-                    <ContentEditable
-                      aria-placeholder={ "Commencez à écrire..."}
-                      placeholder={
-                        <p className="absolute top-4 left-4 text-textcardNote select-none pointer-events-none">
-                           "Commencez à écrire..."
-                        </p>
+                <div className="flex-1 relative">
+                  <RichTextPlugin
+                      contentEditable={
+                        <ContentEditable
+                          aria-placeholder={ "Commencez à écrire..."}
+                          placeholder={
+                            <p className="absolute top-0 left-0 text-textcardNote select-none pointer-events-none">
+                               "Commencez à écrire..."
+                            </p>
+                          }
+                          className={`min-h-[200px] focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                          contentEditable={!isReadOnly}
+                        />
                       }
-                      className={`h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
-                      contentEditable={!isReadOnly}
+                      ErrorBoundary={LexicalErrorBoundary}
                     />
-                  }
-                  ErrorBoundary={LexicalErrorBoundary}
-                />
+                </div>
                 <HistoryPlugin />
                 {!isReadOnly && <OnChangeBehavior />}
                 {!isReadOnly && <AutoFocusPlugin />}
