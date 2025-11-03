@@ -22,7 +22,7 @@ export default function Note({ note }: NoteProps) {
     whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)"}}
     whileTap={{ scale: 1 }}
     
-      className="bg-fondcardNote rounded-xl shadow-sm border border-clrsecondaire cursor-pointer group overflow-hidden w-full h-[110px] md:w-65 md:h-50"
+      className="bg-fondcardNote rounded-xl shadow-sm border border-clrsecondaire cursor-pointer group overflow-hidden w-full h-[125px] md:w-65 md:h-50"
       onClick={handleNoteClick}
     >
 
