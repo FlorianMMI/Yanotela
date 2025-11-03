@@ -17,9 +17,10 @@ class SocketService {
       return this.socket;
     }
 
-    const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const SOCKET_URL = 'http://localhost:3001';
 
     this.socket = io(SOCKET_URL, {
+      path: '/socket.io/',
       withCredentials: true,
       transports: ['websocket', 'polling'], // WebSocket prioritaire, polling en fallback
       reconnection: true,
@@ -95,6 +96,30 @@ class SocketService {
   }
 
   /**
+   * Émettre la position du curseur
+   */
+  emitCursorUpdate(noteId: string, cursor: { line: number; column: number }) {
+    if (!this.socket || !this.socket.connected) return;
+    this.socket.emit('cursorUpdate', { noteId, cursor });
+  }
+
+  /**
+   * Émettre une sélection de texte
+   */
+  emitSelectionUpdate(noteId: string, selection: { start: number; end: number }) {
+    if (!this.socket || !this.socket.connected) return;
+    this.socket.emit('selectionUpdate', { noteId, selection });
+  }
+
+  /**
+   * Émettre l'état "typing" (utilisateur en train de taper)
+   */
+  emitUserTyping(noteId: string, isTyping: boolean) {
+    if (!this.socket || !this.socket.connected) return;
+    this.socket.emit('userTyping', { noteId, isTyping });
+  }
+
+  /**
    * Écouter les mises à jour du titre
    */
   onTitleUpdate(callback: (data: { noteId: string; titre: string; userId: number; pseudo: string }) => void) {
@@ -137,6 +162,33 @@ class SocketService {
     if (!this.socket) return;
     this.socket.off('error'); // Éviter les listeners multiples
     this.socket.on('error', callback);
+  }
+
+  /**
+   * Écouter les curseurs des autres utilisateurs
+   */
+  onCursorUpdate(callback: (data: { noteId: string; cursor: { line: number; column: number }; userId: number; pseudo: string }) => void) {
+    if (!this.socket) return;
+    this.socket.off('cursorUpdate');
+    this.socket.on('cursorUpdate', callback);
+  }
+
+  /**
+   * Écouter les sélections des autres utilisateurs
+   */
+  onSelectionUpdate(callback: (data: { noteId: string; selection: { start: number; end: number }; userId: number; pseudo: string }) => void) {
+    if (!this.socket) return;
+    this.socket.off('selectionUpdate');
+    this.socket.on('selectionUpdate', callback);
+  }
+
+  /**
+   * Écouter quand un utilisateur tape
+   */
+  onUserTyping(callback: (data: { noteId: string; isTyping: boolean; userId: number; pseudo: string }) => void) {
+    if (!this.socket) return;
+    this.socket.off('userTyping');
+    this.socket.on('userTyping', callback);
   }
 
   /**

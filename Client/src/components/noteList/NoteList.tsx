@@ -65,22 +65,11 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
             <Icons
               name="plus"
               size={48}
+              strokeWidth={1}
               className="group-hover:scale-110 transition-transform"
             />
           </motion.div>
         )}
-
-        {/* Exemple d'affichage d'une note avec vos données */}
-        {/* <Note
-          note={{
-            id: "exemple",
-            Titre: "Exemple de Note",
-            Content: "Contenu personnalisé de la note.",
-            ModifiedAt: new Date().toISOString(),
-      
-          }}
-        />
-        <NoteSkeleton key={`skeleton-1`} /> */}
 
         {/* Loading Skeletons */}
         {isLoading && (
@@ -104,6 +93,8 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
             </p>
           </div>
         )}
+
+
       </div>
     </main>
   );

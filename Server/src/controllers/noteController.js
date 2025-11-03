@@ -44,18 +44,30 @@ export const noteController = {
       });
 
       // Extraire les notes et formater author/modifier en pseudo
-      const notes = permissions.map((perm) => {
-        const note = perm.note;
-        return {
-          id: note.id,
-          Titre: note.Titre,
-          Content: note.Content,
-          author: note.author ? note.author.pseudo : null,
-          modifier: note.modifier ? note.modifier.pseudo : null,
-          ModifiedAt: note.ModifiedAt,
-          userRole: perm.role,
-        };
-      });
+      const notes = await Promise.all(
+        permissions.map(async (perm) => {
+          const note = perm.note;
+          
+          // Compter le nombre de collaborateurs (permissions acceptées)
+          const collaboratorCount = await prisma.permission.count({
+            where: {
+              noteId: note.id,
+              isAccepted: true,
+            },
+          });
+
+          return {
+            id: note.id,
+            Titre: note.Titre,
+            Content: note.Content,
+            author: note.author ? note.author.pseudo : null,
+            modifier: note.modifier ? note.modifier.pseudo : null,
+            ModifiedAt: note.ModifiedAt,
+            userRole: perm.role,
+            collaboratorCount: collaboratorCount,
+          };
+        })
+      );
 
       // Trier par date de modification
       notes.sort((a, b) => new Date(b.ModifiedAt) - new Date(a.ModifiedAt));
@@ -97,12 +109,48 @@ export const noteController = {
         .json({ message: "Aucune donnée reçue dans req.body" });
     }
 
-    const { Titre, Content } = req.body;
+
+    let { Titre, Content } = req.body;
     // Récupérer l'authorId depuis la session au lieu du body
     const authorId = parseInt(req.session.userId); // Convertir en Int pour la DB
 
     if (!Titre) {
       return res.status(400).json({ message: "Titre requis" });
+    }
+
+    if (Content == "" || Content == null || Content == undefined) {
+      Content = JSON.stringify({
+        root: {
+          children: [
+            {
+              children: [
+                {
+                  detail: 0,
+                  format: 0,
+                  mode: "normal",
+                  style: "",
+                  text: "",
+                  type: "text",
+                  version: 1
+                }
+              ],
+              direction: "ltr",
+              format: "",
+              indent: 0,
+              type: "paragraph",
+              version: 1,
+              textFormat: 0,
+              textStyle: ""
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "root",
+          version: 1
+        }
+      });
+      
     }
 
     try {

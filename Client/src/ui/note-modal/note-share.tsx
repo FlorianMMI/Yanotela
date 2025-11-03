@@ -60,15 +60,19 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                                     {users.map((item) => (
                                         <div key={item.user.id} className="flex items-center justify-between bg-white rounded p-2">
                                             <div>
-                                                <div className="font-medium text-sm text-foreground">{item.user.pseudo}</div>
-                                                <div className="text-xs text-element">{item.user.email}</div>
+                                                <div className="font-medium text-sm text-foreground">
+                                                    {item.user.pseudo.length > 16 ? `${item.user.pseudo.substring(0, 16)}...` : item.user.pseudo}
+                                                </div>
+                                                <div className="text-xs text-element">
+                                                    {item.user.email.length > 25 ? `${item.user.email.substring(0, 25)}...` : item.user.email}
+                                                </div>
                                             </div>
                                             {role === 0 && (
                                                 <Icon name="crown" className="text-yellow-500" size={20} />
                                             )}
                                             {/* Afficher les actions seulement si l'utilisateur a les permissions ET ce n'est pas le propriétaire */}
                                             {role > 0 && currentUserRole !== null && currentUserRole <= 1 && (
-                                                <div className="flex flex-col md:flex-row items-center gap-2">
+                                                <div className="flex flex-col gap-2 w-auto">
                                                     <select
                                                         value={item.role}
                                                         disabled={item.user.id === connectedUserId}
@@ -90,7 +94,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                                                                 alert(result.error || 'Erreur lors de la modification');
                                                             }
                                                         }}
-                                                        className="text-xs border border-element rounded px-2 py-1 text-foreground"
+                                                        className="text-xs border border-element rounded px-2 py-1 text-foreground w-full"
                                                     >
                                                         {(currentUserRole !== null && currentUserRole < 1 || item.user.id === connectedUserId) && (
                                                             <option value={1}>Admin</option>
@@ -99,7 +103,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                                                         <option value={3}>Lecteur</option>
                                                     </select>
                                                     <button
-                                                        className="ml-2 text-xs text-primary hover:text-primary-hover px-2 py-1 border border-primary hover:border-primary-hover rounded transition-colors"
+                                                        className="text-xs text-primary hover:text-primary-hover px-2 py-1 border border-primary hover:border-primary-hover rounded transition-colors w-full"
                                                         title="Retirer l'accès à la note"
                                                         disabled={item.user.id === connectedUserId}
                                                         style={item.user.id === connectedUserId ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
@@ -152,7 +156,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                             placeholder="Email ou pseudo..."
                             value={newUserIdentifier}
                             onChange={(e) => setNewUserIdentifier(e.target.value)}
-                            className="flex-1 px-3 py-2 border border-element rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            className="flex-1 px-3 py-2 border border-element rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
                         />
                         <select
                             value={selectedRole}

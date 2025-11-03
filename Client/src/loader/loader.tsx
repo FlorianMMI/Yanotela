@@ -2,7 +2,7 @@ import { Note } from '@/type/Note';
 import { create } from 'domain';
 import { ID } from 'yjs';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note | null; redirectUrl?: string }> {
     try {
@@ -32,7 +32,7 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
 
 export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
     try {
-
+        console.log(process.env.NEXT_PUBLIC_API_URL)
         const response = await fetch(`${apiUrl}/note/get`, {
             method: "GET",
             headers: {
@@ -158,6 +158,7 @@ interface AuthResponse {
 }
 
 export async function Login(credentials: LoginCredentials): Promise<AuthResponse> {
+
     try {
         
         const response = await fetch(`${apiUrl}/login`, {
@@ -240,9 +241,9 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            return { success: true, message: 'Un lien de réinitialisation a été envoyé à votre adresse email.' };
+            return { success: true, message: 'Si votre adresse email est valide, vous recevrez un email de réinitialisation' };
         } else {
-            return { success: false, error: data.error || 'Erreur lors de l\'envoi du lien de réinitialisation' };
+            return { success: true, message: 'Si votre adresse email est valide, vous recevrez un email de réinitialisation' };
         }
     } catch (error) {
         console.error('Erreur:', error);
@@ -365,7 +366,6 @@ interface DeleteAccountResponse {
 
 export async function DeleteAccount(reason?: string): Promise<DeleteAccountResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         
         const response = await fetch(`${apiUrl}/user/delete`, {
             method: 'DELETE',
@@ -396,7 +396,7 @@ export async function DeleteAccount(reason?: string): Promise<DeleteAccountRespo
 
 export async function CancelAccountDeletion(): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        
         
         const response = await fetch(`${apiUrl}/user/cancel-deletion`, {
             method: 'POST',
@@ -422,7 +422,7 @@ export async function CancelAccountDeletion(): Promise<AuthResponse> {
 
 export async function updateUser(data: { prenom?: string; nom?: string; pseudo?: string; email?: string; password?: string; newPassword?: string; }): Promise<AuthResponse> {
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        
         
         const response = await fetch(`${apiUrl}/user/update`, {
             method: 'POST',

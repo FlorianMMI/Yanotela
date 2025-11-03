@@ -10,6 +10,8 @@ import NoteMore from '@/components/noteMore/NoteMore';
 import FolderMore from '@/components/folderMore/FolderMore';
 import Icons from '@/ui/Icon';
 import { socketService } from '@/services/socketService';
+import { useRouter } from 'next/navigation';
+import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 
 
 interface BreadcrumbItem {
@@ -21,6 +23,7 @@ interface BreadcrumbItem {
 
 export default function Breadcrumb() {
   const pathname = usePathname();
+  const router = useRouter();
   const [noteTitle, setNoteTitle] = useState<string>('');
   const [folderName, setFolderName] = useState<string>('');
   const [folderData, setFolderData] = useState<any>(null); // Pour stocker toutes les infos du dossier
@@ -34,6 +37,9 @@ export default function Breadcrumb() {
   // États pour les notifications du titre
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Détecter si on est sur Flash Note
+  const isFlashNote = pathname === '/flashnote';
 
   // Extraire l'ID de la note depuis l'URL
   const extractNoteId = (): string | null => {
@@ -81,8 +87,47 @@ export default function Breadcrumb() {
     };
   }, [noteId]);
 
-  // Charger le titre de la note
+  // Charger le titre de la note ou Flash Note
   useEffect(() => {
+    if (isFlashNote) {
+      // Pour Flash Note, charger depuis localStorage
+      const loadFlashNoteTitle = () => {
+        try {
+          const savedTitle = localStorage.getItem("yanotela:flashnote:title");
+          const title = savedTitle || "Flash:";
+          setNoteTitle(title);
+          setTempTitle(title);
+        } catch (error) {
+          console.error('Erreur lors du chargement du titre Flash Note:', error);
+          setNoteTitle("Flash:");
+          setTempTitle("Flash:");
+        }
+      };
+
+      // Charger initialement
+      loadFlashNoteTitle();
+
+      // Écouter les changements dans localStorage (pour synchronisation avec la page Flash Note)
+      const handleStorageChange = (e: StorageEvent) => {
+        if (e.key === "yanotela:flashnote:title") {
+          loadFlashNoteTitle();
+        }
+      };
+
+      // Écouter aussi les événements custom pour la synchronisation
+      const handleFlashNoteTitleUpdate = () => {
+        loadFlashNoteTitle();
+      };
+
+      window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('flashnote-title-updated', handleFlashNoteTitleUpdate);
+
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('flashnote-title-updated', handleFlashNoteTitleUpdate);
+      };
+    }
+
     const fetchNoteTitle = async () => {
       if (noteId) {
         setIsLoadingTitle(true);
@@ -110,7 +155,7 @@ export default function Breadcrumb() {
     };
 
     fetchNoteTitle();
-  }, [noteId, lastFetchTime]); // Ajouter lastFetchTime comme dépendance
+  }, [noteId, lastFetchTime, isFlashNote]); // Ajouter isFlashNote comme dépendance
 
   // Charger le nom du dossier
   useEffect(() => {
@@ -161,6 +206,24 @@ export default function Breadcrumb() {
 
   // Sauvegarder le titre modifié via WebSocket
   const updateNoteTitle = async (newTitle: string) => {
+    if (isFlashNote) {
+      // Pour Flash Note, sauvegarder dans localStorage
+      const finalTitle = newTitle.trim() === '' ? 'Flash:' : newTitle;
+      setNoteTitle(finalTitle);
+      setTempTitle(finalTitle);
+      
+      try {
+        localStorage.setItem("yanotela:flashnote:title", finalTitle);
+        setSuccess('Titre Flash Note sauvegardé localement');
+        setTimeout(() => setSuccess(null), 2000);
+      } catch (error) {
+        console.error('Erreur localStorage titre Flash Note:', error);
+        setError('Erreur lors de la sauvegarde du titre');
+        setTimeout(() => setError(null), 3000);
+      }
+      return;
+    }
+
     if (noteId) {
       setNoteTitle(newTitle);
       setTempTitle(newTitle);
@@ -186,14 +249,24 @@ export default function Breadcrumb() {
   };
 
   const handleTitleSave = async (newTitle: string) => {
-    if (newTitle.trim() === '') {
-      // Si le titre est vide, utiliser le fallback et sauvegarder
-      const fallbackTitle = 'Titre de la note';
-      setTempTitle(fallbackTitle);
-      await updateNoteTitle(fallbackTitle);
-    } else if (newTitle !== noteTitle) {
-      // Si le titre a changé et n'est pas vide, le sauvegarder
-      await updateNoteTitle(newTitle);
+    if (isFlashNote) {
+      // Pour Flash Note, utiliser "Flash:" comme fallback
+      if (newTitle.trim() === '') {
+        const fallbackTitle = 'Flash:';
+        setTempTitle(fallbackTitle);
+        await updateNoteTitle(fallbackTitle);
+      } else if (newTitle !== noteTitle) {
+        await updateNoteTitle(newTitle);
+      }
+    } else {
+      // Pour les notes normales
+      if (newTitle.trim() === '') {
+        const fallbackTitle = 'Titre de la note';
+        setTempTitle(fallbackTitle);
+        await updateNoteTitle(fallbackTitle);
+      } else if (newTitle !== noteTitle) {
+        await updateNoteTitle(newTitle);
+      }
     }
   };
 
@@ -273,6 +346,12 @@ export default function Breadcrumb() {
       return [
         { label: 'Mes Dossiers', href: '/folder' },
         { label: displayName, isActive: true, isNoteTitle: true }, // Marquer comme éditable
+      ];
+    }
+
+    if (pathname === '/flashnote') {
+      return [
+        { label: 'Flash Note', isActive: true },
       ];
     }
 
@@ -366,20 +445,26 @@ export default function Breadcrumb() {
         </div>
       )}
 
-      <nav className="bg-background p-3">
+      <nav className="bg-background p-3">{/* Début de la section navigation */}
         <div className="flex items-center text-sm space-x-2 relative">
-          {/* Déterminer l'icône selon la page courante */}
+          {/* Icône de la page courante */}
           {(() => {
             if (pathname.includes('/notes')) {
-              return <Icon name="docs" size={20} className="text-primary" />;
+              return <Icon name="docs" size={20} strokeWidth={12} className="text-primary" />;
             }
             if (pathname.includes('/folder')) {
               return <Icon name="folder" size={20} className="text-primary" />;
             }
             if (pathname.includes('/profil')) {
-              return <Icon name="profile" size={20} className="text-primary" />;
+              return <Icon name="profile" size={20} strokeWidth={12} className="text-primary" />;
             }
+            if (pathname === '/flashnote') {
+              return <Icon name="flash" size={30} strokeWidth={12} className="text-primary" />;
+            }
+            return null;
           })()}
+          
+          {/* Fil d'Ariane */}
           {breadcrumbs.map((item, index) => (
             <React.Fragment key={index}>
               {index > 0 && (
@@ -431,7 +516,7 @@ export default function Breadcrumb() {
                     />
                   ) : null}
                   {/* Container pour pousser l'icône complètement à droite */}
-                  {noteId && (
+                  {noteId && !isFlashNote && (
                     <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
                       <span
                         onClick={() => setShowNoteMore((prev) => !prev)}
@@ -503,8 +588,17 @@ export default function Breadcrumb() {
               )}
             </React.Fragment>
           ))}
-        </div>
 
+          {/* Bouton de sauvegarde pour Flash Note à droite (desktop uniquement) */}
+          {isFlashNote && (
+            <div className="absolute right-4 top-2 hidden md:block">
+              <SaveFlashNoteButton 
+                currentTitle={noteTitle}
+                className="!text-sm"
+              />
+            </div>
+          )}
+        </div>
       </nav>
 
     </>

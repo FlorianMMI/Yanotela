@@ -1,7 +1,7 @@
 // sessionConfig.js
 import session from 'express-session';
 
-const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
+const FRONT_URL = process.env.FRONT_URL;
 
 /**
  * Configuration des sessions Express
@@ -15,8 +15,6 @@ const sessionMiddleware = session({
     secure: false, // false en développement (HTTP)
     httpOnly: true, // Empêche l'accès au cookie via JavaScript côté client
     sameSite: 'lax',
-    
-    // Chemin d'application du cookie (toute l'application)
     path: '/',
     maxAge:1000 * 60 * 60 * 24 * 365 * 10, // 10 ans en ms
   }

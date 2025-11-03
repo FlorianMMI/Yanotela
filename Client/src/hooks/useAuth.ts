@@ -13,6 +13,7 @@ export interface AuthState {
   refetch: () => Promise<void>;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export function useAuth(): AuthState {
   const [authState, setAuthState] = useState<Omit<AuthState, 'refetch'>>({
     isAuthenticated: null,
@@ -21,7 +22,7 @@ export function useAuth(): AuthState {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('http://localhost:3001/auth/check', {
+      const response = await fetch(`${API_URL}/auth/check`, {
         method: 'GET',
         credentials: 'include',
       });

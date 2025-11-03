@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthState } from '@/hooks/useAuth';
 import NotificationList from '../notificationList/page';
@@ -18,6 +17,12 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
   const pathname = usePathname();
   const isProfile = pathname.includes('/profil');
   const navItems = [
+        {
+      href: '/flashnote',
+      label: 'Flash Note',
+      icon: 'flash',
+      isActive: pathname.includes('/flashnote'),
+    },
     {
       href: '/notes',
       label: 'Mes Notes',
@@ -35,11 +40,11 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
   return (
     <div className="h-full w-full flex flex-col relative">
 
-      <div className="flex flex-row items-center p-4 gap-2">
+      <div className="relative flex flex-row items-center p-4 gap-2">
 
         <Link href="/profil"
           className={`flex items-center ${isopen ? `flex-1 px-4  ` : `w-fit px-2  `} py-3 gap-3 rounded-lg transition-all text-gray-700 ${isProfile ? 'bg-primary text-white' : ' hover:bg-gray-100 hover:shadow-sm'}`}
-          title='Accéder à mes notes'>
+          title='Accéder à mon profil'>
 
           <Icon
             name="profile"
@@ -57,10 +62,12 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
           </div> : ""}
 
         </Link>
+
         <NotificationList isOpenSideBar={isopen} />
       </div>
 
       <hr className="border-t border-element mx-8" />
+
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navItems.map((item) => (
@@ -72,12 +79,13 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
                   ? 'bg-primary text-white'
                   : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
-                title='Accéder à mes notes'
+                title={`Accéder à mes ${item.label}`}
               >
                 <Icon
                   name={item.icon}
                   className={item.isActive ? "text-white" : "text-element"}
                   size={30}
+                  strokeWidth={12}
 
                 />
                 <span className={`font-medium ${isopen ? `flex` : `hidden`}`}>{item.label}</span>
@@ -86,7 +94,6 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
           ))}
         </ul>
       </nav>
-
 
       <Link className='h-fit flex m-4 justify-center items-center overflow-hidden '
         href="/"

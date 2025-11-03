@@ -60,7 +60,7 @@ export default function InputModified({
       </div>
       {
         type === "email" ?
-        <p className="w-full md:w-1/2 px-3 py-3 md:py-2 border-2 rounded-lg text-clrprincipal bg-gray-200 border-gray-300 cursor-not-allowed text-base md:text-sm">
+        <p className="flex contain-content w-full md:w-1/2 px-3 py-3 md:py-2  rounded-lg text-clrprincipal  border-gray-300 cursor-not-allowed text-base md:text-sm">
           {
             defaultValue.length > 20 ?
             defaultValue.split('@')[0].slice(0, 2) + '...' + defaultValue.split('@')[0].slice(-2) + '@' + defaultValue.split('@')[1]

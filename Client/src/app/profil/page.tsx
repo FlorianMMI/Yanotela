@@ -133,7 +133,7 @@ export default function Profil() {
         </div>
 
         {/* Contenu centré et réparti */}
-        <div className="flex-1 flex flex-col justify-between items-center text-center w-full">
+        <div className="flex-1 flex flex-col justify-start gap-6 items-center text-center w-full">
 
           <div className="flex md:hidden">
             {userInfo && (
@@ -163,7 +163,7 @@ export default function Profil() {
             </div>
 
             {/* Bouton déconnexion mobile en bas */}
-            <div className="flex flex-col items-center justify-center w-full max-w-1/2">
+            <div className="flex flex-col items-end justify-center w-full max-w-1/2">
               <Logout />
             </div>
 

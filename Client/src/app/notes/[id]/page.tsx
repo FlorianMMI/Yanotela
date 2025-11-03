@@ -1,7 +1,7 @@
 "use client";
-import React, { useRef } from "react";
-import { $getRoot, EditorState } from "lexical";
-import { useEffect, useState, use } from "react";
+
+import { $getRoot, EditorState, $getSelection, $isRangeSelection } from "lexical";
+import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -12,13 +12,14 @@ import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
-
-import { useCallback } from "react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
 import CollaborationPlugin from "@/components/collaboration/CollaborationPlugin";
 import { socketService } from "@/services/socketService";
+import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
+import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
+import { $insertNodes } from "lexical";
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
@@ -48,6 +49,21 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
+  // Reload page on breakpoint change (mobile <-> desktop)
+  React.useEffect(() => {
+    // Détection du breakpoint initial
+    let lastIsMobile = window.innerWidth < 768;
+    const onResize = () => {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile !== lastIsMobile) {
+        window.location.reload();
+      }
+      lastIsMobile = isMobile;
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const [noteTitle, setNoteTitle] = useState("");
   const [editorContent, setEditorContent] = useState("");
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
@@ -61,7 +77,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [isReadOnly, setIsReadOnly] = useState(false); // Mode lecture seule
   const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
   const [userPseudo, setUserPseudo] = useState<string>(""); // Pseudo pour la collaboration
-  
+
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -115,48 +131,72 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     try {
       const parsedContent = JSON.parse(content);
       
-      // Vérifier si le contenu est vraiment différent pour éviter les boucles
-      const currentContent = JSON.stringify(editor.getEditorState().toJSON());
-      if (currentContent === content) {
-        return; // Pas de changement, ignorer
-      }
-      
-      const newEditorState = editor.parseEditorState(parsedContent);
-      
-      // Sauvegarder la position du curseur et le focus
-      const hasFocus = editor.getRootElement() === document.activeElement || 
-                       editor.getRootElement()?.contains(document.activeElement);
-      
-      let savedSelection: any = null;
-      if (hasFocus) {
-        editor.getEditorState().read(() => {
+      // ✅ AMÉLIORATION: Comparaison plus robuste pour éviter les boucles infinites
+      editor.getEditorState().read(() => {
+        const currentStateJSON = editor.getEditorState().toJSON();
+        const currentContent = JSON.stringify(currentStateJSON);
+        
+        // Si le contenu est identique, ignorer complètement
+        if (currentContent === content) {
+          console.log('📝 Contenu identique, pas de mise à jour nécessaire');
+          return;
+        }
+        
+        // Vérifier si c'est bien un EditorState Lexical valide
+        if (!parsedContent.root || parsedContent.root.type !== 'root') {
+          console.warn('⚠️ Contenu distant invalide, ignoré');
+          return;
+        }
+        
+        console.log('📝 Application de la mise à jour distante du contenu');
+        
+        // Sauvegarder le focus et la sélection avant mise à jour
+        const hasFocus = editor.getRootElement() === document.activeElement || 
+                         editor.getRootElement()?.contains(document.activeElement);
+        
+        let savedSelection: any = null;
+        if (hasFocus) {
           savedSelection = editor.getEditorState()._selection?.clone();
-        });
-      }
-      
-      // Appliquer la mise à jour distante
-      editor.setEditorState(newEditorState);
-      setEditorContent(content);
-      
-      // Restaurer le focus et la position du curseur si l'utilisateur était en train de taper
-      if (hasFocus && savedSelection) {
-        // Attendre un tick pour que l'état soit appliqué
+        }
+        
+        // ✅ CORRECTION CRITIQUE: Marquer qu'on applique une mise à jour distante
+        // Ceci permet d'éviter que l'updateListener déclenche une sauvegarde
+        const isApplyingRemoteUpdateRef = (editor as any)._isApplyingRemoteUpdateRef;
+        if (isApplyingRemoteUpdateRef) {
+          isApplyingRemoteUpdateRef.current = true;
+        }
+        
+        // Appliquer la mise à jour dans une transaction séparée
         setTimeout(() => {
-          editor.focus();
-          // Tenter de restaurer la sélection (peut échouer si le contenu a trop changé)
-          editor.update(() => {
-            try {
-              if (savedSelection) {
-                savedSelection.dirty = true;
-                editor.getEditorState()._selection = savedSelection;
-              }
-            } catch (e) {
-              // Si la restauration échoue, on laisse le curseur à la fin
-              console.log('Impossible de restaurer la sélection exacte');
+          const newEditorState = editor.parseEditorState(parsedContent);
+          editor.setEditorState(newEditorState);
+          setEditorContent(content);
+          
+          // ✅ Réinitialiser le flag après application
+          setTimeout(() => {
+            if (isApplyingRemoteUpdateRef) {
+              isApplyingRemoteUpdateRef.current = false;
             }
-          });
+          }, 50);
+          
+          // Restaurer le focus si nécessaire
+          if (hasFocus) {
+            setTimeout(() => {
+              editor.focus();
+              if (savedSelection) {
+                editor.update(() => {
+                  try {
+                    savedSelection.dirty = true;
+                    editor.getEditorState()._selection = savedSelection;
+                  } catch (e) {
+                    console.log('Impossible de restaurer la sélection exacte');
+                  }
+                });
+              }
+            }, 0);
+          }
         }, 0);
-      }
+      });
     } catch (err) {
       console.warn('Impossible de parser le contenu distant:', err);
     }
@@ -195,8 +235,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await fetch('http://localhost:3001/user/info', {
-          credentials: 'include'
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        const response = await fetch(`${API_URL}/auth/check`, {
+          credentials: "include",
         });
         if (response.ok) {
           const userData = await response.json();
@@ -220,43 +261,38 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           setNoteTitle(note.Titre);
           setUserRole((note as any).userRole !== undefined ? (note as any).userRole : null);
           setIsReadOnly((note as any).userRole === 3); // Lecteur = lecture seule
-          // Si on a du contenu, on le parse pour l'éditeur
+          
+          // ✅ CORRECTION: Meilleur traitement du contenu depuis la BDD
           if (note.Content) {
             try {
-              // Vérifier si c'est déjà du JSON valide
+              // Vérifier si c'est déjà du JSON Lexical valide
               const parsedContent = JSON.parse(note.Content);
-              setInitialEditorState(note.Content);
+              
+              // Validation basique pour s'assurer que c'est bien un EditorState Lexical
+              if (parsedContent.root && parsedContent.root.type === 'root') {
+                console.log('✅ JSON Lexical valide trouvé dans la BDD');
+                setInitialEditorState(note.Content);
+                setEditorContent(note.Content);
+              } else {
+                // JSON mais pas Lexical, créer un état valide
+                console.log('⚠️ JSON non-Lexical, conversion...');
+                const simpleState = createSimpleLexicalState(note.Content);
+                setInitialEditorState(simpleState);
+                setEditorContent(simpleState);
+              }
             } catch {
-              // Si ce n'est pas du JSON, on crée un état d'éditeur simple avec le texte
-              const simpleState = {
-                root: {
-                  children: [{
-                    children: [{
-                      detail: 0,
-                      format: 0,
-                      mode: "normal",
-                      style: "",
-                      text: note.Content,
-                      type: "text",
-                      version: 1
-                    }],
-                    direction: "ltr",
-                    format: "",
-                    indent: 0,
-                    type: "paragraph",
-                    version: 1
-                  }],
-                  direction: "ltr",
-                  format: "",
-                  indent: 0,
-                  type: "root",
-                  version: 1
-                }
-              };
-              setInitialEditorState(JSON.stringify(simpleState));
+              // Si ce n'est pas du JSON, créer un état d'éditeur simple avec le texte
+              console.log('⚠️ Contenu texte brut, conversion vers Lexical...');
+              const simpleState = createSimpleLexicalState(note.Content);
+              setInitialEditorState(simpleState);
+              setEditorContent(simpleState);
             }
+          } else {
+            // Pas de contenu, créer un état vide
+            const emptyState = createSimpleLexicalState("");
+            setInitialEditorState(emptyState);
+            setEditorContent(emptyState);
           }
-          setEditorContent(note.Content || "");
         }
         else {
           setHasError(true);
@@ -292,14 +328,45 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       associateToFolder();
     }
   }, [id, searchParams, isLoading, router]);
+  
+  // ✅ NOUVELLE FONCTION: Créer un EditorState Lexical valide depuis du texte
+  function createSimpleLexicalState(text: string): string {
+    const simpleState = {
+      root: {
+        children: [{
+          children: text ? [{
+            detail: 0,
+            format: 0,
+            mode: "normal",
+            style: "",
+            text: text,
+            type: "text",
+            version: 1
+          }] : [],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1
+        }],
+        direction: "ltr",
+        format: "",
+        indent: 0,
+        type: "root",
+        version: 1
+      }
+    };
+    return JSON.stringify(simpleState);
+  }
 
   const initialConfig = {
     namespace: "Editor",
     theme,
     onError,
-    // ✅ NE PAS utiliser initialEditorState - Le contenu vient de Yjs via CollaborationPlugin
-    // Cela évite les conflits entre BDD et Yjs lors de la synchro initiale
-    editorState: undefined,
+    nodes: [ImageNode], // Register the ImageNode
+    // ✅ CORRECTION: Utiliser l'état initial depuis la BDD pour un chargement immédiat
+    // La collaboration temps-réel viendra s'ajouter par-dessus via les WebSockets
+    editorState: initialEditorState || undefined,
   };
 
   const focusAtEnd = useCallback(() => {
@@ -309,6 +376,31 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       root.selectEnd();
     });
   }, [editor]);
+
+  const handleDrawingSave = useCallback((drawingData: DrawingData) => {
+    if (!editor || isReadOnly) return;
+    
+    editor.update(() => {
+      const selection = $getSelection();
+      
+      // Create a new image node with the drawing
+      const imageNode = $createImageNode({
+        src: drawingData.dataUrl,
+        altText: "Drawing",
+        width: Math.min(drawingData.width, 600), // Limit max width
+        height: Math.min(drawingData.height, 600),
+      });
+      
+      // Insert the image node at the current selection or at the end
+      if ($isRangeSelection(selection)) {
+        $insertNodes([imageNode]);
+      } else {
+        const root = $getRoot();
+        root.selectEnd();
+        $insertNodes([imageNode]);
+      }
+    });
+  }, [editor, isReadOnly]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!editor) return;
@@ -323,68 +415,83 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     const [editor] = useLexicalComposerContext();
     const charCountRef = useRef(0);
     const lastContentLengthRef = useRef(0);
+    const lastSaveTimeRef = useRef(Date.now());
+    const isApplyingRemoteUpdateRef = useRef(false); // ✅ Flag pour éviter les boucles
 
     // Register editor in parent component
     useEffect(() => {
+      // ✅ Attacher la référence du flag à l'éditeur pour éviter les boucles
+      (editor as any)._isApplyingRemoteUpdateRef = isApplyingRemoteUpdateRef;
       setEditor(editor);
     }, [editor]);
 
-    // Debounced callback for emitting content changes via socket (150ms d'inactivité)
+    // Debounced callback: 150ms AVEC minimum 1 caractère
     const debouncedContentEmit = useDebouncedCallback(
       (editorState: EditorState) => {
-        charCountRef.current = 0; // Reset le compteur après l'envoi
-        saveContent(editorState);
+        // Vérifier qu'on a au moins 1 caractère modifié
+        if (charCountRef.current >= 1) {
+          charCountRef.current = 0; // Reset
+          saveContent(editorState);
+        }
+        // Indiquer qu'on a arrêté de taper
+        socketService.emitUserTyping(id, false);
       },
-      150 // 150ms = envoi après inactivité
+      150 // 150ms après inactivité
     );
 
-    async function saveContent(editorState: EditorState) {
+    function saveContent(editorState: EditorState) {
       if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
       
-      // Indiquer que la sauvegarde du contenu est en cours
       setIsSavingContent(true);
+      setIsTyping(false); // L'utilisateur a arrêté de taper
       
-      // Call toJSON on the EditorState object, which produces a serialization safe string
+      // Sérialiser l'état Lexical
       const editorStateJSON = editorState.toJSON();
-      // However, we still have a JavaScript object, so we need to convert it to an actual string with JSON.stringify
       const contentString = JSON.stringify(editorStateJSON);
       setEditorContent(contentString);
       
-      console.log('🔄 Début sauvegarde contenu:', {
-        noteId: id,
-        contentLength: contentString.length,
-        title: noteTitle
-      });
+      // ✅ Mettre à jour le timestamp de dernière sauvegarde
+      lastSaveTimeRef.current = Date.now();
       
-      try {
-        // Sauvegarder dans la base de données PostgreSQL
-        console.log('📡 Appel SaveNote...');
-        const result = await SaveNote(id, {
-          Titre: noteTitle,
-          Content: contentString,
-        });
-        console.log('✅ Résultat SaveNote:', result);
-        
-        // Émettre via socket pour synchronisation temps réel
-        socketService.emitContentUpdate(id, contentString);
-        console.log('📡 Socket émis avec succès');
-      } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde du contenu:', error);
-      } finally {
-        setIsSavingContent(false);
-        setIsTyping(false); // Marquer immédiatement comme terminé
-        console.log('🏁 Fin sauvegarde contenu');
-      }
+      // ✅ DOUBLE SAUVEGARDE: WebSocket (temps réel) + HTTP (sécurité)
+      
+      // 1. WebSocket pour la collaboration temps réel
+      socketService.emitContentUpdate(id, contentString);
+      console.log('📡 Contenu émis via WebSocket (temps réel)');
+      
+      // 2. Sauvegarde HTTP en arrière-plan pour la sécurité
+      // (avec un délai pour éviter de surcharger l'API)
+      setTimeout(async () => {
+        try {
+          const result = await uploadContent(id, noteTitle, contentString);
+          console.log('💾 Sauvegarde HTTP confirmée');
+          
+          // Si la sauvegarde HTTP échoue, on peut afficher une notification
+          if (typeof result === 'object' && result && 'error' in result) {
+            console.error('❌ Erreur sauvegarde HTTP:', (result as any).error);
+          }
+        } catch (error) {
+          console.error('❌ Erreur sauvegarde HTTP:', error);
+        }
+      }, 1000); // 1 seconde de délai pour ne pas interférer avec le WebSocket
+      
+      setIsSavingContent(false);
     }
 
     useEffect(() => {
       const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
-        // Only trigger the emit if there are changes to the content
+        // ✅ CORRECTION CRITIQUE: Ignorer les mises à jour si on applique du contenu distant
+        if (isApplyingRemoteUpdateRef.current) {
+          console.log('🔄 Mise à jour ignorée (application de contenu distant en cours)');
+          return;
+        }
+
         if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0) {
-          // Indiquer immédiatement que l'utilisateur tape
+          // Indiquer que l'utilisateur tape
           setIsTyping(true);
+          socketService.emitUserTyping(id, true);
           
-          // Calculer le nombre de caractères changés
+          // Calculer le nombre de caractères modifiés
           const currentContent = editorState.read(() => {
             const root = $getRoot();
             return root.getTextContent();
@@ -393,16 +500,18 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           const charDiff = Math.abs(currentLength - lastContentLengthRef.current);
           lastContentLengthRef.current = currentLength;
           
-          // Incrémenter le compteur de caractères
+          // Incrémenter le compteur
           charCountRef.current += charDiff;
           
-          // Si on a tapé 2 caractères ou plus, envoyer immédiatement
-          if (charCountRef.current >= 2) {
-            charCountRef.current = 0; // Reset
-            debouncedContentEmit.cancel(); // Annuler le debounce en cours
-            saveContent(editorState); // Envoyer immédiatement
+          // ✅ Double sécurité: 3 caractères OU 150ms avec min 1 char
+          if (charCountRef.current >= 3) {
+            // Envoi immédiat après 3 caractères
+            debouncedContentEmit.cancel(); // Annuler le debounce
+            charCountRef.current = 0;
+            saveContent(editorState);
+            console.log('⚡ Envoi immédiat (3+ caractères)');
           } else {
-            // Sinon, utiliser le debounce (150ms)
+            // Sinon, attendre 150ms (avec min 1 char)
             debouncedContentEmit(editorState);
           }
         }
@@ -535,43 +644,50 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
+            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] overflow-auto">
               {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
-              <div className="absolute bottom-4 right-4 z-10">
+              {/* <div className="absolute bottom-4 right-4 z-10">
                 {(isSavingContent || isTyping) ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
                 ) : (
                   <Icons name="save" size={20} className="h-5 w-5 text-primary" />
                 )}
-              </div>
+              </div> */}
+              
+              {/* Drawing Board */}
+              {!isReadOnly && <DrawingBoard isOpen={false} onSave={handleDrawingSave} />}
               
               <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
-                <RichTextPlugin
-                  contentEditable={
-                    <ContentEditable
-                      aria-placeholder={ "Commencez à écrire..."}
-                      placeholder={
-                        <p className="absolute top-4 left-4 text-textcardNote select-none pointer-events-none">
-                           "Commencez à écrire..."
-                        </p>
+                <div className="flex-1 relative">
+                  <RichTextPlugin
+                      contentEditable={
+                        <ContentEditable
+                          aria-placeholder={ "Commencez à écrire..."}
+                          placeholder={
+                            <p className="absolute top-0 left-0 text-textcardNote select-none pointer-events-none">
+                               "Commencez à écrire..."
+                            </p>
+                          }
+                          className={`min-h-[200px] focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                          contentEditable={!isReadOnly}
+                        />
                       }
-                      className={`h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
-                      contentEditable={!isReadOnly}
+                      ErrorBoundary={LexicalErrorBoundary}
                     />
-                  }
-                  ErrorBoundary={LexicalErrorBoundary}
-                />
+                </div>
                 <HistoryPlugin />
                 {!isReadOnly && <OnChangeBehavior />}
                 {!isReadOnly && <AutoFocusPlugin />}
                 {/* Plugin de collaboration temps réel */}
-                <CollaborationPlugin 
-                  noteId={id} 
-                  username={userPseudo}
-                  isReadOnly={isReadOnly}
-                  onTitleUpdate={handleRemoteTitleUpdate}
-                  onContentUpdate={handleRemoteContentUpdate}
-                />
+                {userPseudo && (
+                  <CollaborationPlugin 
+                    noteId={id} 
+                    username={userPseudo}
+                    isReadOnly={isReadOnly}
+                    onTitleUpdate={handleRemoteTitleUpdate}
+                    onContentUpdate={handleRemoteContentUpdate}
+                  />
+                )}
               </LexicalComposer>
             </div>
           </>
