@@ -209,7 +209,7 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
   if (!open) return (
     <button
       onClick={() => setIsOpen(true)}
-      className="absolute right-4 top-4 flex items-center justify-center w-10 h-10 bg-primary text-white rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
+      className="absolute z-10 right-4 top-4 flex items-center justify-center w-10 h-10 bg-primary text-white rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
     >
       <Icon name="modif" size={20} className="inline-block" />
     </button>
