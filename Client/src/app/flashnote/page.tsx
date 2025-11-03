@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { $getRoot, EditorState } from "lexical";
+import { $getRoot, EditorState, $getSelection, $isRangeSelection, $insertNodes } from "lexical";
 import { useEffect, useState } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -17,6 +17,8 @@ import { useCallback } from "react";
 import Icons from '@/ui/Icon';
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
 import { useAuth } from "@/hooks/useAuth";
+import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
+import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
 
 const theme = {
   // Theme styling goes here
@@ -104,6 +106,7 @@ export default function FlashNoteEditor() {
     namespace: "FlashNoteEditor",
     theme,
     onError,
+    nodes: [ImageNode], // Register the ImageNode
     editorState: initialEditorState ? initialEditorState : undefined,
   };
 
@@ -113,6 +116,51 @@ export default function FlashNoteEditor() {
       const root = $getRoot();
       root.selectEnd();
     });
+  }, [editor]);
+
+  const handleDrawingSave = useCallback((drawingData: DrawingData) => {
+    if (!editor) return;
+    
+    editor.update(() => {
+      const selection = $getSelection();
+      
+      // Create a new image node with the drawing
+      const imageNode = $createImageNode({
+        src: drawingData.dataUrl,
+        altText: "Drawing",
+        width: Math.min(drawingData.width, 600), // Limit max width
+        height: Math.min(drawingData.height, 600),
+      });
+      
+      // Insert the image node at the current selection or at the end
+      if ($isRangeSelection(selection)) {
+        $insertNodes([imageNode]);
+      } else {
+        const root = $getRoot();
+        root.selectEnd();
+        $insertNodes([imageNode]);
+      }
+    });
+
+    // Manually trigger a save after inserting the drawing
+    // Wait for the next tick to ensure the editor state has been updated
+    setTimeout(() => {
+      if (editor) {
+        setIsSavingContent(true);
+        setIsTyping(false);
+        
+        const editorState = editor.getEditorState();
+        const editorStateJSON = editorState.toJSON();
+        const contentString = JSON.stringify(editorStateJSON);
+        setEditorContent(contentString);
+        localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
+        
+        // Reset saving state after a short delay
+        setTimeout(() => {
+          setIsSavingContent(false);
+        }, 300);
+      }
+    }, 100);
   }, [editor]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -164,8 +212,9 @@ export default function FlashNoteEditor() {
     }
 
     useEffect(() => {
-      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
-        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0) {
+      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }: any) => {
+        // Save on any update: dirty elements/leaves OR explicit updates (like node insertions)
+        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0 || tags?.has('history-merge') === false) {
           setIsTyping(true);
           debouncedSave(editorState);
         }
@@ -310,6 +359,9 @@ export default function FlashNoteEditor() {
               </div>
             </div>
           </div>
+
+          {/* Drawing Board */}
+          <DrawingBoard isOpen={false} onSave={handleDrawingSave} />
 
           <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
             <RichTextPlugin
