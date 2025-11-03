@@ -13,13 +13,22 @@ interface NoteListProps {
   notes: NoteType[];
   onNoteCreated?: () => void; // Callback pour refresh après création
   isLoading?: boolean; // État de chargement
+  allowCreateNote?: boolean; // Autoriser la création de note (par défaut: true)
+  folderId?: string; // ID du dossier pour créer la note directement dedans
+  onCreateNote?: () => void; // Callback personnalisé pour la création de note
 }
 
-export default function NoteList({ notes, onNoteCreated, isLoading = false }: NoteListProps) {
+export default function NoteList({ notes, onNoteCreated, isLoading = false, allowCreateNote = true, folderId, onCreateNote }: NoteListProps) {
 
   const router = useRouter();
 
   const handleCreateNote = async () => {
+    // Si un callback personnalisé est fourni, l'utiliser
+    if (onCreateNote) {
+      onCreateNote();
+      return;
+    }
+
     const { note, redirectUrl } = await CreateNote();
     
     if (note && redirectUrl) {
@@ -32,7 +41,10 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
       if (onNoteCreated) {
         onNoteCreated(); // Déclencher le refresh des notes
       }
-      router.push(redirectUrl);
+      
+      // Si un folderId est fourni, l'ajouter à l'URL
+      const url = folderId ? `${redirectUrl}?folderId=${folderId}` : redirectUrl;
+      router.push(url);
     } else {
       console.error("Erreur : Impossible de récupérer l'ID de la note créée.");
     }
@@ -40,22 +52,24 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false }: No
 
   return (
     <main className="p-4">
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] max-w-full gap-4 md:gap-6 justify-items-center">
 
-        {/* Add Note Button */}
-        <motion.div
-          whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
-          whileTap={{ scale: 0.95 }}
-          className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary"
-          onClick={handleCreateNote}
-        >
-          <Icons
-            name="plus"
-            size={48}
-            strokeWidth={1}
-            className="group-hover:scale-110 transition-transform"
-          />
-        </motion.div>
+        {/* Add Note Button - Only shown if allowCreateNote is true */}
+        {allowCreateNote && (
+          <motion.div
+            whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
+            whileTap={{ scale: 0.95 }}
+            className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-[110px] md:w-65 md:h-50"
+            onClick={handleCreateNote}
+          >
+            <Icons
+              name="plus"
+              size={48}
+              strokeWidth={1}
+              className="group-hover:scale-110 transition-transform"
+            />
+          </motion.div>
+        )}
 
         {/* Loading Skeletons */}
         {isLoading && (

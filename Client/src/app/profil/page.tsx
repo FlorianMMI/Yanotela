@@ -2,10 +2,11 @@
 import React from "react";
 import InfoProfil from "@/components/infoprofil/page";
 import Image from "next/image";
-import { GetNotes, InfoUser } from "@/loader/loader";
+import { GetNotes, InfoUser, GetFolders } from "@/loader/loader";
 import { useEffect, useState } from "react";
 import Logout from "@/ui/logout";
 import TotalNotes from "@/ui/note/totalNotes";
+import TotalFolders from "@/ui/folder/totalFolders";
 import Icons from "@/ui/Icon";
 import ModificationProfil from "@/components/ModificationProfil/page";
 import ParamModal from "@/components/infoprofil/paramModal";
@@ -28,6 +29,7 @@ export default function Profil() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalNotes, setTotalNotes] = useState<number | undefined>(undefined);
+  const [totalFolders, setTotalFolders] = useState<number | undefined>(undefined);
   const [isParamModalOpen, setIsParamModalOpen] = useState(false);
 
   useEffect(() => {
@@ -54,17 +56,25 @@ export default function Profil() {
   }, []);
 
   useEffect(() => {
-    async function fetchTotalNotes() {
+    async function fetchTotalNotesAndFolders() {
       try {
         const { totalNotes } = await GetNotes();
         setTotalNotes(totalNotes);
       } catch (error) {
-        console.error("Error fetching total notes in Home page:", error);
+        console.error("Error fetching total notes:", error);
         setTotalNotes(0);
+      }
+
+      try {
+        const { totalFolders } = await GetFolders();
+        setTotalFolders(totalFolders);
+      } catch (error) {
+        console.error("Error fetching total folders:", error);
+        setTotalFolders(0);
       }
     }
 
-    fetchTotalNotes();
+    fetchTotalNotesAndFolders();
   }, []);
 
   if (loading) {
@@ -142,13 +152,14 @@ export default function Profil() {
           <div className="flex flex-col md:flex-row gap-8 w-full p-4 md:w-full md:items-start items-center mb-6">
 
             <div className="flex flex-col gap-4 items-center w-fit">
-              <p className=" whitespace-nowrap text-clrprincipal font-gant text-center md:text-left text-3xl md:text-4xl w-full md:w-auto">
-                Vos notes
+              <p className="text-clrprincipal font-gant text-center text-2xl w-full">
+                Vos contenus
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 items-center md:items-end w-full">
+            <div className="flex flex-col md:flex-row gap-4 items-center w-full">
               <TotalNotes totalNotes={totalNotes} />
+              <TotalFolders totalFolders={totalFolders} />
             </div>
 
             {/* Bouton déconnexion mobile en bas */}
