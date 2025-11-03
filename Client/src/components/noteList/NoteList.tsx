@@ -52,7 +52,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
 
   return (
     <main className="p-4">
-      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-[1400px] mx-auto gap-4 md:gap-6 justify-items-center">
+      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] max-w-full gap-4 md:gap-6 justify-items-center">
 
         {/* Add Note Button - Only shown if allowCreateNote is true */}
         {allowCreateNote && (

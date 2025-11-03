@@ -32,7 +32,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
   return (
     <main className="p-4">
-      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-[1400px] mx-auto gap-3 md:gap-4 justify-items-center">
+      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] max-w-full gap-3 md:gap-4 justify-items-center">
 
         {/* Add Folder Button */}
         <motion.button
