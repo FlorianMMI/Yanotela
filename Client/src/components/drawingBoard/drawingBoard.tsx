@@ -96,23 +96,90 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
   };
 
   const saveDrawing = () => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !context) return;
 
     const canvas = canvasRef.current;
     
-    // Convert canvas to data URL (base64 PNG)
-    const dataUrl = canvas.toDataURL("image/png");
+    // Get the bounding box of the actual drawing content
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = imageData.data;
     
-    // Create drawing data object
+    let minX = canvas.width;
+    let minY = canvas.height;
+    let maxX = 0;
+    let maxY = 0;
+    
+    // Scan all pixels to find the bounding box
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const index = (y * canvas.width + x) * 4;
+        const alpha = pixels[index + 3];
+        
+        // Check if pixel is not fully white (has been drawn on)
+        const r = pixels[index];
+        const g = pixels[index + 1];
+        const b = pixels[index + 2];
+        const isWhite = r === 255 && g === 255 && b === 255;
+        
+        if (!isWhite && alpha > 0) {
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        }
+      }
+    }
+    
+    // Check if anything was drawn
+    if (minX > maxX || minY > maxY) {
+      console.log("No drawing detected");
+      return;
+    }
+    
+    // Add padding around the drawing
+    const padding = 10;
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(canvas.width, maxX + padding);
+    maxY = Math.min(canvas.height, maxY + padding);
+    
+    // Calculate cropped dimensions
+    const croppedWidth = maxX - minX;
+    const croppedHeight = maxY - minY;
+    
+    // Create a temporary canvas for the cropped image
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = croppedWidth;
+    tempCanvas.height = croppedHeight;
+    const tempCtx = tempCanvas.getContext("2d");
+    
+    if (!tempCtx) return;
+    
+    // Draw white background on temp canvas
+    tempCtx.fillStyle = "white";
+    tempCtx.fillRect(0, 0, croppedWidth, croppedHeight);
+    
+    // Copy the cropped area to the temp canvas
+    tempCtx.drawImage(
+      canvas,
+      minX, minY, croppedWidth, croppedHeight,
+      0, 0, croppedWidth, croppedHeight
+    );
+    
+    // Convert temp canvas to data URL
+    const dataUrl = tempCanvas.toDataURL("image/png");
+    
+    // Create drawing data object with cropped dimensions
     const drawingData: DrawingData = {
       dataUrl,
       timestamp: Date.now(),
-      width: canvas.width,
-      height: canvas.height,
+      width: croppedWidth,
+      height: croppedHeight,
     };
 
     // Log for debugging
-    console.log("Drawing saved:", drawingData);
+    console.log("Drawing saved (cropped):", drawingData);
+    console.log(`Original: ${canvas.width}x${canvas.height}, Cropped: ${croppedWidth}x${croppedHeight}`);
     
     // Call the callback if provided
     if (onSave) {

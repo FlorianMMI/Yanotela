@@ -121,6 +121,27 @@ export default function FlashNoteWidget() {
         $insertNodes([imageNode]);
       }
     });
+
+    // Manually trigger a save after inserting the drawing
+    // Wait for the next tick to ensure the editor state has been updated
+    setTimeout(() => {
+      if (editor) {
+        setIsSavingContent(true);
+        setIsTyping(false);
+        
+        const editorState = editor.getEditorState();
+        const editorStateJSON = editorState.toJSON();
+        const contentString = JSON.stringify(editorStateJSON);
+        setEditorContent(contentString);
+        localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
+        console.log('Drawing saved to localStorage');
+        
+        // Reset saving state after a short delay
+        setTimeout(() => {
+          setIsSavingContent(false);
+        }, 300);
+      }
+    }, 100);
   }, [editor]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -165,8 +186,9 @@ export default function FlashNoteWidget() {
     }
 
     useEffect(() => {
-      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
-        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0) {
+      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }: any) => {
+        // Save on any update: dirty elements/leaves OR explicit updates (like node insertions)
+        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0 || tags?.has('history-merge') === false) {
           setIsTyping(true);
           debouncedSave(editorState);
         }

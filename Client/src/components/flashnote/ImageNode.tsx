@@ -130,6 +130,9 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
           height: "auto",
           display: "block",
           margin: "1rem 0",
+          border: "2px dashed #ccc",
+          borderRadius: "4px",
+          padding: "4px",
         }}
         width={this.__width}
         height={this.__height}
