@@ -44,7 +44,6 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
           <Breadcrumb />
           <ItemBar />
 
-
           {/* Zone de contenu */}
           <main className="flex-1 overflow-auto bg-background md:bg-deskbackground">
             {!loading && !isAuthenticated ? (
@@ -57,7 +56,6 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
                 {children}
               </div>
             )}
-
 
           </main>
         </div>

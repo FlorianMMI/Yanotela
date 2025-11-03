@@ -11,9 +11,7 @@ async function createTestUser() {
         });
 
         if (existingUser) {
-            console.log('✅ Utilisateur test existe déjà');
-            console.log('Email: test@yanotela.com');
-            console.log('Mot de passe: test123');
+
             return;
         }
 
@@ -32,11 +30,6 @@ async function createTestUser() {
                 is_verified: true // Déjà vérifié pour éviter les étapes de validation
             }
         });
-
-        console.log('✅ Utilisateur test créé avec succès !');
-        console.log('Email: test@yanotela.com');
-        console.log('Mot de passe: test123');
-        console.log('ID:', testUser.id);
 
     } catch (error) {
         console.error('❌ Erreur lors de la création de l\'utilisateur test:', error);
