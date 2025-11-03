@@ -138,7 +138,7 @@ const login = async (req, res) => {
       } catch (emailError) {
         console.error("Erreur lors de l'envoi de l'email de validation:", emailError);
         return res.status(401).json({
-          error: "Compte non activé. Veuillez vérifier votre email ou contacter le support."
+          error: "Utilisateur ou mot de passe incorrect"
         });
       }
     }
