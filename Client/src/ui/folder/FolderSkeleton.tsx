@@ -9,7 +9,7 @@ export default function FolderSkeleton() {
       </svg>
 
       {/* Container du texte skeleton - positionné en bas à gauche de l'icône */}
-      <div className="absolute bottom-2 left-2 md:bottom-3 md:left-3 lg:bottom-4 lg:left-4 pointer-events-none z-10">
+      <div className="absolute bottom-3 left-6 md:bottom-3 md:left-3 lg:bottom-4 lg:left-4 pointer-events-none z-10">
         {/* Nombre de notes skeleton */}
         <div className="mb-0.5">
           <div className="h-3 bg-gray-400 rounded w-12 md:w-16"></div>

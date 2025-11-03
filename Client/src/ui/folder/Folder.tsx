@@ -44,7 +44,7 @@ export default function Folder({ folder }: FolderProps) {
 </svg>
 
       {/* Container du texte - positionné en bas à gauche de l'icône */}
-      <div className="absolute bottom-3 left-3 md:bottom-3 md:left-3 lg:bottom-4 lg:left-4 pointer-events-none z-10">
+      <div className="absolute bottom-3 left-6 md:bottom-3 md:left-3 lg:bottom-4 lg:left-4 pointer-events-none z-10">
         {/* Nombre de notes */}
         <p className="font-geologica italic text-white font-medium drop-shadow-lg text-sm md:text-base lg:text-lg leading-tight mb-0.5">
           {folder.noteCount || 0} notes
