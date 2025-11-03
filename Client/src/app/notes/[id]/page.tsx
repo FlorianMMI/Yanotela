@@ -29,13 +29,10 @@ import { GetNoteById } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 
 import ErrorFetch from "@/ui/note/errorFetch";
-import SimpleToolbarPlugin from '@/components/textRich/SimpleToolbarPlugin';
+import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
-import { StyledTextPlugin } from '@/components/textRich/StyledTextPlugin';
 // @ts-ignore
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
-// @ts-ignore
-import { RichTextPlugin as LexicalRichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import '@/components/textRich/EditorStyles.css';
 import { useRouter } from "next/navigation";
 
@@ -380,7 +377,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     namespace: "Editor",
     theme,
     onError,
-    nodes: editorNodes as any,
+    nodes: editorNodes,
     // ✅ CORRECTION: Utiliser l'état initial depuis la BDD pour un chargement immédiat
     // La collaboration temps-réel viendra s'ajouter par-dessus via les WebSockets
     editorState: initialEditorState || createSimpleLexicalState(""),
@@ -518,7 +515,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   }
 
   return (
-    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
+    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5 relative">
       {/* Zone de notifications */}
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md">
@@ -646,15 +643,16 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 )}
               </div>
               
-              <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
-                {!isReadOnly && <SimpleToolbarPlugin />}
-                <StyledTextPlugin />
+              {/* Ne monter le LexicalComposer que quand initialEditorState est prêt */}
+              {initialEditorState && (
+                <LexicalComposer initialConfig={initialConfig} key={id}>
+                  {!isReadOnly && <ToolbarPlugin />}
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
                       aria-placeholder={ "Commencez à écrire..."}
                       placeholder={
-                        <p className="absolute top-4 left-4 text-textcardNote select-none pointer-events-none">
+                        <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
                            "Commencez à écrire..."
                         </p>
                       }
@@ -679,6 +677,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                   />
                 )}
               </LexicalComposer>
+              )}
             </div>
           </>
         )

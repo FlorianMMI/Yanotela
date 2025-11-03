@@ -1,41 +1,243 @@
-/* Styles directs pour les balises de titres dans l'éditeur Lexical */
-.editor-root h1 {
-  font-size: 2em;
-  font-weight: bold;
-  margin: 0.67em 0;
-  color: var(--clr-rouge-fonce);
+/**
+ * Styles pour l'éditeur Lexical de Yanotela
+ * Basé sur les styles du Lexical Playground officiel
+ * Adapté au design de Yanotela avec les couleurs du projet
+ */
+
+/* ======================
+   TOOLBAR STYLES
+   ====================== */
+
+.toolbar {
+  display: flex;
+  margin-bottom: 1px;
+  background: #fff;
+  padding: 8px;
+  border-radius: 8px;
+  vertical-align: middle;
+  gap: 4px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
 }
 
-.editor-root h2 {
-  font-size: 1.5em;
-  font-weight: bold;
-  margin: 0.75em 0;
-  color: var(--clr-gris-clair);
+.toolbar button.toolbar-item {
+  border: 0;
+  display: flex;
+  background: none;
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  vertical-align: middle;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
 }
 
-.editor-root h3 {
-  font-size: 1.17em;
-  font-weight: bold;
-  margin: 0.83em 0;
+.toolbar button.toolbar-item:hover:not([disabled]) {
+  background-color: #f0f0f0;
 }
 
+.toolbar button.toolbar-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
 
+.toolbar button.toolbar-item.spaced {
+  margin-right: 2px;
+}
 
-/* Styles pour l'éditeur Lexical */
+.toolbar button.toolbar-item.active {
+  background-color: #E9EBDB; /* Couleur de fond Yanotela */
+}
+
+.toolbar button.toolbar-item.active i {
+  opacity: 1;
+}
+
+/* Divider entre les groupes de boutons (utilise ::after pour afficher une barre verticale) */
+.toolbar .divider {
+    display: inline-block;
+    width: 0;
+    height: 28px;
+    margin: 0 6px;
+    vertical-align: middle;
+    position: relative;
+}
+
+.toolbar .divider::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 60%;
+    background-color: #919191;
+    border-radius: 1px;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+/* Ajustement responsive */
+@media (max-width: 768px) {
+    .toolbar .divider {
+        height: 22px;
+        margin: 0 4px;
+    }
+
+    .toolbar .divider::after {
+        height: 58%;
+    }
+}
+
+/* ======================
+   ICON STYLES
+   ====================== */
+
+.toolbar button.toolbar-item i.format {
+  background-size: contain;
+  display: inline-block;
+  height: 18px;
+  width: 18px;
+  vertical-align: -0.25em;
+  opacity: 0.6;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.toolbar button.toolbar-item:disabled i.format {
+  opacity: 0.2;
+}
+
+.toolbar button.toolbar-item.active i.format {
+  opacity: 1;
+}
+
+/* Icons - Format de texte */
+i.format.bold {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>');
+}
+
+i.format.italic {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="4" x2="10" y2="4"></line><line x1="14" y1="20" x2="5" y2="20"></line><line x1="15" y1="4" x2="9" y2="20"></line></svg>');
+}
+
+i.format.underline {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"></path><line x1="4" y1="21" x2="20" y2="21"></line></svg>');
+}
+
+i.format.strikethrough {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.3 5C15.4 3.7 13.2 3 11 3c-3.9 0-7 2.2-7 5s3.1 5 7 5c1.7 0 3.3.3 4.6.9"></path><path d="M7 19c1.9 1.3 4.1 2 6.3 2 3.9 0 7-2.2 7-5"></path><path d="M3 12h18"></path></svg>');
+}
+
+/* Icons - Alignement */
+i.format.left-align {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg>');
+}
+
+i.format.center-align {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="10" x2="6" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="18" y1="18" x2="6" y2="18"></line></svg>');
+}
+
+i.format.right-align {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="7" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg>');
+}
+
+i.format.justify-align {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>');
+}
+
+/* Icons - Undo/Redo */
+i.format.undo {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>');
+}
+
+i.format.redo {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>');
+}
+
+/* Icons - Listes */
+i.format.bullet-list {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>');
+}
+
+i.format.numbered-list {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"></line><line x1="10" y1="12" x2="21" y2="12"></line><line x1="10" y1="18" x2="21" y2="18"></line><path d="M4 6h1v4"></path><path d="M4 10h2"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>');
+}
+
+/* ======================
+   FONT SIZE & COLOR CONTROLS
+   ====================== */
+
+.toolbar .font-size-select {
+  padding: 6px 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.toolbar .font-size-select:hover {
+  border-color: #882626; /* Rouge foncé Yanotela */
+}
+
+.toolbar .font-size-select:focus {
+  outline: none;
+  border-color: #882626;
+  box-shadow: 0 0 0 2px rgba(136, 38, 38, 0.1);
+}
+
+.toolbar .color-picker {
+  width: 40px;
+  height: 32px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 2px;
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.toolbar .color-picker:hover {
+  border-color: #882626;
+}
+
+.toolbar .color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.toolbar .color-picker::-webkit-color-swatch {
+  border: none;
+  border-radius: 4px;
+}
+
+/* ======================
+   EDITOR CONTENT STYLES
+   ====================== */
+
+.editor-root {
+  position: relative;
+}
+
+.editor-paragraph {
+  margin: 0 0 15px 0;
+  position: relative;
+}
 
 /* Styles pour les titres */
 .editor-heading-h1 {
   font-size: 2em;
   font-weight: bold;
   margin: 0.67em 0;
-  color: var(--clr-rouge-fonce);
 }
 
 .editor-heading-h2 {
   font-size: 1.5em;
   font-weight: bold;
   margin: 0.75em 0;
-  color: var(--clr-gris-clair);
 }
 
 .editor-heading-h3 {
@@ -44,98 +246,7 @@
   margin: 0.83em 0;
 }
 
-/* Styles pour l'alignement du texte */
-.editor-text-left {
-  text-align: left;
-}
-
-.editor-text-center {
-  text-align: center;
-}
-
-.editor-text-right {
-  text-align: right;
-}
-
-.editor-text-justify {
-  text-align: justify;
-}
-
-/* Styles pour les tailles de police personnalisées */
-.editor-text-small {
-  font-size: 14px;
-}
-
-.editor-text-normal {
-  font-size: 16px;
-}
-
-.editor-text-large {
-  font-size: 20px;
-}
-
-.editor-text-xlarge {
-  font-size: 24px;
-}
-
-/* Classes pour les tailles de police spécifiques */
-.editor-text-14px {
-  font-size: 14px !important;
-}
-
-.editor-text-16px {
-  font-size: 16px !important; 
-}
-
-.editor-text-20px {
-  font-size: 20px !important;
-}
-
-.editor-text-24px {
-  font-size: 24px !important;
-}
-
-/* Styles dynamiques pour la taille de police */
-.lexical-editor [data-font-size="14px"] {
-  font-size: 14px !important;
-}
-
-.lexical-editor [data-font-size="16px"] {
-  font-size: 16px !important;
-}
-
-.lexical-editor [data-font-size="20px"] {
-  font-size: 20px !important;
-}
-
-.lexical-editor [data-font-size="24px"] {
-  font-size: 24px !important;
-}
-
-/* Styles pour les listes */
-.editor-list-ol {
-  padding: 0;
-  margin: 0;
-  margin-left: 16px;
-  list-style-type: decimal;
-}
-
-.editor-list-ul {
-  padding: 0;
-  margin: 0;
-  margin-left: 16px;
-  list-style-type: disc;
-}
-
-.editor-listitem {
-  margin: 8px 32px;
-}
-
-.editor-nested-listitem {
-  list-style-type: none;
-}
-
-/* Styles pour le texte formaté */
+/* Styles pour le formatage de texte */
 .editor-text-bold {
   font-weight: bold;
 }
@@ -157,65 +268,90 @@
 }
 
 .editor-text-code {
-  background-color: rgba(135, 131, 120, 0.15);
-  padding: 1px 0.25rem;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.94em;
+  background-color: #f3f4f6;
+  padding: 2px 4px;
   border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
 }
 
-/* Styles pour les paragraphes */
-.editor-paragraph {
-  margin: 0;
-  position: relative;
-}
-
-/* Styles globaux pour l'éditeur avec taille par défaut */
-.editor-root {
-  font-size: 16px; /* Taille par défaut */
-}
-
-/* Styles pour les spans avec des tailles de police personnalisées (notre FontSizeNode) */
-.editor-root span.editor-text-14px {
-  font-size: 14px !important;
-}
-
-.editor-root span.editor-text-16px {
-  font-size: 16px !important;
-}
-
-.editor-root span.editor-text-20px {
-  font-size: 20px !important;
-}
-
-.editor-root span.editor-text-24px {
-  font-size: 24px !important;
-}
-
-/* Styles pour les éléments inline avec taille de police */
-.editor-root [style*="font-size: 14px"] {
-  font-size: 14px !important;
-}
-
-.editor-root [style*="font-size: 16px"] {
-  font-size: 16px !important;
-}
-
-.editor-root [style*="font-size: 20px"] {
-  font-size: 20px !important;
-}
-
-.editor-root [style*="font-size: 24px"] {
-  font-size: 24px !important;
-}
-
-/* Styles pour les quotes */
+/* Styles pour les citations */
 .editor-quote {
   margin: 0;
   margin-left: 20px;
-  margin-bottom: 10px;
   font-size: 15px;
   color: rgb(101, 103, 107);
-  border-left: 4px solid var(--clr-rouge-fonce);
+  border-left: 4px solid #882626; /* Rouge foncé Yanotela */
   padding-left: 16px;
+}
+
+/* Styles pour les listes */
+.editor-list-ol {
+  padding: 0;
+  margin: 0;
+  margin-left: 16px;
+  list-style-position: inside;
+}
+
+.editor-list-ul {
+  padding: 0;
+  margin: 0;
+  margin-left: 16px;
+  list-style-position: inside;
+}
+
+.editor-listitem {
+  margin: 8px 32px 8px 32px;
+  display: list-item;
+}
+
+.editor-list-ol .editor-listitem {
+  list-style-type: decimal;
+}
+
+.editor-list-ul .editor-listitem {
+  list-style-type: disc;
+}
+
+.editor-nested-listitem {
+  list-style-type: none;
+}
+
+/* Styles pour les blocs de code */
+.editor-code {
+  background-color: #f3f4f6;
+  font-family: 'Courier New', Courier, monospace;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 8px 0px;
+  overflow-x: auto;
+  tab-size: 2;
+  line-height: 1.5;
+}
+
+/* Adaptations responsive */
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 6px;
+  }
+
+  .toolbar button.toolbar-item {
+    padding: 6px;
+  }
+
+  .toolbar button.toolbar-item i.format {
+    height: 16px;
+    width: 16px;
+  }
+
+  .toolbar .font-size-select {
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+
+  .toolbar .color-picker {
+    width: 32px;
+    height: 28px;
+  }
 }
