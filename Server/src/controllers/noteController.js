@@ -247,7 +247,7 @@ export const noteController = {
     // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
     if (!Titre || !Content) {
-      console.log('❌ Champs manquants:', { Titre: !!Titre, Content: !!Content });
+      
       return res.status(400).json({ message: "Champs requis manquants" });
     }
 
@@ -265,7 +265,7 @@ export const noteController = {
           modifierId: parseInt(userId), // Enregistre le dernier modificateur
         },
       });
-      console.log('✅ Note mise à jour avec succès en BDD');
+      
       res.status(200).json({ message: "Note mise à jour avec succès", note });
     } catch (error) {
       console.error("❌ Erreur lors de la mise à jour de la note:", error);

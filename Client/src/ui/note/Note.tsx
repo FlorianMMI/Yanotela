@@ -12,7 +12,6 @@ export default function Note({ note }: NoteProps) {
   const router = useRouter();
 
   // Log pour déboguer
-  console.log('[DEBUG Note] Rendering note:', note);
 
   const handleNoteClick = () => {
     router.push(`/notes/${note.id}`);
@@ -50,7 +49,6 @@ export default function Note({ note }: NoteProps) {
       return <p className="text-red-500">Erreur d'affichage du contenu</p>;
     }
   };
-
 
   return (
     

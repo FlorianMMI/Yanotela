@@ -59,37 +59,30 @@ export const DossierController = {
                 },
             });
 
-            console.log(`[DEBUG] Found ${folders.length} folders for user ${authorId}`);
-            
             // Vérifier s'il y a des entrées dans noteDossier pour cet utilisateur
             const totalNoteDossierEntries = await prisma.noteFolder.count({
                 where: {
                     userId: authorId
                 }
             });
-            console.log(`[DEBUG] Total noteDossier entries for user ${authorId}: ${totalNoteDossierEntries}`);
 
             // Calculer le nombre de notes pour chaque dossier
             const foldersWithNoteCounts = await Promise.all(
                 folders.map(async (folder) => {
-                    console.log(`[DEBUG] Calculating noteCount for folder: ${folder.id}, authorId: ${authorId}`);
-                    
+
                     const noteCount = await prisma.noteFolder.count({
                         where: {
                             folderId: folder.id,
                             userId: authorId
                         }
                     });
-                    
-                    console.log(`[DEBUG] Found ${noteCount} notes in folder ${folder.id} (${folder.Nom})`);
-                    
+
                     const allEntriesForFolder = await prisma.noteFolder.findMany({
                         where: {
                             folderId: folder.id
                         }
                     });
-                    console.log(`[DEBUG] All entries for folder ${folder.id}:`, allEntriesForFolder);
-                    
+
                     return {
                         ...folder,
                         noteCount
@@ -131,8 +124,6 @@ export const DossierController = {
                 return res.status(404).json({ message: "Dossier introuvable" });
             }
 
-            console.log(`[DEBUG getFolderById] Calculating noteCount for folder: ${folder.id}, authorId: ${authorId}`);
-            
             // Récupérer toutes les notes du dossier
             const assignments = await prisma.noteFolder.findMany({
                 where: {
@@ -182,8 +173,6 @@ export const DossierController = {
                     userRole: userRole
                 };
             });
-
-            console.log(`[DEBUG getFolderById] Found ${notes.length} notes in folder ${folder.id} (${folder.Nom})`);
 
             return res.status(200).json({ 
                 folder: { 
