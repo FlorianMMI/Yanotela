@@ -31,15 +31,9 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
     <>
       {/* Mobile: comportement actuel avec swipe navigation */}
       <div className="md:hidden">
-        {loading ? (
-          <div className="h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : (
-          <SwipeNavigationWrapper>
-            {children}
-          </SwipeNavigationWrapper>
-        )}
+        <SwipeNavigationWrapper>
+          {children}
+        </SwipeNavigationWrapper>
       </div>
 
       {/* Desktop: nouvelle architecture */}
