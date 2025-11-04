@@ -61,12 +61,9 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
             // Récupérer les informations du dossier
             const response = await GetFolderById(id);
-            
-            console.log('[DEBUG FolderDetail] Response from GetFolderById:', response);
 
             if (response && response.folder) {
-                console.log('[DEBUG FolderDetail] Folder data:', response.folder);
-                console.log('[DEBUG FolderDetail] Notes data:', response.notes);
+
                 setFolder(response.folder);
                 setNotes(Array.isArray(response.notes) ? response.notes : []);
             } else {

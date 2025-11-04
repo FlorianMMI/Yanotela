@@ -5,7 +5,7 @@ import { Folder as FolderType } from '@/type/Folder';
 import { CreateFolder } from '@/loader/loader';
 import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
-import { motion } from 'framer-motion';
+import { motion } from "motion/react";
 
 interface FolderListProps {
   folders: FolderType[];
@@ -31,8 +31,10 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
   };
 
   return (
+
     <main className="p-4 relative min-h-[calc(100vh-200px)]">
-      {/* Message si aucun dossier et pas en chargement - Centré sur la page */}
+
+       {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && folders.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="text-element text-lg font-gant">
@@ -43,7 +45,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
       <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-3 md:gap-4 justify-items-start">
 
-        {/* Add Folder Button */}
+        {/* Add Folder Button - Toujours visible */}
         <motion.button
           whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
           whileTap={{ scale: 0.95 }}

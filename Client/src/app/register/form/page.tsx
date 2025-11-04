@@ -50,7 +50,6 @@ export default function RegisterFormPage() {
           />
         </div>
 
-      
       </div>
     </div>
   );

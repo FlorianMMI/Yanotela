@@ -18,8 +18,7 @@ export const userController = {
 
     // Récupérer les informations de l'utilisateur authentifié
     getUserInfo: async (req, res) => {
-        
-        
+
         // Vérifier l'authentification
         if (!req.session.userId) {
             return res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -27,8 +26,7 @@ export const userController = {
         
         try {
             const userId = parseInt(req.session.userId, 10);
-            
-            
+
             // Récupérer les informations de l'utilisateur connecté
             const user = await prisma.user.findUnique({
                 where: {
@@ -43,7 +41,6 @@ export const userController = {
                 }
             });
 
-
             if (!user) {
                 return res.status(404).json({ message: 'Utilisateur non trouvé' });
             }
@@ -55,14 +52,12 @@ export const userController = {
                 }
             });
 
-
             // Ajouter le nombre de notes aux informations utilisateur
             const userWithNoteCount = {
                 ...user,
                 noteCount
             };
 
-            
             return res.status(200).json(userWithNoteCount);
         } catch (error) {
             console.error('Erreur getUserInfo:', error);
@@ -86,8 +81,6 @@ export const userController = {
                 where: { id: userId }
             });
 
-            
-            
             if (!user) {
                 return res.status(404).json({ message: 'Utilisateur non trouvé' });
             }
@@ -118,7 +111,6 @@ export const userController = {
                 // On continue le processus même si l'email échoue
             }
 
-            
             // Calculer la date de suppression définitive (1 minute pour test)
             const deletionDate = new Date(updatedUser.deleted_at);
             deletionDate.setMinutes(deletionDate.getMinutes() + 1); // TEST: 1 minute au lieu de 30 jours
@@ -190,8 +182,7 @@ export const userController = {
                     deleted_at: null
                 }
             });
-            
-            
+
             return res.status(200).json({ 
                 success: true,
                 message: 'La suppression de votre compte a été annulée avec succès.'
@@ -225,8 +216,7 @@ export const userController = {
                     notes: true
                 }
             });
-            
-            
+
             let deletedCount = 0;
             
             for (const user of expiredUsers) {

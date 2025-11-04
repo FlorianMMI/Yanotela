@@ -1,7 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 
-
-
 // Test de connexion à la base de données
 describe('Test de connexion à la base de données', () => {
   let prisma;

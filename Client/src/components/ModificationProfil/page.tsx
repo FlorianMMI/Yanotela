@@ -122,7 +122,6 @@ export default function ModificationProfil() {
     }
   };
 
-
   return (
     <>
       {pageLoading ? (

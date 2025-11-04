@@ -65,7 +65,6 @@ export default function ForgotPasswordForm({
     }
   };
 
-
   return (
     <div className={`max-w-md w-full space-y-8 ${className}`}>
       {showTitle && (

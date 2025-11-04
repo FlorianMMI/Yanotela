@@ -108,7 +108,6 @@ export default function LoginForm({
             className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
           />
         </div>
-        
 
         <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire border-primary border-2 rounded-[10px] flex justify-between items-center">
 

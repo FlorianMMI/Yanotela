@@ -182,7 +182,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         
         // Si le contenu est identique, ignorer complètement
         if (currentContent === content) {
-          console.log('📝 Contenu identique, pas de mise à jour nécessaire');
+          
           return;
         }
         
@@ -191,9 +191,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           console.warn('⚠️ Contenu distant invalide, ignoré');
           return;
         }
-        
-        console.log('📝 Application de la mise à jour distante du contenu');
-        
+
         // Sauvegarder le focus et la sélection avant mise à jour
         const hasFocus = editor.getRootElement() === document.activeElement || 
                          editor.getRootElement()?.contains(document.activeElement);
@@ -233,7 +231,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                     savedSelection.dirty = true;
                     editor.getEditorState()._selection = savedSelection;
                   } catch (e) {
-                    console.log('Impossible de restaurer la sélection exacte');
+                    
                   }
                 });
               }
@@ -255,7 +253,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       if (editor) {
         handleRemoteContentUpdate(content);
       } else {
-        console.log('🔔 Buffering content update until editor is ready (note:', id, ')');
+        
         setEditorContent(content);
       }
     };
@@ -279,7 +277,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://preprod.yanotela.fr";
         const response = await fetch(`${API_URL}/auth/check`, {
           credentials: "include",
         });
@@ -314,19 +312,19 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               
               // Validation basique pour s'assurer que c'est bien un EditorState Lexical
               if (parsedContent.root && parsedContent.root.type === 'root') {
-                console.log('✅ JSON Lexical valide trouvé dans la BDD');
+                
                 setInitialEditorState(note.Content);
                 setEditorContent(note.Content);
               } else {
                 // JSON mais pas Lexical, créer un état valide
-                console.log('⚠️ JSON non-Lexical, conversion...');
+                
                 const simpleState = createSimpleLexicalState(note.Content);
                 setInitialEditorState(simpleState);
                 setEditorContent(simpleState);
               }
             } catch {
               // Si ce n'est pas du JSON, créer un état d'éditeur simple avec le texte
-              console.log('⚠️ Contenu texte brut, conversion vers Lexical...');
+              
               const simpleState = createSimpleLexicalState(note.Content);
               setInitialEditorState(simpleState);
               setEditorContent(simpleState);
@@ -501,15 +499,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       
       // 1. WebSocket pour la collaboration temps réel
       socketService.emitContentUpdate(id, contentString);
-      console.log('📡 Contenu émis via WebSocket (temps réel)');
-      
+
       // 2. Sauvegarde HTTP en arrière-plan pour la sécurité
       // (avec un délai pour éviter de surcharger l'API)
       setTimeout(async () => {
         try {
           const result = await uploadContent(id, noteTitle, contentString);
-          console.log('💾 Sauvegarde HTTP confirmée');
-          
+
           // Si la sauvegarde HTTP échoue, on peut afficher une notification
           if (typeof result === 'object' && result && 'error' in result) {
             console.error('❌ Erreur sauvegarde HTTP:', (result as any).error);
@@ -526,7 +522,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
         // ✅ CORRECTION CRITIQUE: Ignorer les mises à jour si on applique du contenu distant
         if (isApplyingRemoteUpdateRef.current) {
-          console.log('🔄 Mise à jour ignorée (application de contenu distant en cours)');
+          
           return;
         }
 
@@ -553,7 +549,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
             debouncedContentEmit.cancel(); // Annuler le debounce
             charCountRef.current = 0;
             saveContent(editorState);
-            console.log('⚡ Envoi immédiat (3+ caractères)');
+            
           } else {
             // Sinon, attendre 150ms (avec min 1 char)
             debouncedContentEmit(editorState);

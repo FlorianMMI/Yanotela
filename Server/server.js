@@ -4,9 +4,7 @@ const prisma = new PrismaClient();
 
 try {
     if (prisma) {
-        console.log('Import Prisma OK');
-        
-        console.log('User created');
+
     }
 } catch (error) {
     console.error('Erreur import Prisma:', error);
@@ -20,5 +18,5 @@ const httpServer = createServer(async (req, res) => {
 
 const PORT = 3000;
 httpServer.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    
 });

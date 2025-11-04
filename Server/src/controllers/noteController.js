@@ -109,7 +109,6 @@ export const noteController = {
         .json({ message: "Aucune donnée reçue dans req.body" });
     }
 
-
     let { Titre, Content } = req.body;
     // Récupérer l'authorId depuis la session au lieu du body
     const authorId = parseInt(req.session.userId); // Convertir en Int pour la DB
@@ -129,7 +128,7 @@ export const noteController = {
                   format: 0,
                   mode: "normal",
                   style: "",
-                  text: "",
+                  text: "Commencez à écrire...",
                   type: "text",
                   version: 1
                 }
@@ -245,21 +244,10 @@ export const noteController = {
 
     const { userId } = req.session;
 
-    console.log('🔧 updateNoteById appelé:', {
-      noteId: id,
-      userId,
-      hasContent: !!Content,
-      contentLength: Content?.length,
-      hasTitle: !!Titre
-    });
-
-    if (!userId) {
-      console.log('❌ Utilisateur non authentifié');
-      return res.status(401).json({ message: "Utilisateur non authentifié" });
-    }
+    // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
     if (!Titre || !Content) {
-      console.log('❌ Champs manquants:', { Titre: !!Titre, Content: !!Content });
+      
       return res.status(400).json({ message: "Champs requis manquants" });
     }
 
@@ -268,28 +256,6 @@ export const noteController = {
     }
 
     try {
-      // Vérifier les permissions (await car async)
-      const userPermission = await getPermission(userId, id);
-
-      if (!userPermission) {
-        console.log('❌ Pas de permission pour cette note');
-        return res
-          .status(403)
-          .json({ message: "Vous n'avez pas accès à cette note" });
-      }
-
-      // Seuls propriétaire (0), admin (1) et éditeur (2) peuvent modifier
-      if (userPermission.role > 2) {
-        console.log('❌ Permission insuffisante, rôle:', userPermission.role);
-        return res
-          .status(403)
-          .json({
-            message:
-              "Vous n'avez pas la permission de modifier cette note (lecture seule)",
-          });
-      }
-
-      console.log('✅ Permissions OK, mise à jour de la note...');
       const note = await prisma.note.update({
         where: { id: id },
         data: {
@@ -299,7 +265,7 @@ export const noteController = {
           modifierId: parseInt(userId), // Enregistre le dernier modificateur
         },
       });
-      console.log('✅ Note mise à jour avec succès en BDD');
+      
       res.status(200).json({ message: "Note mise à jour avec succès", note });
     } catch (error) {
       console.error("❌ Erreur lors de la mise à jour de la note:", error);
@@ -350,7 +316,7 @@ export const noteController = {
           isAccepted: perm.isAccepted,
         };
       });
-      console.log("[getNoteNotAccepted] Retrieved notes:", notes);
+      
       res.status(200).json({ notes });
     } catch (error) {
       console.error("[getNoteNotAccepted] Error:", error);

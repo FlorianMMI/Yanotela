@@ -1,12 +1,18 @@
 # Multi-stage build for Node.js server
 FROM node:20-alpine AS base
 
+# Add metadata labels
+LABEL maintainer="Yanotela Team"
+LABEL version="1.0"
+LABEL description="Yanotela Backend - Node.js API with Prisma"
+
 # Install system dependencies
 RUN apk add --no-cache \
     python3 \
     make \
     g++ \
-    openssl
+    openssl \
+    curl
 
 # Install dependencies
 FROM base AS deps

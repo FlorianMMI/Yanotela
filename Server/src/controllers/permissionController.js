@@ -45,7 +45,6 @@ export async function FetchPermission(req, res) {
   }
 }
 
-
 // Handler Express pour changer le rôle d'un utilisateur sur une note spécifique
 const UpdatePermission = async (req, res) => {
   const { noteId, userId } = req.params;
@@ -180,7 +179,6 @@ async function AddPermission(req, res) {
   }
 }
 
-
 // Handler Express pour retirer une permission d'un utilisateur sur une note
 async function RemovePermission(req, res) {
   const { noteId, userId } = req.params;
@@ -200,7 +198,6 @@ async function RemovePermission(req, res) {
     if (!adminPermission || adminPermission.role > 1) {
       return res.status(403).json({ error: "Permissions insuffisantes pour retirer un utilisateur" });
     }
-
 
     // Permission de l'utilisateur cible
     const userPermission = await prisma.permission.findFirst({
