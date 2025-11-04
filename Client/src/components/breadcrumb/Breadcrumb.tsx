@@ -528,7 +528,7 @@ export default function Breadcrumb() {
                         />
                       </span>
                       {showNoteMore && (
-                        <div className="absolute right-0 mt-10 z-20">
+                        <div className="absolute right-0 mt-10 z-30">
                           <NoteMore noteId={noteId!} onClose={() => setShowNoteMore(false)} />
                         </div>
                       )}
@@ -548,7 +548,7 @@ export default function Breadcrumb() {
                         />
                       </span>
                       {showFolderMore && folderData && (
-                        <div className="absolute right-0 mt-10 z-20">
+                        <div className="absolute right-0 mt-10 z-30">
                           <FolderMore 
                             folder={{ ModifiedAt: folderData.ModifiedAt }}
                             folderId={folderId!} 

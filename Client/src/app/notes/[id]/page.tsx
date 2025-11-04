@@ -655,7 +655,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 />
               </span>
               {showNoteMore && (
-                <div className="absolute right-0 mt-2 z-20">
+                <div className="absolute right-0 mt-2 z-30">
                 <NoteMore noteId={id} onClose={() => setShowNoteMore(false)} />
                 </div>
               )}
