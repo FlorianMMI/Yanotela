@@ -25,21 +25,19 @@ export default function SaveFlashNoteButton({
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [flashContent, setFlashContent] = useState<string>('');
+  const [flashEmpty, setFlashEmpty] = useState<boolean>(true);
 
-  // Fonction pour vérifier si le contenu de la flash note est vide
-  const isFlashNoteEmpty = () => {
-    const flashContent = localStorage.getItem("yanotela:flashnote:content") || '';
-    
-    if (!flashContent) return true;
-    
+  // Note: flash emptiness is tracked in state `flashEmpty` to avoid reading localStorage during render
+
+  // Compute if flash content is empty
+  const computeIsEmpty = (flashContentValue: string) => {
+    if (!flashContentValue) return true;
     try {
-      const content = JSON.parse(flashContent);
-      // Vérifier si le contenu Lexical est vide
+      const content = JSON.parse(flashContentValue);
       if (!content.root || !content.root.children || content.root.children.length === 0) {
         return true;
       }
-      
-      // Vérifier si tous les enfants sont vides
       const hasContent = content.root.children.some((child: any) => {
         if (child.children && child.children.length > 0) {
           return child.children.some((textNode: any) => {
@@ -48,13 +46,40 @@ export default function SaveFlashNoteButton({
         }
         return false;
       });
-      
       return !hasContent;
     } catch {
-      // Si ce n'est pas du JSON valide, vérifier si c'est une chaîne vide
-      return flashContent.trim().length === 0;
+      return flashContentValue.trim().length === 0;
     }
   };
+
+  // Initialize flash content from localStorage on client only
+  React.useEffect(() => {
+    try {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem("yanotela:flashnote:content") || '' : '';
+      setFlashContent(stored);
+      setFlashEmpty(computeIsEmpty(stored));
+    } catch (e) {
+      setFlashContent('');
+      setFlashEmpty(true);
+    }
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'yanotela:flashnote:content') {
+        const newVal = e.newValue || '';
+        setFlashContent(newVal);
+        setFlashEmpty(computeIsEmpty(newVal));
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', onStorage);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', onStorage);
+      }
+    };
+  }, []);
 
   // Fonction pour sauvegarder Flash Note comme note normale
   const handleSaveFlashNote = async () => {
@@ -313,9 +338,9 @@ export default function SaveFlashNoteButton({
       {/* Bouton de sauvegarde */}
       <button
         onClick={handleOpenPopup}
-        disabled={isFlashNoteEmpty()}
-        className={`${buttonClasses} ${isFlashNoteEmpty() ? 'opacity-50 cursor-not-allowed' : ''}`}
-        title={isFlashNoteEmpty() ? "Votre Flash Note est vide" : "Sauvegarder comme une note"}
+        disabled={flashEmpty}
+        className={`${buttonClasses} ${flashEmpty ? 'opacity-50 cursor-not-allowed' : ''}`}
+        title={flashEmpty ? "Votre Flash Note est vide" : "Sauvegarder comme une note"}
       >
         {buttonContent}
       </button>
