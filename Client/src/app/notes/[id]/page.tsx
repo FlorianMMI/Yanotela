@@ -711,10 +711,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                   <RichTextPlugin
                     contentEditable={
                       <ContentEditable
-                        aria-placeholder={ "Commencez à écrire..."}
+                        aria-placeholder={ ""} // Suppresion du place holder
                         placeholder={
                           <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
-                            "Commencez à écrire..."
                           </p>
                         }
                         className={`editor-root mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
