@@ -96,13 +96,12 @@ export default function Note({ note }: NoteProps) {
           {
             (() => {
               // Debug: voir la structure du contenu
-              console.log('Note Content:', note.Content);
-              
+
               if (typeof note.Content === 'string') {
                 // Tenter de parser si c'est du JSON string
                 try {
                   const parsed = JSON.parse(note.Content);
-                  console.log('Parsed Content:', parsed);
+                  
                   if (parsed.root && parsed.root.children) {
                     // C'est du JSON Lexical, le traiter comme un objet
                     note.Content = parsed;

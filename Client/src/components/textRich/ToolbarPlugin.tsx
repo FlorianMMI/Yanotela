@@ -12,8 +12,6 @@ import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST
 import { mergeRegister } from '@lexical/utils';
 import Icons from '@/ui/Icon';
 
-
-
 export default function ToolbarPlugin() {
     const [editor] = useLexicalComposerContext();
     const toolbarRef = useRef(null);
