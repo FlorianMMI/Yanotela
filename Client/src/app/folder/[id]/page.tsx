@@ -152,7 +152,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     }
 
     return (
-        <div className="h-full w-full flex flex-col relative">
+        <div className="h-full w-full flex flex-col p-2.5 relative">
             {/* Modale de confirmation de suppression */}
             {isDeleteModalOpen && (
                 <FolderDeleteModal
