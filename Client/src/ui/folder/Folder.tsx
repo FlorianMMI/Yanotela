@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Folder as FolderType } from '@/type/Folder';
-import { motion } from 'framer-motion';
+import { motion } from "motion/react";
 import Icon from '@/ui/Icon';
 
 interface FolderProps {

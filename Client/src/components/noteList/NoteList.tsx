@@ -7,7 +7,7 @@ import { CreateNote } from '@/loader/loader';
 import { socketService } from '@/services/socketService';
 import { useRouter } from 'next/navigation';
 import Icons from '@/ui/Icon';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 interface NoteListProps {
   notes: NoteType[];

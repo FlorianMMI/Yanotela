@@ -5,7 +5,7 @@ import { Folder as FolderType } from '@/type/Folder';
 import { CreateFolder } from '@/loader/loader';
 import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
-import { motion } from 'framer-motion';
+import { motion } from "motion/react";
 
 interface FolderListProps {
   folders: FolderType[];
