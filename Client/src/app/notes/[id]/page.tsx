@@ -192,27 +192,52 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           return;
         }
 
+        // Sauvegarder le focus et la sélection avant mise à jour
+        const hasFocus = editor.getRootElement() === document.activeElement || 
+                         editor.getRootElement()?.contains(document.activeElement);
+        
+        let savedSelection: any = null;
+        if (hasFocus) {
+          savedSelection = editor.getEditorState()._selection?.clone();
+        }
+        
         // ✅ CORRECTION CRITIQUE: Marquer qu'on applique une mise à jour distante
-        // AVANT de faire quoi que ce soit pour éviter les boucles
+        // Ceci permet d'éviter que l'updateListener déclenche une sauvegarde
         const isApplyingRemoteUpdateRef = (editor as any)._isApplyingRemoteUpdateRef;
         if (isApplyingRemoteUpdateRef) {
           isApplyingRemoteUpdateRef.current = true;
         }
         
-        // ✅ NE PAS sauvegarder la sélection ni restaurer le focus
-        // C'est ça qui cause le déplacement du curseur !
-        
-        // Appliquer la mise à jour immédiatement SANS setTimeout
-        const newEditorState = editor.parseEditorState(parsedContent);
-        editor.setEditorState(newEditorState);
-        setEditorContent(content);
-        
-        // ✅ Réinitialiser le flag après un délai suffisant (300ms au lieu de 50ms)
+        // Appliquer la mise à jour dans une transaction séparée
         setTimeout(() => {
-          if (isApplyingRemoteUpdateRef) {
-            isApplyingRemoteUpdateRef.current = false;
+          const newEditorState = editor.parseEditorState(parsedContent);
+          editor.setEditorState(newEditorState);
+          setEditorContent(content);
+          
+          // ✅ Réinitialiser le flag après application
+          setTimeout(() => {
+            if (isApplyingRemoteUpdateRef) {
+              isApplyingRemoteUpdateRef.current = false;
+            }
+          }, 50);
+          
+          // Restaurer le focus si nécessaire
+          if (hasFocus) {
+            setTimeout(() => {
+              editor.focus();
+              if (savedSelection) {
+                editor.update(() => {
+                  try {
+                    savedSelection.dirty = true;
+                    editor.getEditorState()._selection = savedSelection;
+                  } catch (e) {
+                    
+                  }
+                });
+              }
+            }, 0);
           }
-        }, 300);
+        }, 0);
       });
     } catch (err) {
       console.warn('Impossible de parser le contenu distant:', err);
@@ -681,11 +706,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                       <ContentEditable
                         aria-placeholder={ "Commencez à écrire..."}
                         placeholder={
-                          <p className="absolute top-4 md:top-20 left-4 text-textcardNote select-none pointer-events-none">
+                          <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
                             "Commencez à écrire..."
                           </p>
                         }
-                        className={`editor-root md:mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                        className={`editor-root mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
                         contentEditable={!isReadOnly}
                       />
                     }

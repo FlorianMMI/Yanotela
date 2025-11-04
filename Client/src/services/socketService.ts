@@ -83,10 +83,7 @@ class SocketService {
    * Émettre une mise à jour du titre
    */
   emitTitleUpdate(noteId: string, titre: string) {
-    if (!this.socket || !this.socket.connected) {
-      console.warn('⚠️ Socket non connecté, impossible d\'émettre titleUpdate');
-      return;
-    }
+    if (!this.socket || !this.socket.connected) return;
     this.socket.emit('titleUpdate', { noteId, titre });
   }
 
@@ -94,10 +91,7 @@ class SocketService {
    * Émettre une mise à jour du contenu
    */
   emitContentUpdate(noteId: string, content: string) {
-    if (!this.socket || !this.socket.connected) {
-      console.warn('⚠️ Socket non connecté, impossible d\'émettre contentUpdate');
-      return;
-    }
+    if (!this.socket || !this.socket.connected) return;
     this.socket.emit('contentUpdate', { noteId, content });
   }
 
