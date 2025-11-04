@@ -8,9 +8,11 @@ interface IconProps {
   size?: number;
   width?: number;
   height?: number;
+  strokeWidth?: number; // Ajout pour contrôler l'épaisseur du trait
 }
 
-const Icon = ({ name, className = "", size = 20, width, height }: IconProps) => {
+
+const Icon = ({ name, className = "", size = 20, width, height, strokeWidth }: IconProps) => {
   const [svgContent, setSvgContent] = useState<string>('');
   if (!width) width = size;
   if (!height) height = size;
@@ -20,48 +22,42 @@ const Icon = ({ name, className = "", size = 20, width, height }: IconProps) => 
         const response = await fetch(`/${name}.svg`);
         if (response.ok) {
           const svg = await response.text();
-          
-          // Extraire les dimensions originales du SVG
-          const viewBoxMatch = svg.match(/viewBox="([^"]+)"/);
-          let scaleFactor = 1;
-          
-          if (viewBoxMatch) {
-            const viewBoxValues = viewBoxMatch[1].split(' ');
-            const originalWidth = parseFloat(viewBoxValues[2]);
-            const originalHeight = parseFloat(viewBoxValues[3]);
-            if (originalWidth > 0 && originalHeight > 0) {
-              scaleFactor = Math.min(width! / originalWidth, height! / originalHeight);
+          // Utiliser DOMParser pour manipuler le SVG proprement
+          const parser = new window.DOMParser();
+          const doc = parser.parseFromString(svg, "image/svg+xml");
+          const svgEl = doc.documentElement;
+          svgEl.setAttribute("width", String(width));
+          svgEl.setAttribute("height", String(height));
+          svgEl.setAttribute("style", "display: block;");
+
+          // Harmoniser les couleurs
+          const elements = svgEl.querySelectorAll('path, circle, rect, line, polyline, polygon');
+          elements.forEach(el => {
+            // Harmoniser fill
+            if (el.getAttribute('fill') === '#000' || el.getAttribute('fill') === '#000000' || el.getAttribute('fill') === 'black') {
+              el.setAttribute('fill', 'currentColor');
             }
-          }
-          
-          // Ne remplace que les fill="currentColor" ou fill="none" ou fill="#000" ou fill="black"
-          // Préserve les couleurs spécifiques comme #ff0000, #blue, etc.
-          let modifiedSvg = svg
-            .replace(/fill="currentColor"/g, 'fill="currentColor"')
-            .replace(/fill="none"/g, 'fill="none"')
-            .replace(/fill="#000000"/g, 'fill="currentColor"')
-            .replace(/fill="#000"/g, 'fill="currentColor"')
-            .replace(/fill="black"/g, 'fill="currentColor"')
-            .replace(/width="[^"]*"/g, '')
-            .replace(/height="[^"]*"/g, '')
-            .replace('<svg', `<svg width="${width}" height="${height}" style="display: block;"`);
-          
-          // Adapter les stroke-width proportionnellement
-          modifiedSvg = modifiedSvg.replace(/stroke-width="([^"]+)"/g, (match, strokeWidth) => {
-            const originalStrokeWidth = parseFloat(strokeWidth);
-            const newStrokeWidth = originalStrokeWidth * scaleFactor;
-            return `stroke-width="${newStrokeWidth}"`;
+            // Harmoniser stroke
+            if (el.getAttribute('stroke') === '#000' || el.getAttribute('stroke') === '#000000' || el.getAttribute('stroke') === 'black') {
+              el.setAttribute('stroke', 'currentColor');
+            }
+            // Appliquer strokeWidth si demandé
+            if (typeof strokeWidth === 'number') {
+              el.setAttribute('stroke-width', String(strokeWidth));
+            }
           });
-          
-          setSvgContent(modifiedSvg);
+
+          // Générer le SVG final
+          const serializer = new window.XMLSerializer();
+          const finalSvg = serializer.serializeToString(svgEl);
+          setSvgContent(finalSvg);
         }
       } catch (error) {
         console.error(`Erreur lors du chargement de l'icône ${name}:`, error);
       }
     };
-
     loadSvg();
-  }, [name, size]);
+  }, [name, size, strokeWidth, width, height]);
 
   if (!svgContent) {
     return <div className={className} role="img" style={{ width: width, height: height }} />;

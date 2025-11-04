@@ -9,44 +9,71 @@ datasource db {
 }
 
 model User {
-  id              Int         @id @default(autoincrement())
-  notes           Note[]      
-  modifiedNotes   Note[]      @relation("NoteModifier")
-  permissions     Permission[]
-  pseudo          String      @unique
-  prenom          String
-  password        String
-  nom             String
-  email           String      @unique
-  token           String      @unique
-  is_verified     Boolean     @default(false)
-  deleted_at      DateTime?               
-
+  id            Int          @id @default(autoincrement())
+  pseudo        String       @unique
+  prenom        String
+  password      String
+  nom           String
+  email         String       @unique
+  token         String       @unique
+  is_verified   Boolean      @default(false)
+  deleted_at    DateTime?
+  folders       Folder[]
+  notes         Note[]
+  modifiedNotes Note[]       @relation("NoteModifier")
+  permissions   Permission[]
+  noteFolders   NoteFolder[]
 }
 
 model Note {
-  id              String         @id 
-  Titre           String      
-  Content         String
-  authorId        Int
-  author          User        @relation(fields: [authorId], references: [id])
-  modifierId      Int?
-  modifier        User?       @relation("NoteModifier", fields: [modifierId], references: [id])
-  permissions     Permission[]
-  ModifiedAt       DateTime    @default(now())
-  
+  id          String       @id
+  Titre       String
+  Content     String
+  authorId    Int
+  ModifiedAt  DateTime     @default(now())
+  modifierId  Int?
+  author      User         @relation(fields: [authorId], references: [id])
+  modifier    User?        @relation("NoteModifier", fields: [modifierId], references: [id])
+  permissions Permission[]
+  noteFolder  NoteFolder?
 }
 
 model Permission {
-  noteId String   @map("id_note")
-  userId Int      @map("id_user")
-  role   Int
+  noteId     String  @map("id_note")
+  userId     Int     @map("id_user")
+  role       Int
   isAccepted Boolean @default(false)
-
-  note   Note   @relation(fields: [noteId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  note       Note    @relation(fields: [noteId], references: [id])
+  user       User    @relation(fields: [userId], references: [id])
 
   @@id([noteId, userId])
-  
 }
 
+model Folder {
+  id          String       @id @default(uuid())
+  Nom         String
+  Description String?
+  CouleurTag  String       @default("#D4AF37")
+  authorId    Int
+  CreatedAt   DateTime     @default(now())
+  ModifiedAt  DateTime     @updatedAt
+  deletedAt   DateTime?
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  noteFolders NoteFolder[]
+
+  @@map("Dossier")
+}
+
+model NoteFolder {
+  noteId   String   @id @map("note_id")
+  folderId String   @map("folder_id")
+  userId   Int      @map("user_id")
+  addedAt  DateTime @default(now())
+  folder   Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  note     Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([folderId])
+  @@index([userId])
+  @@map("note_folder")
+}

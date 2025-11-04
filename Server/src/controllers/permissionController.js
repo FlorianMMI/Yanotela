@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 //     {id: 3, role: 2}, // Editeur
 //     {id: 4, role: 3} // Lecteur
 
-
 const getPermission = async (userId, noteId) => {
     try {
         const permission = await prisma.permission.findFirst({

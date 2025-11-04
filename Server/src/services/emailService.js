@@ -4,25 +4,52 @@ const FRONT_URL = process.env.FRONT_URL || 'http://localhost:3000';
 
 // Configuration du transporteur email
 function createEmailTransporter() {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('🔍 DEBUG VARIABLES ENVIRONNEMENT');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('EMAIL_SERVICE:', process.env.EMAIL_SERVICE);
+  console.log('GMAIL_USER:', process.env.GMAIL_USER);
+  console.log('GMAIL_APP_PASSWORD existe:', !!process.env.GMAIL_APP_PASSWORD);
+  console.log('GMAIL_APP_PASSWORD longueur:', process.env.GMAIL_APP_PASSWORD?.length);
   
-  // Configuration Gmail SMTP
-    return nodemailer.createTransport({
-      service: 'gmail',
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // true pour 465, false pour autres ports
-      auth: {
-        user: process.env.GMAIL_USER, // Votre adresse Gmail
-        pass: process.env.GMAIL_APP_PASSWORD // Mot de passe d'application Gmail
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
+  // Vérifier si les variables sont définies
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.error('❌ ERREUR: Variables d\'environnement manquantes!');
+    console.error('GMAIL_USER:', process.env.GMAIL_USER);
+    console.error('GMAIL_APP_PASSWORD:', process.env.GMAIL_APP_PASSWORD ? 'défini' : 'MANQUANT');
+    throw new Error('Variables d\'environnement EMAIL manquantes');
+  }
   
+  console.log('✅ Variables OK, création du transporter...');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-  
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD
+    },
+    debug: true,   // Active le mode debug
+    logger: true   // Active les logs SMTP
+  });
 }
+
+// Test de la fonction
+async function testTransporter() {
+  try {
+    const transporter = createEmailTransporter();
+    console.log('🔌 Test de connexion SMTP...');
+    await transporter.verify();
+    console.log('✅ Connexion SMTP réussie!\n');
+    return transporter;
+  } catch (error) {
+    console.error('❌ Erreur:', error.message);
+    throw error;
+  }
+}
+
+// Appeler le test au démarrage
+testTransporter().catch(console.error);
 
 async function sendValidationEmail(to, token) {
   // Désactiver les emails pendant les tests

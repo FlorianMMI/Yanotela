@@ -23,15 +23,23 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
           routes: {
             current: '/notes',
             left: '/profil',    // Swipe droite va vers profil
-            right: '/profil'    // Swipe gauche va vers profil
+            right: '/folder'    // Swipe gauche va vers profil
           }
         };
       case '/profil':
         return {
           routes: {
             current: '/profil',
-            left: '/notes',     // Swipe droite va vers notes
+            left: '/folder',     // Swipe droite va vers notes
             right: '/notes'     // Swipe gauche va vers notes
+          }
+        };
+      case '/folder':
+        return {
+          routes: {
+            current: '/folder',
+            left: '/notes',     // Swipe droite va vers notes
+            right: '/profil'     // Swipe gauche va vers notes
           }
         };
       default:
@@ -118,6 +126,24 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => router.push('/notes')}
+            >
+            </motion.div>
+
+            {/* Indicateur Folder */}
+            <motion.div 
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                pathname === '/folder' 
+                  ? 'bg-primary text-white' 
+                  : 'bg-primary/30 text-primary'
+              }`}
+              initial={{ scale: 0.9 }}
+              animate={{ 
+                scale: pathname === '/folder' ? 1.1 : 0.9,
+                opacity: pathname === '/folder' ? 1 : 0.7
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => router.push('/folder')}
             >
             </motion.div>
           </div>
