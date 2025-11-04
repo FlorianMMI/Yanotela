@@ -2,13 +2,21 @@
 
 import { $getRoot, EditorState, $getSelection, $isRangeSelection } from "lexical";
 import React, { useEffect, useState, use, useRef, useCallback } from "react";
+// @ts-ignore
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+// @ts-ignore
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
+// @ts-ignore
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+// @ts-ignore
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+// @ts-ignore
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+// @ts-ignore
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import ReturnButton from "@/ui/returnButton";
+// @ts-ignore
+// import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
@@ -25,10 +33,36 @@ import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 
 import ErrorFetch from "@/ui/note/errorFetch";
+import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
+import { editorNodes } from "@/components/textRich/editorNodes";
+// @ts-ignore
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import '@/components/textRich/EditorStyles.css';
 
 const theme = {
-  // Theme styling goes here
-  //...
+  heading: {
+    h1: 'editor-heading-h1',
+    h2: 'editor-heading-h2',
+    h3: 'editor-heading-h3',
+  },
+  list: {
+    nested: {
+      listitem: 'editor-nested-listitem',
+    },
+    ol: 'editor-list-ol',
+    ul: 'editor-list-ul',
+    listitem: 'editor-listitem',
+  },
+  text: {
+    bold: 'editor-text-bold',
+    italic: 'editor-text-italic',
+    underline: 'editor-text-underline',
+    strikethrough: 'editor-text-strikethrough',
+    underlineStrikethrough: 'editor-text-underlineStrikethrough',
+    code: 'editor-text-code',
+  },
+  paragraph: 'editor-paragraph',
+  quote: 'editor-quote',
 };
 
 function onError(error: string | Error) {
@@ -49,6 +83,16 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
+  // Détection mobile
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Reload page on breakpoint change (mobile <-> desktop)
   React.useEffect(() => {
     // Détection du breakpoint initial
@@ -361,10 +405,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     namespace: "Editor",
     theme,
     onError,
-    nodes: [ImageNode], // Register the ImageNode
+    nodes: editorNodes,
     // ✅ CORRECTION: Utiliser l'état initial depuis la BDD pour un chargement immédiat
     // La collaboration temps-réel viendra s'ajouter par-dessus via les WebSockets
-    editorState: initialEditorState || undefined,
+    editorState: initialEditorState || createSimpleLexicalState(""),
   };
 
   const focusAtEnd = useCallback(() => {
@@ -522,7 +566,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   }
 
   return (
-    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
+    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5 relative">
       {/* Zone de notifications */}
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md">
@@ -640,7 +684,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] overflow-auto">
+            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
               {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
               {/* <div className="absolute bottom-4 right-4 z-10">
                 {(isSavingContent || isTyping) ? (
@@ -653,38 +697,41 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               {/* Drawing Board */}
               {!isReadOnly && <DrawingBoard isOpen={false} onSave={handleDrawingSave} />}
               
-              <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
-                <div className="flex-1 relative">
+              {/* Ne monter le LexicalComposer que quand initialEditorState est prêt */}
+              {initialEditorState && (
+                <LexicalComposer initialConfig={initialConfig} key={id}>
+                  {!isReadOnly && <ToolbarPlugin />}
                   <RichTextPlugin
-                      contentEditable={
-                        <ContentEditable
-                          aria-placeholder={ "Commencez à écrire..."}
-                          placeholder={
-                            <p className="absolute top-0 left-0 text-textcardNote select-none pointer-events-none">
-                               "Commencez à écrire..."
-                            </p>
-                          }
-                          className={`min-h-[200px] focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
-                          contentEditable={!isReadOnly}
-                        />
-                      }
-                      ErrorBoundary={LexicalErrorBoundary}
-                    />
-                </div>
-                <HistoryPlugin />
-                {!isReadOnly && <OnChangeBehavior />}
-                {!isReadOnly && <AutoFocusPlugin />}
-                {/* Plugin de collaboration temps réel */}
-                {userPseudo && (
-                  <CollaborationPlugin 
-                    noteId={id} 
-                    username={userPseudo}
-                    isReadOnly={isReadOnly}
-                    onTitleUpdate={handleRemoteTitleUpdate}
-                    onContentUpdate={handleRemoteContentUpdate}
+                    contentEditable={
+                      <ContentEditable
+                        aria-placeholder={ "Commencez à écrire..."}
+                        placeholder={
+                          <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
+                            "Commencez à écrire..."
+                          </p>
+                        }
+                        className={`editor-root mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                        contentEditable={!isReadOnly}
+                      />
+                    }
+                    ErrorBoundary={LexicalErrorBoundary}
                   />
-                )}
-              </LexicalComposer>
+                  <HistoryPlugin />
+                  <ListPlugin />
+                  {!isReadOnly && <OnChangeBehavior />}
+                  {!isReadOnly && <AutoFocusPlugin />}
+                  {/* Plugin de collaboration temps réel */}
+                  {userPseudo && (
+                    <CollaborationPlugin 
+                      noteId={id} 
+                      username={userPseudo}
+                      isReadOnly={isReadOnly}
+                      onTitleUpdate={handleRemoteTitleUpdate}
+                      onContentUpdate={handleRemoteContentUpdate}
+                    />
+                  )}
+                </LexicalComposer>
+              )}
             </div>
           </>
         )

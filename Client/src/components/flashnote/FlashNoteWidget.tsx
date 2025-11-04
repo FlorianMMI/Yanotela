@@ -221,7 +221,7 @@ export default function FlashNoteWidget() {
         <Icons name="info" size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
           <p className="text-xs text-blue-800">
-            Vos notes sont automatiquement enregistrées localement. Pour les synchroniser en ligne,{' '}
+            Les flashnotes sont temporaires. Pour les conserver de façon permanente,{' '}
             <span className="font-semibold">connectez-vous</span>.
           </p>
         </div>
@@ -254,7 +254,7 @@ export default function FlashNoteWidget() {
               <Icons name="Checkk" size={20} className="h-5 w-5 text-primary" />
               )}
               <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-primary text-background text-xs rounded py-1 px-2 whitespace-nowrap">
-                Sauvegarder dans la mémoire de votre machine
+                Enregistrement automatique de votre note temporaire
                 <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary"></div>
               </div>
             </div>
