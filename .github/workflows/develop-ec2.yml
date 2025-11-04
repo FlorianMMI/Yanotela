@@ -39,7 +39,16 @@ jobs:
             Server/package-lock.json
             Client/package-lock.json
 
-     
+      - name: Audit npm
+        run: |
+          cd Server
+          npm install
+          npm ci --no-audit --progress=false
+          npm audit --audit-level=high || true
+          cd ../Client
+          npm ci --no-audit --progress=false
+          npm audit --audit-level=high || true
+          cd ..
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
