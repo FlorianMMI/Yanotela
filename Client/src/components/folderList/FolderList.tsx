@@ -49,7 +49,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
         <motion.button
           whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
           whileTap={{ scale: 0.95 }}
-          className="z-20 border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-[110px] md:w-65 md:h-50"
+          className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-[110px] md:w-65 md:h-50"
           onClick={handleCreateFolder}
           aria-label="Créer un nouveau dossier"
           title="Créer un nouveau dossier"
