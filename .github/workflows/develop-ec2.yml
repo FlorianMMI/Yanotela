@@ -42,6 +42,7 @@ jobs:
       - name: Audit npm
         run: |
           cd Server
+          npm install
           npm ci --no-audit --progress=false
           npm audit --audit-level=high || true
           cd ../Client
