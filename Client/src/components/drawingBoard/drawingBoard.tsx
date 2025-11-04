@@ -216,7 +216,7 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
   );
 
   return (
-    <div className="absolute z-20 top-0 left-0 w-full h-full bg-white">
+    <div className="fixed md:absolute z-[100] md:z-20 top-0 left-0 w-screen h-screen md:w-full md:h-full bg-white">
       <canvas
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"
