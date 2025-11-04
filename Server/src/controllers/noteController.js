@@ -32,6 +32,9 @@ export const noteController = {
         where: {
           userId: req.session.userId,
           isAccepted: true,
+          note: {
+            deletedAt: null, // Exclure les notes supprimées
+          },
         },
         include: {
           note: {
@@ -208,6 +211,11 @@ export const noteController = {
 
       if (!note) {
         return res.status(404).json({ message: "Note non trouvée" });
+      }
+
+      // Vérifier si la note est supprimée
+      if (note.deletedAt) {
+        return res.status(404).json({ message: "Cette note a été supprimée" });
       }
 
       // Récupérer le rôle de l'utilisateur sur cette note
@@ -618,6 +626,64 @@ export const noteController = {
       console.error("Erreur lors de la récupération du dossier de la note:", error);
       res.status(500).json({
         message: "Erreur lors de la récupération du dossier de la note",
+        error: error.message,
+      });
+    }
+  },
+
+  deleteNote: async (req, res) => {
+    const { id } = req.params; // noteId
+    const { userId } = req.session;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      // Vérifier que la note existe
+      const note = await prisma.note.findUnique({
+        where: { id },
+      });
+
+      if (!note) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+
+      // Vérifier que la note n'est pas déjà supprimée
+      if (note.deletedAt) {
+        return res.status(400).json({ message: "Cette note est déjà supprimée" });
+      }
+
+      // Vérifier les permissions (seul Owner ou Admin peut supprimer)
+      const userPermission = await getPermission(userId, id);
+      
+      if (!userPermission) {
+        return res.status(403).json({ message: "Vous n'avez pas accès à cette note" });
+      }
+
+      // Role 0 = Owner, Role 1 = Admin
+      if (userPermission.role !== 0 && userPermission.role !== 1) {
+        return res.status(403).json({ 
+          message: "Seul le propriétaire ou un administrateur peut supprimer cette note" 
+        });
+      }
+
+      // Soft delete: définir deletedAt à la date actuelle
+      const deletedNote = await prisma.note.update({
+        where: { id },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+
+      res.status(200).json({ 
+        message: "Note supprimée avec succès",
+        noteId: deletedNote.id 
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la note:", error);
+      res.status(500).json({
+        message: "Erreur lors de la suppression de la note",
         error: error.message,
       });
     }

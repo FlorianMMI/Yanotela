@@ -134,6 +134,38 @@ export async function SaveNote(id: string, noteData: Partial<Note>): Promise<boo
     }
 }
 
+export async function DeleteNote(id: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/delete/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return {
+                success: false,
+                error: errorData.message || `Erreur HTTP ${response.status}`
+            };
+        }
+
+        const data = await response.json();
+        return {
+            success: true,
+            message: data.message || "Note supprimée avec succès"
+        };
+    } catch (error) {
+        console.error("Error deleting note:", error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Erreur inconnue"
+        };
+    }
+}
+
 // ============== AUTHENTIFICATION FUNCTIONS ==============
 
 interface LoginCredentials {

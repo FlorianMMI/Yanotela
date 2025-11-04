@@ -18,8 +18,8 @@ router.get('/get/:id', requireAuth, noteController.getNoteById);
 // Route Post pour mettre à jour une note par son ID (vérification des droits d'écriture)
 router.post('/update/:id', requireWriteAccess, noteController.updateNoteById);
 
-// Route Post pour supprimer une note par son ID (vérification des droits d'écriture)
-// router.post('/delete/:id', requireWriteAccess, noteController.deleteNoteById);
+// Route Post pour supprimer une note par son ID (soft delete, vérification dans le contrôleur)
+router.post('/delete/:id', requireAuth, noteController.deleteNote);
 
 // Route Post pour assigner une note à un dossier
 router.post('/assign-folder/:id', requireAuth, noteController.assignFolder);
