@@ -55,11 +55,7 @@ export default function Home() {
         setSortBy={setSortBy}
       />
 
-      <Suspense fallback={
-        <div className="p-4">
-          <div className="text-center text-gray-500">Chargement des notes...</div>
-        </div>
-      }>
+      <Suspense fallback={<div></div>}>
         <NoteList
           notes={filteredNotes}
           onNoteCreated={fetchNotes}

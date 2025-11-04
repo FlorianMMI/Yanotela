@@ -1,31 +1,68 @@
 "use client";
 
-import { $getRoot, EditorState } from "lexical";
+import { $getRoot, EditorState, $getSelection, $isRangeSelection } from "lexical";
 import React, { useEffect, useState, use, useRef, useCallback } from "react";
+// @ts-ignore
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+// @ts-ignore
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
+// @ts-ignore
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+// @ts-ignore
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+// @ts-ignore
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+// @ts-ignore
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import ReturnButton from "@/ui/returnButton";
+// @ts-ignore
+// import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
+import { useRouter, useSearchParams } from "next/navigation";
 import CollaborationPlugin from "@/components/collaboration/CollaborationPlugin";
 import { socketService } from "@/services/socketService";
+import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
+import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
+import { $insertNodes } from "lexical";
 
-import { GetNoteById } from "@/loader/loader";
+import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
 
 import ErrorFetch from "@/ui/note/errorFetch";
-import { useRouter } from "next/navigation";
+import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
+import { editorNodes } from "@/components/textRich/editorNodes";
+// @ts-ignore
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import '@/components/textRich/EditorStyles.css';
 
 const theme = {
-  // Theme styling goes here
-  //...
+  heading: {
+    h1: 'editor-heading-h1',
+    h2: 'editor-heading-h2',
+    h3: 'editor-heading-h3',
+  },
+  list: {
+    nested: {
+      listitem: 'editor-nested-listitem',
+    },
+    ol: 'editor-list-ol',
+    ul: 'editor-list-ul',
+    listitem: 'editor-listitem',
+  },
+  text: {
+    bold: 'editor-text-bold',
+    italic: 'editor-text-italic',
+    underline: 'editor-text-underline',
+    strikethrough: 'editor-text-strikethrough',
+    underlineStrikethrough: 'editor-text-underlineStrikethrough',
+    code: 'editor-text-code',
+  },
+  paragraph: 'editor-paragraph',
+  quote: 'editor-quote',
 };
 
 function onError(error: string | Error) {
@@ -46,6 +83,16 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
+  // Détection mobile
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Reload page on breakpoint change (mobile <-> desktop)
   React.useEffect(() => {
     // Détection du breakpoint initial
@@ -66,6 +113,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [hasError, setHasError] = useState(false);
   const [editor, setEditor] = useState<any>(null);
   const [showNoteMore, setShowNoteMore] = useState(false);
@@ -298,12 +346,37 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     fetchNote();
   }, [id, lastFetchTime]); // Ajouter lastFetchTime comme dépendance
 
+  // Gestion de l'association automatique au dossier via le paramètre folderId
+  useEffect(() => {
+    const folderId = searchParams.get('folderId');
+    if (folderId && !isLoading) {
+      // Associer automatiquement la note au dossier
+      const associateToFolder = async () => {
+        try {
+          const result = await AddNoteToFolder(id, folderId);
+          if (result.success) {
+            setSuccess(`Note associée au dossier avec succès`);
+            // Retirer le paramètre de l'URL après association
+            const newUrl = window.location.pathname;
+            router.replace(newUrl);
+          } else {
+            console.warn('Erreur lors de l\'association au dossier:', result.error);
+          }
+        } catch (error) {
+          console.error('Erreur lors de l\'association au dossier:', error);
+        }
+      };
+      
+      associateToFolder();
+    }
+  }, [id, searchParams, isLoading, router]);
+  
   // ✅ NOUVELLE FONCTION: Créer un EditorState Lexical valide depuis du texte
   function createSimpleLexicalState(text: string): string {
     const simpleState = {
       root: {
-        children: text ? [{
-          children: [{
+        children: [{
+          children: text ? [{
             detail: 0,
             format: 0,
             mode: "normal",
@@ -311,13 +384,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
             text: text,
             type: "text",
             version: 1
-          }],
+          }] : [],
           direction: "ltr",
           format: "",
           indent: 0,
           type: "paragraph",
           version: 1
-        }] : [],
+        }],
         direction: "ltr",
         format: "",
         indent: 0,
@@ -332,9 +405,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     namespace: "Editor",
     theme,
     onError,
+    nodes: editorNodes,
     // ✅ CORRECTION: Utiliser l'état initial depuis la BDD pour un chargement immédiat
     // La collaboration temps-réel viendra s'ajouter par-dessus via les WebSockets
-    editorState: initialEditorState || undefined,
+    editorState: initialEditorState || createSimpleLexicalState(""),
   };
 
   const focusAtEnd = useCallback(() => {
@@ -344,6 +418,31 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       root.selectEnd();
     });
   }, [editor]);
+
+  const handleDrawingSave = useCallback((drawingData: DrawingData) => {
+    if (!editor || isReadOnly) return;
+    
+    editor.update(() => {
+      const selection = $getSelection();
+      
+      // Create a new image node with the drawing
+      const imageNode = $createImageNode({
+        src: drawingData.dataUrl,
+        altText: "Drawing",
+        width: Math.min(drawingData.width, 600), // Limit max width
+        height: Math.min(drawingData.height, 600),
+      });
+      
+      // Insert the image node at the current selection or at the end
+      if ($isRangeSelection(selection)) {
+        $insertNodes([imageNode]);
+      } else {
+        const root = $getRoot();
+        root.selectEnd();
+        $insertNodes([imageNode]);
+      }
+    });
+  }, [editor, isReadOnly]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!editor) return;
@@ -383,7 +482,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     );
 
     function saveContent(editorState: EditorState) {
-      if (isReadOnly) return;
+      if (isReadOnly) return; // Ne pas sauvegarder si en lecture seule
       
       setIsSavingContent(true);
       setIsTyping(false); // L'utilisateur a arrêté de taper
@@ -467,7 +566,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   }
 
   return (
-    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
+    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5 relative">
       {/* Zone de notifications */}
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md">
@@ -556,7 +655,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 />
               </span>
               {showNoteMore && (
-                <div className="absolute right-0 mt-2 z-20">
+                <div className="absolute right-0 mt-2 z-30">
                 <NoteMore noteId={id} onClose={() => setShowNoteMore(false)} />
                 </div>
               )}
@@ -585,7 +684,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
+            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
               {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
               {/* <div className="absolute bottom-4 right-4 z-10">
                 {(isSavingContent || isTyping) ? (
@@ -595,36 +694,44 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 )}
               </div> */}
               
-              <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
-                <RichTextPlugin
-                  contentEditable={
-                    <ContentEditable
-                      aria-placeholder={ "Commencez à écrire..."}
-                      placeholder={
-                        <p className="absolute top-4 left-4 text-textcardNote select-none pointer-events-none">
-                           "Commencez à écrire..."
-                        </p>
-                      }
-                      className={`h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
-                      contentEditable={!isReadOnly}
-                    />
-                  }
-                  ErrorBoundary={LexicalErrorBoundary}
-                />
-                <HistoryPlugin />
-                {!isReadOnly && <OnChangeBehavior />}
-                {!isReadOnly && <AutoFocusPlugin />}
-                {/* Plugin de collaboration temps réel */}
-                {userPseudo && (
-                  <CollaborationPlugin 
-                    noteId={id} 
-                    username={userPseudo}
-                    isReadOnly={isReadOnly}
-                    onTitleUpdate={handleRemoteTitleUpdate}
-                    onContentUpdate={handleRemoteContentUpdate}
+              {/* Drawing Board */}
+              {!isReadOnly && <DrawingBoard isOpen={false} onSave={handleDrawingSave} />}
+              
+              {/* Ne monter le LexicalComposer que quand initialEditorState est prêt */}
+              {initialEditorState && (
+                <LexicalComposer initialConfig={initialConfig} key={id}>
+                  {!isReadOnly && <ToolbarPlugin />}
+                  <RichTextPlugin
+                    contentEditable={
+                      <ContentEditable
+                        aria-placeholder={ "Commencez à écrire..."}
+                        placeholder={
+                          <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
+                            "Commencez à écrire..."
+                          </p>
+                        }
+                        className={`editor-root mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                        contentEditable={!isReadOnly}
+                      />
+                    }
+                    ErrorBoundary={LexicalErrorBoundary}
                   />
-                )}
-              </LexicalComposer>
+                  <HistoryPlugin />
+                  <ListPlugin />
+                  {!isReadOnly && <OnChangeBehavior />}
+                  {!isReadOnly && <AutoFocusPlugin />}
+                  {/* Plugin de collaboration temps réel */}
+                  {userPseudo && (
+                    <CollaborationPlugin 
+                      noteId={id} 
+                      username={userPseudo}
+                      isReadOnly={isReadOnly}
+                      onTitleUpdate={handleRemoteTitleUpdate}
+                      onContentUpdate={handleRemoteContentUpdate}
+                    />
+                  )}
+                </LexicalComposer>
+              )}
             </div>
           </>
         )

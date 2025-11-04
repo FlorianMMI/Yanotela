@@ -42,6 +42,7 @@ jobs:
       - name: Audit npm
         run: |
           cd Server
+          npm install
           npm ci --no-audit --progress=false
           npm audit --audit-level=high || true
           cd ../Client
@@ -295,7 +296,7 @@ jobs:
                   - "80:80"
                   - "443:443"
                 volumes:
-                  - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+                  - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
                   - /etc/letsencrypt:/etc/letsencrypt
                 depends_on:
                   - frontend-dev

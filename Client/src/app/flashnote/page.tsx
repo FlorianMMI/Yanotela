@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { $getRoot, EditorState } from "lexical";
+import { $getRoot, EditorState, $getSelection, $isRangeSelection, $insertNodes } from "lexical";
 import { useEffect, useState } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -17,6 +17,8 @@ import { useCallback } from "react";
 import Icons from '@/ui/Icon';
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
 import { useAuth } from "@/hooks/useAuth";
+import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
+import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
 
 const theme = {
   // Theme styling goes here
@@ -104,6 +106,7 @@ export default function FlashNoteEditor() {
     namespace: "FlashNoteEditor",
     theme,
     onError,
+    nodes: [ImageNode], // Register the ImageNode
     editorState: initialEditorState ? initialEditorState : undefined,
   };
 
@@ -115,44 +118,56 @@ export default function FlashNoteEditor() {
     });
   }, [editor]);
 
+  const handleDrawingSave = useCallback((drawingData: DrawingData) => {
+    if (!editor) return;
+    
+    editor.update(() => {
+      const selection = $getSelection();
+      
+      // Create a new image node with the drawing
+      const imageNode = $createImageNode({
+        src: drawingData.dataUrl,
+        altText: "Drawing",
+        width: Math.min(drawingData.width, 600), // Limit max width
+        height: Math.min(drawingData.height, 600),
+      });
+      
+      // Insert the image node at the current selection or at the end
+      if ($isRangeSelection(selection)) {
+        $insertNodes([imageNode]);
+      } else {
+        const root = $getRoot();
+        root.selectEnd();
+        $insertNodes([imageNode]);
+      }
+    });
+
+    // Manually trigger a save after inserting the drawing
+    // Wait for the next tick to ensure the editor state has been updated
+    setTimeout(() => {
+      if (editor) {
+        setIsSavingContent(true);
+        setIsTyping(false);
+        
+        const editorState = editor.getEditorState();
+        const editorStateJSON = editorState.toJSON();
+        const contentString = JSON.stringify(editorStateJSON);
+        setEditorContent(contentString);
+        localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
+        
+        // Reset saving state after a short delay
+        setTimeout(() => {
+          setIsSavingContent(false);
+        }, 300);
+      }
+    }, 100);
+  }, [editor]);
+
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!editor) return;
     const editorElem = editor.getRootElement();
     if (e.target === editorElem) {
       focusAtEnd();
-    }
-  };
-
-  // Sauvegarder le titre dans localStorage
-  function updateNoteTitle(newTitle: string) {
-    const finalTitle = newTitle.trim() === '' ? 'Flash:' : newTitle;
-    setNoteTitle(finalTitle);
-
-    try {
-      localStorage.setItem(FLASH_NOTE_TITLE_KEY, finalTitle);
-      // Émettre un événement pour synchroniser avec le breadcrumb
-      window.dispatchEvent(new CustomEvent('flashnote-title-updated'));
-      setSuccess('Titre sauvegardé localement');
-      setTimeout(() => setSuccess(null), 2000);
-    } catch (error) {
-      console.error('Erreur localStorage titre:', error);
-      setError('Erreur lors de la sauvegarde du titre');
-      setTimeout(() => setError(null), 3000);
-    }
-  }
-
-  // Gérer les changements de titre en temps réel
-  const handleTitleChange = (newTitle: string) => {
-    setNoteTitle(newTitle);
-    // Sauvegarder immédiatement dans localStorage pour que le composant SaveFlashNoteButton puisse y accéder
-    try {
-      // Ne pas sauvegarder une chaîne vide, garder au moins "Flash:"
-      const titleToSave = newTitle.trim() === '' ? 'Flash:' : newTitle;
-      localStorage.setItem(FLASH_NOTE_TITLE_KEY, titleToSave);
-      // Émettre un événement pour synchroniser avec le breadcrumb
-      window.dispatchEvent(new CustomEvent('flashnote-title-updated'));
-    } catch (error) {
-      console.error('Erreur localStorage titre:', error);
     }
   };
 
@@ -196,8 +211,9 @@ export default function FlashNoteEditor() {
     }
 
     useEffect(() => {
-      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
-        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0) {
+      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }: any) => {
+        // Save on any update: dirty elements/leaves OR explicit updates (like node insertions)
+        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0 || tags?.has('history-merge') === false) {
           setIsTyping(true);
           debouncedSave(editorState);
         }
@@ -226,7 +242,7 @@ export default function FlashNoteEditor() {
               Mode hors ligne
             </h3>
             <p className="text-xs text-blue-800">
-              Vos notes sont enregistrées localement sur votre appareil. 
+              Vos notes sont automatiquement enregistrées localement sur votre appareil. 
               Pour synchroniser vos notes en ligne et y accéder depuis n'importe où, 
               <button 
                 onClick={() => window.location.href = '/login'} 
@@ -337,11 +353,14 @@ export default function FlashNoteEditor() {
               <Icons name="save" size={20} className="h-5 w-5 text-primary" />
               )}
               <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-primary text-background text-xs rounded py-1 px-2 whitespace-nowrap">
-                Sauvegardé dans la mémoire de votre machine
+                Sauvegarder dans la mémoire de votre machine
                 <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary"></div>
               </div>
             </div>
           </div>
+
+          {/* Drawing Board */}
+          <DrawingBoard isOpen={false} onSave={handleDrawingSave} />
 
           <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
             <RichTextPlugin

@@ -1,14 +1,13 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import Icons from "@/ui/Icon";
-import { NoteShareUI, NoteInfoUI } from "@/ui/note-modal";
+import { NoteShareUI, NoteInfoUI, NoteFolderUI } from "@/ui/note-modal";
 
 interface NoteMoreProps {
     noteId: string;
     onClose: () => void;
 }
 
-type ModalView = "menu" | "share" | "info";
+type ModalView = "menu" | "share" | "info" | "folder";
 
 export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
     const [currentView, setCurrentView] = useState<ModalView>("menu");
@@ -28,12 +27,30 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
         };
     }, [onClose]);
 
+    const loadFolders = async () => {
+        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
+    };
+
+    const loadCurrentFolder = async () => {
+        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
+    };
+
+    const assignNoteToFolder = async (folderId: string) => {
+        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
+    };
+
+    const removeNoteFromFolder = async () => {
+        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
+    };
+
     const getModalTitle = () => {
         switch (currentView) {
             case "share":
                 return "Partager la note";
             case "info":
                 return "Infos de la note";
+            case "folder":
+                return "Dossiers";
             default:
                 return "Option de la note";
         }
@@ -45,12 +62,21 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                 return <NoteShareUI noteId={noteId} />;
             case "info":
                 return <NoteInfoUI noteId={noteId} />;
+            case "folder":
+                return <NoteFolderUI noteId={noteId} />;
             default:
                 return (
                     <div className="flex-1 overflow-y-auto p-4">
                         <div className="flex flex-col gap-1 py-2">
                             <button
                                 className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium transition-colors"
+                                onClick={() => setCurrentView("folder")}
+                            >
+                                <Icons name="folder" size={22} className="text-primary" />
+                                Dossiers
+                            </button>
+                            <button
+                                className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium border-t border-gray-100 transition-colors"
                                 onClick={() => setCurrentView("share")}
                             >
                                 <Icons name="partage" size={22} className="text-primary" />

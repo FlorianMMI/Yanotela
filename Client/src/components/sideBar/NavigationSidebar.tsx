@@ -28,8 +28,13 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       label: 'Mes Notes',
       icon: 'docs',
       isActive: pathname.includes('/notes'),
-    }
-
+    },
+    {
+      href: '/folder',
+      label: 'Mes Dossiers',
+      icon: 'folder',
+      isActive: pathname.includes('/folder'),
+    },
   ];
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { $getRoot, EditorState } from "lexical";
+import { $getRoot, EditorState, $getSelection, $isRangeSelection } from "lexical";
 import { useEffect, useState, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -14,6 +14,9 @@ import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 import Icons from '@/ui/Icon';
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
+import DrawingBoard, { DrawingData } from "../drawingBoard/drawingBoard";
+import { ImageNode, $createImageNode } from "./ImageNode";
+import { $insertNodes } from "lexical";
 
 const theme = {};
 
@@ -83,6 +86,7 @@ export default function FlashNoteWidget() {
     namespace: "FlashNoteWidget",
     theme,
     onError,
+    nodes: [ImageNode], // Register the ImageNode
     editorState: initialEditorState ? initialEditorState : undefined,
   };
 
@@ -92,6 +96,51 @@ export default function FlashNoteWidget() {
       const root = $getRoot();
       root.selectEnd();
     });
+  }, [editor]);
+
+  const handleDrawingSave = useCallback((drawingData: DrawingData) => {
+    if (!editor) return;
+    
+    editor.update(() => {
+      const selection = $getSelection();
+      
+      // Create a new image node with the drawing
+      const imageNode = $createImageNode({
+        src: drawingData.dataUrl,
+        altText: "Drawing",
+        width: Math.min(drawingData.width, 600), // Limit max width
+        height: Math.min(drawingData.height, 600),
+      });
+      
+      // Insert the image node at the current selection or at the end
+      if ($isRangeSelection(selection)) {
+        $insertNodes([imageNode]);
+      } else {
+        const root = $getRoot();
+        root.selectEnd();
+        $insertNodes([imageNode]);
+      }
+    });
+
+    // Manually trigger a save after inserting the drawing
+    // Wait for the next tick to ensure the editor state has been updated
+    setTimeout(() => {
+      if (editor) {
+        setIsSavingContent(true);
+        setIsTyping(false);
+        
+        const editorState = editor.getEditorState();
+        const editorStateJSON = editorState.toJSON();
+        const contentString = JSON.stringify(editorStateJSON);
+        setEditorContent(contentString);
+        localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
+        
+        // Reset saving state after a short delay
+        setTimeout(() => {
+          setIsSavingContent(false);
+        }, 300);
+      }
+    }, 100);
   }, [editor]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -136,8 +185,9 @@ export default function FlashNoteWidget() {
     }
 
     useEffect(() => {
-      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }: any) => {
-        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0) {
+      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }: any) => {
+        // Save on any update: dirty elements/leaves OR explicit updates (like node insertions)
+        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0 || tags?.has('history-merge') === false) {
           setIsTyping(true);
           debouncedSave(editorState);
         }
@@ -156,7 +206,7 @@ export default function FlashNoteWidget() {
       {/* En-tête avec titre et bouton de sauvegarde */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icons name="flash" size={24} className="text-primary" />
+          <Icons name="flash" size={24} strokeWidth={12} className="text-primary" />
           <h2 className="text-xl font-semibold text-clrprincipal">Flash Note</h2>
         </div>
         <SaveFlashNoteButton variant="default" />
@@ -171,7 +221,7 @@ export default function FlashNoteWidget() {
         <Icons name="info" size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
           <p className="text-xs text-blue-800">
-            Vos notes sont enregistrées localement. Pour les synchroniser en ligne,{' '}
+            Les flashnotes sont temporaires. Pour les conserver de façon permanente,{' '}
             <span className="font-semibold">connectez-vous</span>.
           </p>
         </div>
@@ -201,14 +251,16 @@ export default function FlashNoteWidget() {
               {(isSavingContent || isTyping) ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               ) : (
-              <Icons name="save" size={20} className="h-5 w-5 text-primary" />
+              <Icons name="Checkk" size={20} className="h-5 w-5 text-primary" />
               )}
               <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-primary text-background text-xs rounded py-1 px-2 whitespace-nowrap">
-                Sauvegardé dans la mémoire de votre machine
+                Enregistrement automatique de votre note temporaire
                 <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary"></div>
               </div>
             </div>
           </div>
+
+          <DrawingBoard isOpen={false} onSave={handleDrawingSave} />
 
           <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
             <RichTextPlugin

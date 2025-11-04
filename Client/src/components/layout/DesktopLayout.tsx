@@ -6,7 +6,6 @@ import Breadcrumb from '@/components/breadcrumb/Breadcrumb';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarToggle } from '@/hooks/useSidebarToggle';
 import ItemBar from '@/components/itemBar/ItemBar';
-import NoteHeader from '@/components/noteHeader/NoteHeader';
 import Icon from '@/ui/Icon';
 import { SwipeNavigationWrapper } from '@/components/navigation/SwipeNavigationWrapper';
 import { Item } from 'yjs';
@@ -29,15 +28,9 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
     <>
       {/* Mobile: comportement actuel avec swipe navigation */}
       <div className="md:hidden">
-        {loading ? (
-          <div className="h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : (
-          <SwipeNavigationWrapper>
-            {children}
-          </SwipeNavigationWrapper>
-        )}
+        <SwipeNavigationWrapper>
+          {children}
+        </SwipeNavigationWrapper>
       </div>
 
       {/* Desktop: nouvelle architecture */}
@@ -57,7 +50,8 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
               // Si non connecté, afficher le FlashNoteWidget
               <FlashNoteWidget />
             ) : (
-              // Si connecté, afficher le contenu normal
+              // Si connecté, afficher le contenu
+
               <div className="h-full">
                 {children}
               </div>
