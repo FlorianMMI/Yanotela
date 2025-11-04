@@ -13,9 +13,10 @@ export interface DrawingData {
 interface DrawingBoardProps {
   isOpen: boolean;
   onSave?: (drawingData: DrawingData) => void;
+  onClose?: () => void;
 }
 
-export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
+export default function DrawingBoard({ isOpen, onSave, onClose }: DrawingBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [open, setIsOpen] = useState(isOpen);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -183,6 +184,7 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
     
     // Close the drawing board after saving
     setIsOpen(false);
+    onClose?.();
     
     return drawingData;
   };
@@ -206,17 +208,11 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
     context.lineJoin = "round";
   };
 
-  if (!open) return (
-    <button
-      onClick={() => setIsOpen(true)}
-      className="absolute z-20 right-5 top-5 flex items-center justify-center w-10 h-10 bg-primary text-white rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
-    >
-      <Icon name="modif" size={20} className="inline-block" />
-    </button>
-  );
+  // Don't render the floating button anymore - controlled by parent
+  if (!open) return null;
 
   return (
-    <div className="fixed md:absolute z-[100] md:z-20 top-0 left-0 w-screen h-screen md:w-full md:h-full bg-white">
+    <div className="fixed md:sticky md:top-4 z-[100] md:z-20 top-0 left-0 w-screen h-screen md:w-full md:max-h-[calc(100vh-200px)] md:h-[600px] bg-white rounded-lg overflow-hidden shadow-xl md:mb-4">
       <canvas
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"
@@ -233,6 +229,7 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
       <button
         onClick={() => {
           setIsOpen(false);
+          onClose?.();
         }}
         className="absolute top-5 right-5 flex items-center justify-center w-10 h-10 bg-gray-300 text-black rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
       >
