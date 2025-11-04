@@ -710,11 +710,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                       <ContentEditable
                         aria-placeholder={ "Commencez à écrire..."}
                         placeholder={
-                          <p className="absolute top-18 left-4 text-textcardNote select-none pointer-events-none">
+                          <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
                             "Commencez à écrire..."
                           </p>
                         }
-                        className={`editor-root h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                        className={`editor-root mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
                         contentEditable={!isReadOnly}
                       />
                     }
