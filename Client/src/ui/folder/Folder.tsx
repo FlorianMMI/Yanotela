@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Folder as FolderType } from '@/type/Folder';
-import { motion } from 'framer-motion';
+import { motion } from "motion/react";
 import Icon from '@/ui/Icon';
 
 interface FolderProps {
@@ -12,7 +12,6 @@ export default function Folder({ folder }: FolderProps) {
   const router = useRouter();
 
   // Log des informations du dossier pour déboguer
-  console.log(`[DEBUG Folder] Dossier: "${folder.Nom}", noteCount: ${folder.noteCount || 0}, ID: ${folder.id}`);
 
   const handleFolderClick = () => {
     router.push(`/folder/${folder.id}`);
@@ -59,8 +58,6 @@ export default function Folder({ folder }: FolderProps) {
         </h3>
       </div>
 
-      
-      
     </motion.div>
   );
 }

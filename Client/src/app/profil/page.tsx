@@ -14,7 +14,6 @@ import { AnimatePresence } from "motion/react";
 // import Notification from "@/ui/notification";
 import NotificationList from "@/components/notificationList/page";
 
-
 interface UserInfo {
   id: number;
   pseudo: string;
@@ -103,7 +102,6 @@ export default function Profil() {
       ? `${userInfo.prenom} ${userInfo.nom}`
       : userInfo?.pseudo || "Utilisateur";
 
-
   const openParamModal = () => {
     setIsParamModalOpen(true);
   };
@@ -178,7 +176,6 @@ export default function Profil() {
           <ParamModal onClose={closeParamModal} />
         )}
       </AnimatePresence>
-
 
     </>
   );

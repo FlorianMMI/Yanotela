@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ResetPasswordForm from '../../../components/auth/ResetPasswordForm';
 
-
 export default function ResetPasswordTokenPage() {
   const params = useParams();
   const router = useRouter();

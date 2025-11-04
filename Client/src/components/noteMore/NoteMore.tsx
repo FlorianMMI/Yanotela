@@ -27,7 +27,6 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
         };
     }, [onClose]);
 
-
     const loadFolders = async () => {
         // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
     };
@@ -43,7 +42,6 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
     const removeNoteFromFolder = async () => {
         // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
     };
-
 
     const getModalTitle = () => {
         switch (currentView) {

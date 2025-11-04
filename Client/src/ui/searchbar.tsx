@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Icon from "@/ui/Icon";
 
-
 interface SearchBarProps {
     searchTerm: string;
     setSearchTerm: (term: string) => void;

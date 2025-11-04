@@ -28,7 +28,6 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
           </div>
         </header>
 
-      
       </div>
 
       {/* Barre de recherche et filtre */}
@@ -36,12 +35,10 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
         {/*
         <div className="flex items-stretch justify-center gap-3 p-6 h-full">
 
-          
           <div className="flex justify-center items-center">
             <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           </div>
 
-          
           <div className="flex gap-2">
             <motion.button
               onClick={() => setSortBy("recent")}
@@ -75,7 +72,6 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
             </motion.button>
           </div>
 
-          
           <motion.button 
             className="p-2 text-primary border-transparent flex justify-center items-center hover:border-primary border hover:bg-white rounded-lg cursor-pointer"
           >

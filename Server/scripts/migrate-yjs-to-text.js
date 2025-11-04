@@ -21,7 +21,6 @@ async function migrateNotes() {
       }
     });
 
-
     let migrated = 0;
     let skipped = 0;
     let errors = 0;
@@ -64,7 +63,6 @@ async function migrateNotes() {
         errors++;
       }
     }
-
 
   } catch (error) {
     console.error('❌ Erreur globale:', error);

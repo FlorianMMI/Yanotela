@@ -25,9 +25,9 @@ export default function ValidatePage() {
 
       try {
         
-        // Appeler l'API de validation du backend
-        const API_URL = 'http://localhost:3001';
-        const response = await fetch(`${API_URL}/auth/check`, {
+        // Appeler l'API de validation du backend avec le token
+        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://preprod.yanotela.fr/api';
+        const response = await fetch(`${API_URL}/validate/${token}`, {
           method: 'GET',
           credentials: 'include', // Important pour les sessions
         });

@@ -1,0 +1,144 @@
+# .github/workflows/cleanup-console-logs.yml
+name: Cleanup Console Logs
+
+on:
+  workflow_call:
+    inputs:
+      frontend-path:
+        description: 'Chemin vers le dossier frontend'
+        required: false
+        type: string
+        default: 'Client'
+      backend-path:
+        description: 'Chemin vers le dossier backend'
+        required: false
+        type: string
+        default: 'Server'
+
+jobs:
+  remove-console-logs:
+    name: Remove console.log()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Remove console.log from Frontend
+        run: |
+          if [ -d "${{ inputs.frontend-path }}" ]; then
+            cd ${{ inputs.frontend-path }}
+            node << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          function removeConsoleLogs(content) {
+            let result = content;
+            let hasChanges = true;
+            while (hasChanges) {
+              const before = result;
+              result = result.replace(/console\.log\s*\([^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.log\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
+              hasChanges = before !== result;
+            }
+            return result.replace(/\n\s*\n\s*\n/g, '\n\n');
+          }
+
+          function processDirectory(dirPath) {
+            let count = 0;
+            function walk(dir) {
+              fs.readdirSync(dir).forEach(file => {
+                const filePath = path.join(dir, file);
+                const stat = fs.statSync(filePath);
+                if (stat.isDirectory()) {
+                  if (!['node_modules', '.git', 'dist', 'build', '.next'].includes(file)) walk(filePath);
+                } else if (['.js', '.jsx', '.ts', '.tsx'].includes(path.extname(file))) {
+                  const content = fs.readFileSync(filePath, 'utf8');
+                  const cleaned = removeConsoleLogs(content);
+                  if (content !== cleaned) {
+                    fs.writeFileSync(filePath, cleaned, 'utf8');
+                    console.log(`✓ ${filePath}`);
+                    count++;
+                  }
+                }
+              });
+            }
+            walk(dirPath);
+            return count;
+          }
+
+          console.log('🧹 Frontend...');
+          const count = processDirectory('.');
+          console.log(`✅ ${count} fichier(s) nettoyé(s)\n`);
+          EOF
+          else
+            echo "❌ Frontend directory '${{ inputs.frontend-path }}' not found, skipping..."
+          fi
+
+      - name: Remove console.log from Backend
+        run: |
+          if [ -d "${{ inputs.backend-path }}" ]; then
+            cd ${{ inputs.backend-path }}
+            node << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          function removeConsoleLogs(content) {
+            let result = content;
+            let hasChanges = true;
+            while (hasChanges) {
+              const before = result;
+              result = result.replace(/console\.log\s*\([^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.log\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
+              hasChanges = before !== result;
+            }
+            return result.replace(/\n\s*\n\s*\n/g, '\n\n');
+          }
+
+          function processDirectory(dirPath) {
+            let count = 0;
+            function walk(dir) {
+              fs.readdirSync(dir).forEach(file => {
+                const filePath = path.join(dir, file);
+                const stat = fs.statSync(filePath);
+                if (stat.isDirectory()) {
+                  if (!['node_modules', '.git', 'dist', 'build', '.next'].includes(file)) walk(filePath);
+                } else if (['.js', '.jsx', '.ts', '.tsx'].includes(path.extname(file))) {
+                  const content = fs.readFileSync(filePath, 'utf8');
+                  const cleaned = removeConsoleLogs(content);
+                  if (content !== cleaned) {
+                    fs.writeFileSync(filePath, cleaned, 'utf8');
+                    console.log(`✓ ${filePath}`);
+                    count++;
+                  }
+                }
+              });
+            }
+            walk(dirPath);
+            return count;
+          }
+
+          console.log('🧹 Backend...');
+          const count = processDirectory('.');
+          console.log(`✅ ${count} fichier(s) nettoyé(s)`);
+          EOF
+          else
+            echo "❌ Backend directory '${{ inputs.backend-path }}' not found, skipping..."
+          fi
+
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Vérifier s'il y a des changements
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "✅ Aucun console.log trouvé - rien à commiter"
+          else
+            git add .
+            git commit -m "🧹 chore: Remove console.logs [automated cleanup]"
+            git push
+            echo "✅ Console.logs supprimés et changements poussés"
+          fi

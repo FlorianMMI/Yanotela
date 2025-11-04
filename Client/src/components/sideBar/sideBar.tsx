@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarToggle } from '@/hooks/useSidebarToggle';
 import AuthSidebar from './AuthSidebar';
@@ -25,7 +25,6 @@ export default function SideBar({ className }: SideBarProps) {
       setOpen(true);
     }
   }, [isAuthenticated, user, setOpen]);
- 
 
   // Loading state 
 

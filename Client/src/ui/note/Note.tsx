@@ -2,7 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Note as NoteType } from '@/type/Note';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 interface NoteProps {
   note: NoteType;
@@ -12,7 +12,6 @@ export default function Note({ note }: NoteProps) {
   const router = useRouter();
 
   // Log pour déboguer
-  console.log('[DEBUG Note] Rendering note:', note);
 
   const handleNoteClick = () => {
     router.push(`/notes/${note.id}`);
@@ -50,7 +49,6 @@ export default function Note({ note }: NoteProps) {
       return <p className="text-red-500">Erreur d'affichage du contenu</p>;
     }
   };
-
 
   return (
     

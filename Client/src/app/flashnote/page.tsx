@@ -171,7 +171,6 @@ export default function FlashNoteEditor() {
     }
   };
 
-
   function OnChangeBehavior() {
     const [editor] = useLexicalComposerContext();
 

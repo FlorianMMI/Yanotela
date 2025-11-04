@@ -32,7 +32,6 @@ export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note
 
 export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
     try {
-        console.log(process.env.NEXT_PUBLIC_API_URL)
         const response = await fetch(`${apiUrl}/note/get`, {
             method: "GET",
             headers: {
@@ -311,9 +310,7 @@ export async function Logout(): Promise<AuthResponse> {
     }
 }
 
-
 // ============== USER  FUNCTION ==============
-
 
 interface InfoUserResponse {
     success: boolean;
@@ -396,8 +393,7 @@ export async function DeleteAccount(reason?: string): Promise<DeleteAccountRespo
 
 export async function CancelAccountDeletion(): Promise<AuthResponse> {
     try {
-        
-        
+
         const response = await fetch(`${apiUrl}/user/cancel-deletion`, {
             method: 'POST',
             headers: {
@@ -419,11 +415,9 @@ export async function CancelAccountDeletion(): Promise<AuthResponse> {
     }
 }
 
-
 export async function updateUser(data: { prenom?: string; nom?: string; pseudo?: string; email?: string; password?: string; newPassword?: string; }): Promise<AuthResponse> {
     try {
-        
-        
+
         const response = await fetch(`${apiUrl}/user/update`, {
             method: 'POST',
             headers: {

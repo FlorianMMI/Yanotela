@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Icon from './Icon';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import { Logout as LogoutAPI } from '@/loader/loader';
 import LogoutConfirm from './logout-confirm';
 
 export default function Logout(){
 
-    
     const router = useRouter();
     const [showConfirm, setShowConfirm] = useState(false);
 
@@ -62,5 +61,4 @@ export default function Logout(){
         </>
     );
 }
-
 

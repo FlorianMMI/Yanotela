@@ -135,7 +135,7 @@ export default function SaveFlashNoteButton({
         className={variant === 'mobile' ? "text-primary" : "text-white"} 
       />
       <span className={`${variant === 'mobile' ? 'text-base text-primary' : 'text-sm text-white'} font-medium`}>
-        Enregistrer dans le cloud
+        Enregistrer votre note de façon permanente
       </span>
     </>
   );
