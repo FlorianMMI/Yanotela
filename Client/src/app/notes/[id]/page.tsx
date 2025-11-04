@@ -38,7 +38,6 @@ import { editorNodes } from "@/components/textRich/editorNodes";
 // @ts-ignore
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import '@/components/textRich/EditorStyles.css';
-import { useRouter } from "next/navigation";
 
 const theme = {
   heading: {
@@ -706,34 +705,36 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               {initialEditorState && (
                 <LexicalComposer initialConfig={initialConfig} key={id}>
                   {!isReadOnly && <ToolbarPlugin />}
-                <RichTextPlugin
-                  contentEditable={
-                    <ContentEditable
-                      aria-placeholder={ "Commencez à écrire..."}
-                      placeholder={
-                        <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
-                           "Commencez à écrire..."
-                        </p>
-                      }
-                      className={`editor-root h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
-                      contentEditable={!isReadOnly}
-                    />
-                </div>
-                <HistoryPlugin />
-                <ListPlugin />
-                {!isReadOnly && <OnChangeBehavior />}
-                {!isReadOnly && <AutoFocusPlugin />}
-                {/* Plugin de collaboration temps réel */}
-                {userPseudo && (
-                  <CollaborationPlugin 
-                    noteId={id} 
-                    username={userPseudo}
-                    isReadOnly={isReadOnly}
-                    onTitleUpdate={handleRemoteTitleUpdate}
-                    onContentUpdate={handleRemoteContentUpdate}
+                  <RichTextPlugin
+                    contentEditable={
+                      <ContentEditable
+                        aria-placeholder={ "Commencez à écrire..."}
+                        placeholder={
+                          <p className="absolute top-18 left-4 text-textcardNote select-none pointer-events-none">
+                            "Commencez à écrire..."
+                          </p>
+                        }
+                        className={`editor-root h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                        contentEditable={!isReadOnly}
+                      />
+                    }
+                    ErrorBoundary={LexicalErrorBoundary}
                   />
-                )}
-              </LexicalComposer>
+                  <HistoryPlugin />
+                  <ListPlugin />
+                  {!isReadOnly && <OnChangeBehavior />}
+                  {!isReadOnly && <AutoFocusPlugin />}
+                  {/* Plugin de collaboration temps réel */}
+                  {userPseudo && (
+                    <CollaborationPlugin 
+                      noteId={id} 
+                      username={userPseudo}
+                      isReadOnly={isReadOnly}
+                      onTitleUpdate={handleRemoteTitleUpdate}
+                      onContentUpdate={handleRemoteContentUpdate}
+                    />
+                  )}
+                </LexicalComposer>
               )}
             </div>
           </>

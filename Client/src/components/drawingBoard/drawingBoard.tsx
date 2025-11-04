@@ -209,14 +209,14 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
   if (!open) return (
     <button
       onClick={() => setIsOpen(true)}
-      className="absolute z-10 right-4 top-4 flex items-center justify-center w-10 h-10 bg-primary text-white rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
+      className="absolute z-20 right-5 top-5 flex items-center justify-center w-10 h-10 bg-primary text-white rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
     >
       <Icon name="modif" size={20} className="inline-block" />
     </button>
   );
 
   return (
-    <div className="absolute z-10 top-0 left-0 w-full h-full bg-white">
+    <div className="absolute z-20 top-0 left-0 w-full h-full bg-white">
       <canvas
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"
@@ -234,7 +234,7 @@ export default function DrawingBoard({ isOpen, onSave }: DrawingBoardProps) {
         onClick={() => {
           setIsOpen(false);
         }}
-        className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 bg-gray-300 text-black rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
+        className="absolute top-5 right-5 flex items-center justify-center w-10 h-10 bg-gray-300 text-black rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
       >
         <Icon name="close" size={16} className="inline-block" />
       </button>
