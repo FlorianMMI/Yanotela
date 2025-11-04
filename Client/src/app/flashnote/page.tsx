@@ -19,10 +19,35 @@ import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
 import { useAuth } from "@/hooks/useAuth";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
+import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { editorNodes } from "@/components/textRich/editorNodes";
+import '@/components/textRich/EditorStyles.css';
 
 const theme = {
-  // Theme styling goes here
-  //...
+  heading: {
+    h1: 'editor-heading-h1',
+    h2: 'editor-heading-h2',
+    h3: 'editor-heading-h3',
+  },
+  list: {
+    nested: {
+      listitem: 'editor-nested-listitem',
+    },
+    ol: 'editor-list-ol',
+    ul: 'editor-list-ul',
+    listitem: 'editor-listitem',
+  },
+  text: {
+    bold: 'editor-text-bold',
+    italic: 'editor-text-italic',
+    underline: 'editor-text-underline',
+    strikethrough: 'editor-text-strikethrough',
+    underlineStrikethrough: 'editor-text-underlineStrikethrough',
+    code: 'editor-text-code',
+  },
+  paragraph: 'editor-paragraph',
+  quote: 'editor-quote',
 };
 
 function onError(error: string | Error) {
@@ -40,6 +65,7 @@ export default function FlashNoteEditor() {
   const [isLoading, setIsLoading] = useState(true);
   const [editor, setEditor] = useState<any>(null);
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
 
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
@@ -106,7 +132,7 @@ export default function FlashNoteEditor() {
     namespace: "FlashNoteEditor",
     theme,
     onError,
-    nodes: [ImageNode], // Register the ImageNode
+    nodes: editorNodes,
     editorState: initialEditorState ? initialEditorState : undefined,
   };
 
@@ -343,7 +369,7 @@ export default function FlashNoteEditor() {
         </div>
       ) : (
         // Éditeur principal
-        <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
+        <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible">
           {/* Indicateur de sauvegarde */}
           <div className="absolute bottom-4 right-4 z-10">
             <div className="group relative">
@@ -360,24 +386,30 @@ export default function FlashNoteEditor() {
           </div>
 
           {/* Drawing Board */}
-          <DrawingBoard isOpen={false} onSave={handleDrawingSave} />
+          <DrawingBoard 
+            isOpen={isDrawingBoardOpen} 
+            onSave={handleDrawingSave}
+            onClose={() => setIsDrawingBoardOpen(false)}
+          />
 
           <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
+            <ToolbarPlugin onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)} />
             <RichTextPlugin
               contentEditable={
                 <ContentEditable
                   aria-placeholder="Votre Flash Note..."
                   placeholder={
-                    <p className="absolute top-4 left-4 text-textcardNote select-none pointer-events-none">
+                    <p className="absolute top-4 md:top-20 left-4 text-textcardNote select-none pointer-events-none">
                       Votre Flash Note...
                     </p>
                   }
-                  className="h-full focus:outline-none"
+                  className="editor-root md:mt-2 h-full focus:outline-none"
                 />
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
             <HistoryPlugin />
+            <ListPlugin />
             <OnChangeBehavior />
             <AutoFocusPlugin />
           </LexicalComposer>
