@@ -26,6 +26,36 @@ export default function SaveFlashNoteButton({
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Fonction pour vérifier si le contenu de la flash note est vide
+  const isFlashNoteEmpty = () => {
+    const flashContent = localStorage.getItem("yanotela:flashnote:content") || '';
+    
+    if (!flashContent) return true;
+    
+    try {
+      const content = JSON.parse(flashContent);
+      // Vérifier si le contenu Lexical est vide
+      if (!content.root || !content.root.children || content.root.children.length === 0) {
+        return true;
+      }
+      
+      // Vérifier si tous les enfants sont vides
+      const hasContent = content.root.children.some((child: any) => {
+        if (child.children && child.children.length > 0) {
+          return child.children.some((textNode: any) => {
+            return textNode.text && textNode.text.trim().length > 0;
+          });
+        }
+        return false;
+      });
+      
+      return !hasContent;
+    } catch {
+      // Si ce n'est pas du JSON valide, vérifier si c'est une chaîne vide
+      return flashContent.trim().length === 0;
+    }
+  };
+
   // Fonction pour sauvegarder Flash Note comme note normale
   const handleSaveFlashNote = async () => {
     if (!saveTitle.trim()) {
@@ -283,8 +313,9 @@ export default function SaveFlashNoteButton({
       {/* Bouton de sauvegarde */}
       <button
         onClick={handleOpenPopup}
-        className={buttonClasses}
-        title="Sauvegarder comme une note"
+        disabled={isFlashNoteEmpty()}
+        className={`${buttonClasses} ${isFlashNoteEmpty() ? 'opacity-50 cursor-not-allowed' : ''}`}
+        title={isFlashNoteEmpty() ? "Votre Flash Note est vide" : "Sauvegarder comme une note"}
       >
         {buttonContent}
       </button>
