@@ -131,7 +131,7 @@ export default function Profil() {
         </div>
 
         {/* Contenu centré et réparti */}
-        <div className="flex-1 flex flex-col justify-start gap-6 items-center text-center w-full">
+        <div className="flex-1 flex flex-col justify-start gap-12 items-center text-center w-full">
 
           <div className="flex md:hidden">
             {userInfo && (
@@ -155,7 +155,7 @@ export default function Profil() {
               </p>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 items-center w-full">
+            <div className="flex flex-row justify-center gap-4 items-center w-full">
               <TotalNotes totalNotes={totalNotes} />
               <TotalFolders totalFolders={totalFolders} />
             </div>

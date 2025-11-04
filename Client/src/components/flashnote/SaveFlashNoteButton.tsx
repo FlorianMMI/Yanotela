@@ -25,6 +25,61 @@ export default function SaveFlashNoteButton({
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [flashContent, setFlashContent] = useState<string>('');
+  const [flashEmpty, setFlashEmpty] = useState<boolean>(true);
+
+  // Note: flash emptiness is tracked in state `flashEmpty` to avoid reading localStorage during render
+
+  // Compute if flash content is empty
+  const computeIsEmpty = (flashContentValue: string) => {
+    if (!flashContentValue) return true;
+    try {
+      const content = JSON.parse(flashContentValue);
+      if (!content.root || !content.root.children || content.root.children.length === 0) {
+        return true;
+      }
+      const hasContent = content.root.children.some((child: any) => {
+        if (child.children && child.children.length > 0) {
+          return child.children.some((textNode: any) => {
+            return textNode.text && textNode.text.trim().length > 0;
+          });
+        }
+        return false;
+      });
+      return !hasContent;
+    } catch {
+      return flashContentValue.trim().length === 0;
+    }
+  };
+
+  // Initialize flash content from localStorage on client only
+  React.useEffect(() => {
+    try {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem("yanotela:flashnote:content") || '' : '';
+      setFlashContent(stored);
+      setFlashEmpty(computeIsEmpty(stored));
+    } catch (e) {
+      setFlashContent('');
+      setFlashEmpty(true);
+    }
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'yanotela:flashnote:content') {
+        const newVal = e.newValue || '';
+        setFlashContent(newVal);
+        setFlashEmpty(computeIsEmpty(newVal));
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', onStorage);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', onStorage);
+      }
+    };
+  }, []);
 
   // Fonction pour sauvegarder Flash Note comme note normale
   const handleSaveFlashNote = async () => {
@@ -283,8 +338,9 @@ export default function SaveFlashNoteButton({
       {/* Bouton de sauvegarde */}
       <button
         onClick={handleOpenPopup}
-        className={buttonClasses}
-        title="Sauvegarder comme une note"
+        disabled={flashEmpty}
+        className={`${buttonClasses} ${flashEmpty ? 'opacity-50 cursor-not-allowed' : ''}`}
+        title={flashEmpty ? "Votre Flash Note est vide" : "Sauvegarder comme une note"}
       >
         {buttonContent}
       </button>

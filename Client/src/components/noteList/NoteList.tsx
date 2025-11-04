@@ -55,7 +55,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
       {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && notes.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <p className="text-element text-lg font-gant">
+          <p className="text-element text-lg font-gant mx-4 text-center">
             Aucune note trouvée. Créez votre première note !
           </p>
         </div>
@@ -68,7 +68,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
           <motion.div
             whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
             whileTap={{ scale: 0.95 }}
-            className="z-20 border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-[110px] md:w-65 md:h-50"
+            className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-[110px] md:w-65 md:h-50"
             onClick={handleCreateNote}
           >
             <Icons

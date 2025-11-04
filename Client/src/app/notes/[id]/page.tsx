@@ -121,6 +121,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [isReadOnly, setIsReadOnly] = useState(false); // Mode lecture seule
   const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
   const [userPseudo, setUserPseudo] = useState<string>(""); // Pseudo pour la collaboration
+  const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false); // État pour le tableau de dessin
 
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
@@ -684,7 +685,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         ) : (
           // Si pas d'erreur et chargement terminé :
           <>
-            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-auto">
+            <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible">
               {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
               {/* <div className="absolute bottom-4 right-4 z-10">
                 {(isSavingContent || isTyping) ? (
@@ -695,19 +696,24 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               </div> */}
               
               {/* Drawing Board */}
-              {!isReadOnly && <DrawingBoard isOpen={false} onSave={handleDrawingSave} />}
+              {!isReadOnly && (
+                <DrawingBoard 
+                  isOpen={isDrawingBoardOpen} 
+                  onSave={handleDrawingSave}
+                  onClose={() => setIsDrawingBoardOpen(false)}
+                />
+              )}
               
               {/* Ne monter le LexicalComposer que quand initialEditorState est prêt */}
               {initialEditorState && (
                 <LexicalComposer initialConfig={initialConfig} key={id}>
-                  {!isReadOnly && <ToolbarPlugin />}
+                  {!isReadOnly && <ToolbarPlugin onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)} />}
                   <RichTextPlugin
                     contentEditable={
                       <ContentEditable
-                        aria-placeholder={ "Commencez à écrire..."}
+                        aria-placeholder={ ""} // Suppresion du place holder
                         placeholder={
                           <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
-                            "Commencez à écrire..."
                           </p>
                         }
                         className={`editor-root mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-not-allowed' : ''}`}
