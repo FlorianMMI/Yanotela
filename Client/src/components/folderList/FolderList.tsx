@@ -32,8 +32,6 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
   return (
 
-
-   
     <main className="p-4 relative min-h-[calc(100vh-200px)]">
 
        {/* Message si aucune note et pas en chargement - Centré sur la page */}
@@ -44,8 +42,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
           </p>
         </div>
       )}
-      
-      
+
       <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-3 md:gap-4 justify-items-start">
 
         {/* Add Folder Button - Toujours visible */}
