@@ -12,7 +12,11 @@ import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST
 import { mergeRegister } from '@lexical/utils';
 import Icons from '@/ui/Icon';
 
-export default function ToolbarPlugin() {
+interface ToolbarPluginProps {
+    onOpenDrawingBoard?: () => void;
+}
+
+export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps = {}) {
     const [editor] = useLexicalComposerContext();
     const toolbarRef = useRef(null);
     const [showFormatMenu, setShowFormatMenu] = useState(false);
@@ -266,7 +270,7 @@ export default function ToolbarPlugin() {
                 role="toolbar"
                 aria-label="Editor toolbar"
                 ref={toolbarRef}
-                className="hidden md:flex flex-wrap items-center gap-1 bg-white rounded-lg sticky top-0 z-10 p-2 mb-1 shadow-sm"
+                className="hidden md:flex flex-wrap items-center gap-1 bg-white rounded-lg sticky top-4 z-10 p-2 mb-1 shadow-sm"
             >
                 {/* Formatage */}
                 <button
@@ -396,6 +400,20 @@ export default function ToolbarPlugin() {
                     title="Justifier">
                     <Icons name="text-justify" />
                 </button>
+
+                {/* Drawing Board button */}
+                {onOpenDrawingBoard && (
+                    <>
+                        <div className="w-px h-6 bg-gray-200 mx-1" /> {/* Separator */}
+                        <button
+                            onClick={onOpenDrawingBoard}
+                            className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
+                            aria-label="Ouvrir le tableau de dessin"
+                            title="Tableau de dessin">
+                            <Icons name="modif" />
+                        </button>
+                    </>
+                )}
             </div>
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
@@ -644,6 +662,17 @@ export default function ToolbarPlugin() {
                             </>
                         )}
                     </div>
+
+                    {/* Drawing Board button for mobile */}
+                    {onOpenDrawingBoard && (
+                        <button
+                            onClick={onOpenDrawingBoard}
+                            className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
+                            aria-label="Ouvrir le tableau de dessin">
+                            <Icons name="modif" className="mb-1" />
+                            <span className="text-xs">Dessin</span>
+                        </button>
+                    )}
                 </div>
             </div>
         </>
