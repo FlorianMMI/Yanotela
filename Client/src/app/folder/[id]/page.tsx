@@ -5,8 +5,11 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
 import NoteList from "@/components/noteList/NoteList";
+import FolderMore from "@/components/folderMore/FolderMore";
 import { GetFolderById, UpdateFolder, DeleteFolder, CreateNote } from "@/loader/loader";
 import FolderDeleteModal from "@/ui/folder/FolderDeleteModal";
+import ReturnButton from "@/ui/returnButton";
+import Icon from "@/ui/Icon";
 
 interface FolderDetailProps {
     params: Promise<{
@@ -24,6 +27,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [totalNotes, setTotalNotes] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [showFolderMore, setShowFolderMore] = useState(false);
 
     useEffect(() => {
         fetchFolderData();
@@ -90,8 +94,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         if (response.success && response.folder) {
             setFolder(response.folder);
             // Émettre un événement pour synchroniser avec le Breadcrumb
-            window.dispatchEvent(new CustomEvent('folderTitleUpdated', { 
-                detail: { folderId: id, title: name } 
+            window.dispatchEvent(new CustomEvent('folderTitleUpdated', {
+                detail: { folderId: id, title: name }
             }));
         } else {
             console.error("Erreur lors de la sauvegarde:", response.error);
@@ -148,7 +152,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     }
 
     return (
-        <div className="h-full w-full flex flex-col relative">
+        <div className="h-full w-full flex flex-col p-2.5 relative">
             {/* Modale de confirmation de suppression */}
             {isDeleteModalOpen && (
                 <FolderDeleteModal
@@ -159,6 +163,41 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             )}
 
             {/* Liste des notes dans le dossier - Plein écran */}
+            <div
+                className="md:hidden flex rounded-lg p-2.5 items-center text-white sticky top-2 z-10"
+                style={{ backgroundColor: folder?.CouleurTag || "#882626" }}
+            >
+                <ReturnButton />
+
+                {/* Afficher le nom du dossier (mobile) */}
+                <div className="flex items-center gap-2 w-full">
+                    <h2 className="w-full font-semibold text-base truncate">{folder?.Nom}</h2>
+                    <div className="relative">
+                        <button onClick={() => setShowFolderMore((prev) => !prev)} aria-label="Options du dossier">
+                            <Icon
+                                name="more"
+                                size={20}
+                                className="text-white cursor-pointer"
+                            />
+                        </button>
+                        {showFolderMore && (
+                            <div className="absolute right-0 mt-2 z-20">
+                                <FolderMore
+                                    folder={folder as any}
+                                    folderId={id}
+                                    folderName={folder?.Nom || ""}
+                                    folderDescription={folder?.Description || ""}
+                                    folderColor={folder?.CouleurTag || ""}
+                                    onUpdate={handleUpdateFolder}
+                                    onDelete={handleDeleteFolder}
+                                    onClose={() => setShowFolderMore(false)}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+            </div>
             <div className="flex-1 overflow-y-auto">
                 <NoteList
                     notes={notes}

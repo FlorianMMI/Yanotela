@@ -89,7 +89,7 @@ export default function FolderMore({
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                                    className="w-full px-3 py-2 border border-gray-300 text-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                                     placeholder="Nom du dossier"
                                 />
                             </div>
@@ -103,7 +103,7 @@ export default function FolderMore({
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
+                                    className="w-full px-3 py-2 border border-gray-300 text-gray-500 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
                                     placeholder="Description du dossier (optionnel)"
                                 />
                             </div>
@@ -190,7 +190,7 @@ export default function FolderMore({
 
             default:
                 return (
-                    <div className="flex-1 overflow-y-auto p-4">
+                    <div className="flex-1 overflow-y-auto p-4 z-30">
                         <div className="flex flex-col gap-1 py-2">
                             <button
                                 className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium transition-colors rounded-lg"
