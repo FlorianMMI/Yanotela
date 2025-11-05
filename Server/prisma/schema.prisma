@@ -18,6 +18,7 @@ model User {
   token         String       @unique
   is_verified   Boolean      @default(false)
   deleted_at    DateTime?
+  theme         String       @default("light")
   folders       Folder[]
   notes         Note[]
   modifiedNotes Note[]       @relation("NoteModifier")

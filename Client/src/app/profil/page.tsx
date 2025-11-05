@@ -13,6 +13,7 @@ import ParamModal from "@/components/infoprofil/paramModal";
 import { AnimatePresence } from "motion/react";
 // import Notification from "@/ui/notification";
 import NotificationList from "@/components/notificationList/page";
+import ThemeSelector from "@/components/theme/themeSelector";
 
 interface UserInfo {
   id: number;
@@ -113,21 +114,26 @@ export default function Profil() {
   return (
     <>
       <div className="min-h-screen py-4 md:px-8 px-0 flex flex-col bg-fondpage">
-        {/* Boutons settings et déconnexion alignés en haut */}
-        <div className=" flex flex-row justify-between items-center w-full px-8">
-          <div className=" w-fit" title="Paramètres du compte"
-            onClick={openParamModal}
-          >
-            <Icons
-              name="settings"
-              size={35}
-              className="cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
-            />
+        {/* Boutons settings, thème et notifications alignés en haut */}
+        <div className="flex flex-row justify-between items-center w-full px-8 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-fit" title="Paramètres du compte"
+              onClick={openParamModal}
+            >
+              <Icons
+                name="settings"
+                size={35}
+                className="cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
+              />
+            </div>
+            
+            {/* Sélecteur de thème */}
+            <ThemeSelector />
           </div>
 
           <div className="md:hidden flex relative">
-        <NotificationList isOpenSideBar={true} />
-        </div>
+            <NotificationList isOpenSideBar={true} />
+          </div>
         </div>
 
         {/* Contenu centré et réparti */}

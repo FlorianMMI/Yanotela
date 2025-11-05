@@ -7,20 +7,26 @@
 @layer base {
 
   :root {
+    /* Variables de thème par défaut (light) - seront écrasées par le hook useTheme */
     --background: #E9EBDB;
     --deskbackground: #EDEDED;
     --foreground: #171717;
+    --beige-foncer: #d5d7c3;
     --clr-beige-foncer: #d5d7c3;
+    --gris-clair: #272727;
     --clr-gris-clair: #272727;
     --clr-error-600: #882626;
-    --gris-clair: #727272;
     --error-600: #882626;
+    --primary: #882626;
     --primary-hover: #ff0000;
     --error-clair: oklch(63.7% 0.237 25.331);
     --light: white;
     --dark: black;
+    --light-note: white;
     --lightNote: white;
+    --text-light-note: oklch(55.1% 0.027 264.364);
     --textlightNote: oklch(55.1% 0.027 264.364);
+    --motif-opacity: 0.03;
 
     --clr-bleu-50: #eef2ff;
     --clr-bleu-100: #e0e7ff;
@@ -68,6 +74,8 @@
     color: var(--foreground);
     font-family: var(--font-gant);
     position: relative;
+    background-color: var(--background);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   body::before {
@@ -77,9 +85,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: var(--motif-opacity);
+    opacity: var(--motif-opacity, 0.03);
     pointer-events: none;
     z-index: -1;
+    transition: opacity 0.3s ease;
   }
 
   button {
@@ -93,15 +102,15 @@
 
 @theme inline {
 
+  /* Couleurs de base adaptées au thème */
   --color-background: var(--background);
   --color-deskbackground: var(--deskbackground);
-  --color-beige-foncer: var(--clr-beige-foncer);
+  --color-beige-foncer: var(--beige-foncer);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-gantari);
   --font-mono: var(--font-geist-mono);
 
-  --color-primary: var(--error-600);
-  --color-primary-hover: var(--primary-hover);
+  --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-element: var(--gris-clair);
   --color-error-clair: var(--error-clair);
@@ -111,10 +120,12 @@
   --font-gant: var(--font-gantari);
   --font-title: var(--font-title);
 
+  /* Variables de couleur thématiques */
   --color-clrprincipal: var(--dark);
   --color-clrsecondaire: var(--light);
-  --color-fondcardNote: var(--lightNote);
-  --color-textcardNote: var(--textlightNote);
+  --color-fondcardNote: var(--light-note);
+  --color-textcardNote: var(--text-light-note);
+  --color-fondpage: var(--background);
 
   --color-info-50: var(--clr-bleu-50);
   --color-info-100: var(--clr-bleu-100);
@@ -149,18 +160,24 @@
   --color-gray-800: var(--clr-gray-800);
   --color-gray-900: var(--clr-gray-900);
 
+  /* Couleur pour le thème violet */
+  --color-purple-600: #9333ea;
+  --color-purple-700: #7e22ce;
+  --color-purple-800: #6b21a8;
+
 }
 
+/* Support des transitions pour le changement de thème */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #2f2f2f;
-    --deskbackground: #474747;
-    --clr-beige-foncer: #1d1d1d;
-    --light: black;
-    --dark:white;
-    --motif-opacity: 0.01;
-    --lightNote: #1e1e1e;
-    --textlightNote: white;
-  }
-}    */
+/* Exception pour les éléments qui ne doivent pas avoir de transition */
+input, textarea, select, [role="button"], button {
+  transition-property: none;
+}
+
+/* Les thèmes sont maintenant gérés dynamiquement par le hook useTheme 
+   et appliqués via JavaScript pour plus de flexibilité */
