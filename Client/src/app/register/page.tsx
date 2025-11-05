@@ -49,7 +49,7 @@ export default function Register() {
         </p>
         <button
           onClick={() => router.push("/login")}
-          className="text-center justify-center text-dangerous-100 hover:text-primary-hover active:text-primary-hover text-lg font-normal font-gant cursor-pointer"
+          className="text-center justify-center text-dangerous-600 hover:text-primary-hover active:text-primary-hover text-lg font-normal font-gant cursor-pointer"
         >
           Connectez-vous
         </button>

@@ -155,7 +155,7 @@ export default function ForgotPasswordForm({
             <button
               type="button"
               onClick={onSwitchToLogin}
-              className="text-sm text-dangerous-100 hover:text-primary/80"
+              className="text-sm text-dangerous-600 hover:text-primary/80"
             >
               Retour à la connexion
             </button>

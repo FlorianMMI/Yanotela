@@ -19,7 +19,7 @@ export default function FolderDeleteModal({ folderName, onConfirm, onCancel }: F
                     <h2 className="text-xl font-bold text-gray-800">Supprimer le dossier</h2>
                 </div>
 
-                <p className="text-sm text-gray-600 mt-2 mb-6 w-full text-center break-words">
+                <p className="text-sm text-gray-600 mt-2 mb-6 w-full text-center wrap-break-word">
                     Êtes-vous sûr de vouloir supprimer le dossier <strong className="text-gray-800">{folderName}</strong> ?
                     <br />
                     <span className="text-dangerous-600 font-medium">Cette action est irréversible.</span>

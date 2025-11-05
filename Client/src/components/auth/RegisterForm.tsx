@@ -306,7 +306,7 @@ export default function RegisterForm({
               type="button"
               onClick={onSwitchToLogin}
 
-              className="text-sm text-dangerous-100 hover:underline"
+              className="text-sm text-dangerous-600 hover:underline"
 
             >
                Se connecter
