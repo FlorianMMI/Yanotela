@@ -74,6 +74,14 @@ export default function FlashNoteWidget() {
           JSON.parse(savedContent);
           setInitialEditorState(savedContent);
           setEditorContent(savedContent);
+          // Notify other components in the same tab that flash content was loaded
+          if (typeof window !== 'undefined') {
+            try {
+              window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: savedContent }));
+            } catch (err) {
+              // ignore
+            }
+          }
         } catch {
           const simpleState = {
             root: {
@@ -102,6 +110,13 @@ export default function FlashNoteWidget() {
           };
           setInitialEditorState(JSON.stringify(simpleState));
           setEditorContent(JSON.stringify(simpleState));
+          if (typeof window !== 'undefined') {
+            try {
+              window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: JSON.stringify(simpleState) }));
+            } catch (err) {
+              // ignore
+            }
+          }
         }
       }
     } catch (error) {
@@ -164,6 +179,15 @@ export default function FlashNoteWidget() {
         setEditorContent(contentString);
         localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
         
+        // Notify in-tab listeners that flash content changed
+        if (typeof window !== 'undefined') {
+          try {
+            window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: contentString }));
+          } catch (err) {
+            // ignore
+          }
+        }
+        
         // Reset saving state after a short delay
         setTimeout(() => {
           setIsSavingContent(false);
@@ -203,6 +227,15 @@ export default function FlashNoteWidget() {
         const contentString = JSON.stringify(editorStateJSON);
         setEditorContent(contentString);
         localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
+
+        // Notify in-tab listeners that flash content changed
+        if (typeof window !== 'undefined') {
+          try {
+            window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: contentString }));
+          } catch (err) {
+            // ignore
+          }
+        }
 
         setTimeout(() => {
           setIsSavingContent(false);
@@ -245,11 +278,11 @@ export default function FlashNoteWidget() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-3"
+        className="bg-info-50 border border-info-100 rounded-lg p-3 flex items-start gap-3"
       >
-        <Icons name="info" size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+        <Icons name="info" size={18} className="text-blue shrink-0 mt-0.5" />
         <div className="flex-1">
-          <p className="text-xs text-blue-800">
+          <p className="text-xs text-info-800">
             Les flashnotes sont temporaires. Pour les conserver de façon permanente,{' '}
             <span className="font-semibold">connectez-vous</span>.
           </p>

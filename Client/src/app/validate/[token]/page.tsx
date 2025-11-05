@@ -79,22 +79,22 @@ export default function ValidatePage() {
           
           {status === 'success' && (
             <div className="mt-4 flex justify-center">
-              <div className="rounded-md bg-green-50 p-4 w-full max-w-sm">
+              <div className="rounded-md bg-success-50 p-4 w-full max-w-sm">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-10 w-10 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                  <div className="shrink-0">
+                    <svg className="h-10 w-10 text-green" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="ml-3 text-center w-full">
-                    <p className="text-sm font-medium text-green-800">
+                    <p className="text-sm font-medium text-success-800">
                       {message}
                     </p>
                     <div className="mt-2 flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-                      <span className="text-xs text-green-700">Redirection en cours...</span>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-success-800"></div>
+                      <span className="text-xs text-success-800">Redirection en cours...</span>
                     </div>
-                      <Link href="/notes" className="mt-2 block text-sm text-green-700 hover:text-green-500 underline">
+                      <Link href="/notes" className="mt-2 block text-sm text-success-800 hover:text-success-800 underline">
                         Accéder à mes notes maintenant
                       </Link>
                   </div>
@@ -105,20 +105,20 @@ export default function ValidatePage() {
           
           {status === 'error' && (
             <div className="mt-4 flex justify-center">
-              <div className="rounded-md bg-red-50 p-4 w-full max-w-sm">
+              <div className="rounded-md bg-dangerous-50 p-4 w-full max-w-sm">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-10 w-10 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <div className="shrink-0">
+                    <svg className="h-10 w-10 text-dangerous-600" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="ml-3 text-center w-full">
-                    <p className="text-sm font-medium text-red-800">
+                    <p className="text-sm font-medium text-dangerous-800">
                       {message}
                     </p>
                     <Link
                       href="/"
-                      className="mt-2 text-sm text-red-600 hover:text-red-500 underline"
+                      className="mt-2 text-sm text-dangerous-800 hover:text-dangerous-600 underline"
                     >
                       Retour
                     </Link>

@@ -86,7 +86,7 @@ export default function InputModified({
           />
           <button
             onClick={handleToggleEdit}
-            className="flex items-center justify-center flex-shrink-0"
+            className="flex items-center justify-center shrink-0"
             aria-label={isEditing ? "Sauvegarder" : `Modifier ${name || 'le champ'}`}
           >
             <Icons
@@ -95,7 +95,7 @@ export default function InputModified({
               className={`cursor-pointer rounded-full p-2 text-white hover:shadow-md transition-all duration-300 ${
                 isEditing 
                   ? hasUnsavedChanges 
-                    ? "bg-green-700 hover:bg-green-600 animate-pulse" 
+                    ? "bg-success-700 hover:bg-success-600 animate-pulse" 
                     : "bg-gray-500 hover:bg-gray-400"
                   : "bg-primary hover:bg-primary-hover"
               }`}

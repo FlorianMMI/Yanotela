@@ -31,8 +31,8 @@ export default function LogoutConfirm({ onConfirm, onCancel }: LogoutConfirmProp
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Icon name="exit" size={32} className="text-red-600" />
+                    <div className="w-16 h-16 bg-dangerous-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Icon name="exit" size={32} className="text-dangerous-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Confirmer la déconnexion</h2>
                     <p className="text-gray-600">Êtes-vous sûr de vouloir vous déconnecter de votre compte ?</p>

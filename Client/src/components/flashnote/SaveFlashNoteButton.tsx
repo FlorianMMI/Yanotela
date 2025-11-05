@@ -9,13 +9,15 @@ import { useAuth } from '@/hooks/useAuth';
 interface SaveFlashNoteButtonProps {
   className?: string;
   variant?: 'default' | 'mobile';
+  disabled?: boolean;
   currentTitle?: string; // Pour récupérer le titre actuel depuis Flash Note
 }
 
 export default function SaveFlashNoteButton({ 
   className = '', 
   variant = 'default',
-  currentTitle 
+  currentTitle,
+  disabled
 }: SaveFlashNoteButtonProps) {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -27,6 +29,7 @@ export default function SaveFlashNoteButton({
   const [error, setError] = useState<string | null>(null);
   const [flashContent, setFlashContent] = useState<string>('');
   const [flashEmpty, setFlashEmpty] = useState<boolean>(true);
+
 
   // Note: flash emptiness is tracked in state `flashEmpty` to avoid reading localStorage during render
 
@@ -52,32 +55,56 @@ export default function SaveFlashNoteButton({
     }
   };
 
-  // Initialize flash content from localStorage on client only
+  // Initialize flash content from localStorage and subscribe to updates
   React.useEffect(() => {
-    try {
-      const stored = typeof window !== 'undefined' ? localStorage.getItem("yanotela:flashnote:content") || '' : '';
-      setFlashContent(stored);
-      setFlashEmpty(computeIsEmpty(stored));
-    } catch (e) {
-      setFlashContent('');
-      setFlashEmpty(true);
-    }
+    if (typeof window === 'undefined') return;
 
+    const FLASH_NOTE_CONTENT_KEY = 'yanotela:flashnote:content';
+
+    // Read initial value on mount
+    const readStored = () => {
+      try {
+        const stored = localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '';
+        setFlashContent(stored);
+        setFlashEmpty(computeIsEmpty(stored));
+      } catch (e) {
+        setFlashContent('');
+        setFlashEmpty(true);
+      }
+    };
+
+    readStored();
+
+    // Cross-tab updates (storage event)
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'yanotela:flashnote:content') {
+      if (e.key === FLASH_NOTE_CONTENT_KEY) {
         const newVal = e.newValue || '';
         setFlashContent(newVal);
         setFlashEmpty(computeIsEmpty(newVal));
       }
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('storage', onStorage);
-    }
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('storage', onStorage);
+    // In-tab updates: listen for custom event dispatched by the editor
+    const onCustom = (event: Event) => {
+      try {
+        const ce = event as CustomEvent<string>;
+        const newVal = typeof ce.detail === 'string' ? ce.detail : (localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '');
+        setFlashContent(newVal);
+        setFlashEmpty(computeIsEmpty(newVal));
+      } catch (err) {
+        // fallback to reading localStorage
+        const newVal = localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '';
+        setFlashContent(newVal);
+        setFlashEmpty(computeIsEmpty(newVal));
       }
+    };
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('yanotela:flashnote:updated', onCustom as EventListener);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('yanotela:flashnote:updated', onCustom as EventListener);
     };
   }, []);
 
@@ -160,7 +187,7 @@ export default function SaveFlashNoteButton({
         className={variant === 'mobile' ? "text-primary" : "text-white"} 
       />
       <span className={`${variant === 'mobile' ? 'text-base text-primary' : 'text-sm text-white'} font-medium`}>
-        Enregistrer votre note de façon permanente
+        Enregistrer de façon permanente
       </span>
     </>
   );
@@ -177,21 +204,21 @@ export default function SaveFlashNoteButton({
           {success && (
             <div 
               onClick={() => setSuccess(null)}
-              className="rounded-md bg-green-50 p-4 border border-green-200 cursor-pointer hover:bg-green-100 transition-colors shadow-lg"
+              className="rounded-md bg-success-50 p-4 border border-success-200 cursor-pointer hover:bg-success-100 transition-colors shadow-lg"
             >
               <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                <div className="shrink-0">
+                  <svg className="h-5 w-5 text-green" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-green-800">
+                  <p className="text-sm font-medium text-success-800">
                     {success}
                   </p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
-                  <button className="inline-flex text-green-400 hover:text-green-600">
+                <div className="ml-4 shrink-0">
+                  <button className="inline-flex text-green hover:text-success-800">
                     <span className="sr-only">Fermer</span>
                     <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -205,21 +232,21 @@ export default function SaveFlashNoteButton({
           {error && (
             <div 
               onClick={() => setError(null)}
-              className="rounded-md bg-red-50 p-4 border border-red-200 cursor-pointer hover:bg-red-100 transition-colors shadow-lg"
+              className="rounded-md bg-dangerous-50 p-4 border border-dangerous-600 cursor-pointer hover:bg-dangerous-100 transition-colors shadow-lg"
             >
               <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <div className="shrink-0">
+                  <svg className="h-5 w-5 text-dangerous-600" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-red-800">
+                  <p className="text-sm font-medium text-dangerous-800">
                     {error}
                   </p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
-                  <button className="inline-flex text-red-400 hover:text-red-600">
+                <div className="ml-4 shrink-0">
+                  <button className="inline-flex text-dangerous-600 hover:text-dangerous-800">
                     <span className="sr-only">Fermer</span>
                     <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

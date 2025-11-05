@@ -132,7 +132,7 @@ export default function RegisterForm({
         
         <Link
           href="/register/form"
-          className="block w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-rouge-hover transition-colors text-center"
+          className="block w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors text-center"
         >
           Créer un compte
         </Link>
@@ -181,7 +181,7 @@ export default function RegisterForm({
                 {isInSidebar ? 'Nom d\'utilisateur' : 'Pseudonyme*'}
               </p>
               {!isInSidebar && (
-                <p className="text-zinc-500 text-xs font-light">
+                <p className="text-gris-100 text-xs font-light">
                   *doit être unique
                 </p>
               )}
@@ -289,7 +289,7 @@ export default function RegisterForm({
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex items-center w-full gap-4">
             <div className="flex-1 h-px bg-gray-300"></div>
-            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+            <p className="text-gris-100 text-sm font-normal font-gant">ou</p>
             <div className="flex-1 h-px bg-gray-300"></div>
           </div>
           
@@ -306,7 +306,7 @@ export default function RegisterForm({
               type="button"
               onClick={onSwitchToLogin}
 
-              className="text-sm text-rouge-clair hover:underline"
+              className="text-sm text-dangerous-100 hover:underline"
 
             >
                Se connecter

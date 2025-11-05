@@ -12,7 +12,7 @@ export default function NoteSkeleton() {
         </div>
         
         {/* Icon skeleton */}
-        <div className="p-3 flex-shrink-0">
+        <div className="p-3 shrink-0">
           <div className="w-5 h-5 bg-gray-400 rounded"></div>
         </div>
       </div>

@@ -50,8 +50,8 @@ export default function Notification({ id, title, author, onNotificationUpdate, 
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <div onClick={handleUpdateNotification} className="p-1 rounded hover:bg-gray-100" aria-label="Accepter la notification"><Icon  name="Checkk" size={20} className=" text-green-500"/></div>
-                    <div onClick={handleRefuseNotification} className="p-1 rounded hover:bg-gray-100" aria-label="Refuser la notification"><Icon  name="close" size={20} className=" text-red-500"/></div>
+                    <div onClick={handleUpdateNotification} className="p-1 rounded hover:bg-gray-100" aria-label="Accepter la notification"><Icon  name="Checkk" size={20} className=" text-success-500"/></div>
+                    <div onClick={handleRefuseNotification} className="p-1 rounded hover:bg-gray-100" aria-label="Refuser la notification"><Icon  name="close" size={20} className=" text-dangerous-500"/></div>
                 </div>
             </div>
         </>

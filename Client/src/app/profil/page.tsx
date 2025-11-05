@@ -90,7 +90,7 @@ export default function Profil() {
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-fondpage">
-        <div className="text-center text-red-600">
+        <div className="text-center text-dangerous-800">
           <p>Erreur: {error}</p>
         </div>
       </div>

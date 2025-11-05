@@ -209,10 +209,10 @@ export default function FolderMore({
                             </button>
 
                             <button
-                                className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
+                                className="flex items-center gap-3 px-5 py-3 text-dangerous-800 hover:bg-dangerous-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
                                 onClick={onDelete}
                             >
-                                <Icons name="trash" size={22} className="text-red-600" />
+                                <Icons name="trash" size={22} className="text-dangerous-800" />
                                 Supprimer le dossier
                             </button>
                         </div>

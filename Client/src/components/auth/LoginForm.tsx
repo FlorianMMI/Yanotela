@@ -86,7 +86,7 @@ export default function LoginForm({
 
       <form role="form" onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
         {error && (
-          <div className="w-full p-2.5 bg-red-100 border-red-400 text-red-00 rounded-[10px] text-sm">
+          <div className="w-full p-2.5 bg-dangerous-100 border-dangerous-600 text-dangerous-600 rounded-[10px] text-sm">
             {error}
           </div>
         )}
@@ -98,7 +98,7 @@ export default function LoginForm({
         )}
         
         <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
-          <Icon name="at" className="text-zinc-500" size={20} />
+          <Icon name="at" className="text-gris-100" size={20} />
           <input 
             type="text" 
             name="identifiant"
@@ -112,7 +112,7 @@ export default function LoginForm({
         <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire border-primary border-2 rounded-[10px] flex justify-between items-center">
 
           <div className="flex justify-center items-center gap-2.5">
-            <Icon name="keyhole" className="text-zinc-500" size={20} />
+            <Icon name="keyhole" className="text-gris-100" size={20} />
             <input 
               type={showPassword ? "text" : "password"}
               name="password"
@@ -130,7 +130,7 @@ export default function LoginForm({
           >
             <Icon 
               name={showPassword ? "eye-close" : "eye"} 
-              className="text-zinc-500 hover:text-zinc-700" 
+              className="text-gris-100 hover:text-gris-700" 
               size={16} 
             />
           </button>
@@ -141,7 +141,7 @@ export default function LoginForm({
             type="button"
             onClick={onSwitchToForgot || (() => router.push('/forgot-password'))}
 
-            className="w-full justify-start text-start flex text-rouge-clair hover:text-primary-hover hover:underline text-sm font-normal font-gant cursor-pointer"
+            className="w-full justify-start text-start flex text-dangerous-100 hover:text-primary-hover hover:underline text-sm font-normal font-gant cursor-pointer"
           >
             Mot de passe oublié ?
           </button>
@@ -150,7 +150,7 @@ export default function LoginForm({
         <button 
           type="submit" 
           disabled={isLoading}
-          className="p-2.5 w-full bg-primary hover:bg-primary-hover disabled:bg-gray-400 rounded-[10px] flex justify-between items-center shadow-md cursor-pointer transition-colors"
+          className="p-2.5 w-full bg-primary hover:bg-primary-hover disabled:bg-gris-100 rounded-[10px] flex justify-between items-center shadow-md cursor-pointer transition-colors"
         >
           <p className="flex-1 text-center justify-center text-white text-xl font-bold font-gant pointer-events-none">
             {isLoading ? 'Connexion...' : 'Se connecter'}
@@ -162,7 +162,7 @@ export default function LoginForm({
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex items-center w-full gap-4">
             <div className="flex-1 h-px bg-gray-300"></div>
-            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+            <p className="text-gris-100 text-sm font-normal font-gant">ou</p>
             <div className="flex-1 h-px bg-gray-300"></div>
           </div>
           
@@ -181,7 +181,7 @@ export default function LoginForm({
                 type="button"
                 onClick={onSwitchToRegister || (() => router.push('/register'))}
 
-                className="text-rouge-clair hover:underline"
+                className="text-dangerous-100 hover:underline"
 
               >
                 Inscrivez-vous
