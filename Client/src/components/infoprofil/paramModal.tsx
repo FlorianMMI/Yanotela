@@ -96,6 +96,16 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                     {/* Selectionner un theme  */}
                     <ThemeSelector />
 
+                        {/* Boutton corbeille */}
+                        <button
+                            className="mt-4 px-4 py-2 bg-zinc-100 text-clrprincipal font-bold rounded hover:bg-zinc-200 hover:shadow-lg transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+                            onClick={() => router.push('/corbeille')}
+                            title='Voir les notes supprimées'
+                        >
+                            <Icon name="trash" size={20} />
+                            Corbeille
+                        </button>
+
                         {/* Boutton suppression compte */}
                         <button
                             className="mt-4 px-4 py-2 bg-primary text-white font-bold rounded hover:bg-primary-hover hover:shadow-lg transition-all duration-300 cursor-pointer"
