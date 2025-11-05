@@ -173,7 +173,7 @@ export default function SaveFlashNoteButton({
     <>
       {/* Zone de notifications */}
       {(success || error) && (
-        <div className="fixed top-4 right-4 z-50 max-w-md">
+        <div className="fixed top-4 right-4 z-50 max-w-md pl-4">
           {success && (
             <div 
               onClick={() => setSuccess(null)}

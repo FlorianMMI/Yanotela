@@ -385,7 +385,7 @@ export default function Breadcrumb() {
     <>
       {/* Zone de notifications pour le titre */}
       {(success || error) && (
-        <div className="fixed top-4 right-4 z-50 max-w-md">
+        <div className="fixed top-4 right-4 z-50 max-w-md pl-4">
           {success && (
             <div
               onClick={() => setSuccess(null)}

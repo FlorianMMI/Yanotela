@@ -36,7 +36,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
        {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && folders.length === 0 && (
-        <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-element text-lg font-gant mx-4 w-full text-center">
+        <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-element text-lg font-gant w-[calc(100%-5rem)] text-center">
           Aucun dossier trouvé. Créez votre premier dossier !
         </p>
       )}
