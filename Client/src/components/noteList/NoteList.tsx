@@ -55,7 +55,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
       {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && notes.length === 0 && (
        
-          <p className="text-element text-lg font-gant mx-4 text-center">
+          <p className="absolute inset-0 flex items-center justify-center pointer-events-none text-element text-lg font-gant mx-4 text-center">
             Aucune note trouvée. Créez votre première note !
           </p>
         
