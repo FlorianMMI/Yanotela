@@ -256,7 +256,7 @@ Note: id(string), Titre, Content, authorId(int→User), ModifiedAt(datetime)
 
 ### Styling System
 - **TailwindCSS 4** with CSS variables in `globals.css` 
-- **Custom properties**: `--rouge-fonce: #882626`, `--background: #E9EBDB`
+- **Custom properties**: `--rouge-600: #882626`, `--background: #E9EBDB`
 - **Typography**: Gantari (primary), Geologica (secondary) via Google Fonts
 - **Theme system**: CSS `@theme inline` block maps CSS vars to Tailwind tokens
 

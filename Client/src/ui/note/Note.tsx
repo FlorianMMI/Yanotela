@@ -46,7 +46,7 @@ export default function Note({ note }: NoteProps) {
       return <p>{JSON.stringify(note.Content)}</p>;
     } catch (error) {
       console.error('[Note] Error rendering content:', error, note.Content);
-      return <p className="text-red-500">Erreur d'affichage du contenu</p>;
+      return <p className="text-dangerous-500">Erreur d'affichage du contenu</p>;
     }
   };
 
@@ -74,7 +74,7 @@ export default function Note({ note }: NoteProps) {
         {/* Collaborateurs */}
         <div>
           {note.collaboratorCount && note.collaboratorCount > 1 && (
-            <div className="flex items-center min-w-[56px] h-full gap-1 px-3 flex-shrink-0">
+            <div className="flex items-center min-w-[56px] h-full gap-1 px-3 shrink-0">
               <p className='text-white font-bold'>{note.collaboratorCount}</p>
               <Image
                 src="/share.svg"

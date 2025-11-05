@@ -61,11 +61,11 @@ export default function GoogleAuthButton({
     >
       <Icon 
         name="google" 
-        className={isLoading ? "text-gray-400" : "text-primary"} 
+        className={isLoading ? "text-gray-100" : "text-primary"} 
         size={20} 
       />
       <span className={`text-sm font-medium font-['Gantari'] ${
-        isLoading ? 'text-gray-400' : mode === 'login' ? 'text-black' : 'text-gray-700'
+        isLoading ? 'text-gray-100' : mode === 'login' ? 'text-black' : 'text-gray-700'
       }`}>
         {isLoading ? 'Connexion en cours...' : buttonText}
       </span>

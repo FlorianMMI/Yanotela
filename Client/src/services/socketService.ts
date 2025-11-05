@@ -17,7 +17,7 @@ class SocketService {
       return this.socket;
     }
 
-    const SOCKET_URL = 'https://yanotela.fr';
+    const SOCKET_URL = 'http://localhost:3001'; 
 
     this.socket = io(SOCKET_URL, {
       path: '/socket.io/',
