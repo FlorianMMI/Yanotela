@@ -55,31 +55,55 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
         // Transformation du JSON stringifié en objet lisible
         for (const note of data.notes) {
             try {
-                const parsedContent = JSON.parse(note.Content);
-                if (typeof parsedContent === 'object' && parsedContent !== null) {
-                    // Si c'est un objet Lexical, extraire le texte
-                    if (parsedContent.root && parsedContent.root.children) {
-                        // Extraction du texte depuis la structure Lexical
-                        const extractText = (children: any[]): string => {
-                            return children.map((child: any) => {
-                                if (child.type === 'paragraph' && child.children) {
-                                    return extractText(child.children);
-                                } else if (child.type === 'text' && child.text) {
-                                    return child.text;
-                                }
-                                return '';
-                            }).join(' ');
-                        };
-                        note.Content = extractText(parsedContent.root.children) || 'Contenu vide';
-                    } else {
-                        // Si c'est un autre type d'objet, convertir en string lisible
-                        note.Content = JSON.stringify(parsedContent);
-                    }
+                // ✅ Vérifier d'abord si c'est déjà un objet ou une string
+                let parsedContent;
+                
+                if (typeof note.Content === 'string') {
+                    // Si c'est une string, essayer de parser
+                    parsedContent = JSON.parse(note.Content);
+                } else if (typeof note.Content === 'object' && note.Content !== null) {
+                    // Si c'est déjà un objet, l'utiliser directement
+                    parsedContent = note.Content;
+                } else {
+                    // Si c'est null ou undefined
+                    note.Content = 'Contenu vide';
+                    continue;
                 }
-            } catch {
-                // Si le parsing échoue, garder le contenu tel quel
-                console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
-                note.Content = String(note.Content);
+                
+                // Si c'est un objet Lexical, extraire le texte
+                if (parsedContent.root && parsedContent.root.children) {
+                    // Extraction récursive du texte depuis la structure Lexical (gère tous les nœuds)
+                    const extractText = (node: any): string => {
+                        if (!node) return '';
+                        
+                        // Si c'est un nœud texte
+                        if (node.type === 'text' && node.text) {
+                            return node.text;
+                        }
+                        
+                        // Si c'est un nœud avec enfants (paragraph, heading, list, etc.)
+                        if (node.children && Array.isArray(node.children)) {
+                            return node.children.map((child: any) => extractText(child)).join(' ');
+                        }
+                        
+                        // Si c'est un nœud image ou autre sans texte
+                        if (node.type === 'image') {
+                            return '[Image]';
+                        }
+                        
+                        return '';
+                    };
+                    
+                    const textContent = extractText(parsedContent.root).trim();
+                    note.Content = textContent || 'Contenu vide';
+                } else {
+                    // Si c'est un autre type d'objet, convertir en string lisible
+                    note.Content = JSON.stringify(parsedContent).substring(0, 100) + '...';
+                }
+            } catch (error) {
+                // Si le parsing échoue, garder le contenu tel quel ou afficher le début
+                const content = String(note.Content);
+                note.Content = content.length > 100 ? content.substring(0, 100) + '...' : content;
             }
         }
 
