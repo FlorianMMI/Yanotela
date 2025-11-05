@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
             Vous vous souvenez de votre mot de passe ?{' '}
             <Link 
               href="/login" 
-              className="text-primary hover:text-rouge-hover font-medium"
+              className="text-primary hover:text-primary-hover font-medium"
             >
               Se connecter
             </Link>

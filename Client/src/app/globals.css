@@ -7,32 +7,75 @@
 @layer base {
 
   :root {
+    /* Variables de thème par défaut (light) - seront écrasées par le hook useTheme */
     --background: #E9EBDB;
     --deskbackground: #EDEDED;
     --foreground: #171717;
+    --beige-foncer: #d5d7c3;
     --clr-beige-foncer: #d5d7c3;
+    --gris-clair: #272727;
     --clr-gris-clair: #272727;
-    --clr-rouge-fonce: #882626;
-    --gris-clair: #727272;
-    --rouge-fonce: #882626;
-    --rouge-hover: #ff0000;
-    --rouge-clair: oklch(63.7% 0.237 25.331);
+    --clr-error-600: #882626;
+    --error-600: #882626;
+    --primary: #882626;
+    --primary-hover: #ff0000;
+    --error-clair: oklch(63.7% 0.237 25.331);
     --light: white;
     --dark: black;
+    --light-note: white;
     --lightNote: white;
+    --text-light-note: oklch(55.1% 0.027 264.364);
     --textlightNote: oklch(55.1% 0.027 264.364);
+    --motif-opacity: 0.03;
+
+    --clr-bleu-50: #eef2ff;
+    --clr-bleu-100: #e0e7ff;
+    --clr-bleu-200: #c7d2fe;
+    --clr-bleu-400: #818cf8;
+    --clr-bleu-600: #4f46e5;
+    --clr-bleu-800: #3730a3;
+
+    --clr-green-50: #f0fdf4;
+    --clr-green-100: #dcfce7;
+    --clr-green-200: #bbf7d0;
+    --clr-green-400: #34d399;
+    --clr-green-600: #16a34a;
+    --clr-green-800: #166534;
+
+    --clr-red-50: #fef2f2;
+    --clr-red-100: #fee2e2;
+    --clr-red-200: #fecaca;
+    --clr-red-400: #f87171;
+    --clr-red-600: #dc2626;
+    --clr-red-500: #ef4444;
+    --clr-red-800: #991b1b;
+
+    --clr-gray-50: #f9fafb;
+    --clr-gray-100: #f3f4f6;
+    --clr-gray-200: #e5e7eb;
+    --clr-gray-300: #d1d5db;
+    --clr-gray-400: #9ca3af;
+    --clr-gray-500: #6b7280;
+    --clr-gray-600: #4b5563;
+    --clr-gray-700: #374151;
+    --clr-gray-800: #1f2937;
+    --clr-gray-900: #111827;
 
 
     --font-title: 'Nixie One', cursive;
     --font-family: "Gantari", Arial, Helvetica, sans-serif;
     --font-gantari: 'Gantari', sans-serif;
     --font-geologica: 'Geologica', sans-serif;
-  }
+    
+
+}
 
   body {
     color: var(--foreground);
     font-family: var(--font-gant);
     position: relative;
+    background-color: var(--background);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   body::before {
@@ -42,9 +85,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: var(--motif-opacity);
+    opacity: var(--motif-opacity, 0.03);
     pointer-events: none;
     z-index: -1;
+    transition: opacity 0.3s ease;
   }
 
   button {
@@ -57,40 +101,83 @@
 }
 
 @theme inline {
+
+  /* Couleurs de base adaptées au thème */
   --color-background: var(--background);
   --color-deskbackground: var(--deskbackground);
-  --color-beige-foncer: var(--clr-beige-foncer);
+  --color-beige-foncer: var(--beige-foncer);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-gantari);
   --font-mono: var(--font-geist-mono);
 
-  --color-primary: var(--rouge-fonce);
-  --color-primary-hover: var(--rouge-hover);
-  --color-rouge-hover: var(--rouge-hover);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-element: var(--gris-clair);
-  --color-rouge-clair: var(--rouge-clair);
+  --color-error-clair: var(--error-clair);
   --color-gris-clair: var(--clr-gris-clair);  
 
   --font-geo: var(--font-geologica);
   --font-gant: var(--font-gantari);
   --font-title: var(--font-title);
 
+  /* Variables de couleur thématiques */
   --color-clrprincipal: var(--dark);
   --color-clrsecondaire: var(--light);
-  --color-fondcardNote: var(--lightNote);
-  --color-textcardNote: var(--textlightNote);
+  --color-fondcardNote: var(--light-note);
+  --color-textcardNote: var(--text-light-note);
+  --color-fondpage: var(--background);
+
+  --color-info-50: var(--clr-bleu-50);
+  --color-info-100: var(--clr-bleu-100);
+  --color-info-200: var(--clr-bleu-200);
+  --color-info-400: var(--clr-bleu-400);
+  --color-info-600: var(--clr-bleu-600);
+  --color-info-800: var(--clr-bleu-800);
+
+  --color-success-50: var(--clr-green-50);
+  --color-success-100: var(--clr-green-100);
+  --color-success-200: var(--clr-green-200);
+  --color-success-400: var(--clr-green-400);
+  --color-success-600: var(--clr-green-600);
+  --color-success-800: var(--clr-green-800);
+
+  --color-dangerous-50: var(--clr-red-50);
+  --color-dangerous-100: var(--clr-red-100);
+  --color-dangerous-200: var(--clr-red-200);
+  --color-dangerous-400: var(--clr-red-400);
+  --color-dangerous-500: var(--clr-red-500);
+  --color-dangerous-600: var(--clr-red-600);
+  --color-dangerous-800: var(--clr-red-800);
+
+  --color-gray-50: var(--clr-gray-50);
+  --color-gray-100: var(--clr-gray-100);
+  --color-gray-200: var(--clr-gray-200);
+  --color-gray-300: var(--clr-gray-300);
+  --color-gray-400: var(--clr-gray-400);
+  --color-gray-500: var(--clr-gray-500);
+  --color-gray-600: var(--clr-gray-600);
+  --color-gray-700: var(--clr-gray-700);
+  --color-gray-800: var(--clr-gray-800);
+  --color-gray-900: var(--clr-gray-900);
+
+  /* Couleur pour le thème violet */
+  --color-purple-600: #9333ea;
+  --color-purple-700: #7e22ce;
+  --color-purple-800: #6b21a8;
+
 }
 
+/* Support des transitions pour le changement de thème */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #2f2f2f;
-    --deskbackground: #474747;
-    --clr-beige-foncer: #1d1d1d;
-    --light: black;
-    --dark:white;
-    --motif-opacity: 0.01;
-    --lightNote: #1e1e1e;
-    --textlightNote: white;
-  }
-}    */
+/* Exception pour les éléments qui ne doivent pas avoir de transition */
+input, textarea, select, [role="button"], button {
+  transition-property: none;
+}
+
+/* Les thèmes sont maintenant gérés dynamiquement par le hook useTheme 
+   et appliqués via JavaScript pour plus de flexibilité */

@@ -17,8 +17,8 @@ export default function ResetPasswordTokenPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Token manquant</h1>
-          <p className="text-gray-600">Le lien de réinitialisation semble invalide.</p>
+          <h1 className="text-2xl font-bold text- mb-4">Token manquant</h1>
+          <p className="text-gray-100">Le lien de réinitialisation semble invalide.</p>
         </div>
       </div>
     );
@@ -59,7 +59,7 @@ export default function ResetPasswordTokenPage() {
             Vous vous souvenez de votre mot de passe ?{' '}
             <Link 
               href="/login" 
-              className="text-primary hover:text-rouge-hover font-medium"
+              className="text-primary hover:text-primary-hover font-medium"
             >
               Se connecter
             </Link>

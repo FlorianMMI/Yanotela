@@ -14,6 +14,7 @@ import { AnimatePresence } from "motion/react";
 // import Notification from "@/ui/notification";
 import NotificationList from "@/components/notificationList/page";
 import ReturnButton from "@/ui/returnButton";
+import ThemeSelector from "@/components/theme/themeSelector";
 
 interface UserInfo {
   id: number;
@@ -67,7 +68,7 @@ export default function Profil() {
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-fondpage">
-        <div className="text-center text-red-600">
+        <div className="text-center text-dangerous-800">
           <p>Erreur: {error}</p>
         </div>
       </div>
@@ -89,13 +90,52 @@ export default function Profil() {
 
   return (
     <>
-      <div className="relative h-screen md:h-full flex flex-col gap-4 bg-fondpage p-4">
-        {/* Boutons settings et déconnexion alignés en haut */}
-        <div className="absolute top-4 left-0 px-4 w-full flex justify-between items-center">
-          <div className="md:hidden flex gap-1 items-center">
-            <ReturnButton />
-            <div className="flex items-center justify-center">
-              <NotificationList isOpenSideBar={true} />
+      <div className="min-h-screen py-4 md:px-8 px-0 flex flex-col bg-fondpage">
+        {/* Boutons settings, thème et notifications alignés en haut */}
+        <div className="flex flex-row justify-between items-center w-full px-8 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-fit" title="Paramètres du compte"
+              onClick={openParamModal}
+            >
+              <Icons
+                name="settings"
+                size={35}
+                className="cursor-pointer rounded-lg p-2 hover:bg-primary hover:text-white hover:shadow-md transition-all duration-300"
+              />
+            </div>
+            
+            {/* Sélecteur de thème */}
+            <ThemeSelector />
+          </div>
+
+          <div className="md:hidden flex relative">
+            <NotificationList isOpenSideBar={true} />
+          </div>
+        </div>
+
+        {/* Contenu centré et réparti */}
+        <div className="flex-1 flex flex-col justify-start gap-12 items-center text-center w-full">
+
+          <div className="flex md:hidden">
+            {userInfo && (
+              <InfoProfil
+                name={displayName}
+                pseudo={userInfo.pseudo}
+                email={userInfo.email}
+              />
+            )}
+          </div>
+
+          <div className="hidden md:flex w-full">
+            <ModificationProfil />
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-8 w-full p-4 md:w-full md:items-start items-center mb-6">
+
+            <div className="flex flex-col gap-4 items-center w-fit">
+              <p className="text-clrprincipal font-gant text-center text-2xl w-full">
+                Vos contenus
+              </p>
             </div>
           </div>
           <div className="flex gap-4 items-center md:w-full md:justify-between">

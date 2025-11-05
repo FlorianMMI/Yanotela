@@ -164,8 +164,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
             {/* Liste des notes dans le dossier - Plein écran */}
             <div
-                className="md:hidden flex rounded-lg p-2.5 items-center text-white sticky top-2 z-10"
-                style={{ backgroundColor: folder?.CouleurTag || "#882626" }}
+                className={`md:hidden flex rounded-lg p-2.5 items-center text-white sticky top-2 z-10 ${folder?.CouleurTag || "bg-primary"}`}
+                // style={{ backgroundColor: folder?.CouleurTag || "#882626" }}
             >
                 <ReturnButton />
 

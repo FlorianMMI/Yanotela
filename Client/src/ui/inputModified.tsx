@@ -53,7 +53,7 @@ export default function InputModified({
   return (
     <div className='self-stretch flex justify-between items-center gap-3'>
       <div className="flex flex-col">
-        <p className="justify-start text-clrprincipal w-fit font-bold text-base text-sm text-nowrap">
+        <p className="justify-start text-clrprincipal w-fit font-bold text-base text-nowrap">
           {name}{type==="pseudo" ? "*" : " "}:
         </p>
         {type==="pseudo" ? <span className="text-zinc-500 text-xs font-light text-start">*Doit être unique</span> : " "}
@@ -86,10 +86,16 @@ export default function InputModified({
           />
           <button
             onClick={handleToggleEdit}
-            className={`cursor-pointer rounded-full items-center h-8 w-8 md:h-10 md:w-10 flex-shrink-0 flex items-center justify-center p-1 hover:shadow-md transition-all duration-300 ${
+            className="flex items-center justify-center shrink-0"
+            aria-label={isEditing ? "Sauvegarder" : `Modifier ${name || 'le champ'}`}
+          >
+            <Icons
+              name={isEditing ? "save" : "modif"}
+              size={30}
+              className={`cursor-pointer rounded-full p-2 text-white hover:shadow-md transition-all duration-300 ${
                 isEditing 
                   ? hasUnsavedChanges 
-                    ? "bg-green-700 hover:bg-green-600 animate-pulse" 
+                    ? "bg-success-700 hover:bg-success-600 animate-pulse" 
                     : "bg-gray-500 hover:bg-gray-400"
                   : "bg-primary hover:bg-primary-hover"
               }`}
