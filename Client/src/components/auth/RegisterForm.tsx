@@ -181,7 +181,7 @@ export default function RegisterForm({
                 {isInSidebar ? 'Nom d\'utilisateur' : 'Pseudonyme*'}
               </p>
               {!isInSidebar && (
-                <p className="text-gris-100 text-xs font-light">
+                <p className="text-gray-100 text-xs font-light">
                   *doit être unique
                 </p>
               )}
@@ -289,7 +289,7 @@ export default function RegisterForm({
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex items-center w-full gap-4">
             <div className="flex-1 h-px bg-gray-300"></div>
-            <p className="text-gris-100 text-sm font-normal font-gant">ou</p>
+            <p className="text-gray-100 text-sm font-normal font-gant">ou</p>
             <div className="flex-1 h-px bg-gray-300"></div>
           </div>
           

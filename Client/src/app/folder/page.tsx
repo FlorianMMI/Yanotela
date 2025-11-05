@@ -57,7 +57,7 @@ export default function FoldersPage() {
 
       <Suspense fallback={
         <div className="p-4">
-          <div className="text-center text-gris-100">Chargement des dossiers...</div>
+          <div className="text-center text-gray-100">Chargement des dossiers...</div>
         </div>
       }>
         <FolderList

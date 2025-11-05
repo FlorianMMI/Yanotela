@@ -18,7 +18,7 @@ export default function ResetPasswordTokenPage() {
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold text- mb-4">Token manquant</h1>
-          <p className="text-gris-100">Le lien de réinitialisation semble invalide.</p>
+          <p className="text-gray-100">Le lien de réinitialisation semble invalide.</p>
         </div>
       </div>
     );

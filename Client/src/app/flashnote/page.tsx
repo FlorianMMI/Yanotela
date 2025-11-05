@@ -350,7 +350,7 @@ export default function FlashNoteEditor() {
         <SaveFlashNoteButton 
           variant="mobile" 
           currentTitle={noteTitle}
-          className="bg-white text-primary hover:bg-gris-100"
+          className="bg-white text-primary hover:bg-gray-100"
         />
       </div>
 
