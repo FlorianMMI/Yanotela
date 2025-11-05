@@ -132,7 +132,7 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                             </button>
 
                             <button
-                                className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium border-t border-gray-100 transition-colors"
+                                className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
                                 onClick={() => setCurrentView("delete")}
                             >
                                 <Icons name="trash" size={22} className="text-primary" />

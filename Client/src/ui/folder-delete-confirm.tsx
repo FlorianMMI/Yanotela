@@ -2,19 +2,21 @@ import React from "react";
 import { motion } from "motion/react";
 import Icon from "@/ui/Icon";
 
-interface NoteDeleteConfirmProps {
-    noteTitle: string;
+interface FolderDeleteConfirmProps {
+    folderName: string;
+    noteCount: number;
     onConfirm: () => void;
     onCancel: () => void;
     isDeleting?: boolean;
 }
 
-export default function NoteDeleteConfirm({ 
-    noteTitle, 
+export default function FolderDeleteConfirm({ 
+    folderName, 
+    noteCount,
     onConfirm, 
     onCancel,
     isDeleting = false 
-}: NoteDeleteConfirmProps) {
+}: FolderDeleteConfirmProps) {
     return (
         <motion.div
             className="fixed inset-0 flex items-center justify-center bg-black/70 z-50"
@@ -35,18 +37,26 @@ export default function NoteDeleteConfirm({
                     damping: 25,
                     duration: 0.3
                 }}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
                 <div className="text-center mb-6">
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Icon name="trash" size={32} className="text-red-600" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Supprimer la note</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Supprimer le dossier</h2>
                     <p className="text-gray-600 mb-3">
-                        Êtes-vous sûr de vouloir supprimer la note <span className="font-semibold">"{noteTitle}"</span> ?
+                        Êtes-vous sûr de vouloir supprimer définitivement le dossier <span className="font-semibold">"{folderName}"</span> ?
                     </p>
-                    <p className="text-sm text-gray-500">
-                        Cette note sera mise en corbeille et tous les collaborateurs perdront l'accès.
+                    {noteCount > 0 && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                            <p className="text-sm text-blue-800">
+                                <strong>Important :</strong> Ce dossier contient {noteCount} note{noteCount > 1 ? 's' : ''}.<br />
+                                Les notes ne seront PAS supprimées, elles seront simplement retirées de ce dossier.
+                            </p>
+                        </div>
+                    )}
+                    <p className="text-sm text-red-600 font-medium">
+                        Cette action est définitive et irréversible !
                     </p>
                 </div>
 
@@ -73,7 +83,7 @@ export default function NoteDeleteConfirm({
                         ) : (
                             <>
                                 <Icon name="trash" size={20} className="text-white" />
-                                Supprimer
+                                Supprimer définitivement
                             </>
                         )}
                     </button>

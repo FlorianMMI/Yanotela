@@ -13,7 +13,8 @@
     "test": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/",
     "dev": "node index.js",
     "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch",
-    "create-test-user": "node scripts/create-test-user.js"
+    "create-test-user": "node scripts/create-test-user.js",
+    "cleanup:notes": "node scripts/cleanup-deleted-notes.js"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
