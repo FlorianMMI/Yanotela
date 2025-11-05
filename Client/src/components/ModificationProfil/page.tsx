@@ -158,7 +158,7 @@ export default function ModificationProfil() {
 
           {/* Zone de notifications */}
           {(success || error) && (
-              <div className="fixed top-4 right-4 z-50 max-w-md pl-4 pl-4">
+              <div className="fixed top-4 right-4 z-50 max-w-md pl-4">
                 {success && (
                   <div
                     onClick={() => setSuccess(null)}
@@ -218,7 +218,7 @@ export default function ModificationProfil() {
           )}
 
           <div className="flex flex-col w-full h-full justify-end items-center">
-            <div className="flex items-end justify-center rounded-full h-[100px] w-[100px] border border-8 border-primary overflow-hidden">
+            <div className="flex items-end justify-center rounded-full h-[100px] w-[100px] border-8 border-primary overflow-hidden">
               <Icons 
                 name="profile"
                 size={80}

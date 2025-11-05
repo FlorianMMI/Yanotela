@@ -56,7 +56,7 @@ export default function InputModified({
         <p className="justify-start text-clrprincipal w-fit font-bold text-base text-nowrap">
           {name}{type==="pseudo" ? "*" : " "}:
         </p>
-        {type==="pseudo" ? <span className="text-zinc-500 text-xs font-light text-start">*Doit être unique</span> : " "}
+        {type==="pseudo" ? <span className="text-gray-500 text-xs font-light text-start">*Doit être unique</span> : " "}
       </div>
       {
         type === "email" ?
@@ -86,13 +86,7 @@ export default function InputModified({
           />
           <button
             onClick={handleToggleEdit}
-            className="flex items-center justify-center shrink-0"
-            aria-label={isEditing ? "Sauvegarder" : `Modifier ${name || 'le champ'}`}
-          >
-            <Icons
-              name={isEditing ? "save" : "modif"}
-              size={30}
-              className={`cursor-pointer rounded-full p-2 text-white hover:shadow-md transition-all duration-300 ${
+            className={`cursor-pointer rounded-full items-center h-8 w-8 md:h-10 md:w-10 shrink-0 flex justify-center p-1 hover:shadow-md transition-all duration-300 ${
                 isEditing 
                   ? hasUnsavedChanges 
                     ? "bg-success-700 hover:bg-success-600 animate-pulse" 

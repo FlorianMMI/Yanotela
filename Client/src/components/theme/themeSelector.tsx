@@ -64,7 +64,8 @@ export default function ThemeSelector({ className = "" }: ThemeSelectorProps) {
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative flex gap-2 items-center ${className}`}>
+        <p className="">Thème: </p>
       {/* Bouton principal */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -113,7 +114,7 @@ export default function ThemeSelector({ className = "" }: ThemeSelectorProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute right-0 mt-2 w-56 bg-clrsecondaire rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden"
+              className="absolute right-0 bottom-0 mt-2 w-56 bg-clrsecondaire rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden"
             >
               <div className="p-2">
                 <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
