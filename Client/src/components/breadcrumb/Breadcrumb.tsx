@@ -528,7 +528,7 @@ export default function Breadcrumb() {
                         />
                       </span>
                       {showNoteMore && (
-                        <div className="absolute right-0 mt-10 z-30">
+                        <div className="absolute right-0 mt-10 z-100">
                           <NoteMore noteId={noteId!} onClose={() => setShowNoteMore(false)} />
                         </div>
                       )}
@@ -548,13 +548,14 @@ export default function Breadcrumb() {
                         />
                       </span>
                       {showFolderMore && folderData && (
-                        <div className="absolute right-0 mt-10 z-30">
+                        <div className="absolute right-0 mt-10 z-100">
                           <FolderMore 
                             folder={{ ModifiedAt: folderData.ModifiedAt }}
                             folderId={folderId!} 
                             folderName={folderData.Nom || folderName}
                             folderDescription={folderData.Description || ""}
                             folderColor={folderData.CouleurTag || "#882626"}
+                            noteCount={folderData.noteCount || 0}
                             onUpdate={async (name: string, description: string, color: string) => {
                               // La mise à jour sera gérée par la page folder/[id]
                               // On émet juste un événement pour synchroniser
