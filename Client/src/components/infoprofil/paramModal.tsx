@@ -6,6 +6,7 @@ import Icon from '@/ui/Icon';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
+import ThemeSelector from '../theme/themeSelector';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -90,9 +91,10 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                             className="absolute top-4 right-4 cursor-pointer text-clrprincipal hover:text-color-primary-hover transition-all duration-300"
                         />
                     </div>
-
                     {/* Contenu du modal */}
                     <div className='flex flex-col justify-end h-full w-fill p-2 relative mt-10'>
+                    {/* Selectionner un theme  */}
+                    <ThemeSelector />
 
                         {/* Boutton suppression compte */}
                         <button

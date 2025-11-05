@@ -36,11 +36,9 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
        {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && folders.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <p className="text-element text-lg font-gant mx-4 text-center">
-            Aucun dossier trouvé. Créez votre premier dossier !
-          </p>
-        </div>
+        <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-element text-lg font-gant w-[calc(100%-5rem)] text-center">
+          Aucun dossier trouvé. Créez votre premier dossier !
+        </p>
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-3 md:gap-4 justify-items-start">

@@ -166,12 +166,12 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
         <div className="flex-1 overflow-y-auto p-4">
             {/* Messages de succès/erreur */}
             {success && (
-                <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">
+                <div className="mb-4 p-3 bg-success-100 text-success-700 rounded-lg text-sm">
                     {success}
                 </div>
             )}
             {error && (
-                <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                <div className="mb-4 p-3 bg-dangerous-100 text-dangerous-700 rounded-lg text-sm">
                     {error}
                 </div>
             )}
@@ -183,7 +183,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border-2 border-primary">
                         <div className="flex items-center gap-3">
                             <div 
-                                className="flex-shrink-0"
+                                className="shrink-0"
                                 style={{ color: currentFolder.CouleurTag || '#882626' }}
                             >
                                 <Icon 
@@ -203,7 +203,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                         <button
                             onClick={handleRemoveFromFolder}
                             disabled={saving}
-                            className="text-red-600 hover:text-red-700 disabled:opacity-50"
+                            className="text-dangerous-600 hover:text-dangerous-700 disabled:opacity-50"
                             title="Retirer du dossier"
                         >
                             <Icon name="trash" size={20} />
@@ -304,7 +304,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                                     }`}
                                                 >
                                                     <div 
-                                                        className="flex-shrink-0"
+                                                        className="shrink-0"
                                                         style={{ color: folder.CouleurTag || '#882626' }}
                                                     >
                                                         <Icon 
@@ -335,8 +335,8 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
             </div>
 
             {/* Note informative */}
-            <div className="mt-6 p-3 bg-blue-50 rounded-lg">
-                <p className="text-xs text-blue-800">
+            <div className="mt-6 p-3 bg-info-50 rounded-lg">
+                <p className="text-xs text-info-800">
                     <strong>Note :</strong> Une note ne peut être que dans un seul dossier à la fois.
                 </p>
             </div>

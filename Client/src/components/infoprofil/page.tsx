@@ -40,7 +40,7 @@ export default function Infoprofil(Props: Props) {
         </article>
 
         <button
-          className="flex-shrink-0 ml-2 flex items-center justify-center"
+          className="shrink-0 ml-2 flex items-center justify-center"
           onClick={handleModifyProfile}
           aria-label="Modifier le profil"
         >

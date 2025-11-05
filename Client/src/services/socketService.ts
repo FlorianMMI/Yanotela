@@ -35,7 +35,7 @@ class SocketService {
       return this.socket;
     }
 
-    // 🔥 CORRECTION: Utiliser la variable d'environnement
+    
     const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
     console.log('🔌 Initialisation connexion Socket.IO vers:', SOCKET_URL);
