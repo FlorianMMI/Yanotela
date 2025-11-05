@@ -7,13 +7,15 @@ interface NoteDeleteConfirmProps {
     onConfirm: () => void;
     onCancel: () => void;
     isDeleting?: boolean;
+    isLeaving?: boolean;
 }
 
 export default function NoteDeleteConfirm({ 
     noteTitle, 
     onConfirm, 
     onCancel,
-    isDeleting = false 
+    isDeleting = false,
+    isLeaving = false 
 }: NoteDeleteConfirmProps) {
     return (
         <motion.div
@@ -39,14 +41,22 @@ export default function NoteDeleteConfirm({
             >
                 <div className="text-center mb-6">
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Icon name="trash" size={32} className="text-red-600" />
+                        <Icon name={isLeaving ? "exit" : "trash"} size={32} className={`text-red-600 ${isLeaving ? 'rotate-180' : ''}`} />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Supprimer la note</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{isLeaving ? 'Quitter la note' : 'Supprimer la note'}</h2>
                     <p className="text-gray-600 mb-3">
-                        Êtes-vous sûr de vouloir supprimer la note <span className="font-semibold">"{noteTitle}"</span> ?
+                        {isLeaving ? (
+                            <>Êtes-vous sûr de vouloir quitter la note <span className="font-semibold">"{noteTitle}"</span> ?</>
+                        ) : (
+                            <>Êtes-vous sûr de vouloir supprimer la note <span className="font-semibold">"{noteTitle}"</span> ?</>
+                        )}
                     </p>
                     <p className="text-sm text-gray-500">
-                        Cette note sera mise en corbeille et tous les collaborateurs perdront l'accès.
+                        {isLeaving ? (
+                            "Vous perdrez l'accès à cette note partagée. Seul le propriétaire pourra vous réinviter."
+                        ) : (
+                            "Cette note sera mise en corbeille et tous les collaborateurs perdront l'accès."
+                        )}
                     </p>
                 </div>
 
@@ -62,18 +72,18 @@ export default function NoteDeleteConfirm({
                     <button
                         onClick={onConfirm}
                         disabled={isDeleting}
-                        className="px-6 py-3 flex flex-row items-center justify-center gap-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Confirmer la suppression"
+                        className="px-6 py-3 flex flex-row items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={isLeaving ? "Confirmer le départ" : "Confirmer la suppression"}
                     >
                         {isDeleting ? (
                             <>
                                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                Suppression...
+                                {isLeaving ? 'Départ...' : 'Suppression...'}
                             </>
                         ) : (
                             <>
-                                <Icon name="trash" size={20} className="text-white" />
-                                Supprimer
+                                <Icon name={isLeaving ? "exit" : "trash"} size={20} className={`text-white ${isLeaving ? 'rotate-180' : ''}`} />
+                                {isLeaving ? 'Quitter' : 'Supprimer'}
                             </>
                         )}
                     </button>

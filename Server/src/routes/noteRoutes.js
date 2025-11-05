@@ -21,6 +21,9 @@ router.post('/update/:id', requireWriteAccess, noteController.updateNoteById);
 // Route Post pour supprimer une note par son ID (soft delete, vérification dans le contrôleur)
 router.post('/delete/:id', requireAuth, noteController.deleteNote);
 
+// Route Post pour quitter une note partagée (supprime la permission de l'utilisateur)
+router.post('/leave/:id', requireAuth, noteController.leaveNote);
+
 // Route Post pour assigner une note à un dossier
 router.post('/assign-folder/:id', requireAuth, noteController.assignFolder);
 

@@ -688,4 +688,60 @@ export const noteController = {
       });
     }
   },
+
+  leaveNote: async (req, res) => {
+    const { id } = req.params; // noteId
+    const { userId } = req.session;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      // Vérifier que la note existe
+      const note = await prisma.note.findUnique({
+        where: { id },
+      });
+
+      if (!note) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+
+      // Vérifier les permissions de l'utilisateur
+      const userPermission = await getPermission(userId, id);
+      
+      if (!userPermission) {
+        return res.status(403).json({ message: "Vous n'avez pas accès à cette note" });
+      }
+
+      // Empêcher le propriétaire de quitter sa propre note
+      if (userPermission.role === 0) {
+        return res.status(403).json({ 
+          message: "En tant que propriétaire, vous ne pouvez pas quitter cette note. Vous devez la supprimer." 
+        });
+      }
+
+      // Supprimer la permission (l'utilisateur quitte la note)
+      // La table Permission utilise une clé primaire composite (noteId, userId)
+      await prisma.permission.delete({
+        where: {
+          noteId_userId: {
+            noteId: id,
+            userId: userId,
+          },
+        },
+      });
+
+      res.status(200).json({ 
+        message: "Vous avez quitté la note avec succès",
+        noteId: note.id 
+      });
+    } catch (error) {
+      console.error("Erreur lors de la sortie de la note:", error);
+      res.status(500).json({
+        message: "Erreur lors de la sortie de la note",
+        error: error.message,
+      });
+    }
+  },
 };

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Icons from "@/ui/Icon";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
-import { DeleteNote, GetNoteById } from "@/loader/loader";
+import { DeleteNote, LeaveNote, GetNoteById } from "@/loader/loader";
 import { useRouter } from "next/navigation";
 
 interface NoteMoreProps {
@@ -9,12 +9,13 @@ interface NoteMoreProps {
     onClose: () => void;
 }
 
-type ModalView = "menu" | "share" | "info" | "folder" | "delete";
+type ModalView = "menu" | "share" | "info" | "folder" | "delete" | "leave";
 
 export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
     const [currentView, setCurrentView] = useState<ModalView>("menu");
     const [isDeleting, setIsDeleting] = useState(false);
     const [noteTitle, setNoteTitle] = useState<string>("");
+    const [userRole, setUserRole] = useState<number | undefined>(undefined);
     const modalRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
@@ -24,6 +25,7 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
             const noteData = await GetNoteById(noteId);
             if (noteData && typeof noteData === 'object' && 'Titre' in noteData) {
                 setNoteTitle(noteData.Titre);
+                setUserRole(noteData.userRole);
             }
         };
         loadNoteInfo();
@@ -68,8 +70,8 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                 onClose();
                 // Déclencher un événement pour rafraîchir l'authentification/liste
                 window.dispatchEvent(new Event('auth-refresh'));
-                // Rediriger vers l'accueil
-                router.push('/');
+                // Rediriger vers la liste des notes
+                router.push('/notes');
             } else {
                 console.error("Erreur lors de la suppression:", result.error);
                 alert(result.error || "Erreur lors de la suppression de la note");
@@ -77,6 +79,29 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
         } catch (error) {
             console.error("Erreur lors de la suppression:", error);
             alert("Une erreur est survenue lors de la suppression");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleLeaveNote = async () => {
+        setIsDeleting(true);
+        try {
+            const result = await LeaveNote(noteId);
+            if (result.success) {
+                // Fermer le modal
+                onClose();
+                // Déclencher un événement pour rafraîchir l'authentification/liste
+                window.dispatchEvent(new Event('auth-refresh'));
+                // Rediriger vers la liste des notes
+                router.push('/notes');
+            } else {
+                console.error("Erreur lors de la sortie:", result.error);
+                alert(result.error || "Erreur lors de la sortie de la note");
+            }
+        } catch (error) {
+            console.error("Erreur lors de la sortie:", error);
+            alert("Une erreur est survenue lors de la sortie de la note");
         } finally {
             setIsDeleting(false);
         }
@@ -104,6 +129,7 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
             case "folder":
                 return <NoteFolderUI noteId={noteId} />;
             case "delete":
+            case "leave":
                 return null; // Le modal sera rendu en dehors du contenu
             default:
                 return (
@@ -131,13 +157,24 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                                 Infos de la note
                             </button>
 
-                            <button
-                                className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
-                                onClick={() => setCurrentView("delete")}
-                            >
-                                <Icons name="trash" size={22} className="text-primary" />
-                                Supprimer la note
-                            </button>
+                            {/* Afficher "Quitter la note" pour les éditeurs (2) et lecteurs (3), "Supprimer" pour Owner (0) et Admin (1) */}
+                            {userRole === 2 || userRole === 3 ? (
+                                <button
+                                    className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
+                                    onClick={() => setCurrentView("leave")}
+                                >
+                                    <Icons name="exit" size={22} className="text-red-600 rotate-180" />
+                                    Quitter la note
+                                </button>
+                            ) : (
+                                <button
+                                    className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
+                                    onClick={() => setCurrentView("delete")}
+                                >
+                                    <Icons name="trash" size={22} className="text-red-600" />
+                                    Supprimer la note
+                                </button>
+                            )}
 
                         </div>
                     </div>
@@ -153,6 +190,14 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
                     onConfirm={handleDeleteNote}
                     onCancel={() => setCurrentView("menu")}
                     isDeleting={isDeleting}
+                />
+            ) : currentView === "leave" ? (
+                <NoteDeleteConfirm
+                    noteTitle={noteTitle}
+                    onConfirm={handleLeaveNote}
+                    onCancel={() => setCurrentView("menu")}
+                    isDeleting={isDeleting}
+                    isLeaving={true}
                 />
             ) : (
                 <div 
