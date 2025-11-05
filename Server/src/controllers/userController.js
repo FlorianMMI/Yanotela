@@ -276,9 +276,65 @@ export const userController = {
         const { pseudo, prenom, nom, email } = req.body;
  
         try {
+            // Préparer les données à mettre à jour en filtrant les valeurs vides
+            const updateData = {};
+            
+            // Validation: ne pas accepter de valeurs vides ou seulement des espaces
+            if (pseudo !== undefined) {
+                const trimmedPseudo = pseudo.trim();
+                if (trimmedPseudo === '') {
+                    return res.status(400).json({ 
+                        success: false,
+                        error: 'Le pseudo ne peut pas être vide' 
+                    });
+                }
+                updateData.pseudo = trimmedPseudo;
+            }
+            
+            if (prenom !== undefined) {
+                const trimmedPrenom = prenom.trim();
+                if (trimmedPrenom === '') {
+                    return res.status(400).json({ 
+                        success: false,
+                        error: 'Le prénom ne peut pas être vide' 
+                    });
+                }
+                updateData.prenom = trimmedPrenom;
+            }
+            
+            if (nom !== undefined) {
+                const trimmedNom = nom.trim();
+                if (trimmedNom === '') {
+                    return res.status(400).json({ 
+                        success: false,
+                        error: 'Le nom ne peut pas être vide' 
+                    });
+                }
+                updateData.nom = trimmedNom;
+            }
+            
+            if (email !== undefined) {
+                const trimmedEmail = email.trim();
+                if (trimmedEmail === '') {
+                    return res.status(400).json({ 
+                        success: false,
+                        error: 'L\'email ne peut pas être vide' 
+                    });
+                }
+                updateData.email = trimmedEmail;
+            }
+
+            // Si aucune donnée à mettre à jour
+            if (Object.keys(updateData).length === 0) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Aucune donnée à mettre à jour' 
+                });
+            }
+            
             const updatedUser = await prisma.user.update({
                 where: { id: userId },
-                data: { pseudo, prenom, nom, email },
+                data: updateData,
                 select: {
                     id: true,
                     pseudo: true,
@@ -288,10 +344,25 @@ export const userController = {
                 }
             });
             
-            return res.status(200).json(updatedUser);
+            return res.status(200).json({ 
+                success: true,
+                user: updatedUser 
+            });
         } catch (error) {
             console.error('Erreur updateUserInfo:', error);
-            return res.status(500).json({ message: 'Erreur lors de la mise à jour des informations utilisateur', error: error.message });
+            
+            // Gestion des erreurs Prisma spécifiques
+            if (error.code === 'P2002') {
+                return res.status(409).json({ 
+                    success: false,
+                    error: 'Ce pseudo est déjà utilisé' 
+                });
+            }
+            
+            return res.status(500).json({ 
+                success: false,
+                error: 'Erreur lors de la mise à jour des informations utilisateur'
+            });
         }
     }
 
