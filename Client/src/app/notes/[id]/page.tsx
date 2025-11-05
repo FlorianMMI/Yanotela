@@ -570,7 +570,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5 relative">
       {/* Zone de notifications */}
       {(success || error) && (
-        <div className="fixed top-4 right-4 z-50 max-w-md">
+        <div className="fixed top-4 right-4 z-50 max-w-md pl-4">
           {success && (
             <div 
               onClick={() => setSuccess(null)}

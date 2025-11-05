@@ -1,10 +1,11 @@
 "use client";
 
-import ReturnButton from "@/ui/returnButton";
 import React, { useState, useEffect } from "react";
 import Icons from "@/ui/Icon";
 import InputModified from "@/ui/inputModified";
-import { ForgotPassword, InfoUser, updateUser } from '@/loader/loader';
+import { ForgotPassword, InfoUser, updateUser, GetNotes, GetFolders } from '@/loader/loader';
+import TotalNotes from "@/ui/note/totalNotes";
+import TotalFolders from "@/ui/folder/totalFolders";
 
 export default function ModificationProfil() {
   const [userData, setUserData] = useState({
@@ -17,6 +18,8 @@ export default function ModificationProfil() {
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [totalNotes, setTotalNotes] = useState<number | undefined>(undefined);
+  const [totalFolders, setTotalFolders] = useState<number | undefined>(undefined);
 
   // Charger les informations utilisateur au montage du composant
   useEffect(() => {
@@ -122,30 +125,40 @@ export default function ModificationProfil() {
     }
   };
 
+  useEffect(() => {
+    async function fetchTotalNotesAndFolders() {
+      try {
+        const { totalNotes } = await GetNotes();
+        setTotalNotes(totalNotes);
+      } catch (error) {
+        console.error("Error fetching total notes:", error);
+        setTotalNotes(0);
+      }
+
+      try {
+        const { totalFolders } = await GetFolders();
+        setTotalFolders(totalFolders);
+      } catch (error) {
+        console.error("Error fetching total folders:", error);
+        setTotalFolders(0);
+      }
+    }
+
+    fetchTotalNotesAndFolders();
+  }, []);
+
   return (
     <>
       {pageLoading ? (
-        <div className="p-4 flex justify-center items-center min-h-screen">
+        <div className="p-4 flex justify-center items-center min-h-screen md:min-h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="w-full px-5 py-6 md:px-8 md:py-8 flex flex-col gap-6 md:gap-8 items-center md:items-stretch">
+        <div className="w-full h-full flex flex-col gap-4 items-center md:px-[30%]">
 
-          <div className="flex md:hidden w-full">
-            <ReturnButton />
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-6 md:gap-12 w-full items-start">
-
-            <div className="flex flex-col gap-4 items-center md:items-start w-full md:w-auto md:min-w-fit">
-              <p className="text-clrprincipal font-gant text-center md:text-left text-3xl md:text-4xl w-full md:w-auto">
-                Votre profil
-              </p>
-            </div>
-
-            {/* Zone de notifications */}
-            {(success || error) && (
-              <div className="fixed top-4 right-4 z-50 max-w-md">
+          {/* Zone de notifications */}
+          {(success || error) && (
+              <div className="fixed top-4 right-4 z-50 max-w-md pl-4 pl-4">
                 {success && (
                   <div
                     onClick={() => setSuccess(null)}
@@ -202,42 +215,51 @@ export default function ModificationProfil() {
                   </div>
                 )}
               </div>
-            )}
+          )}
 
-            <div className="flex flex-col gap-5 w-full md:flex-1">
-              <InputModified
-                name="Pseudonyme"
-                placeholder="pseudo"
-                type="pseudo"
-                defaultValue={userData.pseudo}
-                onSave={(value) => handleFieldSave('pseudo', value)}
+          <div className="flex flex-col w-full h-full justify-end items-center">
+            <div className="flex items-end justify-center rounded-full h-[100px] w-[100px] border border-8 border-primary overflow-hidden">
+              <Icons 
+                name="profile"
+                size={80}
+                className="text-primary"
               />
-              <InputModified
-                name="Prénom"
-                placeholder="userName"
-                type="username"
-                defaultValue={userData.prenom}
-                onSave={(value) => handleFieldSave('prenom', value)}
-              />
-              <InputModified
-                name="Nom"
-                placeholder="Name"
-                type="name"
-                defaultValue={userData.nom}
-                onSave={(value) => handleFieldSave('nom', value)}
-              />
-              <InputModified
-                name="Mail"
-                placeholder="Mail"
-                type="email"
-                defaultValue={userData.email}
-                onSave={(value) => handleFieldSave('email', value)}
-              />
+            </div>
+            <p className="text-xl font-bold">@{userData.pseudo}</p>
+            <p className="text-sm text-gray-500">{userData.email}</p>
+          </div>
 
+          <div className="flex flex-col gap-3 items-center justify-center w-full h-full max-w-[400px]">
+            <InputModified
+              name="Pseudonyme"
+              placeholder="pseudo"
+              type="pseudo"
+              defaultValue={userData.pseudo}
+              onSave={(value) => handleFieldSave('pseudo', value)}
+            />
+            <InputModified
+              name="Prénom"
+              placeholder="userName"
+              type="username"
+              defaultValue={userData.prenom}
+              onSave={(value) => handleFieldSave('prenom', value)}
+            />
+            <InputModified
+              name="Nom"
+              placeholder="Name"
+              type="name"
+              defaultValue={userData.nom}
+              onSave={(value) => handleFieldSave('nom', value)}
+            />
+
+            <div className="self-stretch flex justify-between items-center gap-3">
+              <p className="md:hidden justify-start text-clrprincipal w-fit font-bold text-base text-sm text-nowrap">
+                Mot de passe
+              </p>
               <button
                 onClick={handleSendConfirmationEmail}
                 disabled={loading}
-                className="group relative w-full md:w-auto md:self-start flex justify-center py-3 px-6 border border-transparent text-base md:text-base font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-4"
+                className="group relative w-[200px] md:w-full md:text-nowrap md:self-center flex justify-center py-2 md:py-3 px-6 border border-transparent text-base md:text-base font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {loading ? (
                   <div className="flex items-center">
@@ -246,7 +268,7 @@ export default function ModificationProfil() {
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
-                    <span>Modifier le mot de passe</span>
+                    <p className="flex flex-row flex-nowrap gap-1">Modifier <span className="hidden md:block">le mot de passe</span></p>
                     <Icons
                       name="keyhole"
                       size={20}
@@ -256,8 +278,13 @@ export default function ModificationProfil() {
                 )}
               </button>
             </div>
-
           </div>
+
+          <div className="flex flex-row justify-center gap-4 items-start md:items-center w-full h-full">
+            <TotalNotes totalNotes={totalNotes} />
+            <TotalFolders totalFolders={totalFolders} />
+          </div>
+
         </div>
       )}
     </>

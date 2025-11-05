@@ -51,9 +51,9 @@ export default function InputModified({
   const hasUnsavedChanges = isEditing && currentValue !== defaultValue;
 
   return (
-    <div className='self-stretch flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-2.5 border-b-2 pb-3 md:pb-2 border-dashed last:border-b-0'>
-      <div className="flex flex-col gap-1 w-full md:w-auto">
-        <p className="justify-start text-clrprincipal w-fit font-bold text-base md:text-sm">
+    <div className='self-stretch flex justify-between items-center gap-3'>
+      <div className="flex flex-col">
+        <p className="justify-start text-clrprincipal w-fit font-bold text-base text-sm text-nowrap">
           {name}{type==="pseudo" ? "*" : " "}:
         </p>
         {type==="pseudo" ? <span className="text-zinc-500 text-xs font-light text-start">*Doit être unique</span> : " "}
@@ -68,8 +68,8 @@ export default function InputModified({
             defaultValue
           }
         </p>
-        :          
-        <div className={`flex gap-3 md:gap-4 w-full md:w-1/2 flex-row`}>
+        :
+        <div className={`flex gap-3 md:gap-4 w-full items-center justify-center max-w-[200px] flex-row`}>
           <input
             type={type}
             name={name}
@@ -78,7 +78,7 @@ export default function InputModified({
             value={currentValue}
             onChange={handleInputChange}
             disabled={!isEditing}
-            className={`w-full px-4 py-3 md:px-3 md:py-2 border-2 rounded-lg text-clrprincipal text-base md:text-sm transition-all duration-300 ${
+            className={`w-full px-2 py-1 md:px-3 md:py-2 border-2 rounded-lg text-clrprincipal text-base md:text-sm transition-all duration-300 ${
               isEditing
                 ? "bg-clrsecondaire border-primary focus:ring-2 focus:ring-primary focus:border-transparent"
                 : "bg-gray-200 border-gray-300  cursor-not-allowed"
@@ -86,19 +86,19 @@ export default function InputModified({
           />
           <button
             onClick={handleToggleEdit}
-            className="flex items-center justify-center flex-shrink-0"
-            aria-label={isEditing ? "Sauvegarder" : `Modifier ${name || 'le champ'}`}
-          >
-            <Icons
-              name={isEditing ? "save" : "modif"}
-              size={30}
-              className={`cursor-pointer rounded-full p-2 text-white hover:shadow-md transition-all duration-300 ${
+            className={`cursor-pointer rounded-full items-center h-8 w-8 md:h-10 md:w-10 flex-shrink-0 flex items-center justify-center p-1 hover:shadow-md transition-all duration-300 ${
                 isEditing 
                   ? hasUnsavedChanges 
                     ? "bg-green-700 hover:bg-green-600 animate-pulse" 
                     : "bg-gray-500 hover:bg-gray-400"
                   : "bg-primary hover:bg-primary-hover"
               }`}
+            aria-label={isEditing ? "Sauvegarder" : `Modifier ${name || 'le champ'}`}
+          >
+            <Icons
+              name={isEditing ? "save" : "modif"}
+              size={20}
+              className={`text-white`}
             />
           </button>
         </div>

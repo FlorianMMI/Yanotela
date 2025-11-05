@@ -43,10 +43,10 @@ export default function Logout(){
             <div className="w-full md:w-fit h-full" title='Me déconnecter'>                
                 <button
                     onClick={handleLogoutClick}
-                    className="w-full flex items-center justify-center space-x-3 p-4 bg-primary text-white border border-red-700 rounded-xl shadow-md hover:bg-red-700 hover:border-red-800 hover:text-white hover:shadow-lg transition-all cursor-pointer group"
+                    className="w-full flex items-center justify-center cursor-pointer group gap-2"
                 >
-                    <Icon name="exit" size={25} className="text-white" />
-                    <span className="font-normal text-md">Déconnexion</span>
+                    <Icon name="exit" size={25} className="text-primary" />
+                    <span className="font-normal text-md hidden md:block">Déconnexion</span>
                 </button>
             </div>
 
@@ -61,4 +61,3 @@ export default function Logout(){
         </>
     );
 }
-

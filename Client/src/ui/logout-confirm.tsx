@@ -48,7 +48,7 @@ export default function LogoutConfirm({ onConfirm, onCancel }: LogoutConfirmProp
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="px-6 py-3 flex flex-row bg-primary text-white rounded-lg hover:bg-primary-hover transition-all duration-200 font-medium shadow-md hover:shadow-lg cursor-pointer shadow-md hover:shadow-lg "
+                        className="px-6 py-3 flex flex-row justify-center items-center gap-1 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all duration-200 font-medium shadow-md hover:shadow-lg cursor-pointer shadow-md hover:shadow-lg "
                         title="Se déconnecter"
                     >
                         <Icon name="exit" size={25} className="text-white" />
