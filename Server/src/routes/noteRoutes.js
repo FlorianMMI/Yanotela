@@ -24,6 +24,12 @@ router.post('/delete/:id', requireAuth, noteController.deleteNote);
 // Route Post pour quitter une note partagée (supprime la permission de l'utilisateur)
 router.post('/leave/:id', requireAuth, noteController.leaveNote);
 
+// Route Get pour récupérer les notes supprimées (corbeille)
+router.get('/deleted', requireAuth, noteController.getDeletedNotes);
+
+// Route Post pour restaurer une note supprimée
+router.post('/restore/:id', requireAuth, noteController.restoreNote);
+
 // Route Post pour assigner une note à un dossier
 router.post('/assign-folder/:id', requireAuth, noteController.assignFolder);
 
