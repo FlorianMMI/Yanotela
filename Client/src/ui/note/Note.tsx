@@ -99,37 +99,35 @@ export default function Note({ note, onNoteUpdated }: NoteProps) {
     setShowMoreModal(false);
   };
 
-  // Fonction pour render le contenu de manière sécurisée
-  const renderContent = () => {
-    try {
-      if (typeof note.Content === 'string') {
-        return <p>{note.Content}</p>;
-      }
-      
-      // Vérifier que le contenu a la structure attendue
-      if (note.Content && typeof note.Content === 'object' && 'root' in note.Content) {
-        const content = note.Content as any;
-        if (content.root && Array.isArray(content.root.children)) {
-          return content.root.children.map((child: any, childIndex: number) => (
-            <div key={`child-${childIndex}`} id={`child-${childIndex}`}>
-              {
-                Array.isArray(child.children) && child.children.map((grandChild: any, grandChildIndex: number) => (
-                  <p key={`child-${childIndex}-grandChild-${grandChildIndex}`} id={`paragraph-${childIndex}-${grandChildIndex}`}>
-                    {grandChild.text || ''}
-                  </p>
-                ))
-              }
-              if (node.type === 'image') return '[Image]';
-              return '';
-            };
-            
-            const text = extractText(parsed.root).trim();
-            return text || 'Contenu vide';
-          }
-        } catch {
-          // Si le parsing échoue, afficher les 100 premiers caractères
-          return note.Content.substring(0, 100) + (note.Content.length > 100 ? '...' : '');
+  // Fonction pour extraire et afficher le contenu de la note
+  const getDisplayContent = () => {
+    // Si le contenu est vide
+    if (!note.Content) {
+      return 'Contenu vide';
+    }
+
+    // Si c'est une chaîne, essayer de la parser comme JSON
+    if (typeof note.Content === 'string') {
+      try {
+        const parsed = JSON.parse(note.Content);
+        // Si c'est un objet Lexical avec une structure root
+        if (parsed.root && parsed.root.children) {
+          const extractText = (node: any): string => {
+            if (!node) return '';
+            if (node.type === 'text' && node.text) return node.text;
+            if (node.type === 'image') return '[Image]';
+            if (node.children && Array.isArray(node.children)) {
+              return node.children.map((child: any) => extractText(child)).join(' ');
+            }
+            return '';
+          };
+          
+          const text = extractText(parsed.root).trim();
+          return text || 'Contenu vide';
         }
+      } catch {
+        // Si le parsing échoue, afficher les 100 premiers caractères
+        return note.Content.substring(0, 100) + (note.Content.length > 100 ? '...' : '');
       }
       
       return note.Content;
@@ -142,6 +140,7 @@ export default function Note({ note, onNoteUpdated }: NoteProps) {
         const extractText = (node: any): string => {
           if (!node) return '';
           if (node.type === 'text' && node.text) return node.text;
+          if (node.type === 'image') return '[Image]';
           if (node.children && Array.isArray(node.children)) {
             return node.children.map((child: any) => extractText(child)).join(' ');
           }
