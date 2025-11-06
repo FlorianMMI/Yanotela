@@ -7,11 +7,12 @@ import { useRouter } from "next/navigation";
 interface NoteMoreProps {
     noteId: string;
     onClose: () => void;
+    onNoteUpdated?: () => void; // Callback pour rafraîchir la liste
 }
 
 type ModalView = "menu" | "share" | "info" | "folder" | "delete" | "leave";
 
-export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
+export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMoreProps) {
     const [currentView, setCurrentView] = useState<ModalView>("menu");
     const [isDeleting, setIsDeleting] = useState(false);
     const [noteTitle, setNoteTitle] = useState<string>("");
@@ -66,12 +67,18 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
         try {
             const result = await DeleteNote(noteId);
             if (result.success) {
+                // Appeler le callback pour rafraîchir la liste
+                if (onNoteUpdated) {
+                    onNoteUpdated();
+                }
                 // Fermer le modal
                 onClose();
                 // Déclencher un événement pour rafraîchir l'authentification/liste
                 window.dispatchEvent(new Event('auth-refresh'));
-                // Rediriger vers la liste des notes
-                router.push('/notes');
+                // Rediriger vers la liste des notes uniquement si on est sur la page de la note
+                if (window.location.pathname.includes(`/notes/${noteId}`)) {
+                    router.push('/notes');
+                }
             } else {
                 console.error("Erreur lors de la suppression:", result.error);
                 alert(result.error || "Erreur lors de la suppression de la note");
@@ -89,12 +96,18 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
         try {
             const result = await LeaveNote(noteId);
             if (result.success) {
+                // Appeler le callback pour rafraîchir la liste
+                if (onNoteUpdated) {
+                    onNoteUpdated();
+                }
                 // Fermer le modal
                 onClose();
                 // Déclencher un événement pour rafraîchir l'authentification/liste
                 window.dispatchEvent(new Event('auth-refresh'));
-                // Rediriger vers la liste des notes
-                router.push('/notes');
+                // Rediriger vers la liste des notes uniquement si on est sur la page de la note
+                if (window.location.pathname.includes(`/notes/${noteId}`)) {
+                    router.push('/notes');
+                }
             } else {
                 console.error("Erreur lors de la sortie:", result.error);
                 alert(result.error || "Erreur lors de la sortie de la note");
@@ -123,17 +136,17 @@ export default function NoteMore({ noteId, onClose }: NoteMoreProps) {
     const renderContent = () => {
         switch (currentView) {
             case "share":
-                return <NoteShareUI noteId={noteId} />;
+                return <NoteShareUI noteId={noteId} onShareSuccess={onNoteUpdated} />;
             case "info":
                 return <NoteInfoUI noteId={noteId} />;
             case "folder":
-                return <NoteFolderUI noteId={noteId} />;
+                return <NoteFolderUI noteId={noteId} onFolderChange={onNoteUpdated} />;
             case "delete":
             case "leave":
                 return null; // Le modal sera rendu en dehors du contenu
             default:
                 return (
-                    <div className="flex-1 overflow-y-auto p-4">
+                    <div className="flex-1 overflow-y-auto p-4 max-h-[30vh]">
                         <div className="flex flex-col gap-1 py-2">
                             <button
                                 className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium transition-colors"
