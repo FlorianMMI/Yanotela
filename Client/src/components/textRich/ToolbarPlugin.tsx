@@ -33,6 +33,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
     const [isInBulletList, setIsInBulletList] = useState(false);
     const [isInNumberedList, setIsInNumberedList] = useState(false);
     const [alignment, setAlignment] = useState<'left' | 'center' | 'right' | 'justify' | ''>('');
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const $updateToolbar = useCallback(() => {
         const selection = $getSelection();
@@ -217,6 +218,42 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
             ),
         );
     }, [editor, $updateToolbar]);
+
+    // Détecter l'apparition du clavier sur mobile et ajuster la position de la toolbar
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const initialHeight = window.visualViewport?.height || window.innerHeight;
+        
+        const handleViewportResize = () => {
+            const currentHeight = window.visualViewport?.height || window.innerHeight;
+            const heightDifference = initialHeight - currentHeight;
+            
+            // Si la hauteur a diminué significativement (> 150px), le clavier est probablement ouvert
+            if (heightDifference > 150) {
+                setKeyboardHeight(heightDifference);
+            } else {
+                setKeyboardHeight(0);
+            }
+        };
+
+        // Utiliser visualViewport si disponible (meilleure détection du clavier)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleViewportResize);
+            window.visualViewport.addEventListener('scroll', handleViewportResize);
+        } else {
+            window.addEventListener('resize', handleViewportResize);
+        }
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', handleViewportResize);
+                window.visualViewport.removeEventListener('scroll', handleViewportResize);
+            } else {
+                window.removeEventListener('resize', handleViewportResize);
+            }
+        };
+    }, []);
 
     const applyStyleText = useCallback(
         (styles: Record<string, string>) => {
@@ -417,7 +454,10 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
             </div>
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 safe-area-inset-bottom">
+            <div 
+                className="md:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 transition-all duration-200"
+                style={{ bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '0' }}
+            >
                 <div className="flex items-center justify-around p-3 gap-2">
                     {/* Format submenu */}
                     <div className="relative">
