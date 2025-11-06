@@ -173,18 +173,18 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                             {/* Afficher "Quitter la note" pour les éditeurs (2) et lecteurs (3), "Supprimer" pour Owner (0) et Admin (1) */}
                             {userRole === 2 || userRole === 3 ? (
                                 <button
-                                    className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
+                                    className="flex items-center gap-3 px-5 py-3 text-dangerous-800 hover:bg-red-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
                                     onClick={() => setCurrentView("leave")}
                                 >
-                                    <Icons name="exit" size={22} className="text-red-600 rotate-180" />
+                                    <Icons name="exit" size={22} className="text-dangerous-800 rotate-180" />
                                     Quitter la note
                                 </button>
                             ) : (
                                 <button
-                                    className="flex items-center gap-3 px-5 py-3 text-red-600 hover:bg-red-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
+                                    className="flex items-center gap-3 px-5 py-3 text-dangerous-800 hover:bg-red-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
                                     onClick={() => setCurrentView("delete")}
                                 >
-                                    <Icons name="trash" size={22} className="text-red-600" />
+                                    <Icons name="trash" size={22} className="text-dangerous-800" />
                                     Supprimer la note
                                 </button>
                             )}
