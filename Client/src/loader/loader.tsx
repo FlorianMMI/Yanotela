@@ -222,6 +222,93 @@ export async function LeaveNote(id: string): Promise<{ success: boolean; message
     }
 }
 
+export async function GetDeletedNotes(): Promise<{ notes: Note[]; totalNotes: number }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/deleted`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.notes || typeof data.totalNotes === 'undefined') {
+            console.error('Invalid response format - missing notes or totalNotes:', data);
+            return { notes: [], totalNotes: 0 };
+        }
+
+        // Transformation du JSON stringifié en objet lisible
+        for (const note of data.notes) {
+            try {
+                const parsedContent = JSON.parse(note.Content);
+                if (typeof parsedContent === 'object' && parsedContent !== null) {
+                    if (parsedContent.root && parsedContent.root.children) {
+                        const extractText = (children: any[]): string => {
+                            return children.map((child: any) => {
+                                if (child.type === 'paragraph' && child.children) {
+                                    return extractText(child.children);
+                                } else if (child.type === 'text' && child.text) {
+                                    return child.text;
+                                }
+                                return '';
+                            }).join(' ');
+                        };
+                        note.Content = extractText(parsedContent.root.children) || 'Contenu vide';
+                    } else {
+                        note.Content = JSON.stringify(parsedContent);
+                    }
+                }
+            } catch {
+                console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
+                note.Content = String(note.Content);
+            }
+        }
+
+        return { notes: data.notes, totalNotes: data.totalNotes };
+    } catch (error) {
+        console.error("Error fetching deleted notes:", error);
+        return { notes: [], totalNotes: 0 };
+    }
+}
+
+export async function RestoreNote(id: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/restore/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return {
+                success: false,
+                error: errorData.message || `Erreur HTTP ${response.status}`
+            };
+        }
+
+        const data = await response.json();
+        return {
+            success: true,
+            message: data.message || "Note restaurée avec succès"
+        };
+    } catch (error) {
+        console.error("Error restoring note:", error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Erreur inconnue"
+        };
+    }
+}
+
 // ============== AUTHENTIFICATION FUNCTIONS ==============
 
 interface LoginCredentials {

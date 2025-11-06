@@ -7,6 +7,7 @@ import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
 import ThemeSelector from '../theme/themeSelector';
+import PWAInstallButton from '@/ui/PWAInstallbutton';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -61,64 +62,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         setShowDeleteConfirm(false);
     };
 
-    // PWA install prompt handling
-    useEffect(() => {
-        const beforeInstallHandler = (e: Event) => {
-            // @ts-ignore - non standard event
-            e.preventDefault();
-            setDeferredPrompt(e);
-        };
-
-        const appInstalledHandler = () => {
-            try {
-                localStorage.setItem('webappInstalled', '1');
-            } catch (err) {
-                // ignore
-            }
-            setIsWebappInstalled(true);
-            setDeferredPrompt(null);
-        };
-
-        window.addEventListener('beforeinstallprompt', beforeInstallHandler as EventListener);
-        window.addEventListener('appinstalled', appInstalledHandler as EventListener);
-
-        return () => {
-            window.removeEventListener('beforeinstallprompt', beforeInstallHandler as EventListener);
-            window.removeEventListener('appinstalled', appInstalledHandler as EventListener);
-        };
-    }, []);
-
-    const handleDownloadClick = async () => {
-        // If already installed, show label (button text is handled in render)
-        if (isWebappInstalled) return;
-
-        // If we have the PWA install prompt available, use it
-        if (deferredPrompt) {
-            try {
-                // @ts-ignore
-                await deferredPrompt.prompt();
-                // @ts-ignore
-                const choiceResult = await deferredPrompt.userChoice;
-                if (choiceResult && choiceResult.outcome === 'accepted') {
-                    try { localStorage.setItem('webappInstalled', '1'); } catch (err) {}
-                    setIsWebappInstalled(true);
-                }
-            } catch (err) {
-                console.error('Erreur lors de l`installation PWA:', err);
-            }
-            setDeferredPrompt(null);
-            return;
-        }
-
-        // Fallback: trigger a file download (ensure /webapp.zip exists on server or change the URL)
-        const fallbackUrl = '/webapp.zip';
-        const a = document.createElement('a');
-        a.href = fallbackUrl;
-        a.download = 'webapp.zip';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-    };
+   
     
     return (
         <>
@@ -164,30 +108,41 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                     <ThemeSelector />
 
 
+                    <section className="flex flex-col gap-4">
 
+
+                    
                         {/* Bouton Télécharger / Installer la webapp */}
+                        <div className="">
+                            <PWAInstallButton />
+                        </div>
+
+                        <hr className="border-t border-primary w-full" />
+
+
+
+                        {/* Boutton corbeille */}
                         <button
-                            className={
-                                `mt-4 px-4 py-2 font-bold rounded transition-all duration-300 ${isWebappInstalled ? 'bg-gray-400 text-white cursor-default' : 'bg-primary text-white hover:bg-primary-hover hover:shadow-lg cursor-pointer'}`
-                            }
-                            onClick={handleDownloadClick}
-                            title={isWebappInstalled ? 'Vous avez déjà la webapp' : 'Télécharger / installer la webapp'}
-                            disabled={isWebappInstalled}
+                            className=" px-4 py-2 bg-zinc-100 text-clrprincipal font-bold rounded hover:bg-zinc-200 hover:shadow-lg transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+                            onClick={() => router.push('/corbeille')}
+                            title='Voir les notes supprimées'
                         >
-                            {isWebappInstalled ? 'Vous avez déjà la webapp' : (deferredPrompt ? 'Installer la webapp' : 'Télécharger la webapp')}
+                            <Icon name="trash" size={20} />
+                            Corbeille
                         </button>
 
                         {/* Boutton suppression compte */}
                         <button
-                            className="mt-4 px-4 py-2 bg-primary text-white font-bold rounded hover:bg-primary-hover hover:shadow-lg transition-all duration-300 cursor-pointer"
+                            className="px-4 py-2 bg-primary text-white font-bold rounded hover:bg-primary-hover hover:shadow-lg transition-all duration-300 cursor-pointer"
                             onClick={handleDeleteAccount}
                             title='Supprimer mon compte de façon définitive'
                         >
                             Supprimer mon compte
                         </button>
-
+                    </section>
                     {/* Autres paramètres peuvent être ajoutés ici */}
                     </div>
+                
 
                 </div>
             </motion.div>

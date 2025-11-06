@@ -372,6 +372,13 @@ export default function Breadcrumb() {
       ];
     }
 
+    if (pathname === '/corbeille') {
+      return [
+        { label: 'Profil', href: '/profil' },
+        { label: 'Corbeille', isActive: true },
+      ];
+    }
+
     // Fallback pour les autres routes
     return [
       { label: 'Accueil', href: '/' },
