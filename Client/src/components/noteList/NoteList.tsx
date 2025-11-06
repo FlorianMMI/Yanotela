@@ -91,7 +91,7 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
 
         {/* Notes Grid */}
         {!isLoading && notes.map((note) => (
-          <Note key={note.id} note={note} />
+          <Note key={note.id} note={note} onNoteUpdated={onNoteCreated} />
         ))}
       </div>
     </main>
