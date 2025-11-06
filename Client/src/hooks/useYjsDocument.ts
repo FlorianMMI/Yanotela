@@ -106,7 +106,7 @@ export function useYjsDocument(
     // 3️⃣ Initialiser l'awareness (curseurs) avec pseudo et couleur
     const fetchUserInfo = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://preprod.yanotela.fr";
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
         const response = await fetch(`${API_URL}/auth/check`, {
           credentials: "include",
         });
