@@ -13,6 +13,7 @@ export default function FoldersPage() {
   const { isAuthenticated, loading: authLoading } = useAuthRedirect();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
+  const [colorFilters, setColorFilters] = useState<string[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,13 +38,31 @@ export default function FoldersPage() {
 
   // Filtrer et trier les dossiers
   const filteredFolders = Array.isArray(folders) ? folders
-    .filter(folder =>
-      folder.Nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      folder.Description?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter(folder => {
+      // Filtre de recherche
+      const matchesSearch = folder.Nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        folder.Description?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Filtre de couleur avec normalisation
+      const matchesColor = colorFilters.length === 0 || 
+        colorFilters.some((filterColor: string) => {
+          const folderColor = folder.CouleurTag || '#882626';
+          // Normaliser var(--primary) et #882626 comme équivalents
+          const normalizedFolderColor = (folderColor === 'var(--primary)' || folderColor === '#882626') ? 'var(--primary)' : folderColor;
+          const normalizedFilterColor = (filterColor === 'var(--primary)' || filterColor === '#882626') ? 'var(--primary)' : filterColor;
+          return normalizedFolderColor === normalizedFilterColor;
+        });
+      
+      return matchesSearch && matchesColor;
+    })
     .sort((a, b) => {
-      // Tri par date de modification (plus récent en premier)
-      return new Date(b.ModifiedAt).getTime() - new Date(a.ModifiedAt).getTime();
+      if (sortBy === "recent") {
+        // Tri par date de modification (plus récent en premier)
+        return new Date(b.ModifiedAt).getTime() - new Date(a.ModifiedAt).getTime();
+      } else {
+        // Tri par date de création (plus récent en premier)
+        return new Date(b.CreatedAt).getTime() - new Date(a.CreatedAt).getTime();
+      }
     }) : [];
 
   return (
@@ -53,6 +72,8 @@ export default function FoldersPage() {
         setSearchTerm={setSearchTerm}
         sortBy={sortBy}
         setSortBy={setSortBy}
+        colorFilters={colorFilters}
+        setColorFilters={setColorFilters}
       />
 
       <Suspense fallback={

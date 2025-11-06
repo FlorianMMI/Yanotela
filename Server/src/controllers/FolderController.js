@@ -137,17 +137,30 @@ export const FolderController = {
       });
 
       // Filtrer seulement les notes auxquelles l'utilisateur a accès
-      const notes = noteFolders
-        .filter((nf) => nf.note.permissions.length > 0)
-        .map((nf) => ({
-          id: nf.note.id,
-          Titre: nf.note.Titre,
-          Content: nf.note.Content,
-          author: nf.note.author ? nf.note.author.pseudo : null,
-          modifier: nf.note.modifier ? nf.note.modifier.pseudo : null,
-          ModifiedAt: nf.note.ModifiedAt,
-          userRole: nf.note.permissions[0]?.role || null,
-        }));
+      const notes = await Promise.all(
+        noteFolders
+          .filter((nf) => nf.note.permissions.length > 0)
+          .map(async (nf) => {
+            // Compter le nombre de collaborateurs (permissions acceptées)
+            const collaboratorCount = await prisma.permission.count({
+              where: {
+                noteId: nf.note.id,
+                isAccepted: true,
+              },
+            });
+
+            return {
+              id: nf.note.id,
+              Titre: nf.note.Titre,
+              Content: nf.note.Content,
+              author: nf.note.author ? nf.note.author.pseudo : null,
+              modifier: nf.note.modifier ? nf.note.modifier.pseudo : null,
+              ModifiedAt: nf.note.ModifiedAt,
+              userRole: nf.note.permissions[0]?.role || null,
+              collaboratorCount: collaboratorCount,
+            };
+          })
+      );
 
       return res.status(200).json({ 
         folder: { 
