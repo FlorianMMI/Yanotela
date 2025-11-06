@@ -7,9 +7,10 @@ const ROLE_LABELS = ["Propriétaire", "Administrateur", "Éditeur", "Lecteur"];
 
 interface NoteShareUIProps {
     noteId: string;
+    onShareSuccess?: () => void;
 }
 
-const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
+const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => {
     const auth = useAuth();
     const connectedUserId = auth.user?.id;
 
@@ -90,6 +91,10 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                                                                     const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
                                                                     setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
                                                                 }
+                                                                // Appeler le callback pour rafraîchir la liste des notes
+                                                                if (onShareSuccess) {
+                                                                    onShareSuccess();
+                                                                }
                                                             } else {
                                                                 alert(result.error || 'Erreur lors de la modification');
                                                             }
@@ -120,6 +125,10 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                                                                         // Mettre à jour le rôle courant si nécessaire
                                                                         const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
                                                                         setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
+                                                                    }
+                                                                    // Appeler le callback pour rafraîchir la liste des notes
+                                                                    if (onShareSuccess) {
+                                                                        onShareSuccess();
                                                                     }
                                                                 } else {
                                                                     alert(result.error || 'Erreur lors de la suppression');
@@ -184,6 +193,10 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId }) => {
                                     // Mettre à jour le rôle courant si nécessaire
                                     const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
                                     setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
+                                }
+                                // Appeler le callback pour rafraîchir la liste des notes
+                                if (onShareSuccess) {
+                                    onShareSuccess();
                                 }
                             } else {
                                 alert(result.error || 'Erreur lors de l\'ajout');

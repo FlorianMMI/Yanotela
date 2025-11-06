@@ -341,3 +341,46 @@
 input, textarea, select, [role="button"], button {
   transition-property: none;
 }
+
+/* Les thèmes sont maintenant gérés dynamiquement par le hook useTheme 
+   et appliqués via JavaScript pour plus de flexibilité */
+
+/* Style pour les menus contextuels compacts */
+.context-menu-compact {
+  animation: context-menu-appear 0.15s ease-out;
+}
+
+/* Appliquer la taille réduite uniquement au menu contextuel (pas aux modals de confirmation) */
+.context-menu-compact > div:not([class*="inset-0"]):not([class*="bg-black"]) {
+  min-width: 240px !important;
+  max-width: 280px !important;
+  width: auto !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Réduire les paddings dans le menu contextuel uniquement */
+.context-menu-compact > div:not([class*="inset-0"]) button {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+}
+
+.context-menu-compact > div:not([class*="inset-0"]) .p-4 {
+  padding: 0.75rem !important;
+}
+
+.context-menu-compact > div:not([class*="inset-0"]) h3 {
+  font-size: 1rem !important;
+}
+
+/* Animation d'apparition */
+@keyframes context-menu-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+}
