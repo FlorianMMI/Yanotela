@@ -4,12 +4,9 @@ import React from 'react';
 import Icon from '../Icon';
 import { useRouter } from 'next/dist/client/components/navigation';
 
-
 interface TotalFoldersProps {
     totalFolders?: number;
 }
-
-
 
 export default function TotalFolders({ totalFolders }: TotalFoldersProps) {
     const router = useRouter();

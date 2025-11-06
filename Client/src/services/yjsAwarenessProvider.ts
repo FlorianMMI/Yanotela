@@ -85,9 +85,7 @@ class YjsAwarenessProviderClass {
   private setupSocketListeners(): void {
     // Éviter de configurer les listeners plusieurs fois
     if (this.listenersSetup) return;
-    
-    console.log('[YjsAwarenessProvider] 🔌 Configuration des listeners Socket.IO');
-    
+
     // Réception d'un awareness-update depuis le serveur
     socketService.on('awareness-update', this.handleAwarenessUpdate.bind(this));
     
@@ -107,11 +105,6 @@ class YjsAwarenessProviderClass {
       // Appliquer l'update au awareness local (y-protocols)
       const updateArray = new Uint8Array(update);
       applyAwarenessUpdate(awareness, updateArray, 'remote');
-
-      console.log(`📥 [YjsAwarenessProvider] Awareness update reçu pour note ${noteId}:`, {
-        updateSize: update.length,
-        usersCount: awareness.getStates().size
-      });
 
       // Notifier les listeners
       this.notifyListeners(noteId);
@@ -160,8 +153,6 @@ class YjsAwarenessProviderClass {
     // Stocker l'awareness
     this.awarenessMap.set(noteId, awareness);
 
-    console.log(`[YjsAwarenessProvider] ✅ Awareness créé pour note ${noteId} (clientID: ${awareness.clientID}, couleur: ${color})`);
-
     return awareness;
   }
 
@@ -182,7 +173,6 @@ class YjsAwarenessProviderClass {
     this.awarenessMap.delete(noteId);
     this.listeners.delete(noteId);
 
-    console.log(`[YjsAwarenessProvider] Awareness supprimé pour note ${noteId}`);
   }
 
   // ==========================================================================
@@ -280,14 +270,6 @@ class YjsAwarenessProviderClass {
       // Encoder l'update et l'envoyer au serveur
       const update = encodeAwarenessUpdate(awareness, [...data.added, ...data.updated, ...data.removed]);
 
-      console.log(`📤 [YjsAwarenessProvider] Émission awareness-update pour note ${noteId}:`, {
-        added: data.added,
-        updated: data.updated,
-        removed: data.removed,
-        updateSize: update.length,
-        localState: awareness.getLocalState()
-      });
-
       socketService.emit('awareness-update', {
         noteId,
         update: Array.from(update) // Uint8Array → number[]
@@ -319,7 +301,6 @@ class YjsAwarenessProviderClass {
     this.awarenessMap.clear();
     this.listeners.clear();
 
-    console.log('[YjsAwarenessProvider] Toutes les awareness ont été détruites');
   }
 }
 

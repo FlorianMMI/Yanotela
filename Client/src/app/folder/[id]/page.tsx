@@ -144,7 +144,6 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
     return (
         <div className="h-full w-full flex flex-col p-2.5 relative">
-           
 
             {/* Liste des notes dans le dossier - Plein écran */}
             <div

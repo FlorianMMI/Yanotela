@@ -27,13 +27,12 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('[ConnectedUsers] 🎬 Initialisation pour note:', noteId);
 
     // 1️⃣ Écouter l'événement initial de connexion
     const handleNoteJoined = (e: CustomEvent) => {
       const { noteId: joinedNoteId, userCount: count } = e.detail || {};
       if (joinedNoteId === noteId) {
-        console.log('[ConnectedUsers] ✅ Note rejointe, userCount:', count);
+        
         setUserCount(count);
         setIsLoading(false);
         // Demander la liste des utilisateurs
@@ -43,7 +42,7 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
 
     // 2️⃣ Écouter quand un utilisateur rejoint
     const handleUserJoined = (data: { userId: number; pseudo: string; userCount: number }) => {
-      console.log('[ConnectedUsers] 👋 Utilisateur rejoint:', data);
+      
       setUserCount(data.userCount);
       // Redemander la liste complète
       socketService.requestUserList(noteId);
@@ -51,7 +50,7 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
 
     // 3️⃣ Écouter quand un utilisateur quitte
     const handleUserLeft = (data: { userId: number; pseudo: string; userCount: number }) => {
-      console.log('[ConnectedUsers] 👋 Utilisateur parti:', data);
+      
       setUserCount(data.userCount);
       // Redemander la liste complète
       socketService.requestUserList(noteId);
@@ -59,7 +58,7 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
 
     // 4️⃣ Écouter la liste des utilisateurs
     const handleUserList = (data: { users: UserInfo[] }) => {
-      console.log('[ConnectedUsers] 📋 Liste utilisateurs reçue:', data.users);
+      
       setUsers(data.users);
       setUserCount(data.users.length);
     };
@@ -79,7 +78,7 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
 
     // 🧹 Cleanup
     return () => {
-      console.log('[ConnectedUsers] 🛑 Nettoyage');
+      
       socketService.offUserList(handleUserList);
       window.removeEventListener('noteJoined', handleNoteJoined as EventListener);
     };

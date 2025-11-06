@@ -35,10 +35,7 @@ class SocketService {
       return this.socket;
     }
 
-    
     const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-    console.log('🔌 Initialisation connexion Socket.IO vers:', SOCKET_URL);
 
     this.socket = io(SOCKET_URL, {
       path: '/socket.io/',
@@ -55,18 +52,17 @@ class SocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log('✅ Socket connecté, ID:', this.socket?.id);
-      
+
       // ✅ CORRECTION CRITIQUE: Re-joindre automatiquement la note après reconnexion
       if (this.currentNoteId) {
-        console.log(`🔄 Reconnexion détectée, re-join de la note ${this.currentNoteId}`);
+        
         this.socket?.emit('joinNote', { noteId: this.currentNoteId });
         
         // ✅ Ré-écouter noteJoined avec le callback sauvegardé
         if (this.currentOnInit) {
           this.socket?.off('noteJoined');
           this.socket?.once('noteJoined', (data: any) => {
-            console.log('✅ [Reconnexion] noteJoined reçu:', data);
+            
             this.currentOnInit?.(data);
           });
         }
@@ -83,12 +79,12 @@ class SocketService {
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('🔌 Socket déconnecté:', reason);
+      
     });
 
     // ✅ DEBUG: Listener global pour userTyping
     this.socket.on('userTyping', (data) => {
-      console.log('📥 [socketService DEBUG] Événement userTyping reçu:', data);
+      
     });
 
     return this.socket;
@@ -111,32 +107,24 @@ class SocketService {
       return;
     }
 
-    console.log(`[socketService.joinNote] 🚀 Tentative de joinNote pour noteId: ${noteId}`);
-    console.log(`[socketService.joinNote] Socket connecté: ${socket.connected}, Socket ID: ${socket.id}`);
-
     // Si on change de note, quitter l'ancienne room
     if (this.currentNoteId && this.currentNoteId !== noteId) {
       socket.emit('leaveNote', { noteId: this.currentNoteId });
-      console.log('🚪 Quitte la note:', this.currentNoteId);
+      
     }
 
     this.currentNoteId = noteId;
     this.currentOnInit = onInit || null; // ✅ Sauvegarder le callback
 
     // Rejoindre la room
-    console.log('🚪 Émission événement joinNote avec noteId:', noteId);
+    
     socket.emit('joinNote', { noteId });
     
     // ✅ Écouter la confirmation - CORRECTION: c'est 'noteJoined' pas 'noteInit'
     if (onInit) {
       socket.off('noteJoined'); // Éviter les listeners multiples
       socket.once('noteJoined', (data: any) => {
-        console.log('✅ [socketService] noteJoined reçu:', {
-          noteId: data.noteId,
-          userCount: data.userCount,
-          isReadOnly: data.isReadOnly
-        });
-        
+
         // ✅ Émettre un événement DOM pour que d'autres composants puissent l'écouter
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('noteJoined', {
@@ -176,16 +164,16 @@ class SocketService {
     if (typeof window === 'undefined') return;
     if (!this.socket) return;
     if (callback) {
-      console.log(`[socketService.off] 🗑️ Suppression d'un listener spécifique pour: ${event}`);
+      
       this.socket.off(event, callback);
     } else {
-      console.log(`[socketService.off] 🗑️ Suppression de TOUS les listeners pour: ${event}`);
+      
       this.socket.off(event);
     }
     
     // Log du nombre de listeners restants
     const remaining = this.socket.listeners(event).length;
-    console.log(`[socketService.off] 📊 Listeners restants pour ${event}: ${remaining}`);
+    
   }
 
   /**
@@ -209,14 +197,12 @@ class SocketService {
     if (typeof window === 'undefined') return;
     if (!this.currentNoteId || !this.socket) return;
 
-    console.log(`🚪 Quitte la note: ${this.currentNoteId}`);
     this.socket.emit('leaveNote', { noteId: this.currentNoteId });
     
     // ✅ Nettoyer le cache anti-ping-pong pour cette note
     this.lastReceivedContent.delete(this.currentNoteId);
     this.lastSentContent.delete(this.currentNoteId);
-    console.log('🧹 Cache anti-ping-pong nettoyé pour note:', this.currentNoteId);
-    
+
     this.currentNoteId = null;
     this.currentOnInit = null; // ✅ Nettoyer le callback aussi
   }
@@ -248,7 +234,7 @@ class SocketService {
     // ✅ ANTI-PING-PONG: Vérifier si c'est le même contenu qu'on a déjà envoyé
     const lastSent = this.lastSentContent.get(noteId);
     if (lastSent === content) {
-      console.log('� Contenu identique au dernier envoi, pas de broadcast (évite ping-pong)');
+      
       return;
     }
     
@@ -257,19 +243,12 @@ class SocketService {
     if (receivedCache) {
       for (const [userId, lastContent] of receivedCache.entries()) {
         if (lastContent === content) {
-          console.log(`🚫 Contenu identique à celui reçu de l'utilisateur ${userId}, pas de renvoi (évite ping-pong)`);
+          
           return;
         }
       }
     }
-    
-    console.log('�📤 Émission contentUpdate:', {
-      noteId,
-      contentLength: content.length,
-      socketId: this.socket.id,
-      currentNoteId: this.currentNoteId
-    });
-    
+
     // ✅ Stocker le contenu envoyé dans le cache
     this.lastSentContent.set(noteId, content);
     
@@ -303,7 +282,7 @@ class SocketService {
   emitUserTyping(noteId: string, isTyping: boolean) {
     if (typeof window === 'undefined') return;
     if (!this.socket || !this.socket.connected) return;
-    console.log(`[socketService.emitUserTyping] 📤 Émission userTyping: noteId=${noteId}, isTyping=${isTyping}`);
+    
     this.socket.emit('userTyping', { noteId, isTyping });
   }
 
@@ -314,11 +293,11 @@ class SocketService {
   onTitleUpdate(callback: (data: { noteId: string; titre: string; userId: number; pseudo: string }) => void) {
     if (!this.socket) return;
     // ✅ Ne PAS faire .off() ici pour permettre plusieurs listeners
-    console.log('[socketService.onTitleUpdate] 📝 Ajout d\'un listener titleUpdate');
+    
     this.socket.on('titleUpdate', callback);
     
     const listenerCount = this.socket.listeners('titleUpdate').length;
-    console.log(`[socketService.onTitleUpdate] 📊 Total listeners titleUpdate: ${listenerCount}`);
+    
   }
 
   /**
@@ -336,9 +315,7 @@ class SocketService {
       
       const noteCache = this.lastReceivedContent.get(data.noteId)!;
       noteCache.set(data.userId, data.content);
-      
-      console.log(`📥 Contenu reçu de ${data.pseudo} (${data.userId}) stocké dans cache anti-ping-pong`);
-      
+
       // Appeler le callback original
       callback(data);
     });
@@ -396,12 +373,12 @@ class SocketService {
   onUserTyping(callback: (data: { noteId: string; isTyping: boolean; userId: number; pseudo: string }) => void) {
     if (!this.socket) return;
     // ✅ Ne PAS faire .off() ici, sinon on supprime les listeners des autres composants
-    console.log('[socketService.onUserTyping] 📝 Ajout d\'un listener userTyping');
+    
     this.socket.on('userTyping', callback);
     
     // Log du nombre total de listeners pour cet événement
     const listenerCount = this.socket.listeners('userTyping').length;
-    console.log(`[socketService.onUserTyping] 📊 Total listeners userTyping: ${listenerCount}`);
+    
   }
 
   /**
@@ -447,12 +424,6 @@ class SocketService {
       return;
     }
 
-    console.log('📤 [YJS] Émission update Yjs:', {
-      noteId: update.noteId,
-      updateSize: update.update.length,
-      timestamp: update.timestamp,
-    });
-
     this.socket.emit('yjs-update', update);
   }
 
@@ -470,11 +441,6 @@ class SocketService {
     this.socket.off('yjs-update');
 
     this.socket.on('yjs-update', (data: YjsUpdateSerialized) => {
-      console.log('📥 [YJS] Update Yjs reçu:', {
-        noteId: data.noteId,
-        updateSize: data.update.length,
-        fromUser: data.pseudo || 'inconnu',
-      });
 
       callback(data);
     });
@@ -495,8 +461,6 @@ class SocketService {
       return;
     }
 
-    console.log('🔄 [YJS] Demande de synchronisation pour note:', noteId);
-
     this.socket.emit('yjs-sync-request', {
       noteId,
       stateVector: stateVector || [],
@@ -515,12 +479,6 @@ class SocketService {
     this.socket.off('yjs-sync-response');
 
     this.socket.on('yjs-sync-response', (data: YjsSyncResponse & { noteId: string }) => {
-      console.log('📦 [YJS] Réponse de synchronisation reçue:', {
-        noteId: data.noteId,
-        missingUpdates: data.missingUpdates?.length || 0,
-        hasFullState: !!data.fullState,
-        success: data.success,
-      });
 
       callback(data);
     });
@@ -535,7 +493,7 @@ class SocketService {
     this.socket.off('yjs-initial-state');
 
     this.socket.on('yjs-initial-state', (data) => {
-      console.log('🔄 [YJS] État initial reçu pour note:', data.noteId);
+      
       callback(data);
     });
   }

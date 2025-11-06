@@ -30,7 +30,6 @@ export default function SaveFlashNoteButton({
   const [flashContent, setFlashContent] = useState<string>('');
   const [flashEmpty, setFlashEmpty] = useState<boolean>(true);
 
-
   // Note: flash emptiness is tracked in state `flashEmpty` to avoid reading localStorage during render
 
   // Compute if flash content is empty

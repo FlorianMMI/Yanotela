@@ -145,15 +145,10 @@ io.use((socket, next) => {
 
 // Gestion des connexions Socket.IO
 io.on('connection', (socket) => {
-  console.log(`🔌 Nouvelle connexion socket: ${socket.id} | User: ${socket.userPseudo} (ID: ${socket.userId})`);
 
   // ✅ DEBUG: Logger TOUS les événements reçus
   socket.onAny((eventName, ...args) => {
-    console.log(`📨 Événement reçu: ${eventName}`, {
-      socketId: socket.id,
-      user: socket.userPseudo,
-      data: args
-    });
+    
   });
 
   /**
@@ -161,12 +156,12 @@ io.on('connection', (socket) => {
    * L'utilisateur rejoint une room pour collaborer sur une note
    */
   socket.on('joinNote', async ({ noteId }) => {
-    console.log(`🚪 ${socket.userPseudo} demande à rejoindre la note ${noteId}`);
+    
     const roomName = `note-${noteId}`;
     
     // Vérifier si déjà dans la room
     if (socket.rooms.has(roomName)) {
-      console.log(`⚠️ ${socket.userPseudo} est déjà dans ${roomName}`);
+      
       return;
     }
     
@@ -201,7 +196,6 @@ io.on('connection', (socket) => {
 
       // Rejoindre la room Socket.IO (la room est créée automatiquement si elle n'existe pas)
       socket.join(roomName);
-      console.log(`✅ ${socket.userPseudo} a rejoint ${roomName}, rooms actuelles:`, Array.from(socket.rooms));
 
       // ✅ SIMPLIFIÉ: Créer/obtenir la session de collaboration pour cette note
       const noteSession = getOrCreateNoteSession(noteId);
@@ -233,14 +227,14 @@ io.on('connection', (socket) => {
           console.log(`🔄 User ${socket.userPseudo} connecté à la note ${noteId} (${userCount} utilisateur(s) unique(s), ${socketsInRoom.size} socket(s))`);
           
           // ✅ Charger l'état Yjs initial depuis la BDD
-          console.log(`[YJS] 📂 Chargement état Yjs pour note ${noteId}...`);
+          
           const yjsController = await import('./controllers/yjsController.js');
           const yjsState = await yjsController.loadYjsState(noteId);
           
           if (yjsState) {
-            console.log(`[YJS] ✅ État Yjs chargé: ${yjsState.length} bytes`);
+            
           } else {
-            console.log(`[YJS] ℹ️  Pas d'état Yjs, note vierge ou ancienne`);
+            
           }
           
           // ✅ Envoyer confirmation de connexion avec état Yjs
@@ -250,7 +244,6 @@ io.on('connection', (socket) => {
             isReadOnly,
             content: note.Content || "" // Fallback pour ancien système
           });
-          console.log(`[Socket] ✅ Événement 'noteJoined' émis pour ${socket.userPseudo}`);
 
           // ✅ Envoyer l'état Yjs initial si disponible
           if (yjsState) {
@@ -258,14 +251,13 @@ io.on('connection', (socket) => {
               noteId,
               yjsState: Array.from(yjsState) // ✅ CORRECTION: 'yjsState' pas 'state'
             });
-            console.log(`[YJS] ✅ Événement 'yjs-initial-state' émis (${yjsState.length} bytes)`);
+            
           }
           
           // Envoyer la liste à TOUS les utilisateurs de la room (y compris le nouveau)
           io.to(roomName).emit('userList', {
             users: connectedUsers
           });
-          console.log(`[Socket] 📋 Liste utilisateurs envoyée à toute la room (${connectedUsers.length} utilisateurs)`);
 
           // Notifier les autres utilisateurs (pas le nouveau)
           socket.to(`note-${noteId}`).emit('userJoined', {
@@ -410,9 +402,7 @@ io.on('connection', (socket) => {
    */
   socket.on('userTyping', ({ noteId, isTyping }) => {
     const roomName = `note-${noteId}`;
-    
-    console.log(`[userTyping] ${socket.userPseudo} - noteId: ${noteId}, roomName: ${roomName}, rooms:`, Array.from(socket.rooms));
-    
+
     if (!socket.rooms.has(roomName)) {
       console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}, rooms actuelles:`, Array.from(socket.rooms));
       return;
@@ -451,8 +441,6 @@ io.on('connection', (socket) => {
       const yjsController = await import('./controllers/yjsController.js');
       await yjsController.mergeYjsUpdate(noteId, new Uint8Array(update));
 
-      console.log(`📝 Yjs update sauvegardé pour note ${noteId} (size: ${update.length} bytes)`);
-
     } catch (error) {
       console.error('❌ Erreur yjs-update:', error);
       socket.emit('error', { message: 'Erreur lors de la sauvegarde Yjs' });
@@ -483,7 +471,6 @@ io.on('connection', (socket) => {
           update: Array.from(diff)
         });
 
-        console.log(`🔄 Sync response envoyée pour note ${noteId} (size: ${diff.length} bytes)`);
       } else {
         // Pas de différence, client déjà à jour
         socket.emit('yjs-sync-response', {
@@ -504,9 +491,7 @@ io.on('connection', (socket) => {
    */
   socket.on('awareness-update', ({ noteId, update }) => {
     const roomName = `note-${noteId}`;
-    
-    console.log(`[awareness-update] ${socket.userPseudo} - noteId: ${noteId}, roomName: ${roomName}, rooms:`, Array.from(socket.rooms));
-    
+
     if (!socket.rooms.has(roomName)) {
       console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}, rooms actuelles:`, Array.from(socket.rooms));
       return;
@@ -518,7 +503,6 @@ io.on('connection', (socket) => {
       update
     });
 
-    console.log(`👁️ Awareness update broadcasted pour note ${noteId}`);
   });
 
   /**
@@ -527,9 +511,7 @@ io.on('connection', (socket) => {
    */
   socket.on('requestUserList', async ({ noteId }) => {
     const roomName = `note-${noteId}`;
-    
-    console.log(`[requestUserList] ${socket.userPseudo} demande la liste pour note ${noteId}`);
-    
+
     if (!socket.rooms.has(roomName)) {
       console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}`);
       return;
