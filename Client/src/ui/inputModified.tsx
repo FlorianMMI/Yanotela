@@ -91,7 +91,7 @@ export default function InputModified({
               disabled={!isEditing}
               className={`w-full px-2 py-1 md:px-3 md:py-2 border-2 rounded-lg text-clrprincipal text-base md:text-sm transition-all duration-300 ${
                 isEditing
-                  ? `bg-clrsecondaire ${isValueEmpty ? "border-red-500" : "border-primary"} focus:ring-2 focus:ring-primary focus:border-transparent`
+                  ? `bg-clrsecondaire ${isValueEmpty ? "border-dangerous-500" : "border-primary"} focus:ring-2 focus:ring-primary focus:border-transparent`
                   : "bg-gray-200 border-gray-300  cursor-not-allowed"
               }`}
             />
@@ -121,7 +121,7 @@ export default function InputModified({
       
       {/* Warning message when field is empty in edit mode */}
       {isEditing && isValueEmpty && type !== "email" && (
-        <div className="flex items-center gap-1 text-red-500 text-xs ml-auto max-w-[200px]">
+        <div className="flex items-center gap-1 text-dangerous-500 text-xs ml-auto max-w-[200px]">
           <Icons name="warning" size={12} />
           <span>Ce champ ne peut pas être vide</span>
         </div>

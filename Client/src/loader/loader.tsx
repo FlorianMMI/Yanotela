@@ -329,6 +329,7 @@ interface AuthResponse {
     message?: string;
     error?: string;
     errors?: Array<{ msg: string }>;
+    theme?: string; // Thème de l'utilisateur
 }
 
 export async function Login(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -345,6 +346,28 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
         });
 
         if (response.ok) {
+            // Récupérer les informations utilisateur pour obtenir le thème
+            try {
+                const userInfoResponse = await fetch(`${apiUrl}/user/info`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                });
+
+                if (userInfoResponse.ok) {
+                    const userData = await userInfoResponse.json();
+                    return { 
+                        success: true, 
+                        message: 'Connexion réussie',
+                        theme: userData.theme 
+                    };
+                }
+            } catch (userInfoError) {
+                console.error('Erreur lors de la récupération du thème:', userInfoError);
+            }
+            
             return { success: true, message: 'Connexion réussie' };
         } else {
             const errorData = await response.json();
@@ -498,6 +521,7 @@ interface InfoUserResponse {
         nom?: string;
         email: string;
         noteCount?: number; // Nombre de notes de l'utilisateur
+        theme?: string; // Thème de l'utilisateur
     };
 }
 
@@ -734,7 +758,7 @@ export async function GetNotifications(): Promise<{ success: boolean; notes?: an
     }
 }
 
-export async function AcceptNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+export async function AcceptNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string; noteId?: string }> {
     try {
         const response = await fetch(`${apiUrl}/notification/accept/${invitationId}`, {
             method: 'POST',
@@ -746,7 +770,7 @@ export async function AcceptNotification(invitationId: string): Promise<{ succes
 
         if (response.ok) {
             const data = await response.json().catch(() => ({}));
-            return { success: true, message: data.message };
+            return { success: true, message: data.message, noteId: data.noteId };
         } else {
             const errorData = await response.json().catch(() => ({}));
             return { success: false, error: errorData.error || 'Erreur lors de l\'acceptation de l\'invitation' };
