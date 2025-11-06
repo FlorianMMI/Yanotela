@@ -7,27 +7,13 @@
 @layer base {
 
   :root {
-    /* Variables de thème par défaut (light) - seront écrasées par le hook useTheme */
-    --background: #E9EBDB;
-    --deskbackground: #EDEDED;
-    --foreground: #171717;
-    --beige-foncer: #d5d7c3;
-    --clr-beige-foncer: #d5d7c3;
-    --gris-clair: #272727;
-    --clr-gris-clair: #272727;
-    --clr-error-600: #882626;
-    --error-600: #882626;
-    --primary: #882626;
-    --primary-hover: #ff0000;
-    --error-clair: oklch(63.7% 0.237 25.331);
-    --light: white;
-    --dark: black;
-    --light-note: white;
-    --lightNote: white;
-    --text-light-note: oklch(55.1% 0.027 264.364);
-    --textlightNote: oklch(55.1% 0.027 264.364);
-    --motif-opacity: 0.03;
+    /* Fonts */
+    --font-title: 'Nixie One', cursive;
+    --font-family: "Gantari", Arial, Helvetica, sans-serif;
+    --font-gantari: 'Gantari', sans-serif;
+    --font-geologica: 'Geologica', sans-serif;
 
+    /* Fixed color palette (non-theme dependent) */
     --clr-bleu-50: #eef2ff;
     --clr-bleu-100: #e0e7ff;
     --clr-bleu-200: #c7d2fe;
@@ -61,14 +47,193 @@
     --clr-gray-800: #1f2937;
     --clr-gray-900: #111827;
 
+    /* Theme-specific variables for LIGHT theme */
+    --light-background: #E9EBDB;
+    --light-deskbackground: #EDEDED;
+    --light-foreground: #171717;
+    --light-beige-foncer: #d5d7c3;
+    --light-gris-clair: #272727;
+    --light-primary: #882626;
+    --light-primary-hover: #ff0000;
+    --light-error-clair: oklch(63.7% 0.237 25.331);
+    --light-light: white;
+    --light-dark: black;
+    --light-light-note: white;
+    --light-text-light-note: oklch(55.1% 0.027 264.364);
+    --light-motif-opacity: 0.03;
 
-    --font-title: 'Nixie One', cursive;
-    --font-family: "Gantari", Arial, Helvetica, sans-serif;
-    --font-gantari: 'Gantari', sans-serif;
-    --font-geologica: 'Geologica', sans-serif;
-    
+    /* Theme-specific variables for DARK theme */
+    --dark-background: #1a1a1a;
+    --dark-deskbackground: #2a2a2a;
+    --dark-foreground: #e5e5e5;
+    --dark-beige-foncer: #333333;
+    --dark-gris-clair: #d1d1d1;
+    --dark-primary: #ef4444;
+    --dark-primary-hover: #dc2626;
+    --dark-error-clair: oklch(70% 0.237 25.331);
+    --dark-light: black;
+    --dark-dark: white;
+    --dark-light-note: #2d2d2d;
+    --dark-text-light-note: #e0e0e0;
+    --dark-motif-opacity: 0.01;
 
-}
+    /* Theme-specific variables for BLUE theme */
+    --blue-background: #e0e7ff;
+    --blue-deskbackground: #dbeafe;
+    --blue-foreground: #1e3a8a;
+    --blue-beige-foncer: #c7d2fe;
+    --blue-gris-clair: #3730a3;
+    --blue-primary: #4f46e5;
+    --blue-primary-hover: #4338ca;
+    --blue-error-clair: oklch(63.7% 0.237 25.331);
+    --blue-light: white;
+    --blue-dark: #1e3a8a;
+    --blue-light-note: white;
+    --blue-text-light-note: #312e81;
+    --blue-motif-opacity: 0.03;
+
+    /* Theme-specific variables for GREEN theme */
+    --green-background: #dcfce7;
+    --green-deskbackground: #d1fae5;
+    --green-foreground: #064e3b;
+    --green-beige-foncer: #bbf7d0;
+    --green-gris-clair: #065f46;
+    --green-primary: #16a34a;
+    --green-primary-hover: #15803d;
+    --green-error-clair: oklch(63.7% 0.237 25.331);
+    --green-light: white;
+    --green-dark: #064e3b;
+    --green-light-note: white;
+    --green-text-light-note: #14532d;
+    --green-motif-opacity: 0.03;
+
+    /* Theme-specific variables for PURPLE theme */
+    --purple-background: #f3e8ff;
+    --purple-deskbackground: #fae8ff;
+    --purple-foreground: #581c87;
+    --purple-beige-foncer: #e9d5ff;
+    --purple-gris-clair: #6b21a8;
+    --purple-primary: #9333ea;
+    --purple-primary-hover: #7e22ce;
+    --purple-error-clair: oklch(63.7% 0.237 25.331);
+    --purple-light: white;
+    --purple-dark: #581c87;
+    --purple-light-note: white;
+    --purple-text-light-note: #6b21a8;
+    --purple-motif-opacity: 0.03;
+  }
+
+  /* Apply theme variables based on body class - DEFAULT: light */
+  body,
+  body.light {
+    --background: var(--light-background);
+    --deskbackground: var(--light-deskbackground);
+    --foreground: var(--light-foreground);
+    --beige-foncer: var(--light-beige-foncer);
+    --clr-beige-foncer: var(--light-beige-foncer);
+    --gris-clair: var(--light-gris-clair);
+    --clr-gris-clair: var(--light-gris-clair);
+    --primary: var(--light-primary);
+    --primary-hover: var(--light-primary-hover);
+    --clr-error-600: var(--light-primary);
+    --error-600: var(--light-primary);
+    --error-clair: var(--light-error-clair);
+    --light: var(--light-light);
+    --dark: var(--light-dark);
+    --light-note: var(--light-light-note);
+    --lightNote: var(--light-light-note);
+    --text-light-note: var(--light-text-light-note);
+    --textlightNote: var(--light-text-light-note);
+    --motif-opacity: var(--light-motif-opacity);
+  }
+
+  body.dark {
+    --background: var(--dark-background);
+    --deskbackground: var(--dark-deskbackground);
+    --foreground: var(--dark-foreground);
+    --beige-foncer: var(--dark-beige-foncer);
+    --clr-beige-foncer: var(--dark-beige-foncer);
+    --gris-clair: var(--dark-gris-clair);
+    --clr-gris-clair: var(--dark-gris-clair);
+    --primary: var(--dark-primary);
+    --primary-hover: var(--dark-primary-hover);
+    --clr-error-600: var(--dark-primary);
+    --error-600: var(--dark-primary);
+    --error-clair: var(--dark-error-clair);
+    --light: var(--dark-light);
+    --dark: var(--dark-dark);
+    --light-note: var(--dark-light-note);
+    --lightNote: var(--dark-light-note);
+    --text-light-note: var(--dark-text-light-note);
+    --textlightNote: var(--dark-text-light-note);
+    --motif-opacity: var(--dark-motif-opacity);
+  }
+
+  body.blue {
+    --background: var(--blue-background);
+    --deskbackground: var(--blue-deskbackground);
+    --foreground: var(--blue-foreground);
+    --beige-foncer: var(--blue-beige-foncer);
+    --clr-beige-foncer: var(--blue-beige-foncer);
+    --gris-clair: var(--blue-gris-clair);
+    --clr-gris-clair: var(--blue-gris-clair);
+    --primary: var(--blue-primary);
+    --primary-hover: var(--blue-primary-hover);
+    --clr-error-600: var(--blue-primary);
+    --error-600: var(--blue-primary);
+    --error-clair: var(--blue-error-clair);
+    --light: var(--blue-light);
+    --dark: var(--blue-dark);
+    --light-note: var(--blue-light-note);
+    --lightNote: var(--blue-light-note);
+    --text-light-note: var(--blue-text-light-note);
+    --textlightNote: var(--blue-text-light-note);
+    --motif-opacity: var(--blue-motif-opacity);
+  }
+
+  body.green {
+    --background: var(--green-background);
+    --deskbackground: var(--green-deskbackground);
+    --foreground: var(--green-foreground);
+    --beige-foncer: var(--green-beige-foncer);
+    --clr-beige-foncer: var(--green-beige-foncer);
+    --gris-clair: var(--green-gris-clair);
+    --clr-gris-clair: var(--green-gris-clair);
+    --primary: var(--green-primary);
+    --primary-hover: var(--green-primary-hover);
+    --clr-error-600: var(--green-primary);
+    --error-600: var(--green-primary);
+    --error-clair: var(--green-error-clair);
+    --light: var(--green-light);
+    --dark: var(--green-dark);
+    --light-note: var(--green-light-note);
+    --lightNote: var(--green-light-note);
+    --text-light-note: var(--green-text-light-note);
+    --textlightNote: var(--green-text-light-note);
+    --motif-opacity: var(--green-motif-opacity);
+  }
+
+  body.purple {
+    --background: var(--purple-background);
+    --deskbackground: var(--purple-deskbackground);
+    --foreground: var(--purple-foreground);
+    --beige-foncer: var(--purple-beige-foncer);
+    --clr-beige-foncer: var(--purple-beige-foncer);
+    --gris-clair: var(--purple-gris-clair);
+    --clr-gris-clair: var(--purple-gris-clair);
+    --primary: var(--purple-primary);
+    --primary-hover: var(--purple-primary-hover);
+    --clr-error-600: var(--purple-primary);
+    --error-600: var(--purple-primary);
+    --error-clair: var(--purple-error-clair);
+    --light: var(--purple-light);
+    --dark: var(--purple-dark);
+    --light-note: var(--purple-light-note);
+    --lightNote: var(--purple-light-note);
+    --text-light-note: var(--purple-text-light-note);
+    --textlightNote: var(--purple-text-light-note);
+    --motif-opacity: var(--purple-motif-opacity);
+  }
 
   body {
     color: var(--foreground);
@@ -101,7 +266,6 @@
 }
 
 @theme inline {
-
   /* Couleurs de base adaptées au thème */
   --color-background: var(--background);
   --color-deskbackground: var(--deskbackground);
@@ -164,7 +328,6 @@
   --color-purple-600: #9333ea;
   --color-purple-700: #7e22ce;
   --color-purple-800: #6b21a8;
-
 }
 
 /* Support des transitions pour le changement de thème */
@@ -181,3 +344,43 @@ input, textarea, select, [role="button"], button {
 
 /* Les thèmes sont maintenant gérés dynamiquement par le hook useTheme 
    et appliqués via JavaScript pour plus de flexibilité */
+
+/* Style pour les menus contextuels compacts */
+.context-menu-compact {
+  animation: context-menu-appear 0.15s ease-out;
+}
+
+/* Appliquer la taille réduite uniquement au menu contextuel (pas aux modals de confirmation) */
+.context-menu-compact > div:not([class*="inset-0"]):not([class*="bg-black"]) {
+  min-width: 240px !important;
+  max-width: 280px !important;
+  width: auto !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Réduire les paddings dans le menu contextuel uniquement */
+.context-menu-compact > div:not([class*="inset-0"]) button {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+}
+
+.context-menu-compact > div:not([class*="inset-0"]) .p-4 {
+  padding: 0.75rem !important;
+}
+
+.context-menu-compact > div:not([class*="inset-0"]) h3 {
+  font-size: 1rem !important;
+}
+
+/* Animation d'apparition */
+@keyframes context-menu-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+}

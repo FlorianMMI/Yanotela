@@ -2,7 +2,6 @@
 import React from "react";
 import { useTheme, ThemeType } from "@/hooks/useTheme";
 import { motion, AnimatePresence } from "motion/react";
-import Icons from "@/ui/Icon";
 
 interface ThemeSelectorProps {
   className?: string;
@@ -63,13 +62,35 @@ export default function ThemeSelector({ className = "" }: ThemeSelectorProps) {
     }
   };
 
+  // Get theme color preview from CSS variables
+  const getThemeColors = (themeId: ThemeType) => {
+    if (typeof window === "undefined") return [];
+    
+    // Temporarily apply the theme class to read variables
+    const tempDiv = document.createElement("div");
+    tempDiv.className = themeId;
+    tempDiv.style.display = "none";
+    document.body.appendChild(tempDiv);
+    
+    const style = getComputedStyle(tempDiv);
+    const colors = [
+      style.getPropertyValue(`--${themeId}-background`).trim() || "#E9EBDB",
+      style.getPropertyValue(`--${themeId}-deskbackground`).trim() || "#EDEDED",
+      style.getPropertyValue(`--${themeId}-primary`).trim() || "#882626",
+      style.getPropertyValue(`--${themeId}-foreground`).trim() || "#171717",
+    ];
+    
+    document.body.removeChild(tempDiv);
+    return colors;
+  };
+
   return (
     <div className={`relative flex gap-2 items-center ${className}`}>
         <p className="">Thème: </p>
       {/* Bouton principal */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-clrsecondaire hover:bg-beige-foncer transition-colors duration-200 border border-gray-300 shadow-sm"
+        className="flex w-1/3 items-center gap-2 px-4 py-2 rounded-lg bg-clrsecondaire hover:bg-beige-foncer transition-colors duration-200 border border-gray-300 shadow-sm"
         title="Changer de thème"
       >
         <div className="flex items-center justify-center">
@@ -170,22 +191,13 @@ export default function ThemeSelector({ className = "" }: ThemeSelectorProps) {
                   Aperçu
                 </div>
                 <div className="flex gap-2">
-                  {["background", "deskbackground", "primary", "foreground"].map(
-                    (colorKey) => {
-                      const color =
-                        themes.find((t) => t.id === currentTheme)?.colors[
-                          colorKey as keyof typeof themes[0]["colors"]
-                        ];
-                      return (
-                        <div
-                          key={colorKey}
-                          className="flex-1 h-8 rounded border border-gray-300 shadow-sm"
-                          style={{ backgroundColor: color }}
-                          title={colorKey}
-                        />
-                      );
-                    }
-                  )}
+                  {getThemeColors(currentTheme).map((color, index) => (
+                    <div
+                      key={index}
+                      className="flex-1 h-8 rounded border border-gray-300 shadow-sm"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
                 </div>
               </div>
             </motion.div>

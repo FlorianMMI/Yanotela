@@ -363,7 +363,7 @@ export const noteController = {
           .json({ message: "Invitation non trouvée ou déjà acceptée" });
       }
 
-      res.status(200).json({ message: "Invitation acceptée avec succès" });
+      res.status(200).json({ message: "Invitation acceptée avec succès", noteId: id });
     } catch (error) {
       console.error("Erreur lors de l'acceptation de l'invitation:", error);
       res
@@ -740,6 +740,90 @@ export const noteController = {
       console.error("Erreur lors de la sortie de la note:", error);
       res.status(500).json({
         message: "Erreur lors de la sortie de la note",
+        error: error.message,
+      });
+    }
+  },
+
+  getDeletedNotes: async (req, res) => {
+    const { userId } = req.session;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      // Récupérer toutes les notes supprimées de l'utilisateur
+      const notes = await prisma.note.findMany({
+        where: {
+          authorId: userId,
+          deletedAt: {
+            not: null, // Notes qui ont été supprimées
+          },
+        },
+        orderBy: {
+          deletedAt: 'desc', // Plus récemment supprimées en premier
+        },
+      });
+
+      res.status(200).json({
+        notes: notes,
+        totalNotes: notes.length,
+      });
+    } catch (error) {
+      console.error("Erreur lors de la récupération des notes supprimées:", error);
+      res.status(500).json({
+        message: "Erreur lors de la récupération des notes supprimées",
+        error: error.message,
+      });
+    }
+  },
+
+  restoreNote: async (req, res) => {
+    const { id } = req.params; // noteId
+    const { userId } = req.session;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      // Vérifier que la note existe et est supprimée
+      const note = await prisma.note.findUnique({
+        where: { id },
+      });
+
+      if (!note) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+
+      if (!note.deletedAt) {
+        return res.status(400).json({ message: "Cette note n'est pas supprimée" });
+      }
+
+      // Vérifier que l'utilisateur est le propriétaire
+      if (note.authorId !== userId) {
+        return res.status(403).json({ 
+          message: "Seul le propriétaire peut restaurer cette note" 
+        });
+      }
+
+      // Restaurer la note (remettre deletedAt à null)
+      const restoredNote = await prisma.note.update({
+        where: { id },
+        data: {
+          deletedAt: null,
+        },
+      });
+
+      res.status(200).json({ 
+        message: "Note restaurée avec succès",
+        note: restoredNote 
+      });
+    } catch (error) {
+      console.error("Erreur lors de la restauration de la note:", error);
+      res.status(500).json({
+        message: "Erreur lors de la restauration de la note",
         error: error.message,
       });
     }
