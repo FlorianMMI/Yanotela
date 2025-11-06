@@ -38,7 +38,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
   ];
 
   return (
-    <div className="h-full w-full flex flex-col relative">
+    <div className="h-full w-full flex flex-col relative text-nowrap">
 
       <div className="relative flex flex-row items-center p-4 gap-2">
 
@@ -101,7 +101,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       >
         <Icon
           name={isopen ? `logo` : `logoIcon`}
-          className="text-clrprincipal stroke-25"
+          className="text-primary stroke-25"
           width={isopen ? 150 : 25}
           height={isopen ? 50 : 25}
         />

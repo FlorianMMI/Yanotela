@@ -145,17 +145,28 @@ io.use((socket, next) => {
 
 // Gestion des connexions Socket.IO
 io.on('connection', (socket) => {
+  console.log(`🔌 Nouvelle connexion socket: ${socket.id} | User: ${socket.userPseudo} (ID: ${socket.userId})`);
+
+  // ✅ DEBUG: Logger TOUS les événements reçus
+  socket.onAny((eventName, ...args) => {
+    console.log(`📨 Événement reçu: ${eventName}`, {
+      socketId: socket.id,
+      user: socket.userPseudo,
+      data: args
+    });
+  });
 
   /**
    * Événement: joinNote
    * L'utilisateur rejoint une room pour collaborer sur une note
    */
   socket.on('joinNote', async ({ noteId }) => {
+    console.log(`🚪 ${socket.userPseudo} demande à rejoindre la note ${noteId}`);
     const roomName = `note-${noteId}`;
     
     // Vérifier si déjà dans la room
     if (socket.rooms.has(roomName)) {
-      
+      console.log(`⚠️ ${socket.userPseudo} est déjà dans ${roomName}`);
       return;
     }
     
@@ -190,6 +201,7 @@ io.on('connection', (socket) => {
 
       // Rejoindre la room Socket.IO (la room est créée automatiquement si elle n'existe pas)
       socket.join(roomName);
+      console.log(`✅ ${socket.userPseudo} a rejoint ${roomName}, rooms actuelles:`, Array.from(socket.rooms));
 
       // ✅ SIMPLIFIÉ: Créer/obtenir la session de collaboration pour cette note
       const noteSession = getOrCreateNoteSession(noteId);
@@ -197,24 +209,65 @@ io.on('connection', (socket) => {
       // Rejoindre immédiatement - pas besoin d'attendre Yjs
       setImmediate(async () => {
         try {
-          // ✅ Compter les VRAIS utilisateurs connectés dans la room Socket.IO  
+          // ✅ CORRECTION: Compter les utilisateurs UNIQUES (pas les sockets)
           const socketsInRoom = await io.in(roomName).allSockets();
-          const userCount = socketsInRoom.size;
+          
+          // Construire la liste des utilisateurs connectés (avec dédoublonnage)
+          const uniqueUsers = new Map(); // userId -> { userId, pseudo }
+          for (const socketId of socketsInRoom) {
+            const s = io.sockets.sockets.get(socketId);
+            if (s && s.userId && s.userPseudo) {
+              uniqueUsers.set(s.userId, {
+                userId: s.userId,
+                pseudo: s.userPseudo
+              });
+            }
+          }
+          
+          const connectedUsers = Array.from(uniqueUsers.values());
+          const userCount = connectedUsers.length;
           
           // Ajouter à la tracking list pour le cleanup
           addUserToNote(noteId, socket.id);
           
-          console.log(`🔄 User ${socket.userPseudo} connecté à la note ${noteId} (${userCount} utilisateur(s))`);
+          console.log(`🔄 User ${socket.userPseudo} connecté à la note ${noteId} (${userCount} utilisateur(s) unique(s), ${socketsInRoom.size} socket(s))`);
           
-          // ✅ Envoyer confirmation de connexion (sans données Yjs)
+          // ✅ Charger l'état Yjs initial depuis la BDD
+          console.log(`[YJS] 📂 Chargement état Yjs pour note ${noteId}...`);
+          const yjsController = await import('./controllers/yjsController.js');
+          const yjsState = await yjsController.loadYjsState(noteId);
+          
+          if (yjsState) {
+            console.log(`[YJS] ✅ État Yjs chargé: ${yjsState.length} bytes`);
+          } else {
+            console.log(`[YJS] ℹ️  Pas d'état Yjs, note vierge ou ancienne`);
+          }
+          
+          // ✅ Envoyer confirmation de connexion avec état Yjs
           socket.emit('noteJoined', {
             noteId,
             userCount,
             isReadOnly,
-            content: note.Content || "" // Envoyer le contenu tel quel de la BDD
+            content: note.Content || "" // Fallback pour ancien système
           });
+          console.log(`[Socket] ✅ Événement 'noteJoined' émis pour ${socket.userPseudo}`);
 
-          // Notifier les autres utilisateurs
+          // ✅ Envoyer l'état Yjs initial si disponible
+          if (yjsState) {
+            socket.emit('yjs-initial-state', {
+              noteId,
+              yjsState: Array.from(yjsState) // ✅ CORRECTION: 'yjsState' pas 'state'
+            });
+            console.log(`[YJS] ✅ Événement 'yjs-initial-state' émis (${yjsState.length} bytes)`);
+          }
+          
+          // Envoyer la liste à TOUS les utilisateurs de la room (y compris le nouveau)
+          io.to(roomName).emit('userList', {
+            users: connectedUsers
+          });
+          console.log(`[Socket] 📋 Liste utilisateurs envoyée à toute la room (${connectedUsers.length} utilisateurs)`);
+
+          // Notifier les autres utilisateurs (pas le nouveau)
           socket.to(`note-${noteId}`).emit('userJoined', {
             userId: socket.userId,
             pseudo: socket.userPseudo,
@@ -358,7 +411,12 @@ io.on('connection', (socket) => {
   socket.on('userTyping', ({ noteId, isTyping }) => {
     const roomName = `note-${noteId}`;
     
-    if (!socket.rooms.has(roomName)) return;
+    console.log(`[userTyping] ${socket.userPseudo} - noteId: ${noteId}, roomName: ${roomName}, rooms:`, Array.from(socket.rooms));
+    
+    if (!socket.rooms.has(roomName)) {
+      console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}, rooms actuelles:`, Array.from(socket.rooms));
+      return;
+    }
 
     // Broadcaster l'état de frappe aux autres
     socket.to(roomName).emit('userTyping', {
@@ -367,6 +425,143 @@ io.on('connection', (socket) => {
       userId: socket.userId,
       pseudo: socket.userPseudo
     });
+  });
+
+  /**
+   * Événement: yjs-update
+   * Réception d'une mise à jour Yjs depuis un client
+   */
+  socket.on('yjs-update', async ({ noteId, update }) => {
+    const roomName = `note-${noteId}`;
+    
+    if (!socket.rooms.has(roomName)) {
+      console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}`);
+      return;
+    }
+
+    try {
+      // ✅ Broadcaster immédiatement aux autres clients pour réactivité temps réel
+      socket.to(roomName).emit('yjs-update', {
+        noteId,
+        update,
+        userId: socket.userId
+      });
+
+      // ✅ Sauvegarder en BDD avec merge (évite écrasement)
+      const yjsController = await import('./controllers/yjsController.js');
+      await yjsController.mergeYjsUpdate(noteId, new Uint8Array(update));
+
+      console.log(`📝 Yjs update sauvegardé pour note ${noteId} (size: ${update.length} bytes)`);
+
+    } catch (error) {
+      console.error('❌ Erreur yjs-update:', error);
+      socket.emit('error', { message: 'Erreur lors de la sauvegarde Yjs' });
+    }
+  });
+
+  /**
+   * Événement: yjs-sync-request
+   * Un client demande une synchronisation (ex: après reconnexion)
+   */
+  socket.on('yjs-sync-request', async ({ noteId, stateVector }) => {
+    const roomName = `note-${noteId}`;
+    
+    if (!socket.rooms.has(roomName)) {
+      console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}`);
+      return;
+    }
+
+    try {
+      // ✅ Charger l'état Yjs et calculer la différence
+      const yjsController = await import('./controllers/yjsController.js');
+      const diff = await yjsController.computeDiff(noteId, new Uint8Array(stateVector));
+
+      if (diff) {
+        // Envoyer uniquement la différence (optimisé)
+        socket.emit('yjs-sync-response', {
+          noteId,
+          update: Array.from(diff)
+        });
+
+        console.log(`🔄 Sync response envoyée pour note ${noteId} (size: ${diff.length} bytes)`);
+      } else {
+        // Pas de différence, client déjà à jour
+        socket.emit('yjs-sync-response', {
+          noteId,
+          update: []
+        });
+      }
+
+    } catch (error) {
+      console.error('❌ Erreur yjs-sync-request:', error);
+      socket.emit('error', { message: 'Erreur lors de la synchronisation Yjs' });
+    }
+  });
+
+  /**
+   * Événement: awareness-update
+   * Réception d'un état awareness (curseurs, sélections)
+   */
+  socket.on('awareness-update', ({ noteId, update }) => {
+    const roomName = `note-${noteId}`;
+    
+    console.log(`[awareness-update] ${socket.userPseudo} - noteId: ${noteId}, roomName: ${roomName}, rooms:`, Array.from(socket.rooms));
+    
+    if (!socket.rooms.has(roomName)) {
+      console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}, rooms actuelles:`, Array.from(socket.rooms));
+      return;
+    }
+
+    // Broadcaster l'awareness aux autres clients
+    socket.to(roomName).emit('awareness-update', {
+      noteId,
+      update
+    });
+
+    console.log(`👁️ Awareness update broadcasted pour note ${noteId}`);
+  });
+
+  /**
+   * Événement: requestUserList
+   * Un client demande la liste des utilisateurs connectés à une note
+   */
+  socket.on('requestUserList', async ({ noteId }) => {
+    const roomName = `note-${noteId}`;
+    
+    console.log(`[requestUserList] ${socket.userPseudo} demande la liste pour note ${noteId}`);
+    
+    if (!socket.rooms.has(roomName)) {
+      console.warn(`⚠️ User ${socket.userPseudo} pas dans room ${roomName}`);
+      return;
+    }
+
+    try {
+      // Récupérer tous les sockets dans la room
+      const socketsInRoom = await io.in(roomName).allSockets();
+      
+      // ✅ CORRECTION: Construire la liste des utilisateurs UNIQUES (dédoublonnage par userId)
+      const uniqueUsers = new Map();
+      for (const socketId of socketsInRoom) {
+        const s = io.sockets.sockets.get(socketId);
+        if (s && s.userId && s.userPseudo) {
+          uniqueUsers.set(s.userId, {
+            userId: s.userId,
+            pseudo: s.userPseudo
+          });
+        }
+      }
+      
+      const connectedUsers = Array.from(uniqueUsers.values());
+      
+      // Envoyer la liste uniquement au demandeur
+      socket.emit('userList', {
+        users: connectedUsers
+      });
+      
+      console.log(`[requestUserList] ✅ Liste envoyée: ${connectedUsers.length} utilisateur(s) unique(s) (${socketsInRoom.size} socket(s))`);
+    } catch (error) {
+      console.error('❌ Erreur lors de requestUserList:', error);
+    }
   });
 
   /**
@@ -401,9 +596,23 @@ async function handleUserLeave(socket, noteId) {
   // Quitter la room Socket.IO
   socket.leave(roomName);
 
-  // Compter les utilisateurs restants dans la room
+  // ✅ CORRECTION: Compter les utilisateurs UNIQUES restants (pas les sockets)
   const socketsInRoom = await io.in(roomName).allSockets();
-  const userCount = socketsInRoom.size;
+  
+  // Construire la liste des utilisateurs uniques
+  const uniqueUsers = new Map();
+  for (const socketId of socketsInRoom) {
+    const s = io.sockets.sockets.get(socketId);
+    if (s && s.userId && s.userPseudo) {
+      uniqueUsers.set(s.userId, {
+        userId: s.userId,
+        pseudo: s.userPseudo
+      });
+    }
+  }
+  
+  const connectedUsers = Array.from(uniqueUsers.values());
+  const userCount = connectedUsers.length;
   
   // Notifier les autres utilisateurs
   socket.to(roomName).emit('userLeft', {
@@ -411,6 +620,13 @@ async function handleUserLeave(socket, noteId) {
     pseudo: socket.userPseudo,
     userCount
   });
+
+  // ✅ Envoyer la liste mise à jour des utilisateurs restants
+  io.to(roomName).emit('userList', {
+    users: connectedUsers
+  });
+  
+  console.log(`[handleUserLeave] ${socket.userPseudo} a quitté ${roomName}, ${userCount} utilisateur(s) unique(s) restant(s) (${socketsInRoom.size} socket(s))`);
 }
 
 export { app, sessionMiddleware, httpServer, io };

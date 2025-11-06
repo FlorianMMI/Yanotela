@@ -22,7 +22,7 @@ export default function MobileFlashNoteButton() {
         <FlashNoteButton 
           isOpen={false}
           onClick={handleOpenFlashNote}
-          className="!p-0"
+          className="p-0"
         />
       </div>
     </>

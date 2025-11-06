@@ -1,23 +1,44 @@
 
 import { io, Socket } from 'socket.io-client';
+import type { YjsUpdateSerialized, YjsSyncResponse } from '@/type/Yjs';
 
 /**
  * Service singleton pour gérer la connexion Socket.IO
  * Gère la connexion unique, les rooms, et les événements de collaboration temps réel
+ * 
+ * ✅ INTÉGRATION YJS : Ce service transporte les updates Yjs via WebSocket
  */
 class SocketService {
   private socket: Socket | null = null;
   private currentNoteId: string | null = null;
+  private currentOnInit: ((data: any) => void) | null = null; // ✅ NOUVEAU: Préserver le callback
+  
+  // ✅ ANTI-PING-PONG: Cache des dernières modifications reçues par utilisateur
+  // Structure: { noteId: { userId: lastContent } }
+  private lastReceivedContent: Map<string, Map<number, string>> = new Map();
+  
+  // ✅ Cache du dernier contenu envoyé pour cette note
+  private lastSentContent: Map<string, string> = new Map();
 
   /**
    * Obtenir ou créer la connexion socket globale
+   * 🔥 PROTECTION SSR : Ne créer le socket QUE côté client (navigateur)
    */
-  private getOrCreateSocket(): Socket {
+  private getOrCreateSocket(): Socket | null {
+    // 🔥 CRITIQUE : Ne JAMAIS créer de socket pendant le SSR de Next.js
+    if (typeof window === 'undefined') {
+      console.warn('⚠️ Socket.IO désactivé côté serveur (SSR) - retour null');
+      return null;
+    }
+
     if (this.socket && this.socket.connected) {
       return this.socket;
     }
 
-    const SOCKET_URL = 'https://yanotela.fr';
+    
+    const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+    console.log('🔌 Initialisation connexion Socket.IO vers:', SOCKET_URL);
 
     this.socket = io(SOCKET_URL, {
       path: '/socket.io/',
@@ -27,18 +48,47 @@ class SocketService {
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
       timeout: 20000,
+      // ✅ AJOUT: Forcer l'envoi des credentials (cookies de session)
+      extraHeaders: {
+        'Access-Control-Allow-Credentials': 'true'
+      }
     });
 
     this.socket.on('connect', () => {
+      console.log('✅ Socket connecté, ID:', this.socket?.id);
       
+      // ✅ CORRECTION CRITIQUE: Re-joindre automatiquement la note après reconnexion
+      if (this.currentNoteId) {
+        console.log(`🔄 Reconnexion détectée, re-join de la note ${this.currentNoteId}`);
+        this.socket?.emit('joinNote', { noteId: this.currentNoteId });
+        
+        // ✅ Ré-écouter noteJoined avec le callback sauvegardé
+        if (this.currentOnInit) {
+          this.socket?.off('noteJoined');
+          this.socket?.once('noteJoined', (data: any) => {
+            console.log('✅ [Reconnexion] noteJoined reçu:', data);
+            this.currentOnInit?.(data);
+          });
+        }
+      }
     });
 
     this.socket.on('connect_error', (error) => {
       console.error('❌ Erreur connexion socket:', error);
+      console.error('Détails:', {
+        message: error.message,
+        description: (error as any).description,
+        context: (error as any).context
+      });
     });
 
     this.socket.on('disconnect', (reason) => {
-      
+      console.log('🔌 Socket déconnecté:', reason);
+    });
+
+    // ✅ DEBUG: Listener global pour userTyping
+    this.socket.on('userTyping', (data) => {
+      console.log('📥 [socketService DEBUG] Événement userTyping reçu:', data);
     });
 
     return this.socket;
@@ -46,95 +96,252 @@ class SocketService {
 
   /**
    * Rejoindre une note (room)
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
    */
   joinNote(noteId: string, onInit?: (data: any) => void) {
+    // 🔥 PROTECTION SSR
+    if (typeof window === 'undefined') {
+      console.warn('⚠️ joinNote() appelé côté serveur - ignoré');
+      return;
+    }
+
     const socket = this.getOrCreateSocket();
+    if (!socket) {
+      console.error('❌ Socket non disponible pour joinNote');
+      return;
+    }
+
+    console.log(`[socketService.joinNote] 🚀 Tentative de joinNote pour noteId: ${noteId}`);
+    console.log(`[socketService.joinNote] Socket connecté: ${socket.connected}, Socket ID: ${socket.id}`);
 
     // Si on change de note, quitter l'ancienne room
     if (this.currentNoteId && this.currentNoteId !== noteId) {
       socket.emit('leaveNote', { noteId: this.currentNoteId });
+      console.log('🚪 Quitte la note:', this.currentNoteId);
     }
 
     this.currentNoteId = noteId;
-
-    // Écouter l'initialisation de la note
-    if (onInit) {
-      socket.off('noteInit'); // Éviter les listeners multiples
-      socket.on('noteInit', onInit);
-    }
+    this.currentOnInit = onInit || null; // ✅ Sauvegarder le callback
 
     // Rejoindre la room
+    console.log('🚪 Émission événement joinNote avec noteId:', noteId);
     socket.emit('joinNote', { noteId });
     
+    // ✅ Écouter la confirmation - CORRECTION: c'est 'noteJoined' pas 'noteInit'
+    if (onInit) {
+      socket.off('noteJoined'); // Éviter les listeners multiples
+      socket.once('noteJoined', (data: any) => {
+        console.log('✅ [socketService] noteJoined reçu:', {
+          noteId: data.noteId,
+          userCount: data.userCount,
+          isReadOnly: data.isReadOnly
+        });
+        
+        // ✅ Émettre un événement DOM pour que d'autres composants puissent l'écouter
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('noteJoined', {
+            detail: {
+              noteId: data.noteId,
+              userCount: data.userCount,
+              isReadOnly: data.isReadOnly
+            }
+          }));
+        }
+        
+        // Appeler le callback pour que useYjsDocument puisse setIsReady(true)
+        onInit(data);
+      });
+    }
   }
 
   /**
-   * Quitter la note courante
+   * Écouter les événements du socket (générique)
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
+   */
+  on(event: string, callback: (...args: any[]) => void) {
+    // 🔥 PROTECTION SSR
+    if (typeof window === 'undefined') return;
+    
+    const socket = this.getOrCreateSocket();
+    if (!socket) return;
+    
+    socket.on(event, callback);
+  }
+
+  /**
+   * 🔥 Retirer un listener d'événement
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
+   */
+  off(event: string, callback?: (...args: any[]) => void) {
+    if (typeof window === 'undefined') return;
+    if (!this.socket) return;
+    if (callback) {
+      console.log(`[socketService.off] 🗑️ Suppression d'un listener spécifique pour: ${event}`);
+      this.socket.off(event, callback);
+    } else {
+      console.log(`[socketService.off] 🗑️ Suppression de TOUS les listeners pour: ${event}`);
+      this.socket.off(event);
+    }
+    
+    // Log du nombre de listeners restants
+    const remaining = this.socket.listeners(event).length;
+    console.log(`[socketService.off] 📊 Listeners restants pour ${event}: ${remaining}`);
+  }
+
+  /**
+   * Émettre un événement générique
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
+   */
+  emit(event: string, data: any) {
+    if (typeof window === 'undefined') return;
+    if (!this.socket || !this.socket.connected) {
+      console.error(`❌ Impossible d'émettre ${event}: socket non connecté`);
+      return;
+    }
+    this.socket.emit(event, data);
+  }
+
+  /**
+   * Quitter la note courante et nettoyer le cache
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
    */
   leaveNote() {
+    if (typeof window === 'undefined') return;
     if (!this.currentNoteId || !this.socket) return;
 
+    console.log(`🚪 Quitte la note: ${this.currentNoteId}`);
     this.socket.emit('leaveNote', { noteId: this.currentNoteId });
     
+    // ✅ Nettoyer le cache anti-ping-pong pour cette note
+    this.lastReceivedContent.delete(this.currentNoteId);
+    this.lastSentContent.delete(this.currentNoteId);
+    console.log('🧹 Cache anti-ping-pong nettoyé pour note:', this.currentNoteId);
+    
     this.currentNoteId = null;
+    this.currentOnInit = null; // ✅ Nettoyer le callback aussi
   }
 
   /**
    * Émettre une mise à jour du titre
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
    */
   emitTitleUpdate(noteId: string, titre: string) {
+    if (typeof window === 'undefined') return;
     if (!this.socket || !this.socket.connected) return;
     this.socket.emit('titleUpdate', { noteId, titre });
   }
 
   /**
-   * Émettre une mise à jour du contenu
+   * Émettre une mise à jour du contenu avec anti-ping-pong
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
    */
   emitContentUpdate(noteId: string, content: string) {
-    if (!this.socket || !this.socket.connected) return;
+    if (typeof window === 'undefined') return;
+    if (!this.socket || !this.socket.connected) {
+      console.error('❌ Impossible d\'émettre contentUpdate: socket non connecté', {
+        hasSocket: !!this.socket,
+        connected: this.socket?.connected
+      });
+      return;
+    }
+    
+    // ✅ ANTI-PING-PONG: Vérifier si c'est le même contenu qu'on a déjà envoyé
+    const lastSent = this.lastSentContent.get(noteId);
+    if (lastSent === content) {
+      console.log('� Contenu identique au dernier envoi, pas de broadcast (évite ping-pong)');
+      return;
+    }
+    
+    // ✅ ANTI-PING-PONG: Vérifier si c'est un contenu qu'on vient de recevoir d'un autre utilisateur
+    const receivedCache = this.lastReceivedContent.get(noteId);
+    if (receivedCache) {
+      for (const [userId, lastContent] of receivedCache.entries()) {
+        if (lastContent === content) {
+          console.log(`🚫 Contenu identique à celui reçu de l'utilisateur ${userId}, pas de renvoi (évite ping-pong)`);
+          return;
+        }
+      }
+    }
+    
+    console.log('�📤 Émission contentUpdate:', {
+      noteId,
+      contentLength: content.length,
+      socketId: this.socket.id,
+      currentNoteId: this.currentNoteId
+    });
+    
+    // ✅ Stocker le contenu envoyé dans le cache
+    this.lastSentContent.set(noteId, content);
+    
     this.socket.emit('contentUpdate', { noteId, content });
   }
 
   /**
    * Émettre la position du curseur
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
    */
   emitCursorUpdate(noteId: string, cursor: { line: number; column: number }) {
+    if (typeof window === 'undefined') return;
     if (!this.socket || !this.socket.connected) return;
     this.socket.emit('cursorUpdate', { noteId, cursor });
   }
 
   /**
    * Émettre une sélection de texte
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
    */
   emitSelectionUpdate(noteId: string, selection: { start: number; end: number }) {
+    if (typeof window === 'undefined') return;
     if (!this.socket || !this.socket.connected) return;
     this.socket.emit('selectionUpdate', { noteId, selection });
   }
 
   /**
    * Émettre l'état "typing" (utilisateur en train de taper)
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
    */
   emitUserTyping(noteId: string, isTyping: boolean) {
+    if (typeof window === 'undefined') return;
     if (!this.socket || !this.socket.connected) return;
+    console.log(`[socketService.emitUserTyping] 📤 Émission userTyping: noteId=${noteId}, isTyping=${isTyping}`);
     this.socket.emit('userTyping', { noteId, isTyping });
   }
 
   /**
    * Écouter les mises à jour du titre
+   * ✅ CORRECTION: Ne pas supprimer les autres listeners
    */
   onTitleUpdate(callback: (data: { noteId: string; titre: string; userId: number; pseudo: string }) => void) {
     if (!this.socket) return;
-    this.socket.off('titleUpdate'); // Éviter les listeners multiples
+    // ✅ Ne PAS faire .off() ici pour permettre plusieurs listeners
+    console.log('[socketService.onTitleUpdate] 📝 Ajout d\'un listener titleUpdate');
     this.socket.on('titleUpdate', callback);
+    
+    const listenerCount = this.socket.listeners('titleUpdate').length;
+    console.log(`[socketService.onTitleUpdate] 📊 Total listeners titleUpdate: ${listenerCount}`);
   }
 
   /**
-   * Écouter les mises à jour du contenu
+   * Écouter les mises à jour du contenu avec cache anti-ping-pong
    */
   onContentUpdate(callback: (data: { noteId: string; content: string; userId: number; pseudo: string }) => void) {
     if (!this.socket) return;
     this.socket.off('contentUpdate'); // Éviter les listeners multiples
-    this.socket.on('contentUpdate', callback);
+    
+    this.socket.on('contentUpdate', (data: { noteId: string; content: string; userId: number; pseudo: string }) => {
+      // ✅ ANTI-PING-PONG: Stocker le contenu reçu dans le cache par utilisateur
+      if (!this.lastReceivedContent.has(data.noteId)) {
+        this.lastReceivedContent.set(data.noteId, new Map());
+      }
+      
+      const noteCache = this.lastReceivedContent.get(data.noteId)!;
+      noteCache.set(data.userId, data.content);
+      
+      console.log(`📥 Contenu reçu de ${data.pseudo} (${data.userId}) stocké dans cache anti-ping-pong`);
+      
+      // Appeler le callback original
+      callback(data);
+    });
   }
 
   /**
@@ -184,11 +391,17 @@ class SocketService {
 
   /**
    * Écouter quand un utilisateur tape
+   * ✅ CORRECTION: Ne pas supprimer les autres listeners avec .off()
    */
   onUserTyping(callback: (data: { noteId: string; isTyping: boolean; userId: number; pseudo: string }) => void) {
     if (!this.socket) return;
-    this.socket.off('userTyping');
+    // ✅ Ne PAS faire .off() ici, sinon on supprime les listeners des autres composants
+    console.log('[socketService.onUserTyping] 📝 Ajout d\'un listener userTyping');
     this.socket.on('userTyping', callback);
+    
+    // Log du nombre total de listeners pour cet événement
+    const listenerCount = this.socket.listeners('userTyping').length;
+    console.log(`[socketService.onUserTyping] 📊 Total listeners userTyping: ${listenerCount}`);
   }
 
   /**
@@ -212,8 +425,119 @@ class SocketService {
    * Demander la liste des utilisateurs pour une note
    */
   requestUserList(noteId: string) {
+    if (typeof window === 'undefined') return;
     if (!this.socket || !this.socket.connected) return;
     this.socket.emit('requestUserList', { noteId });
+  }
+
+  // ==========================================
+  // 🔥 NOUVEAUX ÉVÉNEMENTS YJS
+  // ==========================================
+
+  /**
+   * 📤 Émettre un update Yjs vers les autres utilisateurs
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
+   * 
+   * @param update - Update Yjs sérialisé (Uint8Array converti en Array)
+   */
+  emitYjsUpdate(update: YjsUpdateSerialized): void {
+    if (typeof window === 'undefined') return;
+    if (!this.socket || !this.socket.connected) {
+      console.error('❌ Socket non connecté, impossible d\'émettre yjs-update');
+      return;
+    }
+
+    console.log('📤 [YJS] Émission update Yjs:', {
+      noteId: update.noteId,
+      updateSize: update.update.length,
+      timestamp: update.timestamp,
+    });
+
+    this.socket.emit('yjs-update', update);
+  }
+
+  /**
+   * 📥 Écouter les updates Yjs des autres utilisateurs
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
+   * 
+   * @param callback - Fonction appelée à chaque update reçu
+   */
+  onYjsUpdate(callback: (update: YjsUpdateSerialized) => void): void {
+    if (typeof window === 'undefined') return;
+    if (!this.socket) return;
+
+    // Éviter les listeners multiples
+    this.socket.off('yjs-update');
+
+    this.socket.on('yjs-update', (data: YjsUpdateSerialized) => {
+      console.log('📥 [YJS] Update Yjs reçu:', {
+        noteId: data.noteId,
+        updateSize: data.update.length,
+        fromUser: data.pseudo || 'inconnu',
+      });
+
+      callback(data);
+    });
+  }
+
+  /**
+   * 🔄 Demander une synchronisation complète de l'état Yjs
+   * Utilisé au reconnect ou à la première connexion
+   * 🔥 PROTECTION SSR : Ne rien faire côté serveur
+   * 
+   * @param noteId - ID de la note à synchroniser
+   * @param stateVector - State vector Yjs actuel (optionnel)
+   */
+  requestYjsSync(noteId: string, stateVector?: number[]): void {
+    if (typeof window === 'undefined') return;
+    if (!this.socket || !this.socket.connected) {
+      console.error('❌ Socket non connecté, impossible de demander sync Yjs');
+      return;
+    }
+
+    console.log('🔄 [YJS] Demande de synchronisation pour note:', noteId);
+
+    this.socket.emit('yjs-sync-request', {
+      noteId,
+      stateVector: stateVector || [],
+    });
+  }
+
+  /**
+   * 📦 Écouter la réponse de synchronisation Yjs
+   * Le serveur renvoie les updates manquants ou l'état complet
+   * 
+   * @param callback - Fonction appelée avec les données de sync
+   */
+  onYjsSyncResponse(callback: (response: YjsSyncResponse & { noteId: string }) => void): void {
+    if (!this.socket) return;
+
+    this.socket.off('yjs-sync-response');
+
+    this.socket.on('yjs-sync-response', (data: YjsSyncResponse & { noteId: string }) => {
+      console.log('📦 [YJS] Réponse de synchronisation reçue:', {
+        noteId: data.noteId,
+        missingUpdates: data.missingUpdates?.length || 0,
+        hasFullState: !!data.fullState,
+        success: data.success,
+      });
+
+      callback(data);
+    });
+  }
+
+  /**
+   * 🔄 Écouter les demandes de sync (côté serveur envoie l'état initial)
+   */
+  onYjsInitialState(callback: (data: { noteId: string; yjsState: number[] }) => void): void {
+    if (!this.socket) return;
+
+    this.socket.off('yjs-initial-state');
+
+    this.socket.on('yjs-initial-state', (data) => {
+      console.log('🔄 [YJS] État initial reçu pour note:', data.noteId);
+      callback(data);
+    });
   }
 
   /**
@@ -227,6 +551,15 @@ class SocketService {
     this.socket.off('userJoined');
     this.socket.off('userLeft');
     this.socket.off('error');
+    this.socket.off('cursorUpdate');
+    this.socket.off('selectionUpdate');
+    this.socket.off('userTyping');
+    this.socket.off('userList');
+    // 🔥 Nettoyer les listeners Yjs
+    this.socket.off('yjs-update');
+    this.socket.off('yjs-sync-request');
+    this.socket.off('yjs-sync-response');
+    this.socket.off('yjs-initial-state');
   }
 
   /**

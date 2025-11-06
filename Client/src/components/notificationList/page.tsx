@@ -99,7 +99,7 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
             {/* Indicateur rouge quand une notification est présente */}
             {shouldShowRedIndicator && (
                 <div className={`absolute right-4 z-30 pointer-events-none ${isOpenSideBar ? 'top-7' : 'top-4'}`}>
-                    <div className={` w-3 h-3 bg-red-500 rounded-full animate-pulse`}></div>
+                    <div className={` w-3 h-3 bg-dangerous-500 rounded-full animate-pulse`}></div>
                 </div>
             )}
 
@@ -122,7 +122,7 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
 
                 {/* Dropdown */}
                 {open && (
-                    <div className=" absolute md:left-0 left-auto right-0 md:right-auto  top-full mt-2 sm:mt-3 w-[18.5rem] max-w-[calc(100vw-3rem)] sm:w-80 sm:max-h-[calc(100vh-10rem)] z-100">
+                    <div className=" absolute -left-5 top-full mt-2 sm:mt-3 w-[18.5rem] max-w-[calc(100vw-3rem)] sm:w-80 sm:max-h-[calc(100vh-10rem)] z-100">
                         <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[calc(100vh-10rem)]">
                             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                                 <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
@@ -155,7 +155,7 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
 
                             <div className="px-4 py-3 border-t border-gray-100 flex justify-end bg-gray-50">
                                 <button
-                                    className="px-4 py-2 bg-[#882626] text-white rounded-lg hover:bg-[#792121] transition-colors shadow-sm"
+                                    className="px-4 py-2 bg-primary text-white rounded-lg transition-colors shadow-sm"
                                     onClick={fetchNotifications}
                                     aria-label="Rafraîchir les notifications"
                                 >

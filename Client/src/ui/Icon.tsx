@@ -74,8 +74,38 @@ const Icon = ({ name, className = "", size = 20, width, height, strokeWidth }: I
         justifyContent: 'center',
         lineHeight: 0
       }}
-      dangerouslySetInnerHTML={{ __html: svgContent }}
-    />
+    >
+      {(() => {
+        const InlineSvg: React.FC<{ content: string }> = ({ content }) => {
+          const elRef = React.useRef<HTMLDivElement | null>(null);
+
+          React.useEffect(() => {
+            const container = elRef.current;
+            if (!container) return;
+            container.replaceChildren();
+            if (!content) return;
+
+            try {
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(content, 'image/svg+xml');
+              const svgEl = doc.documentElement;
+              const node = document.importNode(svgEl, true);
+              container.appendChild(node);
+            } catch (err) {
+              console.error('Failed to render SVG content', err);
+            }
+
+            return () => {
+              if (container) container.replaceChildren();
+            };
+          }, [content]);
+
+          return <div ref={elRef} style={{ width: '100%', height: '100%' }} aria-hidden />;
+        };
+
+        return <InlineSvg content={svgContent} />;
+      })()}
+    </div>
   );
 };
 

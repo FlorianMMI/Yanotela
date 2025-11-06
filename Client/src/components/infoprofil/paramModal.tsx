@@ -1,11 +1,13 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
+import ThemeSelector from '../theme/ThemeSelector';
+import PWAInstallButton from '@/ui/PWAInstallbutton';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -15,6 +17,14 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [isWebappInstalled, setIsWebappInstalled] = useState<boolean>(() => {
+        try {
+            return !!localStorage.getItem('webappInstalled');
+        } catch (e) {
+            return false;
+        }
+    });
 
     const handleDeleteAccount = () => {
         setShowDeleteConfirm(true);
@@ -51,6 +61,8 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     const handleCancelDelete = () => {
         setShowDeleteConfirm(false);
     };
+
+   
     
     return (
         <>
@@ -90,21 +102,47 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                             className="absolute top-4 right-4 cursor-pointer text-clrprincipal hover:text-color-primary-hover transition-all duration-300"
                         />
                     </div>
-
                     {/* Contenu du modal */}
                     <div className='flex flex-col justify-end h-full w-fill p-2 relative mt-10'>
+                    {/* Selectionner un theme  */}
+                    <ThemeSelector />
+
+
+                    <section className="flex flex-col gap-4">
+
+
+                    
+                        {/* Bouton Télécharger / Installer la webapp */}
+                        <div className="">
+                            <PWAInstallButton />
+                        </div>
+
+                        <hr className="border-t border-primary w-full" />
+
+
+
+                        {/* Boutton corbeille */}
+                        <button
+                            className=" px-4 py-2 bg-zinc-100 text-clrprincipal font-bold rounded hover:bg-zinc-200 hover:shadow-lg transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+                            onClick={() => router.push('/corbeille')}
+                            title='Voir les notes supprimées'
+                        >
+                            <Icon name="trash" size={20} />
+                            Corbeille
+                        </button>
 
                         {/* Boutton suppression compte */}
                         <button
-                            className="mt-4 px-4 py-2 bg-primary text-white font-bold rounded hover:bg-primary-hover hover:shadow-lg transition-all duration-300 cursor-pointer"
+                            className="px-4 py-2 bg-primary text-white font-bold rounded hover:bg-primary-hover hover:shadow-lg transition-all duration-300 cursor-pointer"
                             onClick={handleDeleteAccount}
                             title='Supprimer mon compte de façon définitive'
                         >
                             Supprimer mon compte
                         </button>
-
+                    </section>
                     {/* Autres paramètres peuvent être ajoutés ici */}
                     </div>
+                
 
                 </div>
             </motion.div>

@@ -111,7 +111,7 @@ Note: id, Titre, Content, authorId, ModifiedAt
 
 ## Personnalisation UI
 
-- Couleurs : `--rouge-fonce: #882626`, `--background: #E9EBDB`
+- Couleurs : `--rouge--600: #882626`, `--background: #E9EBDB`
 - Police : Gantari (primaire), Geologica (secondaire)
 - Motif de fond : `/fond.jpg` (opacité)
 

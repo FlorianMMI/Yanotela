@@ -104,7 +104,7 @@ export default function ConfirmPassword({
         <p className="text-clrprincipal text-sm font-bold block">
           Confirmer votre mot de passe
         </p>
-        <p className={`text-red-500 text-xs font-light ${!passwordMismatch ? 'hidden' : ''}`}>
+        <p className={`text-dangerous-500 text-xs font-light ${!passwordMismatch ? 'hidden' : ''}`}>
           Vos mots de passe ne correspondent pas.
         </p>
         <div className="self-stretch p-2.5 bg-clrsecondaire rounded-[10px] flex justify-between items-center overflow-hidden border-primary border-2">
