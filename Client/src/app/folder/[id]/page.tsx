@@ -7,7 +7,7 @@ import { Note } from "@/type/Note";
 import NoteList from "@/components/noteList/NoteList";
 import FolderMore from "@/components/folderMore/FolderMore";
 import { GetFolderById, UpdateFolder, DeleteFolder, CreateNote } from "@/loader/loader";
-import FolderDeleteModal from "@/ui/folder/FolderDeleteModal";
+
 import ReturnButton from "@/ui/returnButton";
 import Icon from "@/ui/Icon";
 
@@ -26,7 +26,6 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [notes, setNotes] = useState<Note[]>([]);
     const [totalNotes, setTotalNotes] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [showFolderMore, setShowFolderMore] = useState(false);
 
     useEffect(() => {
@@ -104,17 +103,9 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     };
 
     const handleDeleteFolder = () => {
-        setIsDeleteModalOpen(true);
-    };
-
-    const confirmDeleteFolder = async () => {
-        const response = await DeleteFolder(id);
-
-        if (response.success) {
-            router.push("/folder");
-        } else {
-            alert(response.error || "Erreur lors de la suppression du dossier");
-        }
+        // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
+        // Rediriger vers la liste des dossiers
+        router.push("/folder");
     };
 
     const handleCreateNote = async () => {
@@ -153,14 +144,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
     return (
         <div className="h-full w-full flex flex-col p-2.5 relative">
-            {/* Modale de confirmation de suppression */}
-            {isDeleteModalOpen && (
-                <FolderDeleteModal
-                    folderName={folder?.Nom || "ce dossier"}
-                    onConfirm={confirmDeleteFolder}
-                    onCancel={() => setIsDeleteModalOpen(false)}
-                />
-            )}
+           
 
             {/* Liste des notes dans le dossier - Plein écran */}
             <div
@@ -181,13 +165,14 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                             />
                         </button>
                         {showFolderMore && (
-                            <div className="absolute right-0 mt-2 z-20">
+                            <div className="absolute right-0 mt-2 z-100">
                                 <FolderMore
                                     folder={folder as any}
                                     folderId={id}
                                     folderName={folder?.Nom || ""}
                                     folderDescription={folder?.Description || ""}
                                     folderColor={folder?.CouleurTag || ""}
+                                    noteCount={notes.length}
                                     onUpdate={handleUpdateFolder}
                                     onDelete={handleDeleteFolder}
                                     onClose={() => setShowFolderMore(false)}
