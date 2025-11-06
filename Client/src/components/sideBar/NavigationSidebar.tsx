@@ -101,7 +101,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       >
         <Icon
           name={isopen ? `logo` : `logoIcon`}
-          className="text-clrprincipal stroke-25"
+          className="text-primary stroke-25"
           width={isopen ? 150 : 25}
           height={isopen ? 50 : 25}
         />

@@ -37,7 +37,8 @@ export const userController = {
                     pseudo: true,
                     prenom: true,
                     nom: true,
-                    email: true
+                    email: true,
+                    theme: true
                 }
             });
 
@@ -292,6 +293,47 @@ export const userController = {
         } catch (error) {
             console.error('Erreur updateUserInfo:', error);
             return res.status(500).json({ message: 'Erreur lors de la mise à jour des informations utilisateur', error: error.message });
+        }
+    },
+
+    // Mettre à jour le thème de l'utilisateur
+    updateUserTheme: async (req, res) => {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: 'Utilisateur non authentifié' });
+        }
+
+        const userId = parseInt(req.session.userId, 10);
+        const { theme } = req.body;
+
+        // Valider le thème
+        const validThemes = ['light', 'dark', 'blue', 'green', 'purple'];
+        if (!theme || !validThemes.includes(theme)) {
+            return res.status(400).json({ 
+                message: 'Thème invalide', 
+                validThemes 
+            });
+        }
+
+        try {
+            const updatedUser = await prisma.user.update({
+                where: { id: userId },
+                data: { theme },
+                select: {
+                    id: true,
+                    theme: true
+                }
+            });
+
+            return res.status(200).json({ 
+                success: true,
+                theme: updatedUser.theme 
+            });
+        } catch (error) {
+            console.error('Erreur updateUserTheme:', error);
+            return res.status(500).json({ 
+                message: 'Erreur lors de la mise à jour du thème', 
+                error: error.message 
+            });
         }
     }
 

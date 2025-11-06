@@ -56,11 +56,11 @@ export default function InputModified({
         <p className="justify-start text-clrprincipal w-fit font-bold text-base text-nowrap">
           {name}{type==="pseudo" ? "*" : " "}:
         </p>
-        {type==="pseudo" ? <span className="text-gray-500 text-xs font-light text-start">*Doit être unique</span> : " "}
+        {type==="pseudo" ? <span className="text-gray-400 text-xs font-light text-start">*Doit être unique</span> : " "}
       </div>
       {
         type === "email" ?
-        <p className="flex contain-content w-full md:w-1/2 px-3 py-3 md:py-2  rounded-lg text-clrprincipal  border-gray-300 cursor-not-allowed text-base md:text-sm">
+        <p className="flex contain-content w-full md:w-1/2 px-3 py-3 md:py-2  rounded-lg text-clrprincipal border-gray-300 cursor-not-allowed text-base md:text-sm">
           {
             defaultValue.length > 20 ?
             defaultValue.split('@')[0].slice(0, 2) + '...' + defaultValue.split('@')[0].slice(-2) + '@' + defaultValue.split('@')[1]
@@ -81,7 +81,7 @@ export default function InputModified({
             className={`w-full px-2 py-1 md:px-3 md:py-2 border-2 rounded-lg text-clrprincipal text-base md:text-sm transition-all duration-300 ${
               isEditing
                 ? "bg-clrsecondaire border-primary focus:ring-2 focus:ring-primary focus:border-transparent"
-                : "bg-gray-200 border-gray-300  cursor-not-allowed"
+                : "bg-grisClair border-gray-300  cursor-not-allowed"
             }`}
           />
           <button

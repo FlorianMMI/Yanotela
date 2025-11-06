@@ -155,7 +155,7 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
 
                             <div className="px-4 py-3 border-t border-gray-100 flex justify-end bg-gray-50">
                                 <button
-                                    className="px-4 py-2 bg-dangerous-800 text-white rounded-lg hover:bg-dangerous-700 transition-colors shadow-sm"
+                                    className="px-4 py-2 bg-primary text-white rounded-lg transition-colors shadow-sm"
                                     onClick={fetchNotifications}
                                     aria-label="Rafraîchir les notifications"
                                 >

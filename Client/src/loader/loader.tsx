@@ -154,6 +154,7 @@ interface AuthResponse {
     message?: string;
     error?: string;
     errors?: Array<{ msg: string }>;
+    theme?: string; // Thème de l'utilisateur
 }
 
 export async function Login(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -170,6 +171,28 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
         });
 
         if (response.ok) {
+            // Récupérer les informations utilisateur pour obtenir le thème
+            try {
+                const userInfoResponse = await fetch(`${apiUrl}/user/info`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                });
+
+                if (userInfoResponse.ok) {
+                    const userData = await userInfoResponse.json();
+                    return { 
+                        success: true, 
+                        message: 'Connexion réussie',
+                        theme: userData.theme 
+                    };
+                }
+            } catch (userInfoError) {
+                console.error('Erreur lors de la récupération du thème:', userInfoError);
+            }
+            
             return { success: true, message: 'Connexion réussie' };
         } else {
             const errorData = await response.json();
@@ -323,6 +346,7 @@ interface InfoUserResponse {
         nom?: string;
         email: string;
         noteCount?: number; // Nombre de notes de l'utilisateur
+        theme?: string; // Thème de l'utilisateur
     };
 }
 
