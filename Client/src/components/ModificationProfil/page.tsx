@@ -150,7 +150,7 @@ export default function ModificationProfil() {
   return (
     <>
       {pageLoading ? (
-        <div className="p-4 flex justify-center items-center min-h-screen md:min-h-full">
+        <div className="p-4 flex justify-center items-center min-h-full md:min-h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (

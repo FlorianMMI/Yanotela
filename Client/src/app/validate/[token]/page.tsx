@@ -59,7 +59,7 @@ export default function ValidatePage() {
   }, [params.token, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-full flex items-center justify-center">
       <MobileFlashNoteButton />
       
       <div className="max-w-md w-full">
