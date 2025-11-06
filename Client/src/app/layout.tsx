@@ -1,6 +1,7 @@
 import "./globals.css";
 import React from "react";
 import DesktopLayout from "@/components/layout/DesktopLayout";
+import ThemeClientProvider from "@/components/theme/ThemeClientProvider";
 
 export const metadata = {
   title: "Yanotela - Notes collaboratives",
@@ -16,10 +17,12 @@ export default function RootLayout({
 
   return (
     <html lang="fr" className="h-full">
-      <body className="antialiased h-screen bg-background">
+      <body className="antialiased h-dvh bg-background">
+        <ThemeClientProvider>
         <DesktopLayout>
           {children}
         </DesktopLayout>
+        </ThemeClientProvider>
       </body>
     </html>
   );

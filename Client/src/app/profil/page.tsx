@@ -1,12 +1,8 @@
 "use client";
 import React from "react";
-import InfoProfil from "@/components/infoprofil/page";
-import Image from "next/image";
 import { GetNotes, InfoUser, GetFolders } from "@/loader/loader";
 import { useEffect, useState } from "react";
 import Logout from "@/ui/logout";
-import TotalNotes from "@/ui/note/totalNotes";
-import TotalFolders from "@/ui/folder/totalFolders";
 import Icons from "@/ui/Icon";
 import ModificationProfil from "@/components/ModificationProfil/page";
 import ParamModal from "@/components/infoprofil/paramModal";
@@ -14,7 +10,6 @@ import { AnimatePresence } from "motion/react";
 // import Notification from "@/ui/notification";
 import NotificationList from "@/components/notificationList/page";
 import ReturnButton from "@/ui/returnButton";
-import { useTheme, ThemeType } from "@/hooks/useTheme";
 
 interface UserInfo {
   id: number;
@@ -31,7 +26,6 @@ export default function Profil() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isParamModalOpen, setIsParamModalOpen] = useState(false);
-  const { loadThemeFromUser } = useTheme();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -40,11 +34,6 @@ export default function Profil() {
 
         if (response.success && response.user) {
           setUserInfo(response.user);
-          
-          // Charger le thème de l'utilisateur depuis la base de données
-          if (response.user.theme) {
-            loadThemeFromUser(response.user.theme as ThemeType);
-          }
         } else {
           setError(
             response.error || "Erreur lors de la récupération des informations"

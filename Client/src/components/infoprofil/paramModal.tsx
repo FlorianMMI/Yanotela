@@ -6,7 +6,7 @@ import Icon from '@/ui/Icon';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
-import ThemeSelector from '../theme/themeSelector';
+import ThemeSelector from '../theme/ThemeSelector';
 import PWAInstallButton from '@/ui/PWAInstallbutton';
 
 interface ParamModalProps {
