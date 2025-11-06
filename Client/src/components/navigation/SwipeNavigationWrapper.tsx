@@ -63,7 +63,7 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
 
   return (
     <div
-      className="min-h-screen w-full touch-pan-y"
+      className="min-h-full w-full touch-pan-y"
       {...swipeHandlers}
       style={{
         // Prévenir le zoom sur mobile lors du double tap

@@ -30,7 +30,7 @@ export default function ErrorFetch({ type = "fetch" }: ErrorFetchProps) {
 
     return (
         <motion.div
-            className="flex flex-col items-center justify-center min-h-screen w-full"
+            className="flex flex-col items-center justify-center min-h-full w-full"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
