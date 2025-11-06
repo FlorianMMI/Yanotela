@@ -623,7 +623,7 @@ export async function GetNotifications(): Promise<{ success: boolean; notes?: an
     }
 }
 
-export async function AcceptNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+export async function AcceptNotification(invitationId: string): Promise<{ success: boolean; message?: string; error?: string; noteId?: string }> {
     try {
         const response = await fetch(`${apiUrl}/notification/accept/${invitationId}`, {
             method: 'POST',
@@ -635,7 +635,7 @@ export async function AcceptNotification(invitationId: string): Promise<{ succes
 
         if (response.ok) {
             const data = await response.json().catch(() => ({}));
-            return { success: true, message: data.message };
+            return { success: true, message: data.message, noteId: data.noteId };
         } else {
             const errorData = await response.json().catch(() => ({}));
             return { success: false, error: errorData.error || 'Erreur lors de l\'acceptation de l\'invitation' };

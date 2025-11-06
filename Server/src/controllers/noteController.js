@@ -363,7 +363,7 @@ export const noteController = {
           .json({ message: "Invitation non trouvée ou déjà acceptée" });
       }
 
-      res.status(200).json({ message: "Invitation acceptée avec succès" });
+      res.status(200).json({ message: "Invitation acceptée avec succès", noteId: id });
     } catch (error) {
       console.error("Erreur lors de l'acceptation de l'invitation:", error);
       res

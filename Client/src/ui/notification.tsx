@@ -16,11 +16,18 @@ export default function Notification({ id, title, author, onNotificationUpdate, 
         // prevent parent click handlers if any
         event?.stopPropagation();
         try {
-            await AcceptNotification(id);
-            // Appeler le callback pour rafraîchir la liste
-            onNotificationUpdate?.();
-            // Déclencher la mise à jour globale des notifications
-            refreshNotifications();
+            const result = await AcceptNotification(id);
+            if (result.success && result.noteId) {
+                // Déclencher la mise à jour globale des notifications
+                refreshNotifications();
+                // Redirect to the note
+                window.location.href = `/notes/${result.noteId}`;
+            } else {
+                // Appeler le callback pour rafraîchir la liste même en cas d'erreur
+                onNotificationUpdate?.();
+                // Déclencher la mise à jour globale des notifications
+                refreshNotifications();
+            }
         } catch (error) {
             console.error("Erreur lors de la mise à jour de la notification:", error);
         }
