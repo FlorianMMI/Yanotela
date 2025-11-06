@@ -3,9 +3,8 @@
   "short_name": "Yanotela",
   "description": "Yanotela est une application de prise de notes collaborative en temps réel.",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "var(--clr-primary)",
   "orientation": "portrait",
   "icons": [
     {
