@@ -71,7 +71,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
         {/* Folders Grid */}
         {!isLoading && folders.map((folder) => (
-          <Folder key={folder.id} folder={folder} />
+          <Folder key={folder.id} folder={folder} onFolderUpdated={onFolderCreated} />
         ))}
       </div>
     </main>

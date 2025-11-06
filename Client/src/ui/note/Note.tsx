@@ -1,38 +1,123 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Note as NoteType } from '@/type/Note';
 import { motion } from 'motion/react';
+import NoteMore from '@/components/noteMore/NoteMore';
 
 interface NoteProps {
   note: NoteType;
+  onNoteUpdated?: () => void; // Callback pour rafraîchir la liste après modification/suppression
 }
 
-export default function Note({ note }: NoteProps) {
+export default function Note({ note, onNoteUpdated }: NoteProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const [showMoreModal, setShowMoreModal] = useState(false);
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+  const noteRef = useRef<HTMLDivElement>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const handleNoteClick = () => {
+  // Vérifier si on est dans la corbeille
+  const isInTrash = pathname?.includes('/trash') || pathname?.includes('/corbeille');
+
+  const handleNoteClick = (e: React.MouseEvent) => {
+    // Ne pas naviguer si le modal est ouvert
+    if (showMoreModal) {
+      e.preventDefault();
+      return;
+    }
     router.push(`/notes/${note.id}`);
   };
 
-  // ✅ Fonction pour extraire le texte au cas où le loader n'aurait pas fonctionné
-  const getDisplayContent = (): string => {
-    if (!note.Content) return 'Contenu vide';
-    
-    // Si c'est déjà du texte, le retourner
-    if (typeof note.Content === 'string') {
-      // Vérifier si c'est du JSON stringifié
-      if (note.Content.startsWith('{') || note.Content.startsWith('[')) {
-        try {
-          const parsed = JSON.parse(note.Content);
-          
-          // Si c'est un objet Lexical, extraire le texte
-          if (parsed.root && parsed.root.children) {
-            const extractText = (node: any): string => {
-              if (!node) return '';
-              if (node.type === 'text' && node.text) return node.text;
-              if (node.children && Array.isArray(node.children)) {
-                return node.children.map((child: any) => extractText(child)).join(' ');
+  const openContextMenu = (clientX: number, clientY: number) => {
+    if (isInTrash) return;
+
+    // Calculer la position du modal par rapport à l'élément
+    if (noteRef.current) {
+      const rect = noteRef.current.getBoundingClientRect();
+      
+      // Positionner le modal juste en dessous de la note
+      let x = rect.left;
+      let y = rect.bottom + 8; // 8px d'espacement
+
+      // Vérifier si le modal dépasse de l'écran
+      const modalWidth = 280; // Largeur réduite du modal
+      const modalHeight = 300; // Hauteur estimée du modal
+
+      // Ajuster horizontalement si ça dépasse à droite
+      if (x + modalWidth > window.innerWidth) {
+        x = window.innerWidth - modalWidth - 16;
+      }
+
+      // Ajuster verticalement si ça dépasse en bas
+      if (y + modalHeight > window.innerHeight) {
+        y = rect.top - modalHeight - 8; // Afficher au-dessus
+      }
+
+      setModalPosition({ x, y });
+      setShowMoreModal(true);
+    }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openContextMenu(e.clientX, e.clientY);
+  };
+
+  // Support tactile : maintien appuyé (long press)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (isInTrash) return;
+
+    longPressTimer.current = setTimeout(() => {
+      const touch = e.touches[0];
+      openContextMenu(touch.clientX, touch.clientY);
+      // Vibration pour retour haptique sur mobile
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
+    }, 500); // 500ms pour le long press
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleTouchMove = () => {
+    // Annuler le long press si l'utilisateur déplace son doigt
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowMoreModal(false);
+  };
+
+  // Fonction pour render le contenu de manière sécurisée
+  const renderContent = () => {
+    try {
+      if (typeof note.Content === 'string') {
+        return <p>{note.Content}</p>;
+      }
+      
+      // Vérifier que le contenu a la structure attendue
+      if (note.Content && typeof note.Content === 'object' && 'root' in note.Content) {
+        const content = note.Content as any;
+        if (content.root && Array.isArray(content.root.children)) {
+          return content.root.children.map((child: any, childIndex: number) => (
+            <div key={`child-${childIndex}`} id={`child-${childIndex}`}>
+              {
+                Array.isArray(child.children) && child.children.map((grandChild: any, grandChildIndex: number) => (
+                  <p key={`child-${childIndex}-grandChild-${grandChildIndex}`} id={`paragraph-${childIndex}-${grandChildIndex}`}>
+                    {grandChild.text || ''}
+                  </p>
+                ))
               }
               if (node.type === 'image') return '[Image]';
               return '';
@@ -74,13 +159,18 @@ export default function Note({ note }: NoteProps) {
   };
 
   return (
-    
+    <>
     <motion.div 
+    ref={noteRef}
     whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)"}}
     whileTap={{ scale: 1 }}
     
       className="bg-fondcardNote rounded-xl shadow-sm border border-clrsecondaire cursor-pointer group overflow-hidden w-full h-[125px] md:w-65 md:h-50"
       onClick={handleNoteClick}
+      onContextMenu={handleContextMenu}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
     >
 
       {/* Header - Titre et collaborateurs avec fond rouge */}
@@ -132,5 +222,40 @@ export default function Note({ note }: NoteProps) {
       </div>
     </motion.div>
 
+    {/* Modal NoteMore - affiché en mode contextuel réduit */}
+    {showMoreModal && (
+      <>
+        {/* Overlay transparent pour fermer le modal */}
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={handleCloseModal}
+        />
+        {/* Modal positionné */}
+        <div 
+          className="fixed z-50"
+          style={{ 
+            left: `${modalPosition.x}px`, 
+            top: `${modalPosition.y}px`,
+            maxHeight: 'calc(100vh - 100px)'
+          }}
+        >
+          <div className="context-menu-compact">
+            <NoteMore 
+              noteId={note.id} 
+              onClose={handleCloseModal}
+              onNoteUpdated={() => {
+                // Appeler le callback parent pour rafraîchir la liste
+                if (onNoteUpdated) {
+                  onNoteUpdated();
+                }
+                // Déclencher un événement pour rafraîchir la liste des notes
+                window.dispatchEvent(new Event('auth-refresh'));
+              }}
+            />
+          </div>
+        </div>
+      </>
+    )}
+    </>
   );
 }
