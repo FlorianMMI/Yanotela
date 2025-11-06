@@ -268,8 +268,7 @@ export default function FlashNoteEditor() {
               Mode hors ligne
             </h3>
             <p className="text-xs text-blue">
-              Vos notes sont automatiquement enregistrées localement sur votre appareil. 
-              Pour synchroniser vos notes en ligne et y accéder depuis n'importe où, 
+              Les flashnotes sont temporaires. Pour les conserver de façon permanente,
               <button 
                 onClick={() => window.location.href = '/login'} 
                 className="underline font-medium hover:text-info-100 ml-1"
