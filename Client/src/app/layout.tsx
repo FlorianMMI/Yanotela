@@ -8,6 +8,7 @@ export const metadata = {
   title: "Yanotela - Notes collaboratives",
   description: "Application de prise de notes collaborative",
   manifest: "/manifest.json",
+  viewport: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
 };
 
 export const viewport = {
