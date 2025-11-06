@@ -23,8 +23,13 @@ import { motion } from "motion/react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
-import CollaborationPlugin from "@/components/collaboration/CollaborationPlugin";
+import YjsCollaborationPlugin from "@/components/collaboration/YjsCollaborationPlugin";
+import CursorPlugin from "@/components/collaboration/CursorPlugin";
+import ConnectedUsers from "@/components/collaboration/ConnectedUsers";
+import TypingIndicator from "@/components/collaboration/TypingIndicator";
 import { socketService } from "@/services/socketService";
+import { useYjsDocument } from "@/hooks/useYjsDocument";
+import { yjsCollaborationService } from "@/services/yjsCollaborationService";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
 import { $insertNodes } from "lexical";
@@ -117,20 +122,28 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [hasError, setHasError] = useState(false);
   const [editor, setEditor] = useState<any>(null);
   const [showNoteMore, setShowNoteMore] = useState(false);
-  const [userRole, setUserRole] = useState<number | null>(null); // Ajouter le rôle utilisateur
-  const [isReadOnly, setIsReadOnly] = useState(false); // Mode lecture seule
-  const [lastFetchTime, setLastFetchTime] = useState(0); // Pour forcer le rechargement
-  const [userPseudo, setUserPseudo] = useState<string>(""); // Pseudo pour la collaboration
-  const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false); // État pour le tableau de dessin
+  const [userRole, setUserRole] = useState<number | null>(null);
+  const [isReadOnly, setIsReadOnly] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState(0);
+  const [userPseudo, setUserPseudo] = useState<string>("");
+  const [userId, setUserId] = useState<number | null>(null);
+  const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
 
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isSavingContent, setIsSavingContent] = useState(false); // Pour l'indicateur de sauvegarde du contenu
-  const [isTyping, setIsTyping] = useState(false); // Pour détecter quand l'utilisateur tape
+  const [isSavingContent, setIsSavingContent] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // ✅ Refs pour éviter les sauvegardes HTTP trop fréquentes
+  const lastHttpSaveTimeRef = useRef<number>(0);
+  const lastContentLengthRef = useRef<number>(0);
 
   // Unwrap params using React.use()
   const { id } = use(params);
+
+  // 🔥 NOUVEAU : Hook Yjs pour la synchronisation collaborative automatique
+  const { ydoc, ytext, isReady: isYjsReady, state: collabState, sync: syncYjs } = useYjsDocument(id);
 
   // Debounced emit pour le titre (synchronisation rapide quasi-instantanée)
   const debouncedTitleEmit = useDebouncedCallback(
@@ -150,6 +163,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     
     // Émettre via socket (debounced)
     debouncedTitleEmit(finalTitle);
+    
+    // ✅ Sauvegarder en base de données
+    SaveNote(id, { Titre: finalTitle }).then(() => {
+      console.log('✅ Titre sauvegardé en BDD:', finalTitle);
+    }).catch((error) => {
+      console.error('❌ Erreur sauvegarde titre:', error);
+    });
     
     // Émettre un événement pour synchroniser avec le Breadcrumb
     window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
@@ -202,25 +222,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           savedSelection = editor.getEditorState()._selection?.clone();
         }
         
-        // ✅ CORRECTION CRITIQUE: Marquer qu'on applique une mise à jour distante
-        // Ceci permet d'éviter que l'updateListener déclenche une sauvegarde
-        const isApplyingRemoteUpdateRef = (editor as any)._isApplyingRemoteUpdateRef;
-        if (isApplyingRemoteUpdateRef) {
-          isApplyingRemoteUpdateRef.current = true;
-        }
-        
         // Appliquer la mise à jour dans une transaction séparée
         setTimeout(() => {
           const newEditorState = editor.parseEditorState(parsedContent);
           editor.setEditorState(newEditorState);
           setEditorContent(content);
-          
-          // ✅ Réinitialiser le flag après application
-          setTimeout(() => {
-            if (isApplyingRemoteUpdateRef) {
-              isApplyingRemoteUpdateRef.current = false;
-            }
-          }, 50);
           
           // Restaurer le focus si nécessaire
           if (hasFocus) {
@@ -232,7 +238,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                     savedSelection.dirty = true;
                     editor.getEditorState()._selection = savedSelection;
                   } catch (e) {
-                    
+                    // Ignorer les erreurs de sélection
                   }
                 });
               }
@@ -244,6 +250,36 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       console.warn('Impossible de parser le contenu distant:', err);
     }
   }, [editor]);
+
+  // 💾 SAUVEGARDE HTTP PÉRIODIQUE: Sauvegarder automatiquement toutes les 10 secondes
+  useEffect(() => {
+    if (!editor || !ytext || !isYjsReady || isReadOnly) return;
+
+    console.log('[AutoSave] 🚀 Sauvegarde HTTP périodique activée (toutes les 10s)');
+
+    const interval = setInterval(async () => {
+      try {
+        // Récupérer le contenu actuel depuis Yjs (source de vérité)
+        const yjsContent = ytext.toString();
+        
+        if (!yjsContent) {
+          console.log('[AutoSave] ⏭️ Pas de contenu Yjs, skip');
+          return;
+        }
+
+        // Sauvegarder en BDD (avec titre actuel)
+        await uploadContent(id, noteTitle, yjsContent);
+        console.log('[AutoSave] ✅ Sauvegarde HTTP OK');
+      } catch (error) {
+        console.error('[AutoSave] ❌ Erreur sauvegarde HTTP:', error);
+      }
+    }, 10000); // 10 secondes
+
+    return () => {
+      console.log('[AutoSave] 🛑 Sauvegarde HTTP périodique désactivée');
+      clearInterval(interval);
+    };
+  }, [editor, ytext, isYjsReady, isReadOnly, id, noteTitle]);
 
   // DOM listener fallback: appliquer les updates provenant du socket
   useEffect(() => {
@@ -274,17 +310,47 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     };
   }, [editor, handleRemoteContentUpdate, handleRemoteTitleUpdate, id]);
 
+  // ✅ NOUVEAU: Écouter directement les mises à jour de titre via socket
+  useEffect(() => {
+    console.log('[Note Page] 🎧 Enregistrement listener titleUpdate pour note:', id);
+    
+    const handleTitleUpdate = (data: { noteId: string; titre: string; userId: number; pseudo: string }) => {
+      console.log('[Note Page] 📥 Événement titleUpdate reçu:', data);
+      
+      if (data.noteId !== id) {
+        console.log('[Note Page] ⏭️ Événement ignoré (autre note)');
+        return;
+      }
+      
+      // Dispatcher l'événement DOM pour que le listener existant le récupère
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('socketTitleUpdate', { 
+          detail: { noteId: data.noteId, titre: data.titre, pseudo: data.pseudo } 
+        }));
+      }
+    };
+    
+    socketService.onTitleUpdate(handleTitleUpdate);
+    
+    return () => {
+      console.log('[Note Page] 🧹 Nettoyage listener titleUpdate');
+      socketService.off('titleUpdate', handleTitleUpdate);
+    };
+  }, [id]);
+
   // Récupérer les informations utilisateur au chargement
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://preprod.yanotela.fr";
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
         const response = await fetch(`${API_URL}/auth/check`, {
           credentials: "include",
         });
         if (response.ok) {
           const userData = await response.json();
           setUserPseudo(userData.pseudo || 'Anonyme');
+          setUserId(userData.userId || null);
+          console.log('👤 Utilisateur connecté:', { pseudo: userData.pseudo, userId: userData.userId });
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du pseudo:', error);
@@ -478,6 +544,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         }
         // Indiquer qu'on a arrêté de taper
         socketService.emitUserTyping(id, false);
+        console.log('[OnChangeBehavior] 📤 emitUserTyping(false) appelé (debounced)');
       },
       150 // 150ms après inactivité
     );
@@ -493,28 +560,28 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       const contentString = JSON.stringify(editorStateJSON);
       setEditorContent(contentString);
       
-      // ✅ Mettre à jour le timestamp de dernière sauvegarde
-      lastSaveTimeRef.current = Date.now();
+      // ✅ STRATÉGIE: Yjs gère la collaboration temps réel + HTTP périodique pour sécurité
       
-      // ✅ DOUBLE SAUVEGARDE: WebSocket (temps réel) + HTTP (sécurité)
+      // 🔥 DÉSACTIVÉ: YjsCollaborationPlugin gère automatiquement les mises à jour via yjs-update
+      // Ne pas utiliser l'ancien système contentUpdate qui entre en conflit avec Yjs
+      // socketService.emitContentUpdate(id, contentString);
+
+      // 2. Sauvegarde HTTP PÉRIODIQUE seulement (toutes les 10 secondes max)
+      const now = Date.now();
+      const timeSinceLastHttpSave = now - lastHttpSaveTimeRef.current;
       
-      // 1. WebSocket pour la collaboration temps réel
-      socketService.emitContentUpdate(id, contentString);
-
-      // 2. Sauvegarde HTTP en arrière-plan pour la sécurité
-      // (avec un délai pour éviter de surcharger l'API)
-      setTimeout(async () => {
-        try {
-          const result = await uploadContent(id, noteTitle, contentString);
-
-          // Si la sauvegarde HTTP échoue, on peut afficher une notification
-          if (typeof result === 'object' && result && 'error' in result) {
-            console.error('❌ Erreur sauvegarde HTTP:', (result as any).error);
+      if (timeSinceLastHttpSave > 10000) { // 10 secondes minimum entre chaque sauvegarde HTTP
+        lastHttpSaveTimeRef.current = now;
+        
+        setTimeout(async () => {
+          try {
+            await uploadContent(id, noteTitle, contentString);
+            console.log('✅ Sauvegarde HTTP périodique OK');
+          } catch (error) {
+            console.error('❌ Erreur sauvegarde HTTP périodique:', error);
           }
-        } catch (error) {
-          console.error('❌ Erreur sauvegarde HTTP:', error);
-        }
-      }, 1000); // 1 seconde de délai pour ne pas interférer avec le WebSocket
+        }, 100); // Petit délai pour ne pas bloquer l'UI
+      }
       
       setIsSavingContent(false);
     }
@@ -531,6 +598,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           // Indiquer que l'utilisateur tape
           setIsTyping(true);
           socketService.emitUserTyping(id, true);
+          console.log('[OnChangeBehavior] 📤 emitUserTyping(true) appelé');
           
           // Calculer le nombre de caractères modifiés
           const currentContent = editorState.read(() => {
@@ -568,6 +636,19 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   return (
     <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5 relative">
+      {/* Badge utilisateurs connectés - NOUVEAU COMPOSANT */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 items-end">
+        <ConnectedUsers noteId={id} className="bg-primary rounded-lg shadow-lg p-3" />
+        {userPseudo && userId && (
+          <TypingIndicator 
+            noteId={id} 
+            currentUserPseudo={userPseudo}
+            currentUserId={userId}
+            className="bg-white rounded-lg shadow-lg px-4 py-2"
+          />
+        )}
+      </div>
+
       {/* Zone de notifications */}
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md pl-4">
@@ -686,14 +767,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           // Si pas d'erreur et chargement terminé :
           <>
             <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible">
-              {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
-              {/* <div className="absolute bottom-4 right-4 z-10">
-                {(isSavingContent || isTyping) ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                ) : (
-                  <Icons name="save" size={20} className="h-5 w-5 text-primary" />
-                )}
-              </div> */}
+             
               
               {/* Drawing Board */}
               {!isReadOnly && (
@@ -704,8 +778,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 />
               )}
               
-              {/* Ne monter le LexicalComposer que quand initialEditorState est prêt */}
-              {initialEditorState && (
+           
+              
+              {/* Ne monter le LexicalComposer que quand initialEditorState est prêt ET Yjs est prêt */}
+              {initialEditorState && isYjsReady && ytext ? (
                 <LexicalComposer initialConfig={initialConfig} key={id}>
                   {!isReadOnly && <ToolbarPlugin onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)} />}
                   <RichTextPlugin
@@ -726,17 +802,24 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                   <ListPlugin />
                   {!isReadOnly && <OnChangeBehavior />}
                   {!isReadOnly && <AutoFocusPlugin />}
-                  {/* Plugin de collaboration temps réel */}
-                  {userPseudo && (
-                    <CollaborationPlugin 
+                  {/* 🔥 Plugin de collaboration Yjs (remplace l'ancien CollaborationPlugin) */}
+                  <YjsCollaborationPlugin 
+                    ytext={ytext} 
+                    noteId={id}
+                  />
+                  {/* Plugin des curseurs avec awareness */}
+                  {userPseudo && userId && (
+                    <CursorPlugin 
                       noteId={id} 
-                      username={userPseudo}
-                      isReadOnly={isReadOnly}
-                      onTitleUpdate={handleRemoteTitleUpdate}
-                      onContentUpdate={handleRemoteContentUpdate}
+                      currentUserId={userId}
+                      currentUserPseudo={userPseudo}
                     />
                   )}
                 </LexicalComposer>
+              ) : (
+                <div className="p-4 text-center text-gray-500">
+                  <p>⏳ Chargement de l'éditeur...</p>
+                </div>
               )}
             </div>
           </>

@@ -21,7 +21,7 @@ export default function Login() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch('https://preprod.yanotela.fr/api/auth/check', {
+        const res = await fetch(`${API_URL}/api/auth/check`, {
           method: 'GET',
           credentials: 'include',
         });

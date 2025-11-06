@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
 import { Login } from '@/loader/loader';
 import GoogleAuthButton from './GoogleAuthButton';
+import { useTheme, ThemeType } from '@/hooks/useTheme';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -31,6 +32,7 @@ export default function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { loadThemeFromUser } = useTheme();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,6 +51,11 @@ export default function LoginForm({
       const result = await Login(loginData);
       
       if (result.success) {
+        // Charger le thème de l'utilisateur depuis la base de données
+        if (result.theme) {
+          loadThemeFromUser(result.theme as ThemeType);
+        }
+        
         // Vérifier s'il y a une redirection enregistrée
         const redirectAfterLogin = localStorage.getItem('yanotela:redirect-after-login');
         

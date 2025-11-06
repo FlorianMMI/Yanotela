@@ -30,6 +30,7 @@ model Note {
   id          String       @id
   Titre       String
   Content     String
+  yjsState    Bytes?
   authorId    Int
   ModifiedAt  DateTime     @default(now())
   modifierId  Int?

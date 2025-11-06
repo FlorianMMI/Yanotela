@@ -14,6 +14,7 @@ import { AnimatePresence } from "motion/react";
 // import Notification from "@/ui/notification";
 import NotificationList from "@/components/notificationList/page";
 import ReturnButton from "@/ui/returnButton";
+import { useTheme, ThemeType } from "@/hooks/useTheme";
 
 interface UserInfo {
   id: number;
@@ -22,6 +23,7 @@ interface UserInfo {
   nom?: string;
   email: string;
   noteCount?: number;
+  theme?: string;
 }
 
 export default function Profil() {
@@ -29,6 +31,7 @@ export default function Profil() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isParamModalOpen, setIsParamModalOpen] = useState(false);
+  const { loadThemeFromUser } = useTheme();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -37,6 +40,11 @@ export default function Profil() {
 
         if (response.success && response.user) {
           setUserInfo(response.user);
+          
+          // Charger le thème de l'utilisateur depuis la base de données
+          if (response.user.theme) {
+            loadThemeFromUser(response.user.theme as ThemeType);
+          }
         } else {
           setError(
             response.error || "Erreur lors de la récupération des informations"
@@ -99,17 +107,17 @@ export default function Profil() {
             </div>
           </div>
           <div className="flex gap-4 items-center md:w-full md:justify-between">
-            <div className="flex flex-col items-end justify-center">
-              <Logout />
-            </div>
-            <div className="cursor-pointer flex gap-2 items-center" title="Paramètres du compte"
+             <div className="cursor-pointer flex gap-2 items-center" title="Paramètres du compte"
               onClick={openParamModal}
             >
-              <p className="font-normal text-md hidden md:block">Paramètres</p>
               <Icons
                 name="settings"
                 size={20}
               />
+              <p className="font-normal text-md hidden md:block">Paramètres</p>
+            </div>
+            <div className="flex flex-col items-end justify-center">
+              <Logout />
             </div>
           </div>
         </div>

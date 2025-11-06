@@ -54,11 +54,11 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
     <main className="p-4 relative min-h-[calc(100vh-200px)]">
       {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && notes.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-element text-lg font-gant mx-4 text-center">
+       
+          <p className="absolute inset-0 flex items-center justify-center pointer-events-none text-element text-lg font-gant mx-4 text-center">
             Aucune note trouvée. Créez votre première note !
           </p>
-        </div>
+        
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-4 md:gap-6 justify-items-start">
