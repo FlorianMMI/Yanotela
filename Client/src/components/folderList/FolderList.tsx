@@ -36,18 +36,18 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
        {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && folders.length === 0 && (
-        <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-element text-lg font-gant w-[calc(100%-5rem)] text-center">
+        <p className="absolute top-1/2 left-1/2 pointer-events-none transform  -translate-x-1/2 -translate-y-1/2 text-element text-lg font-gant w-[calc(100%-5rem)] text-center">
           Aucun dossier trouvé. Créez votre premier dossier !
         </p>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-3 md:gap-4 justify-items-start">
+      <div className="flex flex-wrap max-w-full gap-3 md:gap-4 justify-items-start">
 
         {/* Add Folder Button - Toujours visible */}
         <motion.button
           whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
           whileTap={{ scale: 0.95 }}
-          className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-[110px] md:w-65 md:h-50"
+          className="border-2 border-primary  w-fit border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary h-[110px] md:w-65 md:h-50"
           onClick={handleCreateFolder}
           aria-label="Créer un nouveau dossier"
           title="Créer un nouveau dossier"

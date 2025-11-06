@@ -36,7 +36,7 @@ export default function AuthSidebar() {
 
   const { view: currentView, token } = getCurrentView();
 
-  return (
+  return(
     <div className="p-6 h-full w-full flex flex-col justify-center">
       {currentView === 'login' && (
         <LoginForm
@@ -46,15 +46,15 @@ export default function AuthSidebar() {
           isInSidebar={true}
         />
       )}
-      
+
       {currentView === 'register' && (
         <RegisterForm
           onSuccess={() => router.push('/login')}
           onSwitchToLogin={() => router.push('/login')}
-          isInSidebar={true} 
+          isInSidebar={true}
         />
       )}
-      
+
       {currentView === 'forgot' && (
         <ForgotPasswordForm
           onSuccess={() => router.push('/login')}
@@ -69,5 +69,6 @@ export default function AuthSidebar() {
         />
       )}
     </div>
+
   );
 }

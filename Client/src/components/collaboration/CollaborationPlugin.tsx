@@ -43,142 +43,125 @@ export default function CollaborationPlugin({
   }, [username]);
 
   useEffect(() => {
-    // Détecter si on est sur mobile pour ajuster le délai
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const initDelay = isMobile ? 800 : 200;
-        
-    // Attendre que l'éditeur soit complètement monté
-    const initTimeout = setTimeout(() => {
+    // ✅ CORRECTION: Initialiser le socket IMMÉDIATEMENT, sans délai
+    console.log('🔌 CollaborationPlugin: Initialisation socket pour note:', noteId);
+    
+    // Rejoindre la note et écouter l'initialisation
+    socketService.joinNote(noteId, (data) => {
+      console.log('✅ Note rejointe:', data);
+      setUserCount(data.userCount || 1);
+      setIsConnected(true);
+    });
 
-      // Rejoindre la note et écouter l'initialisation
-      socketService.joinNote(noteId, (data) => {
-        
-        setUserCount(data.userCount || 1);
-        setIsConnected(true);
-      });
-
-      // Si le socket est déjà connecté (timing desktop), forcer l'état en ligne
+    // Vérifier l'état de connexion
+    const checkConnection = () => {
       try {
         if (socketService.isConnected && socketService.isConnected()) {
           setIsConnected(true);
+          console.log('✅ Socket déjà connecté');
+        } else {
+          console.warn('⚠️ Socket pas encore connecté');
         }
       } catch (e) {
-        // ignore
+        console.error('❌ Erreur vérification connexion:', e);
       }
-
-      // Écouter les nouveaux utilisateurs
-      socketService.onUserJoined((data) => {
-        
-        setUserCount(data.userCount || 1);
-      });        
-
-      socketService.onUserLeft((data) => {
-        
-        setUserCount(data.userCount || 1);
-      });
-
-      // Écouter les mises à jour du contenu (si callback fourni et pas en lecture seule)
-      if (!isReadOnly) {
-        socketService.onContentUpdate((data) => {
-          
-          // Mettre à jour le parent si le callback est fourni
-          try {
-            if (onContentUpdate) onContentUpdate(data.content);
-          } catch (e) {
-            console.warn('Erreur lors de l\'appel de onContentUpdate:', e);
-          }
-
-          // Toujours dispatcher un event DOM pour que la page puisse capter
-          // les updates même si l'éditeur n'est pas encore initialisé
-          try {
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('socketContentUpdate', { detail: { noteId: data.noteId, content: data.content, pseudo: data.pseudo } }));
-            }
-          } catch (e) {
-            console.warn('Erreur lors du dispatch de socketContentUpdate:', e);
-          }
-        });
-      }
-
-      // Écouter les mises à jour du titre (toujours, même en lecture seule)
-      if (onTitleUpdate) {
-        socketService.onTitleUpdate((data) => {
-          
-          try {
-            onTitleUpdate(data.titre);
-          } catch (e) {
-            console.warn('Erreur lors de l\'appel de onTitleUpdate:', e);
-          }
-
-          try {
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('socketTitleUpdate', { detail: { noteId: data.noteId, titre: data.titre, pseudo: data.pseudo } }));
-            }
-          } catch (e) {
-            console.warn('Erreur lors du dispatch de socketTitleUpdate:', e);
-          }
-        });
-      }
-
-      // Écouter les erreurs
-      socketService.onError((data) => {
-        console.error('❌ Erreur socket:', data.message);
-        setIsConnected(false);
-      });
-
-      // ✅ Écouter les utilisateurs en train de taper
-      socketService.onUserTyping((data) => {
-        if (data.isTyping) {
-          setTypingUsers(prev => {
-            if (!prev.includes(data.pseudo)) {
-              return [...prev, data.pseudo];
-            }
-            return prev;
-          });
-          
-          // Auto-retirer après 3 secondes (au cas où l'événement "stop typing" ne vient pas)
-          setTimeout(() => {
-            setTypingUsers(prev => prev.filter(u => u !== data.pseudo));
-          }, 3000);
-        } else {
-          setTypingUsers(prev => prev.filter(u => u !== data.pseudo));
-        }
-      });
-
-      // Mettre à jour l'état de connexion via les events connect/disconnect
-      // (Suppression des appels à socketService.onConnect et onDisconnect car ils n'existent pas)
-    }, initDelay);
-
-    // Cleanup: quitter la note au démontage du composant
-    return () => {
-      clearTimeout(initTimeout);
-      // Quitter proprement et marquer hors-ligne
-      socketService.leaveNote();
-      setIsConnected(false);
-      socketService.removeAllListeners();
     };
-  }, [noteId, isReadOnly]);
+    
+    // Vérifier immédiatement puis après un petit délai
+    checkConnection();
+    const checkTimeout = setTimeout(checkConnection, 500);
 
-  // Effet séparé pour enregistrer les listeners de contenu/titre
-  // Se réexécute quand les callbacks changent (notamment quand editor devient disponible)
-  useEffect(() => {
+    // Écouter les nouveaux utilisateurs
+    socketService.onUserJoined((data) => {
+      console.log('👋 Utilisateur rejoint:', data.pseudo);
+      setUserCount(data.userCount || 1);
+    });        
+
+    socketService.onUserLeft((data) => {
+      console.log('👋 Utilisateur parti:', data.pseudo);
+      setUserCount(data.userCount || 1);
+    });
 
     // Écouter les mises à jour du contenu (si callback fourni et pas en lecture seule)
-    if (onContentUpdate && !isReadOnly) {
+    if (!isReadOnly) {
       socketService.onContentUpdate((data) => {
-        
-        onContentUpdate(data.content);
+        console.log('📥 Contenu reçu via socket:', data);
+        // Mettre à jour le parent si le callback est fourni
+        try {
+          if (onContentUpdate) onContentUpdate(data.content);
+        } catch (e) {
+          console.warn('Erreur lors de l\'appel de onContentUpdate:', e);
+        }
+
+        // Toujours dispatcher un event DOM pour que la page puisse capter
+        // les updates même si l'éditeur n'est pas encore initialisé
+        try {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('socketContentUpdate', { detail: { noteId: data.noteId, content: data.content, pseudo: data.pseudo } }));
+          }
+        } catch (e) {
+          console.warn('Erreur lors du dispatch de socketContentUpdate:', e);
+        }
       });
     }
 
     // Écouter les mises à jour du titre (toujours, même en lecture seule)
     if (onTitleUpdate) {
       socketService.onTitleUpdate((data) => {
-        
-        onTitleUpdate(data.titre);
+        console.log('📥 Titre reçu via socket:', data);
+        try {
+          onTitleUpdate(data.titre);
+        } catch (e) {
+          console.warn('Erreur lors de l\'appel de onTitleUpdate:', e);
+        }
+
+        try {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('socketTitleUpdate', { detail: { noteId: data.noteId, titre: data.titre, pseudo: data.pseudo } }));
+          }
+        } catch (e) {
+          console.warn('Erreur lors du dispatch de socketTitleUpdate:', e);
+        }
       });
     }
-  }, [onContentUpdate, onTitleUpdate, isReadOnly]);
+
+    // Écouter les erreurs
+    socketService.onError((data) => {
+      console.error('❌ Erreur socket:', data.message);
+      setIsConnected(false);
+    });
+
+    // ✅ Écouter les utilisateurs en train de taper
+    socketService.onUserTyping((data) => {
+      if (data.isTyping) {
+        setTypingUsers(prev => {
+          if (!prev.includes(data.pseudo)) {
+            return [...prev, data.pseudo];
+          }
+          return prev;
+        });
+        
+        // Auto-retirer après 3 secondes (au cas où l'événement "stop typing" ne vient pas)
+        setTimeout(() => {
+          setTypingUsers(prev => prev.filter(u => u !== data.pseudo));
+        }, 3000);
+      } else {
+        setTypingUsers(prev => prev.filter(u => u !== data.pseudo));
+      }
+    });
+
+    // Cleanup: quitter la note au démontage du composant
+    return () => {
+      clearTimeout(checkTimeout);
+      // Quitter proprement et marquer hors-ligne
+      socketService.leaveNote();
+      setIsConnected(false);
+      socketService.removeAllListeners();
+    };
+  }, [noteId, isReadOnly, onContentUpdate, onTitleUpdate]);
+
+  // ✅ Les listeners de contenu/titre sont déjà configurés dans l'effet principal ci-dessus
+  // Pas besoin d'un effet séparé qui pourrait créer des doublons
 
   return (
     <div

@@ -45,8 +45,8 @@ export default function Logout(){
                     onClick={handleLogoutClick}
                     className="w-full flex items-center justify-center cursor-pointer group gap-2"
                 >
-                    <Icon name="exit" size={25} className="text-primary" />
                     <span className="font-normal text-md hidden md:block">Déconnexion</span>
+                    <Icon name="exit" size={25} className="text-primary" />
                 </button>
             </div>
 

@@ -16,8 +16,11 @@ router.post('/cancel-deletion', requireAuth, userController.cancelAccountDeletio
 // Route POST pour supprimer définitivement les comptes expirés (pour cron job)
 router.post('/delete-expired', userController.deleteExpiredAccounts);
 
-// 
+// Route POST pour mettre à jour les informations utilisateur (authentification requise)
 router.post('/update', requireAuth, userController.updateUserInfo);
+
+// Route PATCH pour mettre à jour le thème de l'utilisateur (authentification requise)
+router.patch('/theme', requireAuth, userController.updateUserTheme);
 
 export default router;
 

@@ -193,7 +193,10 @@ export default function FolderMore({
                                         className="w-6 h-6 rounded-full border border-gray-300"
                                         style={{ backgroundColor: folderColor }}
                                     />
-                                    <span className="text-gray-600">{folderColor}</span>
+                                    {
+                                        folderColor ===  'var(--primary)' ? <span className="text-gray-600">Couleur par défaut</span> :
+                                            <span className="text-gray-600">{folderColor}</span>
+                                    }
                                 </div>
                             </div>
                             <div className="pt-2 border-t border-gray-100">
