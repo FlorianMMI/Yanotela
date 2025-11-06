@@ -5,6 +5,7 @@ import DesktopLayout from "@/components/layout/DesktopLayout";
 export const metadata = {
   title: "Yanotela - Notes collaboratives",
   description: "Application de prise de notes collaborative",
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

@@ -27,6 +27,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22.0.0",
     "lexical": "^0.38.2",
+    "lucide-react": "^0.552.0",
     "motion": "^12.23.21",
     "next": "^15.5.3",
     "react": "^19.1.1",

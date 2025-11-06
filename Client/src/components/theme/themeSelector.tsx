@@ -90,7 +90,7 @@ export default function ThemeSelector({ className = "" }: ThemeSelectorProps) {
       {/* Bouton principal */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-clrsecondaire hover:bg-beige-foncer transition-colors duration-200 border border-gray-300 shadow-sm"
+        className="flex w-1/3 items-center gap-2 px-4 py-2 rounded-lg bg-clrsecondaire hover:bg-beige-foncer transition-colors duration-200 border border-gray-300 shadow-sm"
         title="Changer de thème"
       >
         <div className="flex items-center justify-center">

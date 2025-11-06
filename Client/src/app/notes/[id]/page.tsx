@@ -767,14 +767,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           // Si pas d'erreur et chargement terminé :
           <>
             <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible">
-              {/* Indicateur de sauvegarde en bas à droite de la zone d'écriture */}
-              {/* <div className="absolute bottom-4 right-4 z-10">
-                {(isSavingContent || isTyping) ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                ) : (
-                  <Icons name="save" size={20} className="h-5 w-5 text-primary" />
-                )}
-              </div> */}
+             
               
               {/* Drawing Board */}
               {!isReadOnly && (
@@ -785,14 +778,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 />
               )}
               
-              {/* 🔥 DEBUG: Afficher l'état de chargement
-              <div className="fixed bottom-4 right-4 bg-black/80 text-white p-3 rounded-lg text-xs font-mono z-50">
-                <div>Loading: {isLoading ? '✅' : '❌'}</div>
-                <div>InitialState: {initialEditorState ? '✅' : '❌'}</div>
-                <div>YjsReady: {isYjsReady ? '✅' : '❌'}</div>
-                <div>YText: {ytext ? `✅ (${ytext.length} chars)` : '❌'}</div>
-                <div>YDoc: {ydoc ? '✅' : '❌'}</div>
-              </div> */}
+           
               
               {/* Ne monter le LexicalComposer que quand initialEditorState est prêt ET Yjs est prêt */}
               {initialEditorState && isYjsReady && ytext ? (
@@ -833,11 +819,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               ) : (
                 <div className="p-4 text-center text-gray-500">
                   <p>⏳ Chargement de l'éditeur...</p>
-                  <p className="text-xs mt-2">
-                    {!initialEditorState && 'Attente initialEditorState... '}
-                    {!isYjsReady && 'Attente Yjs... '}
-                    {!ytext && 'Attente Y.Text...'}
-                  </p>
                 </div>
               )}
             </div>
