@@ -35,7 +35,13 @@ class SocketService {
       return this.socket;
     }
 
-    const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  // NOTE: Certains envs (ex: .env.dev) définissent NEXT_PUBLIC_API_URL avec un préfixe
+  // `/api` (ex: http://localhost:3001/api). Si on passe cette URL directement à
+  // socket.io-client, elle est interprétée comme une namespace (ex: '/api') et le
+  // serveur renverra "Invalid namespace". On nettoie donc l'URL pour garder
+  // uniquement l'origine (scheme + host + port).
+  const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const SOCKET_URL = rawApiUrl.replace(/\/api\/?$/, '') || 'http://localhost:3000';
 
     this.socket = io(SOCKET_URL, {
       path: '/socket.io/',
