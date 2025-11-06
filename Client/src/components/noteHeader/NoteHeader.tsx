@@ -18,18 +18,132 @@ interface NoteHeaderProps {
 
 export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortBy, collaborationFilter, setCollaborationFilter }: NoteHeaderProps) {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   return (
     <>
       {/* Header Mobile */}
       <div className="block md:hidden">
-        <header className=" p-4 border-b border-gray-200">
+        <header className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Mes Notes</h1>
             
-          </div>
-        </header>
+            <div className="flex items-center gap-2">
+              {/* Bouton Recherche */}
+              <button
+                onClick={() => setShowMobileSearch(!showMobileSearch)}
+                className="flex p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Rechercher"
+              >
+                <Icon name="recherche" size={24} className="text-primary" />
+              </button>
 
+              {/* Bouton Filtre */}
+              <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className={`flex p-2 rounded-lg transition-colors ${
+                  collaborationFilter !== "all" 
+                    ? "bg-primary" 
+                    : "hover:bg-gray-100"
+                }`}
+                aria-label="Filtrer"
+              >
+                <Icon 
+                  name="filtre" 
+                  size={24} 
+                  className={collaborationFilter !== "all" ? "text-white" : "text-primary"}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Barre de recherche mobile */}
+          <AnimatePresence>
+            {showMobileSearch && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="mt-3 overflow-hidden"
+              >
+                <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Menu filtres mobile */}
+          <AnimatePresence>
+            {showMobileFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="mt-3 overflow-hidden"
+              >
+                <div className="space-y-2">
+                  {/* Tri */}
+                  {/* <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Trier par</p>
+                    <button
+                      onClick={() => setSortBy("recent")}
+                      className="w-full flex items-center gap-2 p-3 rounded-lg bg-primary text-white"
+                    >
+                      <Icon name="recent" size={20} className="text-white" />
+                      Récents
+                    </button>
+                  </div> */}
+
+                  {/* Type de note */}
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Type de note</p>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => {
+                          setCollaborationFilter("all");
+                          setShowMobileFilters(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                          collaborationFilter === "all" 
+                            ? "bg-primary text-white font-medium" 
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Toutes
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCollaborationFilter("solo");
+                          setShowMobileFilters(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                          collaborationFilter === "solo" 
+                            ? "bg-primary text-white font-medium" 
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Personnelles
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCollaborationFilter("collaborative");
+                          setShowMobileFilters(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                          collaborationFilter === "collaborative" 
+                            ? "bg-primary text-white font-medium" 
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        Collaboratives
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </header>
       </div>
 
       {/* Barre de recherche et filtre */}
@@ -41,7 +155,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
             <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           </div>
 
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <motion.button
               onClick={() => setSortBy("recent")}
               className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
@@ -59,7 +173,7 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
               />
               Récents
             </motion.button>
-          </div>
+          </div> */}
 
           {/* Filtre de collaboration */}
           <div className="relative">
