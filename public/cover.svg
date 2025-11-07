@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0" stop-color="#F6F0E9" />
+      <stop offset="1" stop-color="#E9EBDB" />
+    </linearGradient>
+    <filter id="f" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="b"/>
+      <feBlend in="SourceGraphic" in2="b" mode="normal"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="360" fill="url(#g)"/>
+  <g filter="url(#f)">
+    <circle cx="1050" cy="50" r="140" fill="#FDE8E8" opacity="0.6" />
+    <circle cx="200" cy="300" r="220" fill="#E6F2FF" opacity="0.5" />
+  </g>
+  <g transform="translate(60,70)">
+    <text x="0" y="0" font-family="'Gantari', sans-serif" font-size="48" fill="#222">Yanotela</text>
+    <text x="0" y="60" font-family="'Geologica', sans-serif" font-size="20" fill="#444">Notes collaboratives • sécurisé • moderne</text>
+  </g>
+  <g transform="translate(60,230)">
+    <rect x="0" y="0" rx="8" ry="8" width="420" height="64" fill="#fff" opacity="0.6" />
+    <text x="20" y="40" font-family="sans-serif" font-size="14" fill="#333">Full‑stack: Next.js · Node.js · Prisma · PostgreSQL</text>
+  </g>
+</svg>
