@@ -126,7 +126,7 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
     <>
     <motion.div
       ref={folderRef}
-      className="relative w-fit h-[110px] md:w-65 md:h-50 cursor-pointer group"
+      className="relative w-full h-[110px] md:w-65 md:h-50 cursor-pointer group "
       whileHover={{ scale: 1.05, transition: { duration: 0.2, ease: "easeOut" } }}
       whileTap={{ scale: 0.98, transition: { duration: 0.1, ease: "easeInOut" } }}
       onClick={handleFolderClick}

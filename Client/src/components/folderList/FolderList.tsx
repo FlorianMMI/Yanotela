@@ -44,7 +44,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
   <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-4 max-w-full justify-items-start">
 
         {/* Add Folder Button - Toujours visible */}
-        <div className="relative group  w-fit rounded-xl flex items-center justify-center transition-colors cursor-pointer text-primary h-[110px] md:w-65 md:h-50">
+        <div className="relative group  w-full rounded-xl flex items-center justify-center transition-colors cursor-pointer text-primary h-[110px] md:w-65 md:h-50">
           <motion.svg
             whileHover={{ scale: 1.03, filter: "drop-shadow(0 12px 28px rgba(0,0,0,0.18))" }}
             whileTap={{ scale: 0.97, filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.12))" }}

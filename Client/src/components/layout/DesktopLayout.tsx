@@ -27,7 +27,7 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
   return (
     <>
       {/* Mobile: comportement actuel avec swipe navigation */}
-      <div className="md:hidden">
+      <div className="md:hidden h-full">
         <SwipeNavigationWrapper>
           {children}
         </SwipeNavigationWrapper>

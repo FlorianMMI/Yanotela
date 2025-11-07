@@ -37,22 +37,37 @@ export default function Note({ note, onNoteUpdated }: NoteProps) {
     if (noteRef.current) {
       const rect = noteRef.current.getBoundingClientRect();
       
-      // Positionner le modal juste en dessous de la note
-      let x = rect.left;
-      let y = rect.bottom + 8; // 8px d'espacement
+      // Détecter si on est sur mobile
+      const isMobile = window.innerWidth < 768;
+      const modalWidth = isMobile ? 240 : 280;
+      const modalHeight = 300;
 
-      // Vérifier si le modal dépasse de l'écran
-      const modalWidth = 280; // Largeur réduite du modal
-      const modalHeight = 300; // Hauteur estimée du modal
+      let x, y;
 
-      // Ajuster horizontalement si ça dépasse à droite
-      if (x + modalWidth > window.innerWidth) {
-        x = window.innerWidth - modalWidth - 16;
-      }
+      if (isMobile) {
+        // Sur mobile : centrer horizontalement et placer juste sous la note
+        x = Math.max(8, Math.min(
+          window.innerWidth - modalWidth - 8,
+          rect.left + (rect.width - modalWidth) / 2
+        ));
+        y = rect.bottom -20;
+        
+        // Si ça dépasse en bas, placer au-dessus
+        if (y + modalHeight > window.innerHeight) {
+          y = rect.bottom - modalHeight - 50;
+        }
+      } else {
+        // Sur desktop : garder le positionnement actuel (à droite de la note)
+        x = rect.right - 245;
+        y = rect.bottom - 150;
 
-      // Ajuster verticalement si ça dépasse en bas
-      if (y + modalHeight > window.innerHeight) {
-        y = rect.top - modalHeight - 8; // Afficher au-dessus
+        // Ajuster si ça dépasse
+        if (x + modalWidth > window.innerWidth) {
+          x = window.innerWidth - modalWidth - 16;
+        }
+        if (y + modalHeight > window.innerHeight) {
+          y = rect.bottom - 200;
+        }
       }
 
       setModalPosition({ x, y });
