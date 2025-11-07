@@ -62,8 +62,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         setShowDeleteConfirm(false);
     };
 
-   
-    
     return (
         <>
             {/* Overlay fond noir */}
@@ -107,19 +105,14 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                     {/* Selectionner un theme  */}
                     <ThemeSelector />
 
-
                     <section className="flex flex-col gap-4">
 
-
-                    
                         {/* Bouton Télécharger / Installer la webapp */}
                         <div className="">
                             <PWAInstallButton />
                         </div>
 
                         <hr className="border-t border-primary w-full" />
-
-
 
                         {/* Boutton corbeille */}
                         <button
@@ -142,7 +135,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                     </section>
                     {/* Autres paramètres peuvent être ajoutés ici */}
                     </div>
-                
 
                 </div>
             </motion.div>

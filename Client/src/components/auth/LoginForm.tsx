@@ -51,7 +51,6 @@ export default function LoginForm({
       if (result.success) {
         // Charger le thème de l'utilisateur depuis la base de données
 
-        
         // Vérifier s'il y a une redirection enregistrée
         const redirectAfterLogin = localStorage.getItem('yanotela:redirect-after-login');
         

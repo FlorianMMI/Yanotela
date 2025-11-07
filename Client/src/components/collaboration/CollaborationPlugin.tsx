@@ -44,11 +44,10 @@ export default function CollaborationPlugin({
 
   useEffect(() => {
     // ✅ CORRECTION: Initialiser le socket IMMÉDIATEMENT, sans délai
-    console.log('🔌 CollaborationPlugin: Initialisation socket pour note:', noteId);
-    
+
     // Rejoindre la note et écouter l'initialisation
     socketService.joinNote(noteId, (data) => {
-      console.log('✅ Note rejointe:', data);
+      
       setUserCount(data.userCount || 1);
       setIsConnected(true);
     });
@@ -58,7 +57,7 @@ export default function CollaborationPlugin({
       try {
         if (socketService.isConnected && socketService.isConnected()) {
           setIsConnected(true);
-          console.log('✅ Socket déjà connecté');
+          
         } else {
           console.warn('⚠️ Socket pas encore connecté');
         }
@@ -73,19 +72,19 @@ export default function CollaborationPlugin({
 
     // Écouter les nouveaux utilisateurs
     socketService.onUserJoined((data) => {
-      console.log('👋 Utilisateur rejoint:', data.pseudo);
+      
       setUserCount(data.userCount || 1);
     });        
 
     socketService.onUserLeft((data) => {
-      console.log('👋 Utilisateur parti:', data.pseudo);
+      
       setUserCount(data.userCount || 1);
     });
 
     // Écouter les mises à jour du contenu (si callback fourni et pas en lecture seule)
     if (!isReadOnly) {
       socketService.onContentUpdate((data) => {
-        console.log('📥 Contenu reçu via socket:', data);
+        
         // Mettre à jour le parent si le callback est fourni
         try {
           if (onContentUpdate) onContentUpdate(data.content);
@@ -108,7 +107,7 @@ export default function CollaborationPlugin({
     // Écouter les mises à jour du titre (toujours, même en lecture seule)
     if (onTitleUpdate) {
       socketService.onTitleUpdate((data) => {
-        console.log('📥 Titre reçu via socket:', data);
+        
         try {
           onTitleUpdate(data.titre);
         } catch (e) {

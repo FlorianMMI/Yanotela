@@ -8,8 +8,6 @@ interface TotalNotesProps {
     totalNotes?: number;
 }
 
-
-
 export default function TotalNotes({ totalNotes }: TotalNotesProps) {
 
     const router = useRouter();

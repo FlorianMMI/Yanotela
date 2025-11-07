@@ -111,7 +111,6 @@ export default function Profil() {
           </div>
         </div>
 
-        
         <ModificationProfil />
 
       </div>

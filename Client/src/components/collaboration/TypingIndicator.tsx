@@ -28,7 +28,6 @@ export default function TypingIndicator({ noteId, currentUserPseudo, currentUser
   const [typingUsers, setTypingUsers] = useState<Map<number, TypingUser>>(new Map());
 
   useEffect(() => {
-    console.log('[TypingIndicator] 🎬 Initialisation pour note:', noteId);
 
     // Timeout pour retirer automatiquement un utilisateur après 3 secondes d'inactivité
     const checkStaleTypingUsers = () => {
@@ -43,7 +42,7 @@ export default function TypingIndicator({ noteId, currentUserPseudo, currentUser
           if (now - user.timestamp > staleThreshold) {
             updated.delete(userId);
             hasChanges = true;
-            console.log(`[TypingIndicator] ⏱️ ${user.pseudo} retiré (inactif)`);
+            
           }
         });
 
@@ -61,15 +60,9 @@ export default function TypingIndicator({ noteId, currentUserPseudo, currentUser
 
       // ✅ CORRECTION: Ignorer nos propres événements en comparant l'userId
       if (data.userId === currentUserId) {
-        console.log('[TypingIndicator] ⏭️ Événement ignoré (c\'est moi)', { myId: currentUserId, eventId: data.userId });
+        
         return;
       }
-
-      console.log('[TypingIndicator] ⌨️ Événement typing:', {
-        pseudo: data.pseudo,
-        isTyping: data.isTyping,
-        userId: data.userId,
-      });
 
       setTypingUsers((prev) => {
         const updated = new Map(prev);
@@ -81,11 +74,11 @@ export default function TypingIndicator({ noteId, currentUserPseudo, currentUser
             pseudo: data.pseudo,
             timestamp: Date.now(),
           });
-          console.log(`[TypingIndicator] ➕ ${data.pseudo} est en train de taper`);
+          
         } else {
           // Retirer l'utilisateur
           updated.delete(data.userId);
-          console.log(`[TypingIndicator] ➖ ${data.pseudo} a arrêté de taper`);
+          
         }
 
         return updated;
@@ -96,7 +89,7 @@ export default function TypingIndicator({ noteId, currentUserPseudo, currentUser
 
     // 🧹 Cleanup
     return () => {
-      console.log('[TypingIndicator] 🛑 Nettoyage');
+      
       clearInterval(intervalId);
       socketService.off('userTyping', handleUserTyping);
     };
