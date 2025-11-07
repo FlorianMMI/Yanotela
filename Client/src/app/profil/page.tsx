@@ -101,7 +101,7 @@ export default function Profil() {
         {/* Boutons settings et déconnexion alignés en haut */}
         <div className="absolute top-4 left-0 px-4 w-full flex justify-between items-center">
           <div className="md:hidden flex gap-1 items-center">
-            <ReturnButton />
+
             <div className="flex items-center justify-center">
               <NotificationList isOpenSideBar={true} />
             </div>
