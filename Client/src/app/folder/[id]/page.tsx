@@ -29,7 +29,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [loading, setLoading] = useState(true);
     const [showFolderMore, setShowFolderMore] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-    const [sortBy, setSortBy] = useState<"recent">("recent");
+    const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
+    const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
 
     useEffect(() => {
@@ -163,8 +164,10 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             return matchesSearch && matchesCollaboration;
         })
         .sort((a, b) => {
-            // Tri par date de modification (plus récent en premier)
-            return new Date(b.ModifiedAt).getTime() - new Date(a.ModifiedAt).getTime();
+            const getDate = (n: any) => new Date((sortBy === "creation" ? (n.CreatedAt || n.ModifiedAt) : n.ModifiedAt));
+            const da = getDate(a).getTime();
+            const db = getDate(b).getTime();
+            return sortDir === "desc" ? db - da : da - db;
         }) : [];
 
     return (
@@ -177,6 +180,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 setSearchTerm={setSearchTerm}
                 sortBy={sortBy}
                 setSortBy={setSortBy}
+                sortDir={sortDir}
+                setSortDir={setSortDir}
                 collaborationFilter={collaborationFilter}
                 setCollaborationFilter={setCollaborationFilter}
                 onMoreClick={() => setShowFolderMore((prev: boolean) => !prev)}

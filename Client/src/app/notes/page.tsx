@@ -14,6 +14,7 @@ export default function Home() {
   const { isAuthenticated, loading: authLoading } = useAuthRedirect();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent">("recent");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,8 +56,10 @@ export default function Home() {
       return matchesSearch && matchesCollaboration;
     })
     .sort((a, b) => {
-      // Tri par date de modification (plus récent en premier)
-      return new Date(b.ModifiedAt).getTime() - new Date(a.ModifiedAt).getTime();
+      // Notes sorted by ModifiedAt (no CreatedAt in schema)
+      const da = new Date(a.ModifiedAt).getTime();
+      const db = new Date(b.ModifiedAt).getTime();
+      return sortDir === "desc" ? db - da : da - db;
     }) : [];
 
   return (
@@ -67,6 +70,8 @@ export default function Home() {
         setSearchTerm={setSearchTerm}
         sortBy={sortBy}
         setSortBy={setSortBy}
+        sortDir={sortDir}
+        setSortDir={setSortDir}
         collaborationFilter={collaborationFilter}
         setCollaborationFilter={setCollaborationFilter}
       />

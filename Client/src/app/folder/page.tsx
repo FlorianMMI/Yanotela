@@ -13,6 +13,7 @@ export default function FoldersPage() {
   const { isAuthenticated, loading: authLoading } = useAuthRedirect();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [colorFilters, setColorFilters] = useState<string[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,11 +58,13 @@ export default function FoldersPage() {
     })
     .sort((a, b) => {
       if (sortBy === "recent") {
-        // Tri par date de modification (plus récent en premier)
-        return new Date(b.ModifiedAt).getTime() - new Date(a.ModifiedAt).getTime();
+        const da = new Date(a.ModifiedAt).getTime();
+        const db = new Date(b.ModifiedAt).getTime();
+        return sortDir === "desc" ? db - da : da - db;
       } else {
-        // Tri par date de création (plus récent en premier)
-        return new Date(b.CreatedAt).getTime() - new Date(a.CreatedAt).getTime();
+        const da = new Date(a.CreatedAt).getTime();
+        const db = new Date(b.CreatedAt).getTime();
+        return sortDir === "desc" ? db - da : da - db;
       }
     }) : [];
 
@@ -72,6 +75,8 @@ export default function FoldersPage() {
         setSearchTerm={setSearchTerm}
         sortBy={sortBy}
         setSortBy={setSortBy}
+        sortDir={sortDir}
+        setSortDir={setSortDir}
         colorFilters={colorFilters}
         setColorFilters={setColorFilters}
       />

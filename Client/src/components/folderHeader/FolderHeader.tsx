@@ -12,11 +12,13 @@ interface FolderHeaderProps {
   setSearchTerm: (term: string) => void;
   sortBy: "recent" | "creation";
   setSortBy: (sort: "recent" | "creation") => void;
+  sortDir: "asc" | "desc";
+  setSortDir: (d: "asc" | "desc") => void;
   colorFilters: string[];
   setColorFilters: (colors: string[]) => void;
 }
 
-export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSortBy, colorFilters, setColorFilters }: FolderHeaderProps) {
+export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSortBy, sortDir, setSortDir, colorFilters, setColorFilters }: FolderHeaderProps) {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -94,27 +96,43 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
                   <div>
                     <p className="text-sm font-medium text-gray-700 mb-2">Trier par</p>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => setSortBy("recent")}
-                        className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
-                          sortBy === "recent" 
-                            ? "bg-primary text-white" 
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                      >
-                        <Icon name="recent" size={20} className={sortBy === "recent" ? "text-white" : "text-gray-700"} />
-                        Récents
-                      </button>
-                      <button
-                        onClick={() => setSortBy("creation")}
-                        className={`flex-1 p-3 rounded-lg transition-colors ${
-                          sortBy === "creation" 
-                            ? "bg-primary text-white" 
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                      >
-                        Création
-                      </button>
+                              <button
+                                onClick={() => {
+                                  if (sortBy === "recent") {
+                                    setSortDir(sortDir === "desc" ? "asc" : "desc");
+                                  } else {
+                                    setSortBy("recent");
+                                    setSortDir("desc");
+                                  }
+                                  setShowMobileFilters(false);
+                                }}
+                                className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
+                                  sortBy === "recent" 
+                                    ? "bg-primary text-white" 
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                }`}
+                              >
+                                <Icon name="recent" size={20} className={sortBy === "recent" ? "text-white" : "text-gray-700"} />
+                                Récents {sortBy === "recent" && (sortDir === "desc" ? "▼" : "▲")}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (sortBy === "creation") {
+                                    setSortDir(sortDir === "desc" ? "asc" : "desc");
+                                  } else {
+                                    setSortBy("creation");
+                                    setSortDir("desc");
+                                  }
+                                  setShowMobileFilters(false);
+                                }}
+                                className={`flex-1 p-3 rounded-lg transition-colors ${
+                                  sortBy === "creation" 
+                                    ? "bg-primary text-white" 
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                }`}
+                              >
+                                Création {sortBy === "creation" && (sortDir === "desc" ? "▼" : "▲")}
+                              </button>
                     </div>
                   </div>
 
@@ -169,7 +187,14 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
 
           <div className="flex gap-2">
             <motion.button
-              onClick={() => setSortBy("recent")}
+              onClick={() => {
+                if (sortBy === "recent") {
+                  setSortDir(sortDir === "desc" ? "asc" : "desc");
+                } else {
+                  setSortBy("recent");
+                  setSortDir("desc");
+                }
+              }}
               className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
                 sortBy === "recent"
                   ? "bg-primary text-white"
@@ -183,11 +208,18 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
                 size={20}
                 className={sortBy === "recent" ? "text-white" : "text-gray-700"}
               />
-              Récents
+              Récents {sortBy === "recent" && (sortDir === "desc" ? "▼" : "▲")}
             </motion.button>
 
             <motion.button
-              onClick={() => setSortBy("creation")}
+              onClick={() => {
+                if (sortBy === "creation") {
+                  setSortDir(sortDir === "desc" ? "asc" : "desc");
+                } else {
+                  setSortBy("creation");
+                  setSortDir("desc");
+                }
+              }}
               className={`px-4 py-2 grow items-center justify-center cursor-pointer rounded-lg font-medium text-sm transition-colors ${
                 sortBy === "creation"
                   ? "bg-primary text-white"
@@ -196,7 +228,7 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 1 }}
             >
-              Dates de création
+              Dates de création {sortBy === "creation" && (sortDir === "desc" ? "▼" : "▲")}
             </motion.button>
           </div>
 
