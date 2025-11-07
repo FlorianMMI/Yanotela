@@ -92,6 +92,8 @@ export default function Home() {
           notes={filteredNotes}
           onNoteCreated={fetchNotes}
           isLoading={loading}
+          searchTerm={searchTerm}
+          searchInContent={searchInContent}
         />
       </Suspense>
 
