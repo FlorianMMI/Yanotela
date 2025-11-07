@@ -377,7 +377,7 @@ export const userController = {
         const { theme } = req.body;
 
         // Valider le thème
-        const validThemes = ['light', 'dark', 'blue', 'green', 'purple'];
+        const validThemes = ['light', 'dark', 'blue', 'green', 'purple', 'night'];
         if (!theme || !validThemes.includes(theme)) {
             return res.status(400).json({ 
                 message: 'Thème invalide', 

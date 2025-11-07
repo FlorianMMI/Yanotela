@@ -13,7 +13,7 @@ export default function ThemeColorMeta() {
     // Fonction pour obtenir la couleur du thème actif
     const updateThemeColor = () => {
       const body = document.body;
-      const theme = body.className.match(/\b(light|dark|blue|green|purple)\b/)?.[0] || 'light';
+      const theme = body.className.match(/\b(light|dark|blue|green|purple|night)\b/)?.[0] || 'light';
       
       const themeColors: Record<string, string> = {
         light: '#E9EBDB',   // --light-background
@@ -21,6 +21,7 @@ export default function ThemeColorMeta() {
         blue: '#e0e7ff',    // --blue-background
         green: '#dcfce7',   // --green-background
         purple: '#f3e8ff',  // --purple-background
+        night: '#0f172a',   // --night-background
       };
 
       const color = themeColors[theme];
