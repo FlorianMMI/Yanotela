@@ -368,7 +368,7 @@ export default function FlashNoteEditor() {
         </div>
       ) : (
         // Éditeur principal
-        <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible">
+        <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible mb-20 md:mb-0">
           {/* Indicateur de sauvegarde */}
           <div className="absolute bottom-4 right-4 z-10">
             <div className="group relative">

@@ -455,7 +455,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
             <div 
-                className="md:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 transition-all duration-200"
+                className="md:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-20 transition-all duration-200"
                 style={{ bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '0' }}
             >
                 <div className="flex items-center justify-around p-3 gap-2">
