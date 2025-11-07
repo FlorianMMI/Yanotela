@@ -252,6 +252,25 @@ jobs:
                   - yanotela-dev
                 restart: unless-stopped
                 command: sh -c "npx prisma migrate deploy && npm start"
+              yjs-server:
+                image: node:18-alpine
+                container_name: yanotela-yjs-server
+                working_dir: /app
+                ports:
+                  - "1234:1234"
+                environment:
+                  - HOST=0.0.0.0
+                  - PORT=1234
+                  - YPERSISTENCE=/app/yjs-db
+                volumes:
+                  - ./Server/yjs-db:/app/yjs-db
+                command: sh -c "npm install -g @y/websocket-server && npx y-websocket"
+                restart: unless-stopped
+                healthcheck:
+                  test: ["CMD", "nc", "-z", "localhost", "1234"]
+                  interval: 10s
+                  timeout: 3s
+                  retries: 3
               frontend-dev:
                 image: ${{ env.DOCKER_FRONTEND_REPO }}:develop
                 container_name: yanotela-frontend-dev
