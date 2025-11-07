@@ -34,7 +34,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
     const [isInNumberedList, setIsInNumberedList] = useState(false);
     const [alignment, setAlignment] = useState<'left' | 'center' | 'right' | 'justify' | ''>('');
     const [keyboardHeight, setKeyboardHeight] = useState(0);
-    const [viewportOffset, setViewportOffset] = useState(0);
 
     const $updateToolbar = useCallback(() => {
         const selection = $getSelection();
@@ -233,14 +232,10 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                         // Sur mobile, quand le clavier s'ouvre, visualViewport.height diminue
                         const viewportHeight = window.visualViewport.height;
                         const windowHeight = window.innerHeight;
-                        const offsetTop = window.visualViewport.offsetTop || 0;
                         
                         // Calculer la hauteur du clavier
                         // La hauteur du clavier = hauteur de l'écran - hauteur du viewport visible
                         const keyboardHeight = Math.max(0, windowHeight - viewportHeight);
-                        
-                        // Mettre à jour l'offset vertical du viewport (important pour le scroll)
-                        setViewportOffset(offsetTop);
                         
                         // Mettre à jour seulement si c'est significatif (> 100px pour éviter les faux positifs)
                         if (keyboardHeight > 100) {
@@ -265,14 +260,13 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
             // Petit délai pour laisser le clavier se fermer
             setTimeout(() => {
                 setKeyboardHeight(0);
-                setViewportOffset(0);
             }, 300);
         };
 
         // Utiliser visualViewport si disponible (meilleure détection du clavier)
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', handleViewportChange);
-            window.visualViewport.addEventListener('scroll', handleViewportChange);
+            // Ne pas écouter le scroll - on veut que la toolbar reste fixe !
             document.addEventListener('focusin', handleFocusIn);
             document.addEventListener('focusout', handleFocusOut);
             // Appeler une fois au montage pour initialiser
@@ -282,7 +276,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
         return () => {
             if (window.visualViewport) {
                 window.visualViewport.removeEventListener('resize', handleViewportChange);
-                window.visualViewport.removeEventListener('scroll', handleViewportChange);
                 document.removeEventListener('focusin', handleFocusIn);
                 document.removeEventListener('focusout', handleFocusOut);
             }
@@ -491,9 +484,8 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
             <div 
                 className="md:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
                 style={{ 
-                    bottom: `${keyboardHeight - viewportOffset}px`,
-                    transition: 'bottom 0.1s ease-out',
-                    transform: `translateY(${viewportOffset}px)`
+                    bottom: `${keyboardHeight}px`,
+                    transition: 'bottom 0.2s ease-out'
                 }}
             >
                 <div className="flex items-center justify-around p-3 gap-2">
