@@ -89,9 +89,9 @@ export default function InputModified({
               value={currentValue}
               onChange={handleInputChange}
               disabled={!isEditing}
-              className={`w-full px-2 py-1 md:px-3 md:py-2 border-2 rounded-lg text-clrprincipal text-base md:text-sm transition-all duration-300 ${
+              className={`w-full px-2 py-1 md:px-3 md:py-2 border-2 rounded-lg text-gray-900 text-base md:text-sm transition-all duration-300 ${
                 isEditing
-                  ? `bg-clrsecondaire ${isValueEmpty ? "border-dangerous-500" : "border-primary"} focus:ring-2 focus:ring-primary focus:border-transparent`
+                  ? `bg-clrsecondaire ${isValueEmpty ? "border-dangerous-500" : "border-primary"} focus:ring-2 text-gray-700 focus:ring-primary focus:border-transparent`
                   : "bg-gray-200 border-gray-300  cursor-not-allowed"
               }`}
             />
