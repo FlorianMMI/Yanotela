@@ -166,7 +166,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     
     // ✅ Sauvegarder en base de données
     SaveNote(id, { Titre: finalTitle }).then(() => {
-      console.log('✅ Titre sauvegardé en BDD:', finalTitle);
+      
     }).catch((error) => {
       console.error('❌ Erreur sauvegarde titre:', error);
     });
@@ -255,28 +255,26 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   useEffect(() => {
     if (!editor || !ytext || !isYjsReady || isReadOnly) return;
 
-    console.log('[AutoSave] 🚀 Sauvegarde HTTP périodique activée (toutes les 10s)');
-
     const interval = setInterval(async () => {
       try {
         // Récupérer le contenu actuel depuis Yjs (source de vérité)
         const yjsContent = ytext.toString();
         
         if (!yjsContent) {
-          console.log('[AutoSave] ⏭️ Pas de contenu Yjs, skip');
+          
           return;
         }
 
         // Sauvegarder en BDD (avec titre actuel)
         await uploadContent(id, noteTitle, yjsContent);
-        console.log('[AutoSave] ✅ Sauvegarde HTTP OK');
+        
       } catch (error) {
         console.error('[AutoSave] ❌ Erreur sauvegarde HTTP:', error);
       }
     }, 10000); // 10 secondes
 
     return () => {
-      console.log('[AutoSave] 🛑 Sauvegarde HTTP périodique désactivée');
+      
       clearInterval(interval);
     };
   }, [editor, ytext, isYjsReady, isReadOnly, id, noteTitle]);
@@ -312,13 +310,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   // ✅ NOUVEAU: Écouter directement les mises à jour de titre via socket
   useEffect(() => {
-    console.log('[Note Page] 🎧 Enregistrement listener titleUpdate pour note:', id);
-    
+
     const handleTitleUpdate = (data: { noteId: string; titre: string; userId: number; pseudo: string }) => {
-      console.log('[Note Page] 📥 Événement titleUpdate reçu:', data);
-      
+
       if (data.noteId !== id) {
-        console.log('[Note Page] ⏭️ Événement ignoré (autre note)');
+        
         return;
       }
       
@@ -333,7 +329,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     socketService.onTitleUpdate(handleTitleUpdate);
     
     return () => {
-      console.log('[Note Page] 🧹 Nettoyage listener titleUpdate');
+      
       socketService.off('titleUpdate', handleTitleUpdate);
     };
   }, [id]);
@@ -350,7 +346,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           const userData = await response.json();
           setUserPseudo(userData.pseudo || 'Anonyme');
           setUserId(userData.userId || null);
-          console.log('👤 Utilisateur connecté:', { pseudo: userData.pseudo, userId: userData.userId });
+          
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du pseudo:', error);
@@ -576,7 +572,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         setTimeout(async () => {
           try {
             await uploadContent(id, noteTitle, contentString);
-            console.log('✅ Sauvegarde HTTP périodique OK');
+            
           } catch (error) {
             console.error('❌ Erreur sauvegarde HTTP périodique:', error);
           }
@@ -598,8 +594,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           // Indiquer que l'utilisateur tape
           setIsTyping(true);
           socketService.emitUserTyping(id, true);
-          console.log('[OnChangeBehavior] 📤 emitUserTyping(true) appelé');
-          
+
           // Calculer le nombre de caractères modifiés
           const currentContent = editorState.read(() => {
             const root = $getRoot();
@@ -767,8 +762,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           // Si pas d'erreur et chargement terminé :
           <>
             <div onClick={handleClick} className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible">
-             
-              
+
               {/* Drawing Board */}
               {!isReadOnly && (
                 <DrawingBoard 
@@ -777,9 +771,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                   onClose={() => setIsDrawingBoardOpen(false)}
                 />
               )}
-              
-           
-              
+
               {/* Ne monter le LexicalComposer que quand initialEditorState est prêt ET Yjs est prêt */}
               {initialEditorState && isYjsReady && ytext ? (
                 <LexicalComposer initialConfig={initialConfig} key={id}>

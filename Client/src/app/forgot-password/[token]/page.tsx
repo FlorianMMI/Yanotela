@@ -15,7 +15,7 @@ export default function ResetPasswordTokenPage() {
   // Protection contre les tokens undefined/null/invalides qui peuvent causer des erreurs React
   if (!token || typeof token !== 'string' || token.length < 10) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-full flex items-center justify-center p-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold text- mb-4">Token manquant</h1>
           <p className="text-gray-100">Le lien de réinitialisation semble invalide.</p>
@@ -32,7 +32,7 @@ export default function ResetPasswordTokenPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-full flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center">

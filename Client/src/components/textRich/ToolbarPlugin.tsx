@@ -33,6 +33,8 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
     const [isInBulletList, setIsInBulletList] = useState(false);
     const [isInNumberedList, setIsInNumberedList] = useState(false);
     const [alignment, setAlignment] = useState<'left' | 'center' | 'right' | 'justify' | ''>('');
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [toolbarBottom, setToolbarBottom] = useState(0);
 
     const $updateToolbar = useCallback(() => {
         const selection = $getSelection();
@@ -217,6 +219,78 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
             ),
         );
     }, [editor, $updateToolbar]);
+
+    // Détecter l'apparition du clavier sur mobile et ajuster la position de la toolbar
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        let ticking = false;
+        
+        const handleViewportChange = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    if (window.visualViewport) {
+                        // Sur mobile, quand le clavier s'ouvre, visualViewport.height diminue
+                        const viewportHeight = window.visualViewport.height;
+                        const viewportOffsetTop = window.visualViewport.offsetTop || 0;
+                        const viewportOffsetLeft = window.visualViewport.offsetLeft || 0;
+                        const windowHeight = window.innerHeight;
+                        
+                        // Calculer la hauteur du clavier
+                        const keyboardHeight = Math.max(0, windowHeight - viewportHeight);
+                        
+                        // Calculer la position absolue du bas du viewport visible
+                        // Cette position change quand on scroll
+                        const absoluteBottom = viewportOffsetTop + viewportHeight - keyboardHeight;
+                        
+                        // Mettre à jour seulement si c'est significatif (> 100px pour éviter les faux positifs)
+                        if (keyboardHeight > 100) {
+                            setKeyboardHeight(keyboardHeight);
+                            setToolbarBottom(absoluteBottom);
+                        } else {
+                            setKeyboardHeight(0);
+                            setToolbarBottom(0);
+                        }
+                    }
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        // Écouter les changements de focus pour détecter quand l'utilisateur commence à taper
+        const handleFocusIn = () => {
+            // Petit délai pour laisser le clavier s'ouvrir
+            setTimeout(handleViewportChange, 300);
+        };
+
+        const handleFocusOut = () => {
+            // Petit délai pour laisser le clavier se fermer
+            setTimeout(() => {
+                setKeyboardHeight(0);
+                setToolbarBottom(0);
+            }, 300);
+        };
+
+        // Utiliser visualViewport si disponible (meilleure détection du clavier)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleViewportChange);
+            window.visualViewport.addEventListener('scroll', handleViewportChange);
+            document.addEventListener('focusin', handleFocusIn);
+            document.addEventListener('focusout', handleFocusOut);
+            // Appeler une fois au montage pour initialiser
+            handleViewportChange();
+        }
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', handleViewportChange);
+                window.visualViewport.removeEventListener('scroll', handleViewportChange);
+                document.removeEventListener('focusin', handleFocusIn);
+                document.removeEventListener('focusout', handleFocusOut);
+            }
+        };
+    }, []);
 
     const applyStyleText = useCallback(
         (styles: Record<string, string>) => {
@@ -417,7 +491,17 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
             </div>
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 safe-area-inset-bottom">
+            <div 
+                className="md:hidden bg-white border-t border-gray-200 shadow-lg z-50 mobile-toolbar-sticky"
+                style={{ 
+                    position: 'fixed',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    transition: 'transform 0.2s ease-out',
+                    willChange: 'transform'
+                }}
+            >
                 <div className="flex items-center justify-around p-3 gap-2">
                     {/* Format submenu */}
                     <div className="relative">

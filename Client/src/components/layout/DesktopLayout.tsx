@@ -34,7 +34,7 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
       </div>
 
       {/* Desktop: nouvelle architecture */}
-      <div className="hidden md:flex h-screen">
+      <div className="hidden md:flex h-full">
         {/* Sidebar */}
         <SideBar />
 

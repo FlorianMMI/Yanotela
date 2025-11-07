@@ -48,13 +48,13 @@ export default function Login() {
   // Afficher un loader pendant la vérification
   if (isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-full flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-full flex items-center justify-center p-4">
       <MobileFlashNoteButton />
       
       <div className="w-full max-w-md space-y-8">

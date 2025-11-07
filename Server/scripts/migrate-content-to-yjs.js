@@ -37,13 +37,7 @@ const isForce = args.includes('--force');
 const batchSize = parseInt(args.find(arg => arg.startsWith('--batch='))?.split('=')[1] || '10', 10);
 const targetNoteId = args.find(arg => arg.startsWith('--note-id='))?.split('=')[1];
 
-console.log('🔄 Migration Content → yjsState');
-console.log('================================');
-console.log(`Mode: ${isDryRun ? '🧪 DRY RUN (simulation)' : '✅ PRODUCTION'}`);
-console.log(`Force: ${isForce ? 'Oui' : 'Non'}`);
-console.log(`Batch size: ${batchSize}`);
-if (targetNoteId) console.log(`Note cible: ${targetNoteId}`);
-console.log('');
+if (targetNoteId) 
 
 // ============================================================================
 // Fonctions utilitaires
@@ -96,22 +90,22 @@ function convertContentToYjs(content) {
       
       if (text.length > 0) {
         ytext.insert(0, text);
-        console.log(`   ✓ Lexical JSON parsé (${text.length} caractères)`);
+        
       } else {
-        console.log(`   ⚠️ Lexical JSON vide`);
+        
       }
     } else {
       // JSON mais pas Lexical, insérer tel quel
       ytext.insert(0, content);
-      console.log(`   ✓ JSON non-Lexical inséré (${content.length} caractères)`);
+      
     }
   } catch {
     // Pas du JSON, insérer comme texte brut
     if (content && content.length > 0) {
       ytext.insert(0, content);
-      console.log(`   ✓ Texte brut inséré (${content.length} caractères)`);
+      
     } else {
-      console.log(`   ⚠️ Contenu vide`);
+      
     }
   }
 
@@ -126,17 +120,15 @@ function convertContentToYjs(content) {
 async function migrateNote(note) {
   const { id, Titre, Content, yjsState } = note;
 
-  console.log(`📝 Note: ${id} - "${Titre}"`);
-
   // Vérifier si déjà migré
   if (yjsState && yjsState.length > 0 && !isForce) {
-    console.log(`   ⏭️  Déjà migré (${yjsState.length} bytes), ignoré`);
+    
     return { status: 'skipped', reason: 'already-migrated' };
   }
 
   // Vérifier si contenu vide
   if (!Content || Content.length === 0) {
-    console.log(`   ⏭️  Contenu vide, ignoré`);
+    
     return { status: 'skipped', reason: 'empty-content' };
   }
 
@@ -145,7 +137,7 @@ async function migrateNote(note) {
     const yjsStateBuffer = convertContentToYjs(Content);
 
     if (isDryRun) {
-      console.log(`   🧪 [DRY RUN] Aurait créé yjsState de ${yjsStateBuffer.length} bytes`);
+      
       return { status: 'simulated', size: yjsStateBuffer.length };
     }
 
@@ -155,7 +147,6 @@ async function migrateNote(note) {
       data: { yjsState: yjsStateBuffer }
     });
 
-    console.log(`   ✅ Migré avec succès (${yjsStateBuffer.length} bytes)`);
     return { status: 'success', size: yjsStateBuffer.length };
   } catch (error) {
     console.error(`   ❌ Erreur migration:`, error.message);
@@ -191,11 +182,9 @@ async function main() {
 
     // Compter le total
     const totalCount = await prisma.note.count({ where });
-    console.log(`📊 Total de notes à traiter: ${totalCount}`);
-    console.log('');
 
     if (totalCount === 0) {
-      console.log('✅ Aucune note à migrer !');
+      
       return;
     }
 
@@ -204,7 +193,6 @@ async function main() {
     
     while (offset < totalCount) {
       console.log(`\n📦 Batch ${Math.floor(offset / batchSize) + 1} (notes ${offset + 1}-${Math.min(offset + batchSize, totalCount)})`);
-      console.log('─'.repeat(50));
 
       const notes = await prisma.note.findMany({
         where,
@@ -242,24 +230,13 @@ async function main() {
     }
 
     // Rapport final
-    console.log('\n');
-    console.log('═'.repeat(50));
-    console.log('📊 RAPPORT DE MIGRATION');
-    console.log('═'.repeat(50));
-    console.log(`Total traité:      ${stats.total}`);
-    console.log(`✅ Migrés:         ${stats.migrated}`);
-    console.log(`⏭️  Ignorés:        ${stats.skipped}`);
-    console.log(`❌ Erreurs:        ${stats.errors}`);
+
     console.log(`📦 Taille totale:  ${(stats.totalSize / 1024).toFixed(2)} KB`);
     
     if (isDryRun) {
-      console.log('');
-      console.log('🧪 Mode DRY RUN - Aucune modification appliquée');
-      console.log('   Relancer sans --dry-run pour appliquer la migration');
+
     } else if (stats.migrated > 0) {
-      console.log('');
-      console.log('✅ Migration terminée avec succès !');
-      console.log('   Les notes migrées utilisent maintenant Yjs pour la collaboration');
+
     }
 
   } catch (error) {

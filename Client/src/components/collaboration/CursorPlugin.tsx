@@ -37,19 +37,16 @@ export default function CursorPlugin({ noteId, currentUserId, currentUserPseudo 
 
   // ✅ NOUVEAU: Écouter les événements de frappe
   useEffect(() => {
-    console.log('⌨️ CursorPlugin: Enregistrement du listener typing');
-    
+
     const handleUserTyping = (data: { noteId: string; isTyping: boolean; userId: number; pseudo: string }) => {
       // Ignorer les événements d'autres notes
       if (data.noteId !== noteId) return;
       
       // ✅ CORRECTION: Ignorer nos propres événements en comparant l'userId
       if (data.userId === currentUserId) {
-        console.log('[CursorPlugin] ⏭️ Événement typing ignoré (c\'est moi)', { myId: currentUserId, eventId: data.userId });
+        
         return;
       }
-
-      console.log(`⌨️ [CursorPlugin] ${data.pseudo} isTyping:`, data.isTyping);
 
       setTypingUsers((prev) => {
         const updated = new Map(prev);
@@ -65,14 +62,13 @@ export default function CursorPlugin({ noteId, currentUserId, currentUserPseudo 
     socketService.onUserTyping(handleUserTyping);
 
     return () => {
-      console.log('⌨️ CursorPlugin: Nettoyage du listener typing');
+      
       socketService.off('userTyping', handleUserTyping);
     };
   }, [noteId, currentUserPseudo, currentUserId]);
 
   useEffect(() => {
-    console.log('🎯 CursorPlugin: Enregistrement des listeners awareness');
-    
+
     const unsubscribe = YjsAwarenessProvider.onAwarenessChange(noteId, (state: AwarenessState) => {
       console.log('📍 [CursorPlugin] Awareness state reçu:', {
         userCount: state.userCount,
@@ -87,21 +83,20 @@ export default function CursorPlugin({ noteId, currentUserId, currentUserPseudo 
       
       const filtered = new Map<number, AwarenessUserState>();
       state.users.forEach((userState, clientId) => {
-        console.log(`👤 User ${userState.name} (clientId: ${clientId}) - Mon pseudo: ${currentUserPseudo}`);
+        
         if (userState.name !== currentUserPseudo) {
           filtered.set(clientId, userState);
-          console.log(`✅ Curseur ajouté pour ${userState.name}`);
+          
         } else {
-          console.log(`⏭️ Curseur ignoré (c'est moi)`);
+          
         }
       });
-      
-      console.log(`📊 Total curseurs distants: ${filtered.size}`);
+
       setRemoteCursors(filtered);
     });
     
     return () => {
-      console.log('🎯 CursorPlugin: Nettoyage des listeners awareness');
+      
       unsubscribe();
     };
   }, [noteId, currentUserPseudo]);
@@ -113,7 +108,7 @@ export default function CursorPlugin({ noteId, currentUserId, currentUserPseudo 
         
         if (!$isRangeSelection(selection)) {
           YjsAwarenessProvider.setLocalState(noteId, { cursor: null });
-          console.log('📤 [CursorPlugin] Curseur désactivé (pas de sélection)');
+          
           return;
         }
 
@@ -126,7 +121,7 @@ export default function CursorPlugin({ noteId, currentUserId, currentUserPseudo 
             head: focus.offset,
           }
         });
-        console.log(`📤 [CursorPlugin] Curseur émis: offset ${anchor.offset}`);
+        
       });
     };
 
@@ -200,10 +195,6 @@ export default function CursorPlugin({ noteId, currentUserId, currentUserPseudo 
             height: rect.height || 20,
           });
 
-          console.log(`📍 Curseur ${userState.name} à l'offset ${offset}:`, {
-            x: rect.left - editorRect.left,
-            y: rect.top - editorRect.top,
-          });
         }
       } catch (err) {
         console.warn('Erreur calcul position curseur:', err);
