@@ -138,7 +138,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // ✅ Provider factory pour CollaborationPlugin
   const providerFactory = useCallback(
     (docId: string, yjsDocMap: Map<string, Y.Doc>) => {
-      console.log('🏭 Creating WebSocket provider for note:', docId);
+      
       return createWebsocketProvider(docId, yjsDocMap);
     },
     []

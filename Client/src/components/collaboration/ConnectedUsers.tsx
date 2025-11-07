@@ -59,7 +59,6 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
           }
         });
 
-        console.log('[ConnectedUsers] Utilisateurs actifs:', users.length, users);
         setActiveUsers(users);
         setIsLoading(false);
       } catch (error) {
