@@ -34,6 +34,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
     const [isInNumberedList, setIsInNumberedList] = useState(false);
     const [alignment, setAlignment] = useState<'left' | 'center' | 'right' | 'justify' | ''>('');
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [toolbarBottom, setToolbarBottom] = useState(0);
 
     const $updateToolbar = useCallback(() => {
         const selection = $getSelection();
@@ -231,17 +232,24 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                     if (window.visualViewport) {
                         // Sur mobile, quand le clavier s'ouvre, visualViewport.height diminue
                         const viewportHeight = window.visualViewport.height;
+                        const viewportOffsetTop = window.visualViewport.offsetTop || 0;
+                        const viewportOffsetLeft = window.visualViewport.offsetLeft || 0;
                         const windowHeight = window.innerHeight;
                         
                         // Calculer la hauteur du clavier
-                        // La hauteur du clavier = hauteur de l'écran - hauteur du viewport visible
                         const keyboardHeight = Math.max(0, windowHeight - viewportHeight);
+                        
+                        // Calculer la position absolue du bas du viewport visible
+                        // Cette position change quand on scroll
+                        const absoluteBottom = viewportOffsetTop + viewportHeight - keyboardHeight;
                         
                         // Mettre à jour seulement si c'est significatif (> 100px pour éviter les faux positifs)
                         if (keyboardHeight > 100) {
                             setKeyboardHeight(keyboardHeight);
+                            setToolbarBottom(absoluteBottom);
                         } else {
                             setKeyboardHeight(0);
+                            setToolbarBottom(0);
                         }
                     }
                     ticking = false;
@@ -260,13 +268,14 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
             // Petit délai pour laisser le clavier se fermer
             setTimeout(() => {
                 setKeyboardHeight(0);
+                setToolbarBottom(0);
             }, 300);
         };
 
         // Utiliser visualViewport si disponible (meilleure détection du clavier)
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', handleViewportChange);
-            // Ne pas écouter le scroll - on veut que la toolbar reste fixe !
+            window.visualViewport.addEventListener('scroll', handleViewportChange);
             document.addEventListener('focusin', handleFocusIn);
             document.addEventListener('focusout', handleFocusOut);
             // Appeler une fois au montage pour initialiser
@@ -276,6 +285,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
         return () => {
             if (window.visualViewport) {
                 window.visualViewport.removeEventListener('resize', handleViewportChange);
+                window.visualViewport.removeEventListener('scroll', handleViewportChange);
                 document.removeEventListener('focusin', handleFocusIn);
                 document.removeEventListener('focusout', handleFocusOut);
             }
@@ -482,10 +492,14 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
             <div 
-                className="md:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
+                className="md:hidden bg-white border-t border-gray-200 shadow-lg z-50 mobile-toolbar-sticky"
                 style={{ 
-                    bottom: `${keyboardHeight}px`,
-                    transition: 'bottom 0.2s ease-out'
+                    position: 'fixed',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    transition: 'transform 0.2s ease-out',
+                    willChange: 'transform'
                 }}
             >
                 <div className="flex items-center justify-around p-3 gap-2">

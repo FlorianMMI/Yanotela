@@ -382,5 +382,14 @@ input, textarea, select, [role="button"], button {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
 
+/* Toolbar mobile qui reste collée au clavier */
+@supports (height: 100dvh) {
+  .mobile-toolbar-sticky {
+    position: fixed !important;
+    bottom: 0 !important;
+    /* Utiliser le viewport dynamique qui s'ajuste avec le clavier */
+    transform: translateY(calc(100vh - 100dvh)) !important;
+  }
 }
