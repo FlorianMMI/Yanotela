@@ -12,11 +12,13 @@ interface NoteHeaderProps {
   setSearchTerm: (term: string) => void;
   sortBy: "recent";
   setSortBy: (sort: "recent") => void;
+  sortDir: "asc" | "desc";
+  setSortDir: (d: "asc" | "desc") => void;
   collaborationFilter: "all" | "collaborative" | "solo";
   setCollaborationFilter: (filter: "all" | "collaborative" | "solo") => void;
 }
 
-export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortBy, collaborationFilter, setCollaborationFilter }: NoteHeaderProps) {
+export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortBy, sortDir, setSortDir, collaborationFilter, setCollaborationFilter }: NoteHeaderProps) {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -83,16 +85,24 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
               >
                 <div className="space-y-2">
                   {/* Tri */}
-                  {/* <div>
+                  <div>
                     <p className="text-sm font-medium text-gray-700 mb-2">Trier par</p>
-                    <button
-                      onClick={() => setSortBy("recent")}
-                      className="w-full flex items-center gap-2 p-3 rounded-lg bg-primary text-white"
-                    >
-                      <Icon name="recent" size={20} className="text-white" />
-                      Récents
-                    </button>
-                  </div> */}
+                    <div>
+                      <button
+                        onClick={() => {
+                          // Only recent sort for notes: toggle direction
+                          setSortDir(sortDir === "desc" ? "asc" : "desc");
+                          setShowMobileFilters(false);
+                        }}
+                        className={`w-full flex items-center gap-2 p-3 rounded-lg transition-colors ${
+                          "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        <Icon name="recent" size={20} className={"text-gray-700"} />
+                        Récents {sortDir === "desc" ? "▼" : "▲"}
+                      </button>
+                    </div>
+                  </div>
 
                   {/* Type de note */}
                   <div>
@@ -155,13 +165,14 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
             <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           </div>
 
-          {/* <div className="flex gap-2">
+          <div className="flex gap-2">
             <motion.button
-              onClick={() => setSortBy("recent")}
+              onClick={() => {
+                // Only recent sort for notes: toggle direction
+                setSortDir(sortDir === "desc" ? "asc" : "desc");
+              }}
               className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
-                sortBy === "recent"
-                  ? "bg-primary text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
+                "bg-white text-gray-700 border border-gray-300 hover:border-primary"
               }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 1 }}
@@ -169,11 +180,11 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
               <Icon
                 name="recent"
                 size={20}
-                className={sortBy === "recent" ? "text-white" : "text-gray-700"}
+                className={"text-gray-700"}
               />
-              Récents
+              Récents {sortDir === "desc" ? "▼" : "▲"}
             </motion.button>
-          </div> */}
+          </div>
 
           {/* Filtre de collaboration */}
           <div className="relative">
