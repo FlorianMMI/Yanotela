@@ -16,6 +16,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<"recent">("recent");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
+  const [searchInContent, setSearchInContent] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -41,8 +42,16 @@ export default function Home() {
   const filteredNotes = Array.isArray(notes) ? notes
     .filter(note => {
       // Filtre de recherche
-      const matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        note.Content?.toLowerCase().includes(searchTerm.toLowerCase());
+      let matchesSearch = true;
+      if (searchTerm) {
+        if (searchInContent) {
+          // Rechercher dans le contenu
+          matchesSearch = note.Content?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+        } else {
+          // Rechercher par titre (par défaut)
+          matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+        }
+      }
       
       // Filtre de collaboration
       // Personnelles : 1 seul utilisateur (nous, collaboratorCount = 0 ou undefined ou = 1)
@@ -74,6 +83,8 @@ export default function Home() {
         setSortDir={setSortDir}
         collaborationFilter={collaborationFilter}
         setCollaborationFilter={setCollaborationFilter}
+        searchInContent={searchInContent}
+        setSearchInContent={setSearchInContent}
       />
 
       <Suspense fallback={<div></div>}>

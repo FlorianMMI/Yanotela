@@ -16,9 +16,22 @@ interface NoteHeaderProps {
   setSortDir: (d: "asc" | "desc") => void;
   collaborationFilter: "all" | "collaborative" | "solo";
   setCollaborationFilter: (filter: "all" | "collaborative" | "solo") => void;
+  searchInContent?: boolean;
+  setSearchInContent?: (value: boolean) => void;
 }
 
-export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortBy, sortDir, setSortDir, collaborationFilter, setCollaborationFilter }: NoteHeaderProps) {
+export default function NoteHeader({ 
+  searchTerm, 
+  setSearchTerm, 
+  sortBy, 
+  setSortBy, 
+  sortDir, 
+  setSortDir, 
+  collaborationFilter, 
+  setCollaborationFilter,
+  searchInContent = false,
+  setSearchInContent
+}: NoteHeaderProps) {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -69,7 +82,13 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
                 exit={{ height: 0, opacity: 0 }}
                 className="mt-3 overflow-hidden"
               >
-                <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+                <SearchBar 
+                  searchTerm={searchTerm} 
+                  setSearchTerm={setSearchTerm}
+                  searchInContent={searchInContent}
+                  setSearchInContent={setSearchInContent}
+                  showContentToggle={true}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -162,7 +181,13 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
         <div className="flex items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
 
           <div className="flex justify-center items-center">
-            <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            <SearchBar 
+              searchTerm={searchTerm} 
+              setSearchTerm={setSearchTerm}
+              searchInContent={searchInContent}
+              setSearchInContent={setSearchInContent}
+              showContentToggle={true}
+            />
           </div>
 
           <div className="flex gap-2">
