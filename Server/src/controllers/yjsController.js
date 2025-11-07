@@ -19,14 +19,12 @@ const prisma = new PrismaClient();
  */
 export async function saveYjsState(noteId, yjsStateBuffer) {
   try {
-    console.log(`[YJS Controller] 💾 Sauvegarde état Yjs pour note: ${noteId} (${yjsStateBuffer.length} bytes)`);
 
     await prisma.note.update({
       where: { id: noteId },
       data: { yjsState: yjsStateBuffer }
     });
 
-    console.log(`[YJS Controller] ✅ État Yjs sauvegardé avec succès`);
     return true;
   } catch (error) {
     console.error(`[YJS Controller] ❌ Erreur sauvegarde Yjs:`, error);
@@ -42,7 +40,6 @@ export async function saveYjsState(noteId, yjsStateBuffer) {
  */
 export async function loadYjsState(noteId) {
   try {
-    console.log(`[YJS Controller] 📂 Chargement état Yjs pour note: ${noteId}`);
 
     const note = await prisma.note.findUnique({
       where: { id: noteId },
@@ -50,23 +47,22 @@ export async function loadYjsState(noteId) {
     });
 
     if (!note) {
-      console.log(`[YJS Controller] ⚠️ Note introuvable: ${noteId}`);
+      
       return null;
     }
 
     if (note.yjsState && note.yjsState.length > 0) {
-      console.log(`[YJS Controller] ✅ État Yjs chargé (${note.yjsState.length} bytes)`);
+      
       return note.yjsState;
     }
 
     // Si pas d'état Yjs, migrer depuis Content
     if (note.Content) {
-      console.log(`[YJS Controller] 🔄 Migration du contenu vers Yjs`);
+      
       const yjsState = await migrateContentToYjs(noteId, note.Content);
       return yjsState;
     }
 
-    console.log(`[YJS Controller] ℹ️ Aucun contenu pour note: ${noteId}`);
     return null;
   } catch (error) {
     console.error(`[YJS Controller] ❌ Erreur chargement Yjs:`, error);
@@ -83,7 +79,6 @@ export async function loadYjsState(noteId) {
  */
 export async function mergeYjsUpdate(noteId, updateBuffer) {
   try {
-    console.log(`[YJS Controller] 🔀 Fusion update Yjs pour note: ${noteId}`);
 
     // Charger l'état actuel
     const currentState = await loadYjsState(noteId);
@@ -103,8 +98,7 @@ export async function mergeYjsUpdate(noteId, updateBuffer) {
     
     // Sauvegarder
     await saveYjsState(noteId, Buffer.from(newState));
-    
-    console.log(`[YJS Controller] ✅ Update fusionné avec succès`);
+
     return true;
   } catch (error) {
     console.error(`[YJS Controller] ❌ Erreur fusion update:`, error);
@@ -121,7 +115,6 @@ export async function mergeYjsUpdate(noteId, updateBuffer) {
  */
 export async function migrateContentToYjs(noteId, content) {
   try {
-    console.log(`[YJS Controller] 🔄 Migration contenu vers Yjs pour note: ${noteId}`);
 
     const ydoc = new Y.Doc();
     const ytext = ydoc.getText('content');
@@ -131,11 +124,11 @@ export async function migrateContentToYjs(noteId, content) {
       const parsed = JSON.parse(content);
       const text = extractTextFromLexical(parsed);
       ytext.insert(0, text);
-      console.log(`[YJS Controller] ✅ Contenu Lexical migré (${text.length} chars)`);
+      
     } catch {
       // Sinon insérer comme texte brut
       ytext.insert(0, content);
-      console.log(`[YJS Controller] ✅ Contenu texte migré (${content.length} chars)`);
+      
     }
 
     // Encoder l'état Yjs
@@ -196,8 +189,7 @@ export async function computeDiff(noteId, clientStateVector) {
     
     // Calculer le diff
     const diff = Y.encodeStateAsUpdate(ydoc, clientStateVector);
-    
-    console.log(`[YJS Controller] ✅ Diff calculé: ${diff.length} bytes`);
+
     return diff;
   } catch (error) {
     console.error(`[YJS Controller] ❌ Erreur calcul diff:`, error);

@@ -57,16 +57,12 @@ export function YjsCollaborationPlugin({
       return;
     }
 
-    console.log(`[YjsCollaborationPlugin] Initialisation pour note: ${noteId}`);
-
     // Observer les changements dans Y.Text
     const observer = (event: Y.YTextEvent, transaction: Y.Transaction) => {
       // Ne pas traiter les updates locaux (ils viennent de Lexical)
       if (transaction.origin === 'lexical-local') {
         return;
       }
-
-      console.log('[YjsCollaborationPlugin] 📥 Update Yjs reçu, mise à jour Lexical (préservation focus)');
 
       // ✅ CORRECTION CRITIQUE: Synchroniser l'EditorState COMPLET (pas juste le texte)
       const yjsContent = ytext.toString();
@@ -102,12 +98,7 @@ export function YjsCollaborationPlugin({
               savedFocusOffset = selection.focus.offset;
               savedAnchorKey = selection.anchor.key;
               savedFocusKey = selection.focus.key;
-              console.log('[YjsCollaborationPlugin] 💾 Sélection sauvegardée:', {
-                anchorKey: savedAnchorKey,
-                anchorOffset: savedAnchorOffset,
-                focusKey: savedFocusKey,
-                focusOffset: savedFocusOffset,
-              });
+              
             }
           });
         }
@@ -117,7 +108,7 @@ export function YjsCollaborationPlugin({
           () => {
             const newEditorState = editor.parseEditorState(parsedState);
             editor.setEditorState(newEditorState);
-            console.log('[YjsCollaborationPlugin] ✅ EditorState complet appliqué');
+            
           },
           {
             tag: 'yjs-sync',
@@ -140,10 +131,7 @@ export function YjsCollaborationPlugin({
                   selection.focus.key = savedFocusKey!;
                   selection.focus.offset = savedFocusOffset!;
                   selection.dirty = true;
-                  console.log('[YjsCollaborationPlugin] ✅ Sélection restaurée:', {
-                    anchorKey: savedAnchorKey,
-                    anchorOffset: savedAnchorOffset,
-                  });
+                  
                 }
               } catch (err) {
                 console.warn('[YjsCollaborationPlugin] ⚠️ Impossible de restaurer la sélection exacte:', err);
@@ -173,7 +161,7 @@ export function YjsCollaborationPlugin({
             if (root.getChildrenSize() === 0 || root.getTextContent() === '') {
               const newEditorState = editor.parseEditorState(parsedState);
               editor.setEditorState(newEditorState);
-              console.log('[YjsCollaborationPlugin] ✅ État initial Yjs appliqué');
+              
             }
           });
         }
@@ -182,11 +170,9 @@ export function YjsCollaborationPlugin({
       }
     }
 
-    console.log('[YjsCollaborationPlugin] ✅ Observer Yjs actif');
-
     // 🧹 Cleanup
     return () => {
-      console.log('[YjsCollaborationPlugin] Nettoyage observer');
+      
       ytext.unobserve(observer);
     };
   }, [editor, ytext, noteId]);
@@ -204,8 +190,6 @@ export function YjsCollaborationPlugin({
         return;
       }
 
-      console.log('[YjsCollaborationPlugin] 📤 Update Lexical détecté, mise à jour Yjs');
-
       // ✅ CORRECTION CRITIQUE: Sérialiser l'EditorState COMPLET (formatage, images, listes, etc.)
       const editorStateJSON = editorState.toJSON();
       const contentString = JSON.stringify(editorStateJSON);
@@ -217,16 +201,14 @@ export function YjsCollaborationPlugin({
         ytext.doc?.transact(() => {
           ytext.delete(0, ytext.length);
           ytext.insert(0, contentString);
-          console.log(`[YjsCollaborationPlugin] ✅ EditorState complet envoyé (${contentString.length} bytes)`);
+          
         }, 'lexical-local'); // Origine locale pour éviter les boucles
       }
     });
 
-    console.log('[YjsCollaborationPlugin] ✅ Listener Lexical actif');
-
     // 🧹 Cleanup
     return () => {
-      console.log('[YjsCollaborationPlugin] Nettoyage listener Lexical');
+      
       removeListener();
     };
   }, [editor, ytext]);

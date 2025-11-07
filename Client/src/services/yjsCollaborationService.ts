@@ -598,7 +598,7 @@ class YjsCollaborationService {
    */
   private log(...args: any[]): void {
     if (this.config.debug) {
-      console.log('[YjsService]', ...args);
+      
     }
   }
 }

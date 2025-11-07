@@ -12,8 +12,10 @@ interface FolderDetailHeaderProps {
   folderColor: string;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  sortBy: "recent";
-  setSortBy: (sort: "recent") => void;
+  sortBy: "recent" | "creation";
+  setSortBy: (sort: "recent" | "creation") => void;
+  sortDir: "asc" | "desc";
+  setSortDir: (d: "asc" | "desc") => void;
   collaborationFilter: "all" | "collaborative" | "solo";
   setCollaborationFilter: (filter: "all" | "collaborative" | "solo") => void;
   onMoreClick: () => void;
@@ -26,6 +28,8 @@ export default function FolderDetailHeader({
   setSearchTerm, 
   sortBy, 
   setSortBy, 
+  sortDir,
+  setSortDir,
   collaborationFilter, 
   setCollaborationFilter,
   onMoreClick
@@ -115,16 +119,49 @@ export default function FolderDetailHeader({
           >
             <div className="bg-white rounded-lg p-3 space-y-2">
               {/* Tri */}
-              {/* <div>
+              <div>
                 <p className="text-sm font-medium text-gray-700 mb-2">Trier par</p>
-                <button
-                  onClick={() => setSortBy("recent")}
-                  className="w-full flex items-center gap-2 p-3 rounded-lg bg-primary text-white"
-                >
-                  <Icon name="recent" size={20} className="text-white" />
-                  Récents
-                </button>
-              </div> */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (sortBy === "recent") {
+                        setSortDir(sortDir === "desc" ? "asc" : "desc");
+                      } else {
+                        setSortBy("recent");
+                        setSortDir("desc");
+                      }
+                      setShowMobileFilters(false);
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
+                      sortBy === "recent"
+                        ? "bg-primary text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    <Icon name="recent" size={20} className={sortBy === "recent" ? "text-white" : "text-gray-700"} />
+                    Récents {sortBy === "recent" && (sortDir === "desc" ? "▼" : "▲")}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (sortBy === "creation") {
+                        setSortDir(sortDir === "desc" ? "asc" : "desc");
+                      } else {
+                        setSortBy("creation");
+                        setSortDir("desc");
+                      }
+                      setShowMobileFilters(false);
+                    }}
+                    className={`flex-1 p-3 rounded-lg transition-colors ${
+                      sortBy === "creation"
+                        ? "bg-primary text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    Date de création {sortBy === "creation" && (sortDir === "desc" ? "▼" : "▲")}
+                  </button>
+                </div>
+              </div>
 
               {/* Type de note */}
               <div>
@@ -184,9 +221,16 @@ export default function FolderDetailHeader({
             <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           </div>
 
-          {/* <div className="flex gap-2">
+          <div className="flex gap-2">
             <motion.button
-              onClick={() => setSortBy("recent")}
+              onClick={() => {
+                if (sortBy === "recent") {
+                  setSortDir(sortDir === "desc" ? "asc" : "desc");
+                } else {
+                  setSortBy("recent");
+                  setSortDir("desc");
+                }
+              }}
               className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
                 sortBy === "recent"
                   ? "bg-primary text-white"
@@ -200,9 +244,29 @@ export default function FolderDetailHeader({
                 size={20}
                 className={sortBy === "recent" ? "text-white" : "text-gray-700"}
               />
-              Récents
+              Récents {sortBy === "recent" && (sortDir === "desc" ? "▼" : "▲")}
             </motion.button>
-          </div> */}
+
+            <motion.button
+              onClick={() => {
+                if (sortBy === "creation") {
+                  setSortDir(sortDir === "desc" ? "asc" : "desc");
+                } else {
+                  setSortBy("creation");
+                  setSortDir("desc");
+                }
+              }}
+              className={`px-4 py-2 grow items-center justify-center cursor-pointer rounded-lg font-medium text-sm transition-colors ${
+                sortBy === "creation"
+                  ? "bg-primary text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
+              }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 1 }}
+            >
+              Date de création {sortBy === "creation" && (sortDir === "desc" ? "▼" : "▲")}
+            </motion.button>
+          </div>
 
           {/* Filtre de collaboration */}
           <div className="relative">
