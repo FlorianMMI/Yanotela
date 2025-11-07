@@ -223,34 +223,61 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
-        const initialHeight = window.visualViewport?.height || window.innerHeight;
+        let ticking = false;
         
-        const handleViewportResize = () => {
-            const currentHeight = window.visualViewport?.height || window.innerHeight;
-            const heightDifference = initialHeight - currentHeight;
-            
-            // Si la hauteur a diminué significativement (> 150px), le clavier est probablement ouvert
-            if (heightDifference > 150) {
-                setKeyboardHeight(heightDifference);
-            } else {
-                setKeyboardHeight(0);
+        const handleViewportChange = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    if (window.visualViewport) {
+                        // Sur mobile, quand le clavier s'ouvre, visualViewport.height diminue
+                        const viewportHeight = window.visualViewport.height;
+                        const screenHeight = window.screen.height;
+                        const windowHeight = window.innerHeight;
+                        
+                        // Calculer la hauteur du clavier
+                        // La hauteur du clavier = hauteur de l'écran - hauteur du viewport visible
+                        const keyboardHeight = Math.max(0, windowHeight - viewportHeight);
+                        
+                        // Mettre à jour seulement si c'est significatif (> 100px pour éviter les faux positifs)
+                        if (keyboardHeight > 100) {
+                            setKeyboardHeight(keyboardHeight);
+                        } else {
+                            setKeyboardHeight(0);
+                        }
+                    }
+                    ticking = false;
+                });
+                ticking = true;
             }
+        };
+
+        // Écouter les changements de focus pour détecter quand l'utilisateur commence à taper
+        const handleFocusIn = () => {
+            // Petit délai pour laisser le clavier s'ouvrir
+            setTimeout(handleViewportChange, 300);
+        };
+
+        const handleFocusOut = () => {
+            // Petit délai pour laisser le clavier se fermer
+            setTimeout(() => setKeyboardHeight(0), 300);
         };
 
         // Utiliser visualViewport si disponible (meilleure détection du clavier)
         if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', handleViewportResize);
-            window.visualViewport.addEventListener('scroll', handleViewportResize);
-        } else {
-            window.addEventListener('resize', handleViewportResize);
+            window.visualViewport.addEventListener('resize', handleViewportChange);
+            window.visualViewport.addEventListener('scroll', handleViewportChange);
+            document.addEventListener('focusin', handleFocusIn);
+            document.addEventListener('focusout', handleFocusOut);
+            // Appeler une fois au montage pour initialiser
+            handleViewportChange();
         }
 
         return () => {
             if (window.visualViewport) {
-                window.visualViewport.removeEventListener('resize', handleViewportResize);
-                window.visualViewport.removeEventListener('scroll', handleViewportResize);
-            } else {
-                window.removeEventListener('resize', handleViewportResize);
+                window.visualViewport.removeEventListener('resize', handleViewportChange);
+                window.visualViewport.removeEventListener('scroll', handleViewportChange);
+                document.removeEventListener('focusin', handleFocusIn);
+                document.removeEventListener('focusout', handleFocusOut);
             }
         };
     }, []);
@@ -455,8 +482,11 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
             <div 
-                className="md:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 transition-all duration-200"
-                style={{ bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : '0' }}
+                className="md:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
+                style={{ 
+                    bottom: `${keyboardHeight}px`,
+                    transition: 'bottom 0.2s ease-out'
+                }}
             >
                 <div className="flex items-center justify-around p-3 gap-2">
                     {/* Format submenu */}

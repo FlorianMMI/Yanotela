@@ -248,7 +248,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                         {isDropdownOpen && (
                             <div 
                                 ref={dropdownRef}
-                                className="fixed z-[9999] bg-white border-2 border-gray-200 rounded-lg shadow-2xl max-h-96 overflow-hidden"
+                                className="fixed z-[9999] bg-white border-2 border-gray-200 rounded-lg shadow-2xl max-h-[30vh] overflow-hidden"
                                 style={{
                                     top: `${dropdownPosition.top}px`,
                                     left: `${dropdownPosition.left}px`,
@@ -283,7 +283,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                 </div>
 
                                 {/* Liste des dossiers filtrés */}
-                                <div className="max-h-80 overflow-y-auto">
+                                <div className="max-h-[20vh] overflow-y-auto">
                                     {filteredFolders.length === 0 ? (
                                         <div className="p-4 text-center text-sm text-gray-500">
                                             Aucun dossier trouvé
