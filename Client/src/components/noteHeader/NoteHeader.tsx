@@ -244,7 +244,6 @@ export default function NoteHeader({ searchTerm, setSearchTerm, sortBy, setSortB
             </AnimatePresence>
           </div>
         </div>
-        
 
       </div>
     </>
