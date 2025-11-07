@@ -8,9 +8,11 @@ import NoteMore from '@/components/noteMore/NoteMore';
 interface NoteProps {
   note: NoteType;
   onNoteUpdated?: () => void; // Callback pour rafraîchir la liste après modification/suppression
+  searchTerm?: string; // Terme de recherche pour surlignage
+  searchInContent?: boolean; // Mode de recherche dans le contenu
 }
 
-export default function Note({ note, onNoteUpdated }: NoteProps) {
+export default function Note({ note, onNoteUpdated, searchTerm = "", searchInContent = false }: NoteProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [showMoreModal, setShowMoreModal] = useState(false);
@@ -27,7 +29,14 @@ export default function Note({ note, onNoteUpdated }: NoteProps) {
       e.preventDefault();
       return;
     }
-    router.push(`/notes/${note.id}`);
+    
+    // Construire l'URL avec le terme de recherche si mode contenu actif
+    let url = `/notes/${note.id}`;
+    if (searchInContent && searchTerm) {
+      url += `?search=${encodeURIComponent(searchTerm)}`;
+    }
+    
+    router.push(url);
   };
 
   const openContextMenu = (clientX: number, clientY: number) => {
@@ -114,12 +123,52 @@ export default function Note({ note, onNoteUpdated }: NoteProps) {
     setShowMoreModal(false);
   };
 
+  // Fonction pour surligner le terme de recherche dans le texte
+  const highlightSearchTerm = (text: string, term: string): React.ReactNode => {
+    if (!term || !text) return text;
+    
+    const lowerText = text.toLowerCase();
+    const lowerTerm = term.toLowerCase();
+    const index = lowerText.indexOf(lowerTerm);
+    
+    if (index === -1) return text;
+    
+    // Extraire contexte autour du terme (100 caractères avant et après)
+    const contextStart = Math.max(0, index - 100);
+    const contextEnd = Math.min(text.length, index + term.length + 100);
+    
+    let displayText = text.substring(contextStart, contextEnd);
+    const adjustedIndex = index - contextStart;
+    
+    // Ajouter ... si tronqué
+    if (contextStart > 0) displayText = '...' + displayText;
+    if (contextEnd < text.length) displayText = displayText + '...';
+    
+    // Créer les parties avec surlignage
+    const beforeHighlight = displayText.substring(0, adjustedIndex + (contextStart > 0 ? 3 : 0));
+    const highlighted = displayText.substring(
+      adjustedIndex + (contextStart > 0 ? 3 : 0),
+      adjustedIndex + term.length + (contextStart > 0 ? 3 : 0)
+    );
+    const afterHighlight = displayText.substring(adjustedIndex + term.length + (contextStart > 0 ? 3 : 0));
+    
+    return (
+      <>
+        {beforeHighlight}
+        <mark className="bg-yellow-300 text-gray-900 px-0.5 rounded">{highlighted}</mark>
+        {afterHighlight}
+      </>
+    );
+  };
+
   // Fonction pour extraire et afficher le contenu de la note
-  const getDisplayContent = () => {
+  const getDisplayContent = (): React.ReactNode => {
     // Si le contenu est vide
     if (!note.Content) {
       return 'Contenu vide';
     }
+
+    let extractedText = '';
 
     // Si c'est une chaîne, essayer de la parser comme JSON
     if (typeof note.Content === 'string') {
@@ -137,19 +186,19 @@ export default function Note({ note, onNoteUpdated }: NoteProps) {
             return '';
           };
           
-          const text = extractText(parsed.root).trim();
-          return text || 'Contenu vide';
+          extractedText = extractText(parsed.root).trim();
+          if (!extractedText) return 'Contenu vide';
+        } else {
+          extractedText = note.Content.substring(0, 100) + (note.Content.length > 100 ? '...' : '');
         }
       } catch {
         // Si le parsing échoue, afficher les 100 premiers caractères
-        return note.Content.substring(0, 100) + (note.Content.length > 100 ? '...' : '');
+        extractedText = note.Content.substring(0, 100) + (note.Content.length > 100 ? '...' : '');
       }
-      
-      return note.Content;
     }
     
     // Si c'est un objet, essayer d'extraire le texte
-    if (typeof note.Content === 'object' && note.Content !== null) {
+    else if (typeof note.Content === 'object' && note.Content !== null) {
       const content = note.Content as any;
       if (content.root && content.root.children) {
         const extractText = (node: any): string => {
@@ -162,12 +211,20 @@ export default function Note({ note, onNoteUpdated }: NoteProps) {
           return '';
         };
         
-        const text = extractText(content.root).trim();
-        return text || 'Contenu vide';
+        extractedText = extractText(content.root).trim();
+        if (!extractedText) return 'Contenu vide';
+      } else {
+        extractedText = JSON.stringify(note.Content).substring(0, 100) + '...';
       }
-      
-      return JSON.stringify(note.Content).substring(0, 100) + '...';
     }
+
+    // Si on est en mode recherche dans le contenu et qu'il y a un terme de recherche
+    if (searchInContent && searchTerm && extractedText) {
+      return highlightSearchTerm(extractedText, searchTerm);
+    }
+
+    // Sinon, afficher normalement (limité à 100 caractères)
+    return extractedText.length > 100 ? extractedText.substring(0, 100) + '...' : extractedText;
     
     return 'Contenu vide';
   };
