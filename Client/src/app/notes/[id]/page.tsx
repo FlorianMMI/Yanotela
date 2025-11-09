@@ -219,18 +219,14 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     async function fetchUserInfo() {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        console.log('🔍 [Auth] Appel à:', `${API_URL}/auth/check`);
-        
+
         const response = await fetch(`${API_URL}/auth/check`, {
           credentials: "include",
         });
-        
-        console.log('📡 [Auth] Response status:', response.status);
-        
+
         if (response.ok) {
           const userData = await response.json();
-          console.log('📦 [Auth] userData reçu:', userData);
-          
+
           const pseudo = userData.pseudo || userData.user?.pseudo || 'Anonyme';
           
           // Générer une couleur aléatoire pour ce user
@@ -252,7 +248,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   useEffect(() => {
     // Petit délai pour s'assurer que le provider est créé
     const timer = setTimeout(() => {
-      console.log('👤 [Awareness] Tentative mise à jour avec:', userProfile);
+      
       setAwarenessUserInfo(id, userProfile.name, userProfile.color);
     }, 500);
 
