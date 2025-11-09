@@ -249,7 +249,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       return;
     }
 
-    console.log('👤 [Awareness] Mise à jour avec:', userProfile);
     setAwarenessUserInfo(id, userProfile.name, userProfile.color);
   }, [userProfile, id]);
 
