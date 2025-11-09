@@ -15,6 +15,7 @@
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { getPermission } from "./permissionController.js";
+import { migrateContentToYjs, needsMigration } from "../services/yjsMigration.js";
 
 const prisma = new PrismaClient();
 
@@ -225,6 +226,23 @@ export const noteController = {
         return res
           .status(403)
           .json({ message: "Vous n'avez pas accès à cette note" });
+      }
+
+      // 🔄 MIGRATION À LA VOLÉE: Migrer vers YJS si nécessaire
+      if (needsMigration(note)) {
+
+        const yjsState = migrateContentToYjs(note.Content);
+        
+        if (yjsState) {
+          // Sauvegarder le yjsState dans la base
+          await prisma.note.update({
+            where: { id },
+            data: { yjsState },
+          });
+          
+        } else {
+          console.error(`❌ [Migration] Échec migration pour note ${id}`);
+        }
       }
 
       res.status(200).json({

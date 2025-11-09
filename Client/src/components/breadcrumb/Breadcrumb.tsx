@@ -12,6 +12,7 @@ import Icons from '@/ui/Icon';
 import { socketService } from '@/services/socketService';
 import { useRouter } from 'next/navigation';
 import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
+import ConnectedUsers from '../collaboration/ConnectedUsers';
 
 interface BreadcrumbItem {
   label: string;
@@ -524,6 +525,8 @@ export default function Breadcrumb() {
                   {/* Container pour pousser l'icône complètement à droite */}
                   {noteId && !isFlashNote && (
                     <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
+                      <ConnectedUsers noteId={noteId} />
+
                       <span
                         onClick={() => setShowNoteMore((prev) => !prev)}
                         className="ml-2"

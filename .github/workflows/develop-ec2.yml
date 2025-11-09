@@ -196,6 +196,17 @@ jobs:
                     proxy_set_header X-Forwarded-Proto $scheme;
                     proxy_read_timeout 86400;
                 }
+                location /yjs/ {
+                    proxy_pass http://yjs-server:1234/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_read_timeout 86400;
+                }
                 location /health {
                     proxy_pass http://backend-dev:3001/health;
                     proxy_set_header Host $host;
@@ -252,6 +263,25 @@ jobs:
                   - yanotela-dev
                 restart: unless-stopped
                 command: sh -c "npx prisma migrate deploy && npm start"
+              yjs-server:
+                image: node:18-alpine
+                container_name: yanotela-yjs-server
+                working_dir: /app
+                environment:
+                  - HOST=0.0.0.0
+                  - PORT=1234
+                  - YPERSISTENCE=/app/yjs-db
+                volumes:
+                  - ./Server/yjs-db:/app/yjs-db
+                networks:
+                  - yanotela-dev
+                command: sh -c "npm install -g @y/websocket-server && npx y-websocket"
+                restart: unless-stopped
+                healthcheck:
+                  test: ["CMD", "nc", "-z", "localhost", "1234"]
+                  interval: 10s
+                  timeout: 3s
+                  retries: 3
               frontend-dev:
                 image: ${{ env.DOCKER_FRONTEND_REPO }}:develop
                 container_name: yanotela-frontend-dev

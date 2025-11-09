@@ -62,20 +62,22 @@
     --light-text-light-note: oklch(55.1% 0.027 264.364);
     --light-motif-opacity: 0.03;
 
-    /* Theme-specific variables for DARK theme */
-    --dark-background: #1a1a1a;
-    --dark-deskbackground: #2a2a2a;
-    --dark-foreground: #e5e5e5;
-    --dark-beige-foncer: #333333;
-    --dark-gris-clair: #d1d1d1;
-    --dark-primary: #ef4444;
-    --dark-primary-hover: #dc2626;
-    --dark-error-clair: oklch(70% 0.237 25.331);
-    --dark-light: black;
-    --dark-dark: white;
-    --dark-light-note: #2d2d2d;
-    --dark-text-light-note: #e0e0e0;
-    --dark-motif-opacity: 0.01;
+    /* Theme-specific variables for DARK "Rouge Crépuscule" theme */
+    --dark-background: #121212;          /* Noir très profond pour le fond */
+    --dark-deskbackground: #1e1e1e;      /* Noir légèrement plus clair pour le bureau */
+    --dark-foreground: #e9eddb;          /* Beige clair pour le texte principal */
+    --dark-beige-foncer: #3a3a3a;        /* Gris foncé pour les éléments secondaires */
+    --dark-gris-clair: #b8b8b8;          /* Gris clair pour les bordures ou textes secondaires */
+    --dark-primary: #882626;             /* Rouge foncé comme couleur principale */
+    --dark-primary-hover: #a83232;       /* Rouge légèrement plus clair au survol */
+    --dark-error-clair: oklch(70% 0.237 25.331); /* Rouge clair pour les erreurs */
+    --dark-light: #0a0a0a;               /* Noir pour les éléments "light" */
+    --dark-dark: #e9eddb;                /* Beige clair pour les éléments "dark" (texte sur fond sombre) */
+    --dark-light-note: #252525;          /* Fond des notes ou zones secondaires */
+    --dark-text-light-note: #c0c0c0;     /* Texte clair sur fond de note */
+    --dark-motif-opacity: 0.02;          /* Opacité subtile pour les motifs */
+    --dark-accent: #5c3a3a;              /* Rouge-brun pour les accents discrets */
+    --dark-shadow: rgba(136, 38, 38, 0.3); /* Ombre douce basée sur le rouge */
 
     /* Theme-specific variables for BLUE theme */
     --blue-background: #e0e7ff;
