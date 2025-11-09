@@ -2,7 +2,7 @@ import "./globals.css";
 import React from "react";
 import DesktopLayout from "@/components/layout/DesktopLayout";
 import ThemeClientProvider from "@/components/theme/ThemeClientProvider";
-import ThemeColorMeta from "@/components/ThemeColorMeta";
+import ThemeColorMeta from "@/components/theme/ThemeColorMeta";
 
 export const metadata = {
   title: "Yanotela - Notes collaboratives",
