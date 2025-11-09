@@ -203,21 +203,30 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   useEffect(() => {
     async function fetchUserInfo() {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        console.log('🔍 [Auth] Appel à:', `${API_URL}/auth/check`);
+        
         const response = await fetch(`${API_URL}/auth/check`, {
           credentials: "include",
         });
         
+        console.log('📡 [Auth] Response status:', response.status);
+        
         if (response.ok) {
           const userData = await response.json();
-          const pseudo = userData.pseudo || 'Anonyme';
+          console.log('📦 [Auth] userData reçu:', userData);
+          
+          const pseudo = userData.pseudo || userData.user?.pseudo || 'Anonyme';
           
           // Générer une couleur aléatoire pour ce user
           const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FF33A1'];
           const color = colors[Math.floor(Math.random() * colors.length)];
           
           setUserProfile({ name: pseudo, color });
-          console.log('✅ Profil utilisateur chargé:', pseudo);
+          console.log('✅ Profil utilisateur chargé:', pseudo, color);
+        } else {
+          const errorText = await response.text();
+          console.error('❌ [Auth] Erreur HTTP:', response.status, errorText);
         }
       } catch (error) {
         console.error('❌ Erreur récupération profil:', error);
@@ -229,13 +238,13 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
-    // Attendre que le profil soit chargé ET que le nom ne soit pas "Anonyme"
-    if (userProfile.name === 'Anonyme') {
-      return;
-    }
+    // Petit délai pour s'assurer que le provider est créé
+    const timer = setTimeout(() => {
+      console.log('👤 [Awareness] Tentative mise à jour avec:', userProfile);
+      setAwarenessUserInfo(id, userProfile.name, userProfile.color);
+    }, 500);
 
-    console.log('👤 [Awareness] Mise à jour avec:', userProfile);
-    setAwarenessUserInfo(id, userProfile.name, userProfile.color);
+    return () => clearTimeout(timer);
   }, [userProfile, id]);
 
   // Gestion des paramètres de recherche (assignation au dossier)
@@ -282,42 +291,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           {error}
         </div>
       )}
-
-      {/* Desktop Header */}
-      <div className="hidden md:flex items-center gap-4 bg-fondcardNote p-4 rounded-lg justify-between">
-        <div className="flex items-center gap-2">
-          <ReturnButton />
-          {!hasError && (
-            <input
-              type="text"
-              value={noteTitle}
-              onChange={(e) => !isReadOnly && setNoteTitle(e.target.value)}
-              onBlur={(e) => updateNoteTitle(e.target.value)}
-              className={`text-xl font-bold bg-transparent border-none focus:outline-none ${
-                isReadOnly ? 'cursor-not-allowed text-gray-500' : 'text-textcardNote'
-              }`}
-              placeholder="Titre de la note"
-              disabled={isReadOnly}
-            />
-          )}
-        </div>
-        
-        <div className="flex items-center gap-3">
-          {/* Connected Users Component */}
-          <ConnectedUsers noteId={id} />
-          
-          <div className="relative">
-            <button onClick={() => setShowNoteMore((prev) => !prev)}>
-              <Icons name="more" size={20} className="text-textcardNote cursor-pointer" />
-            </button>
-            {showNoteMore && (
-              <div className="absolute right-0 mt-2 z-30">
-                <NoteMore noteId={id} onClose={() => setShowNoteMore(false)} />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Mobile Header */}
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
@@ -406,7 +379,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 <CollaborationPlugin
                   id={id}
                   providerFactory={providerFactory}
-                  shouldBootstrap={false}  // ⚠️ IMPORTANT: Ne pas bootstrap côté client
+                  shouldBootstrap={false} 
                   username={userProfile.name}
                   cursorColor={userProfile.color}
                   cursorsContainerRef={containerRef}

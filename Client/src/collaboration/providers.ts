@@ -49,15 +49,12 @@ export function createWebsocketProvider(
 ): Provider {
   const doc = getDocFromMap(id, yjsDocMap);
 
-  // Construire l'URL WebSocket depuis NEXT_PUBLIC_API_URL
-  // Exemple: http://localhost:3001 -> ws://localhost:1234
-  const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  
-  // Utiliser un port dédié pour y-websocket (1234 par convention)
-  const wsUrl = rawApiUrl
-    .replace(/^http/, 'ws')           // http -> ws, https -> wss
-    .replace(/:\d+/, ':1234')         // Remplacer le port par 1234
-    .replace(/\/api\/?$/, '');         // Retirer /api si présent
+  // Détection auto: prod = wss://domaine/yjs, dev = ws://localhost:1234
+  const isProd = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+  const wsProtocol = isProd && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsHost = isProd ? window.location.host : 'localhost:1234';
+  const wsPath = isProd ? '/yjs' : '';
+  const wsUrl = `${wsProtocol}//${wsHost}${wsPath}`;
 
   console.log(`🔌 Création du WebSocket provider pour note ${id}`);
   console.log(`📡 URL WebSocket: ${wsUrl}`);

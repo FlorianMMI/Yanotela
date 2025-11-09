@@ -196,6 +196,17 @@ jobs:
                     proxy_set_header X-Forwarded-Proto $scheme;
                     proxy_read_timeout 86400;
                 }
+                location /yjs/ {
+                    proxy_pass http://yjs-server:1234/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_read_timeout 86400;
+                }
                 location /health {
                     proxy_pass http://backend-dev:3001/health;
                     proxy_set_header Host $host;
@@ -256,14 +267,14 @@ jobs:
                 image: node:18-alpine
                 container_name: yanotela-yjs-server
                 working_dir: /app
-                ports:
-                  - "1234:1234"
                 environment:
                   - HOST=0.0.0.0
                   - PORT=1234
                   - YPERSISTENCE=/app/yjs-db
                 volumes:
                   - ./Server/yjs-db:/app/yjs-db
+                networks:
+                  - yanotela-dev
                 command: sh -c "npm install -g @y/websocket-server && npx y-websocket"
                 restart: unless-stopped
                 healthcheck:

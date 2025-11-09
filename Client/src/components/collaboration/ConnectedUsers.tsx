@@ -117,16 +117,7 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
       <div className="relative flex items-center">
         <AnimatePresence mode="wait">
           {userCount === 0 ? (
-            <motion.div
-              key="offline"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="flex items-center gap-2"
-            >
-              <div className="w-2 h-2 bg-gray-400 rounded-full" />
-              <span className="text-sm text-textcardNote/60">Hors ligne</span>
-            </motion.div>
+         <></>
           ) : (
             <motion.div
               key="online"
@@ -136,8 +127,6 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
               className="flex items-center gap-2"
             >
               <div className="relative flex items-center">
-                {/* Indicateur animé */}
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 
                 {/* Avatars des utilisateurs */}
                 <div className="flex -space-x-2 ml-2">
@@ -172,10 +161,7 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
                   )}
                 </div>
               </div>
-              
-              <span className="text-sm text-textcardNote font-medium ml-1">
-                {userCount} {userCount === 1 ? 'personne' : 'personnes'}
-              </span>
+
             </motion.div>
           )}
         </AnimatePresence>
