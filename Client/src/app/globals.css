@@ -123,6 +123,23 @@
     --purple-light-note: white;
     --purple-text-light-note: #6b21a8;
     --purple-motif-opacity: 0.03;
+
+
+    /* Theme-specific variables for Night(blue dark) theme */
+    --night-background: #0f172a;
+    --night-deskbackground: #1e293b;
+    --night-foreground: #e0e7ff;
+    --night-beige-foncer: #1e293b;
+    --night-gris-clair: #c7d2fe;
+    --night-primary: #3142da;
+    --night-primary-hover: #2a2cc4;
+    --night-error-clair: oklch(70% 0.237 25.331);
+    --night-light: #1e293b;
+    --night-dark: #e0e7ff;
+    --night-light-note: #1e293b;
+    --night-text-light-note: #c7d2fe;
+    --night-motif-opacity: 0.01;
+
   }
 
   /* Apply theme variables based on body class - DEFAULT: light */
@@ -235,6 +252,28 @@
     --text-light-note: var(--purple-text-light-note);
     --textlightNote: var(--purple-text-light-note);
     --motif-opacity: var(--purple-motif-opacity);
+  }
+
+  body.night {
+    --background: var(--night-background);
+    --deskbackground: var(--night-deskbackground);
+    --foreground: var(--night-foreground);
+    --beige-foncer: var(--night-beige-foncer);
+    --clr-beige-foncer: var(--night-beige-foncer);
+    --gris-clair: var(--night-gris-clair);
+    --clr-gris-clair: var(--night-gris-clair);
+    --primary: var(--night-primary);
+    --primary-hover: var(--night-primary-hover);
+    --clr-error-600: var(--night-primary);
+    --error-600: var(--night-primary);
+    --error-clair: var(--night-error-clair);
+    --light: var(--night-light);
+    --dark: var(--night-dark);
+    --light-note: var(--night-light-note);
+    --lightNote: var(--night-light-note);
+    --text-light-note: var(--night-text-light-note);
+    --textlightNote: var(--night-text-light-note);
+    --motif-opacity: var(--night-motif-opacity);
   }
 
   body {
