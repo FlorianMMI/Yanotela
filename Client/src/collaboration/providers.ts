@@ -32,8 +32,7 @@ export function setAwarenessUserInfo(noteId: string, userName: string, userColor
     name: userName,
     color: userColor,
   });
-  
-  console.log(`👤 [Awareness] User info défini pour ${noteId}: ${userName} (${userColor})`);
+
 }
 
 /**

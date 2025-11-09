@@ -256,7 +256,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       setAwarenessUserInfo(id, userProfile.name, userProfile.color);
     }, 500);
 
-    return () => clearTimeout(timer);
+    setAwarenessUserInfo(id, userProfile.name, userProfile.color);
   }, [userProfile, id]);
 
   // Gestion des paramètres de recherche (assignation au dossier)
