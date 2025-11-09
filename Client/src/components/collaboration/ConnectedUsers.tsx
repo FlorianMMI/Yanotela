@@ -48,6 +48,12 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
             color: state.user.color || '#888888',
             clientID,
           });
+
+          setActiveUsers(users);
+          setIsLoading(false);
+        } catch (error) {
+          console.error('[ConnectedUsers] Erreur lors de la récupération des users:', error);
+          setIsLoading(false);
         }
       });
       setActiveUsers(users);
