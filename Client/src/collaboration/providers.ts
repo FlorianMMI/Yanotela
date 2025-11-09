@@ -14,6 +14,29 @@ import * as Y from 'yjs';
 export const providerInstances = new Map<string, WebsocketProvider>();
 
 /**
+ * Définir les informations utilisateur dans l'awareness d'un provider
+ * 
+ * @param noteId - ID de la note
+ * @param userName - Nom de l'utilisateur
+ * @param userColor - Couleur du curseur
+ */
+export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string) {
+  const provider = providerInstances.get(noteId);
+  if (!provider) {
+    console.warn(`[setAwarenessUserInfo] Provider non trouvé pour note ${noteId}`);
+    return;
+  }
+
+  const awareness = provider.awareness;
+  awareness.setLocalStateField('user', {
+    name: userName,
+    color: userColor,
+  });
+  
+  console.log(`👤 [Awareness] User info défini pour ${noteId}: ${userName} (${userColor})`);
+}
+
+/**
  * Factory pour créer un WebSocket provider YJS
  * 
  * @param id - Identifiant unique du document (noteId)

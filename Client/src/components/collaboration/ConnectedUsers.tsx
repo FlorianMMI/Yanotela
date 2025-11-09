@@ -64,18 +64,54 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
       } catch (error) {
         console.error('[ConnectedUsers] Erreur lors de la récupération des users:', error);
         setIsLoading(false);
+        return;
       }
+
+      const awareness: Awareness = provider.awareness;
+      
+      const updateUsers = () => {
+        try {
+          const states = awareness.getStates();
+          const localClientID = awareness.clientID;
+          
+          const users: AwarenessUser[] = [];
+          states.forEach((state: any, clientID: number) => {
+            // Filtrer l'utilisateur local et les états vides
+            if (clientID !== localClientID && state && state.user) {
+              users.push({
+                name: state.user.name || 'Anonyme',
+                color: state.user.color || '#888888',
+                clientID,
+              });
+            }
+          });
+
+          console.log('[ConnectedUsers] Utilisateurs actifs:', users.length, users);
+          setActiveUsers(users);
+          setIsLoading(false);
+        } catch (error) {
+          console.error('[ConnectedUsers] Erreur lors de la récupération des users:', error);
+          setIsLoading(false);
+        }
+      };
+
+      // Observer les changements d'awareness (ajout/suppression de users)
+      awareness.on('change', updateUsers);
+      
+      // Initialiser
+      updateUsers();
+
+      // Cleanup
+      return () => {
+        awareness.off('change', updateUsers);
+      };
     };
 
-    // Observer les changements d'awareness (ajout/suppression de users)
-    awareness.on('change', updateUsers);
-    
-    // Initialiser
-    updateUsers();
+    const cleanup = tryGetProvider();
 
-    // Cleanup
     return () => {
-      awareness.off('change', updateUsers);
+      if (retryTimer) clearTimeout(retryTimer);
+      if (cleanup) cleanup();
     };
   }, [noteId]);
 
