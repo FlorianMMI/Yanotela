@@ -28,22 +28,41 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let retryCount = 0;
-    const maxRetries = 5;
-    let retryTimer: NodeJS.Timeout;
+    // Obtenir le provider WebSocket pour cette note
+    const provider = providerInstances.get(noteId);
+    
+    if (!provider) {
+      console.warn('[ConnectedUsers] Provider non trouvé pour noteId:', noteId);
+      // Retry après un délai (le provider peut être en cours de création)
+      const retryTimer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+      return () => clearTimeout(retryTimer);
+    }
 
-    const tryGetProvider = () => {
-      // Obtenir le provider WebSocket pour cette note
-      const provider = providerInstances.get(noteId);
-      
-      if (!provider) {
-        if (retryCount < maxRetries) {
-          retryCount++;
-          console.warn(`[ConnectedUsers] Provider non trouvé pour noteId: ${noteId}, retry ${retryCount}/${maxRetries}...`);
-          retryTimer = setTimeout(tryGetProvider, 500); // Retry après 500ms
-          return;
-        }
-        console.error('[ConnectedUsers] Provider non trouvé après plusieurs tentatives');
+    const awareness: Awareness = provider.awareness;
+    
+    const updateUsers = () => {
+      try {
+        const states = awareness.getStates();
+        const localClientID = awareness.clientID;
+        
+        const users: AwarenessUser[] = [];
+        states.forEach((state: any, clientID: number) => {
+          // Filtrer l'utilisateur local et les états vides
+          if (clientID !== localClientID && state && state.user) {
+            users.push({
+              name: state.user.name || 'Anonyme',
+              color: state.user.color || '#888888',
+              clientID,
+            });
+          }
+        });
+
+        setActiveUsers(users);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('[ConnectedUsers] Erreur lors de la récupération des users:', error);
         setIsLoading(false);
         return;
       }

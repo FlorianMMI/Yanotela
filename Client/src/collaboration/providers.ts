@@ -56,9 +56,6 @@ export function createWebsocketProvider(
   const wsPath = isProd ? '/yjs' : '';
   const wsUrl = `${wsProtocol}//${wsHost}${wsPath}`;
 
-  console.log(`🔌 Création du WebSocket provider pour note ${id}`);
-  console.log(`📡 URL WebSocket: ${wsUrl}`);
-
   const provider = new WebsocketProvider(
     wsUrl,                              // URL du serveur WebSocket YJS
     `yanotela-${id}`,                   // Room name (préfixe + noteId)
@@ -74,11 +71,11 @@ export function createWebsocketProvider(
 
   // Logs pour debugging
   provider.on('status', ({ status }: { status: string }) => {
-    console.log(`🔌 WebSocket status pour note ${id}: ${status}`);
+    
   });
 
   provider.on('sync', (isSynced: boolean) => {
-    console.log(`📥 Document ${id} synced: ${isSynced}`);
+    
   });
 
   // Stocker le provider pour accès depuis les composants UI
@@ -98,11 +95,11 @@ function getDocFromMap(id: string, yjsDocMap: Map<string, Y.Doc>): Y.Doc {
   let doc = yjsDocMap.get(id);
 
   if (doc === undefined) {
-    console.log(`📄 Création d'un nouveau Y.Doc pour note ${id}`);
+    
     doc = new Y.Doc();
     yjsDocMap.set(id, doc);
   } else {
-    console.log(`📄 Réutilisation du Y.Doc existant pour note ${id}`);
+    
     // Charger depuis IndexedDB si persisté localement
     doc.load();
   }

@@ -122,7 +122,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // ✅ Provider factory pour CollaborationPlugin
   const providerFactory = useCallback(
     (docId: string, yjsDocMap: Map<string, Y.Doc>) => {
-      console.log('🏭 Creating WebSocket provider for note:', docId);
+      
       return createWebsocketProvider(docId, yjsDocMap);
     },
     []
@@ -132,7 +132,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const debouncedSaveTitle = useDebouncedCallback(
     (titre: string) => {
       SaveNote(id, { Titre: titre }).then(() => {
-        console.log('✅ Titre sauvegardé:', titre);
+        
       }).catch((error) => {
         console.error('❌ Erreur sauvegarde titre:', error);
       });
@@ -153,9 +153,25 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     }));
   }
 
+  // Sauvegarde HTTP debounced du contenu
+  const debouncedSaveContent = useDebouncedCallback(
+    (content: string) => {
+      SaveNote(id, { Content: content }).then(() => {
+        
+      }).catch((error) => {
+        console.error('❌ Erreur sauvegarde contenu:', error);
+      });
+    },
+    2000 // Sauvegarde toutes les 2 secondes max
+  );
+
+  const handleContentChange = useCallback((content: string) => {
+    debouncedSaveContent(content);
+  }, [debouncedSaveContent]);
+
   // Gestion du dessin
   const handleDrawingSave = useCallback((drawingData: DrawingData) => {
-    console.log('🖼️ Insertion du dessin dans l\'éditeur');
+    
     // TODO: Implémenter l'insertion via Lexical commands
   }, []);
 
@@ -187,7 +203,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         // Note: userRole n'existe pas dans le type Note, on utilise isReadOnly basé sur les permissions
         setIsReadOnly(false); // TODO: Récupérer depuis permissions
 
-        console.log('✅ Note chargée:', note.Titre);
       } catch (error) {
         console.error('❌ Erreur chargement note:', error);
         setHasError(true);
@@ -223,10 +238,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           const color = colors[Math.floor(Math.random() * colors.length)];
           
           setUserProfile({ name: pseudo, color });
-          console.log('✅ Profil utilisateur chargé:', pseudo, color);
-        } else {
-          const errorText = await response.text();
-          console.error('❌ [Auth] Erreur HTTP:', response.status, errorText);
+          
         }
       } catch (error) {
         console.error('❌ Erreur récupération profil:', error);
@@ -252,7 +264,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     const folderId = searchParams?.get('folderId');
     if (folderId && id) {
       AddNoteToFolder(id, folderId).then(() => {
-        console.log('✅ Note assignée au dossier:', folderId);
+        
         // Supprimer le paramètre après assignation
         const url = new URL(window.location.href);
         url.searchParams.delete('folderId');

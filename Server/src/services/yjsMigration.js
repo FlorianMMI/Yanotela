@@ -47,8 +47,7 @@ function extractTextFromLexicalNode(node) {
  */
 export function migrateContentToYjs(lexicalJSON) {
   try {
-    console.log('🔄 [YJS Migration] Début migration...');
-    
+
     // 1. Parser le JSON Lexical
     let parsedContent;
     try {
@@ -80,9 +79,7 @@ export function migrateContentToYjs(lexicalJSON) {
 
     // 4. Encoder en binaire
     const yjsState = Y.encodeStateAsUpdate(ydoc);
-    
-    console.log(`✅ [YJS Migration] Migration réussie (${yjsState.length} bytes)`);
-    
+
     return Buffer.from(yjsState);
   } catch (error) {
     console.error('❌ [YJS Migration] Erreur fatale:', error);
