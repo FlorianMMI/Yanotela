@@ -17,7 +17,7 @@ import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
 import ConnectedUsers from "@/components/collaboration/ConnectedUsers";
-import { createWebsocketProvider } from "@/collaboration/providers";
+import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
 import { $insertNodes } from "lexical";
@@ -153,22 +153,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     }));
   }
 
-  // Sauvegarde HTTP debounced du contenu
-  const debouncedSaveContent = useDebouncedCallback(
-    (content: string) => {
-      SaveNote(id, { Content: content }).then(() => {
-        console.log('✅ Contenu sauvegardé (HTTP)');
-      }).catch((error) => {
-        console.error('❌ Erreur sauvegarde contenu:', error);
-      });
-    },
-    2000 // Sauvegarde toutes les 2 secondes max
-  );
-
-  const handleContentChange = useCallback((content: string) => {
-    debouncedSaveContent(content);
-  }, [debouncedSaveContent]);
-
   // Gestion du dessin
   const handleDrawingSave = useCallback((drawingData: DrawingData) => {
     console.log('🖼️ Insertion du dessin dans l\'éditeur');
@@ -242,6 +226,17 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
     fetchUserInfo();
   }, []);
+
+  // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
+  useEffect(() => {
+    // Attendre que le profil soit chargé ET que le nom ne soit pas "Anonyme"
+    if (userProfile.name === 'Anonyme') {
+      return;
+    }
+
+    console.log('👤 [Awareness] Mise à jour avec:', userProfile);
+    setAwarenessUserInfo(id, userProfile.name, userProfile.color);
+  }, [userProfile, id]);
 
   // Gestion des paramètres de recherche (assignation au dossier)
   useEffect(() => {
@@ -416,11 +411,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                   cursorColor={userProfile.color}
                   cursorsContainerRef={containerRef}
                 />
-
-                {/* Sauvegarde HTTP onChange */}
-                {!isReadOnly && (
-                  <OnChangeBehavior noteId={id} onContentChange={handleContentChange} />
-                )}
               </LexicalComposer>
             </LexicalCollaboration>
           </div>
