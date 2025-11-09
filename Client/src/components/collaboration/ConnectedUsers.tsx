@@ -31,29 +31,34 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
   useEffect(() => {
     let retryTimer: NodeJS.Timeout | null = null;
     function updateUsersFromAwareness() {
-      const provider = providerInstances.get(noteId);
-      if (!provider) {
-        setIsLoading(true);
-        retryTimer = setTimeout(updateUsersFromAwareness, 500);
-        return;
-      }
-      const awareness: Awareness = provider.awareness;
-      const localClientID = awareness.clientID;
-      const states = awareness.getStates();
-      const users: AwarenessUser[] = [];
-      states.forEach((state: any, clientID: number) => {
-        if (state && state.user) {
-          users.push({
-            name: clientID === localClientID ? (state.user.name || 'Vous') : (state.user.name || 'Anonyme'),
-            color: state.user.color || '#888888',
-            clientID,
-          });
+      try {
+        const provider = providerInstances.get(noteId);
+        if (!provider) {
+          setIsLoading(true);
+          retryTimer = setTimeout(updateUsersFromAwareness, 500);
+          return;
         }
-      });
-      setActiveUsers(users);
-      setIsLoading(false);
-      // Listen for changes
-      awareness.on('change', updateUsersFromAwareness);
+        const awareness: Awareness = provider.awareness;
+        const localClientID = awareness.clientID;
+        const states = awareness.getStates();
+        const users: AwarenessUser[] = [];
+        states.forEach((state: any, clientID: number) => {
+          if (state && state.user) {
+            users.push({
+              name: clientID === localClientID ? (state.user.name || 'Vous') : (state.user.name || 'Anonyme'),
+              color: state.user.color || '#888888',
+              clientID,
+            });
+          }
+        });
+        setActiveUsers(users);
+        setIsLoading(false);
+        // Listen for changes
+        awareness.on('change', updateUsersFromAwareness);
+      } catch (error) {
+        console.error('[ConnectedUsers] Erreur lors de la récupération des users:', error);
+        setIsLoading(false);
+      }
     }
     updateUsersFromAwareness();
     return () => {
