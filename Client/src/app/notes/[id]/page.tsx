@@ -385,7 +385,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                     />
                   }
                   placeholder={
-                    <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
+                    <p className="absolute top-22 left-4 text-textcardNote select-none pointer-events-none">
                       Commencez à écrire...
                     </p>
                   }
