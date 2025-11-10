@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Icons from "@/ui/Icon";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
-import { DeleteNote, LeaveNote, GetNoteById } from "@/loader/loader";
+import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
 
 interface NoteMoreProps {
@@ -120,6 +120,32 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
         }
     };
 
+    const handleDuplicateNote = async () => {
+        try {
+            const result = await DuplicateNote(noteId);
+            if (result.success) {
+                // Appeler le callback pour rafraîchir la liste
+                if (onNoteUpdated) {
+                    onNoteUpdated();
+                }
+                // Fermer le modal
+                onClose();
+                // Déclencher un événement pour rafraîchir l'authentification/liste
+                window.dispatchEvent(new Event('auth-refresh'));
+                // Rediriger vers la nouvelle note si une URL est fournie
+                if (result.redirectUrl) {
+                    router.push(result.redirectUrl);
+                }
+            } else {
+                console.error("Erreur lors de la duplication:", result.error);
+                alert(result.error || "Erreur lors de la duplication de la note");
+            }
+        } catch (error) {
+            console.error("Erreur lors de la duplication:", error);
+            alert("Une erreur est survenue lors de la duplication de la note");
+        }
+    };
+
     const getModalTitle = () => {
         switch (currentView) {
             case "share":
@@ -168,6 +194,13 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                             >
                                 <Icons name="info" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
                                 Infos de la note
+                            </button>
+                            <button
+                                className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
+                                onClick={handleDuplicateNote}
+                            >
+                                <Icons name="duplicate" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                Dupliquer la note
                             </button>
 
                             {/* Afficher "Quitter la note" pour les éditeurs (2) et lecteurs (3), "Supprimer" pour Owner (0) et Admin (1) */}
