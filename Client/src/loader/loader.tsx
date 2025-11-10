@@ -843,7 +843,7 @@ export async function RefuseNotification(invitationId: string): Promise<{ succes
 
 export async function GetFolders(): Promise<{ folders: any[]; totalFolders: number }> {
     try {
-        const response = await fetch(`${apiUrl}/folder/get`, {
+        const response = await fetch(`${apiUrl}/dossiers/get`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -868,7 +868,7 @@ export async function GetFolders(): Promise<{ folders: any[]; totalFolders: numb
 
 export async function GetFolderById(id: string): Promise<{ folder: any; notes?: any[]; error?: string } | null> {
     try {
-        const response = await fetch(`${apiUrl}/folder/get/${id}`, {
+        const response = await fetch(`${apiUrl}/dossiers/get/${id}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -925,7 +925,7 @@ export async function GetFolderById(id: string): Promise<{ folder: any; notes?: 
 
 export async function CreateFolder(folderData?: { Nom?: string; Description?: string; CouleurTag?: string }): Promise<{ folder: any | null; redirectUrl?: string }> {
     try {
-        const response = await fetch(`${apiUrl}/folder/create`, {
+        const response = await fetch(`${apiUrl}/dossiers/create`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -947,7 +947,7 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
         const data = await response.json();
         return { 
             folder: data.folder, 
-            redirectUrl: `/folder/${data.folder.id}` 
+            redirectUrl: `/dossiers/${data.folder.id}` 
         };
     } catch (error) {
         console.error("Error creating folder:", error);
@@ -957,7 +957,7 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
 
 export async function UpdateFolder(id: string, folderData: { Nom?: string; Description?: string; CouleurTag?: string }): Promise<{ success: boolean; folder?: any; error?: string }> {
     try {
-        const response = await fetch(`${apiUrl}/folder/update/${id}`, {
+        const response = await fetch(`${apiUrl}/dossiers/update/${id}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -981,7 +981,7 @@ export async function UpdateFolder(id: string, folderData: { Nom?: string; Descr
 
 export async function DeleteFolder(id: string): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-        const response = await fetch(`${apiUrl}/folder/delete/${id}`, {
+        const response = await fetch(`${apiUrl}/dossiers/delete/${id}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -1006,7 +1006,7 @@ export async function DeleteFolder(id: string): Promise<{ success: boolean; mess
 
 export async function AddNoteToFolder(noteId: string, folderId: string): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-        const response = await fetch(`${apiUrl}/folder/add-note`, {
+        const response = await fetch(`${apiUrl}/dossiers/add-note`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

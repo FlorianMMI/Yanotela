@@ -70,7 +70,7 @@ app.use('/user', userRoutes);
 app.use('/permission', permissionRoutes);
 app.use('/auth', googleAuthRoutes); // Routes Google OAuth
 app.use('/notification', notificationRoutes);
-app.use('/folder', FolderRoutes); // Routes pour les dossiers
+app.use('/dossiers', FolderRoutes); // Routes pour les dossiers
 
 // Route de health check pour Docker
 app.get('/health', (req, res) => {

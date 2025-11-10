@@ -53,7 +53,7 @@ export default function Breadcrumb() {
   // Extraire l'ID du dossier depuis l'URL
   const extractFolderId = (): string | null => {
     const segments = pathname.split('/').filter(Boolean);
-    if (pathname.startsWith('/folder/') && segments.length > 1) {
+    if (pathname.startsWith('/dossiers/') && segments.length > 1) {
       return segments[1];
     }
     return null;
@@ -335,16 +335,16 @@ export default function Breadcrumb() {
       ];
     }
 
-    if (pathname === '/folder') {
+    if (pathname === '/dossiers') {
       return [
         { label: 'Mes Dossiers', isActive: true },
       ];
     }
 
-    if (pathname.startsWith('/folder/') && segments.length > 1) {
+    if (pathname.startsWith('/dossiers/') && segments.length > 1) {
       const displayName = folderName || 'Dossier';
       return [
-        { label: 'Mes Dossiers', href: '/folder' },
+        { label: 'Mes Dossiers', href: '/dossiers' },
         { label: displayName, isActive: true, isNoteTitle: true }, // Marquer comme éditable
       ];
     }
@@ -459,7 +459,7 @@ export default function Breadcrumb() {
             if (pathname.includes('/notes')) {
               return <Icon name="docs" size={20} strokeWidth={12} className="text-primary" />;
             }
-            if (pathname.includes('/folder')) {
+            if (pathname.includes('/dossiers')) {
               return <Icon name="folder" size={20} className="text-primary" />;
             }
             if (pathname.includes('/profil')) {
@@ -567,14 +567,14 @@ export default function Breadcrumb() {
                             folderColor={folderData.CouleurTag || "#882626"}
                             noteCount={folderData.noteCount || 0}
                             onUpdate={async (name: string, description: string, color: string) => {
-                              // La mise à jour sera gérée par la page folder/[id]
+                              // La mise à jour sera gérée par la page dossiers/[id]
                               // On émet juste un événement pour synchroniser
                               window.dispatchEvent(new CustomEvent('folderUpdateRequested', {
                                 detail: { folderId, name, description, color }
                               }));
                             }}
                             onDelete={() => {
-                              // La suppression sera gérée par la page folder/[id]
+                              // La suppression sera gérée par la page dossiers/[id]
                               window.dispatchEvent(new CustomEvent('folderDeleteRequested', {
                                 detail: { folderId }
                               }));

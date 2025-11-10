@@ -108,7 +108,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const handleDeleteFolder = () => {
         // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
         // Rediriger vers la liste des dossiers
-        router.push("/folder");
+        router.push("/dossiers");
     };
 
     const handleCreateNote = async () => {
@@ -136,7 +136,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-element text-lg mb-4">Dossier introuvable</p>
                 <button
-                    onClick={() => router.push("/folder")}
+                    onClick={() => router.push("/dossiers")}
                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90"
                 >
                     Retour aux dossiers
