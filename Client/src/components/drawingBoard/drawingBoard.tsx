@@ -1,7 +1,7 @@
 "use client";
 
-import Icon from "@/ui/Icon";
 import React, { useRef, useEffect, useState } from "react";
+import Icon from "@/ui/Icon";
 
 export interface DrawingData {
   dataUrl: string;
@@ -14,13 +14,17 @@ interface DrawingBoardProps {
   isOpen: boolean;
   onSave?: (drawingData: DrawingData) => void;
   onClose?: () => void;
+  initialImage?: string; // Base64 data URL of an existing image to edit
 }
 
-export default function DrawingBoard({ isOpen, onSave, onClose }: DrawingBoardProps) {
+export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: DrawingBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [open, setIsOpen] = useState(isOpen);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
+  const [strokeColor, setStrokeColor] = useState("#000000");
+  const [customColor, setCustomColor] = useState("#000000");
+  const [lineWidth, setLineWidth] = useState(2);
 
   // Sync internal state with prop
   useEffect(() => {
@@ -45,9 +49,26 @@ export default function DrawingBoard({ isOpen, onSave, onClose }: DrawingBoardPr
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
+      // Load initial image if provided
+      if (initialImage) {
+        const img = new Image();
+        img.onload = () => {
+          // Draw the image centered on the canvas
+          const scale = Math.min(
+            canvas.width / img.width,
+            canvas.height / img.height,
+            1 // Don't scale up, only down if needed
+          );
+          const x = (canvas.width - img.width * scale) / 2;
+          const y = (canvas.height - img.height * scale) / 2;
+          ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+        };
+        img.src = initialImage;
+      }
+      
       // Set drawing style
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = lineWidth;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
     };
@@ -58,11 +79,26 @@ export default function DrawingBoard({ isOpen, onSave, onClose }: DrawingBoardPr
     // Handle window resize
     window.addEventListener("resize", resizeCanvas);
     return () => window.removeEventListener("resize", resizeCanvas);
-  }, [open]);
+  }, [open, initialImage]);
+
+  // Update drawing style when color or line width changes (without clearing canvas)
+  useEffect(() => {
+    if (!context) return;
+    
+    context.strokeStyle = strokeColor;
+    context.lineWidth = lineWidth;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+  }, [context, strokeColor, lineWidth]);
 
   // Drawing handlers
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!context) return;
+    
+    // Update context with current color and line width
+    context.strokeStyle = strokeColor;
+    context.lineWidth = lineWidth;
+    
     setIsDrawing(true);
     
     const canvas = canvasRef.current;
@@ -201,9 +237,25 @@ export default function DrawingBoard({ isOpen, onSave, onClose }: DrawingBoardPr
     context.fillStyle = "white";
     context.fillRect(0, 0, canvas.width, canvas.height);
     
+    // If there's an initial image, reload it
+    if (initialImage) {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(
+          canvas.width / img.width,
+          canvas.height / img.height,
+          1
+        );
+        const x = (canvas.width - img.width * scale) / 2;
+        const y = (canvas.height - img.height * scale) / 2;
+        context.drawImage(img, x, y, img.width * scale, img.height * scale);
+      };
+      img.src = initialImage;
+    }
+    
     // Reset drawing style
-    context.strokeStyle = "black";
-    context.lineWidth = 2;
+    context.strokeStyle = strokeColor;
+    context.lineWidth = lineWidth;
     context.lineCap = "round";
     context.lineJoin = "round";
   };
@@ -225,6 +277,53 @@ export default function DrawingBoard({ isOpen, onSave, onClose }: DrawingBoardPr
         onTouchEnd={stopDrawing}
       />
 
+      {/* Color Picker and Line Width Controls - Top Left */}
+      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-lg space-y-3">
+        {/* Color Presets */}
+        <div className="flex gap-2 items-center">
+          <span className="text-xs font-medium text-gray-700">Couleur:</span>
+          <button
+            onClick={() => setStrokeColor("#000000")}
+            className={`w-8 h-8 rounded-full bg-black border-2 transition-all ${
+              strokeColor === "#000000" ? "border-blue-500 scale-110" : "border-gray-300"
+            }`}
+            title="Noir"
+          />
+          <button
+            onClick={() => setStrokeColor("#FFFFFF")}
+            className={`w-8 h-8 rounded-full bg-white border-2 transition-all ${
+              strokeColor === "#FFFFFF" ? "border-blue-500 scale-110" : "border-gray-400"
+            }`}
+            title="Blanc"
+          />
+          <input
+            type="color"
+            value={customColor}
+            onChange={(e) => {
+              setCustomColor(e.target.value);
+              setStrokeColor(e.target.value);
+            }}
+            className="w-8 h-8 rounded-full cursor-pointer border-2 border-gray-300"
+            title="Couleur personnalisée"
+          />
+        </div>
+        
+        {/* Line Width Slider */}
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-gray-700">
+            Épaisseur: {lineWidth}px
+          </label>
+          <input
+            type="range"
+            min="1"
+            max="20"
+            value={lineWidth}
+            onChange={(e) => setLineWidth(Number(e.target.value))}
+            className="w-32 accent-primary"
+          />
+        </div>
+      </div>
+
       {/* Close button in top right corner */}
       <button
         onClick={() => {
@@ -239,15 +338,15 @@ export default function DrawingBoard({ isOpen, onSave, onClose }: DrawingBoardPr
       {/* Clear button in bottom left corner */}
       <button
         onClick={clearDrawing}
-        className="absolute bottom-4 left-4 px-6 py-3 bg-gray-300 text-black rounded-lg shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
+        className="absolute bottom-24 md:bottom-4 left-4 px-6 py-3 bg-gray-300 text-black rounded-lg shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
       >
-        Effacer
+        Annuler
       </button>
 
       {/* Save button in bottom right corner */}
       <button
         onClick={saveDrawing}
-        className="absolute bottom-4 right-4 px-6 py-3 bg-primary text-white rounded-lg shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
+        className="absolute bottom-24 md:bottom-4 right-4 px-6 py-3 bg-primary text-white rounded-lg shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
       >
         Sauvegarder
       </button>

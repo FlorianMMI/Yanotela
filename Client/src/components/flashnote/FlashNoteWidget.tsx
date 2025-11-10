@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { $getRoot, EditorState, $getSelection, $isRangeSelection } from "lexical";
+import { $getRoot, EditorState, $getSelection, $isRangeSelection, $getNodeByKey } from "lexical";
 import { useEffect, useState, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -15,11 +15,12 @@ import { motion } from "motion/react";
 import Icons from '@/ui/Icon';
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
 import DrawingBoard, { DrawingData } from "../drawingBoard/drawingBoard";
-import { ImageNode, $createImageNode } from "./ImageNode";
+import { $createImageNode } from "./ImageNode";
 import { $insertNodes } from "lexical";
 import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
+import ImageClickPlugin from "./ImageClickPlugin";
 import '@/components/textRich/EditorStyles.css';
 
 const theme = {
@@ -64,6 +65,8 @@ export default function FlashNoteWidget() {
   const [isSavingContent, setIsSavingContent] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
+  const [editingImageSrc, setEditingImageSrc] = useState<string | undefined>(undefined);
+  const [editingImageNodeKey, setEditingImageNodeKey] = useState<string | undefined>(undefined);
 
   // Charger les données depuis localStorage
   useEffect(() => {
@@ -146,8 +149,6 @@ export default function FlashNoteWidget() {
     if (!editor) return;
     
     editor.update(() => {
-      const selection = $getSelection();
-      
       // Create a new image node with the drawing
       const imageNode = $createImageNode({
         src: drawingData.dataUrl,
@@ -156,7 +157,17 @@ export default function FlashNoteWidget() {
         height: Math.min(drawingData.height, 600),
       });
       
-      // Insert the image node at the current selection or at the end
+      // If we're editing an existing image, replace it
+      if (editingImageNodeKey) {
+        const existingNode = $getNodeByKey(editingImageNodeKey);
+        if (existingNode) {
+          existingNode.replace(imageNode);
+          return;
+        }
+      }
+      
+      // Otherwise, insert as a new node
+      const selection = $getSelection();
       if ($isRangeSelection(selection)) {
         $insertNodes([imageNode]);
       } else {
@@ -194,7 +205,23 @@ export default function FlashNoteWidget() {
         }, 300);
       }
     }, 100);
-  }, [editor]);
+    
+    // Clear the editing image and close the board
+    setEditingImageSrc(undefined);
+    setEditingImageNodeKey(undefined);
+  }, [editor, editingImageNodeKey]);
+
+  const handleImageClick = useCallback((src: string, nodeKey?: string) => {
+    setEditingImageSrc(src);
+    setEditingImageNodeKey(nodeKey);
+    setIsDrawingBoardOpen(true);
+  }, []);
+
+  const handleDrawingBoardClose = useCallback(() => {
+    setIsDrawingBoardOpen(false);
+    setEditingImageSrc(undefined);
+    setEditingImageNodeKey(undefined);
+  }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!editor) return;
@@ -325,7 +352,8 @@ export default function FlashNoteWidget() {
           <DrawingBoard 
             isOpen={isDrawingBoardOpen} 
             onSave={handleDrawingSave}
-            onClose={() => setIsDrawingBoardOpen(false)}
+            onClose={handleDrawingBoardClose}
+            initialImage={editingImageSrc}
           />
 
           <LexicalComposer initialConfig={initialConfig} key={initialEditorState}>
@@ -346,6 +374,7 @@ export default function FlashNoteWidget() {
             />
             <HistoryPlugin />
             <ListPlugin />
+            <ImageClickPlugin onClick={handleImageClick} />
             <OnChangeBehavior />
             <AutoFocusPlugin />
           </LexicalComposer>
