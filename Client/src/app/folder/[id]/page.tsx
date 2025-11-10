@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
 import NoteList from "@/components/noteList/NoteList";
@@ -19,7 +18,6 @@ interface FolderDetailProps {
 }
 
 export default function FolderDetail({ params }: FolderDetailProps) {
-    const { isAuthenticated, loading: authLoading } = useAuthRedirect();
     const router = useRouter();
     const { id } = use(params);
 
