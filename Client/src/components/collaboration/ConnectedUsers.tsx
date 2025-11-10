@@ -89,7 +89,7 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
       <div className="relative flex items-center">
         <AnimatePresence mode="wait">
           {userCount === 0 ? (
-            <span className="text-sm text-textcardNote/70">Seul sur cette note</span>
+            <></>
           ) : (
             <motion.div
               key="online"
@@ -102,31 +102,33 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
                 {/* Avatars des utilisateurs */}
                 <div className="flex -space-x-2 ml-2">
                   {activeUsers.slice(0, 3).map((user, index) => (
-                    <motion.div
-                      key={user.clientID}
-                      initial={{ scale: 0, x: -10 }}
-                      animate={{ scale: 1, x: 0 }}
-                      exit={{ scale: 0, x: -10 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="relative"
-                      title={user.name}
-                    >
-                      <div
-                        className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-semibold text-white"
-                        style={{ backgroundColor: user.color }}
+                    activeUsers.slice(0, 3).findIndex(u => u.name === user.name) !== index ? null : (
+                      <motion.div
+                        key={user.clientID}
+                        initial={{ scale: 0, x: -10 }}
+                        animate={{ scale: 1, x: 0 }}
+                        exit={{ scale: 0, x: -10 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="relative"
+                        title={user.name}
                       >
-                        {user.name === 'Vous' ? 'Vous' : user.name.charAt(0).toUpperCase()}
-                      </div>
-                    </motion.div>
+                        <div
+                          className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-semibold text-white"
+                          style={{ backgroundColor: user.color }}
+                        >
+                          {user.name === 'Vous' ? 'Vous' : user.name.charAt(0).toUpperCase()}
+                        </div>
+                      </motion.div>
+                    )
                   ))}
                   {/* Si plus de 3 utilisateurs, afficher "+N" */}
-                  {userCount > 3 && (
+                  {userCount > 5 && (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       className="w-7 h-7 rounded-full border-2 border-white bg-gray-600 flex items-center justify-center text-xs font-semibold text-white"
                     >
-                      +{userCount - 3}
+                      +{userCount - 5}
                     </motion.div>
                   )}
                 </div>
