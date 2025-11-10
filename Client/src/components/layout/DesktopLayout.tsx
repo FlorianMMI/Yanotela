@@ -17,16 +17,20 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
   const { isAuthenticated, loading } = useAuth();
   const pathname = usePathname();
   
-  // Pages publiques accessibles sans authentification
-  const publicPages = ['/cgu', '/mentions-legales', '/login', '/register', '/forgot-password'];
-  const isPublicPage = publicPages.some(page => pathname.startsWith(page));
+  // Pages où on affiche le contenu SANS FlashNote (même si non connecté)
+  const contentPages = ['/cgu', '/mentions-legales'];
+  const isContentPage = contentPages.some(page => pathname.startsWith(page));
+  
+  // Pages d'authentification où on affiche UNIQUEMENT la FlashNote (pas le formulaire)
+  const authPages = ['/login', '/register', '/forgot-password'];
+  const isAuthPage = authPages.some(page => pathname.startsWith(page));
 
   return (
     <>
       {/* Mobile: comportement actuel avec swipe navigation */}
       <div className="md:hidden">
-        {isPublicPage ? (
-          // Pages publiques : affichage direct sans swipe navigation
+        {isContentPage ? (
+          // Pages de contenu : affichage direct sans swipe navigation
           <div className="h-screen overflow-auto">
             {children}
           </div>
@@ -40,26 +44,22 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
 
       {/* Desktop: nouvelle architecture */}
       <div className="hidden md:flex h-screen">
-        {/* Sidebar - cachée sur les pages publiques */}
-        {!isPublicPage && <SideBar />}
+        {/* Sidebar - toujours visible */}
+        <SideBar />
 
         {/* Contenu principal */}
         <div className={`flex-1 flex flex-col w-full`}>
-          {/* Breadcrumb et ItemBar - cachés sur les pages publiques */}
-          {!isPublicPage && (
-            <>
-              <Breadcrumb />
-              <ItemBar />
-            </>
-          )}
+          {/* Breadcrumb et ItemBar - toujours visibles */}
+          <Breadcrumb />
+          <ItemBar />
 
           {/* Zone de contenu */}
           <main className="flex-1 overflow-auto bg-background md:bg-deskbackground">
-            {!loading && !isAuthenticated && !isPublicPage ? (
-              // Si non connecté ET que ce n'est pas une page publique, afficher le FlashNoteWidget
+            {!loading && !isAuthenticated && !isContentPage ? (
+              // Si non connecté ET pas sur une page de contenu (/cgu, /mentions-legales), afficher FlashNote
               <FlashNoteWidget />
             ) : (
-              // Si connecté OU page publique, afficher le contenu
+              // Sinon (connecté OU page de contenu), afficher le contenu de la page
               <div className="h-full">
                 {children}
               </div>

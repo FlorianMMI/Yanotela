@@ -322,6 +322,7 @@ interface RegisterData {
     pseudo: string;
     email: string;
     password: string;
+    checkedCGU: boolean;
 }
 
 interface AuthResponse {

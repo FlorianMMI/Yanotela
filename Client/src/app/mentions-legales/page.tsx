@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import Icon from '@/ui/Icon';
 
+export const noAuth = true;
+
 export default function MentionsLegalesPage() {
   return (
     <div className="min-h-screen bg-background">
