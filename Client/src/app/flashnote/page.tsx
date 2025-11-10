@@ -19,6 +19,8 @@ import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
 import { useAuth } from "@/hooks/useAuth";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
+import { AudioNode } from "@/components/flashnote/AudioNode";
+import { VideoNode } from "@/components/flashnote/VideoNode";
 import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";

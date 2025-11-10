@@ -12,6 +12,8 @@ import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST
 import { mergeRegister } from '@lexical/utils';
 import Icons from '@/ui/Icon';
 import { $createImageNode } from '@/components/flashnote/ImageNode';
+import { $createAudioNode } from '@/components/flashnote/AudioNode';
+import { $createVideoNode } from '@/components/flashnote/VideoNode';
 
 interface ToolbarPluginProps {
     onOpenDrawingBoard?: () => void;
@@ -340,16 +342,32 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // Check if file is an image
-        if (!file.type.startsWith('image/')) {
-            alert('Veuillez sélectionner un fichier image');
+        // Check if file is an image, audio, or video
+        const isImage = file.type.startsWith('image/');
+        const isAudio = file.type.startsWith('audio/') || file.name.endsWith('.mp3');
+        const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|ogg)$/i);
+
+        if (!isImage && !isAudio && !isVideo) {
+            alert('Veuillez sélectionner un fichier image, audio (MP3) ou vidéo (MP4, WebM)');
             return;
         }
 
-        // Check file size (max 5MB)
-        const maxSize = 5 * 1024 * 1024;
+        // Check file size (max 50MB for video, 10MB for audio, 5MB for images)
+        let maxSize: number;
+        let maxSizeLabel: string;
+        if (isVideo) {
+            maxSize = 50 * 1024 * 1024;
+            maxSizeLabel = '50MB';
+        } else if (isAudio) {
+            maxSize = 10 * 1024 * 1024;
+            maxSizeLabel = '10MB';
+        } else {
+            maxSize = 5 * 1024 * 1024;
+            maxSizeLabel = '5MB';
+        }
+
         if (file.size > maxSize) {
-            alert('L\'image est trop volumineuse (max 5MB)');
+            alert(`Le fichier est trop volumineux (max ${maxSizeLabel})`);
             return;
         }
 
@@ -358,12 +376,26 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
             const src = e.target?.result as string;
             if (src) {
                 editor.update(() => {
-                    const imageNode = $createImageNode({
-                        src,
-                        altText: file.name,
-                        isDrawing: false, // Imported images are not drawings
-                    });
-                    $insertNodes([imageNode]);
+                    if (isImage) {
+                        const imageNode = $createImageNode({
+                            src,
+                            altText: file.name,
+                            isDrawing: false, // Imported images are not drawings
+                        });
+                        $insertNodes([imageNode]);
+                    } else if (isAudio) {
+                        const audioNode = $createAudioNode({
+                            src,
+                            altText: file.name,
+                        });
+                        $insertNodes([audioNode]);
+                    } else if (isVideo) {
+                        const videoNode = $createVideoNode({
+                            src,
+                            altText: file.name,
+                        });
+                        $insertNodes([videoNode]);
+                    }
                 });
             }
         };
@@ -513,18 +545,18 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
 
                 <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
 
-                {/* Image import button */}
+                {/* Media import button */}
                 <button
                     onClick={handleImageImport}
                     className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
-                    aria-label="Importer une image"
-                    title="Importer une image">
-                    <Icons name="image" />
+                    aria-label="Importer un média"
+                    title="Importer un média (image, audio ou vidéo)">
+                    <Icons name="media" />
                 </button>
                 <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,audio/*,video/*,.mp3,.mp4,.webm"
                     onChange={handleFileChange}
                     className="hidden"
                 />
@@ -798,13 +830,13 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                         )}
                     </div>
 
-                    {/* Image import button for mobile */}
+                    {/* Media import button for mobile */}
                     <button
                         onClick={handleImageImport}
                         className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
-                        aria-label="Importer une image">
-                        <Icons name="image" className="mb-1" />
-                        <span className="text-xs">Image</span>
+                        aria-label="Importer un média">
+                        <Icons name="media" className="mb-1" />
+                        <span className="text-xs">Média</span>
                     </button>
 
                     {/* Drawing Board button for mobile */}

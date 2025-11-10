@@ -42,8 +42,13 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
     // Set canvas size to match container
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      
+      // Ensure we have valid dimensions
+      const width = rect.width || canvas.offsetWidth || 800;
+      const height = rect.height || canvas.offsetHeight || 600;
+      
+      canvas.width = width;
+      canvas.height = height;
       
       // Reset canvas background
       ctx.fillStyle = "white";
@@ -73,7 +78,11 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
       ctx.lineJoin = "round";
     };
 
-    resizeCanvas();
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      resizeCanvas();
+    });
+    
     setContext(ctx);
 
     // Handle window resize
@@ -264,7 +273,7 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
   if (!open) return null;
 
   return (
-    <div className="fixed md:sticky md:top-4 z-30 top-0 left-0 w-screen h-full md:w-full md:max-h-[calc(100vh-200px)] md:h-[600px] bg-white rounded-lg overflow-hidden shadow-xl md:mb-4">
+    <div className="fixed inset-0 md:sticky md:top-4 z-30 w-screen h-screen md:w-full md:h-auto md:max-h-[calc(100vh-100px)] md:min-h-[600px] bg-white md:rounded-lg overflow-hidden shadow-xl md:mb-4">
       <canvas
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"

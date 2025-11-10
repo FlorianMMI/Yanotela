@@ -20,6 +20,8 @@ import ConnectedUsers from "@/components/collaboration/ConnectedUsers";
 import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
+import { AudioNode } from "@/components/flashnote/AudioNode";
+import { VideoNode } from "@/components/flashnote/VideoNode";
 import { $insertNodes } from "lexical";
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
@@ -82,31 +84,27 @@ function OnChangeBehavior({ noteId, onContentChange }: { noteId: string, onConte
 }
 
 /**
- * Plugin pour insérer des dessins via événements personnalisés
+ * Plugin pour insérer des dessins via callback
  */
-function DrawingInsertPlugin() {
+function DrawingInsertPlugin({ onReady }: { onReady: (insertFn: (data: DrawingData) => void) => void }) {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    const handleInsertDrawing = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { src, width, height, altText } = customEvent.detail;
-      
+    const insertDrawing = (drawingData: DrawingData) => {
       editor.update(() => {
         const imageNode = $createImageNode({
-          src,
-          width,
-          height,
-          altText,
+          src: drawingData.dataUrl,
+          width: drawingData.width,
+          height: drawingData.height,
+          altText: `Drawing from ${new Date(drawingData.timestamp).toLocaleString()}`,
           isDrawing: true, // Mark as drawing to show dashed border
         });
         $insertNodes([imageNode]);
       });
     };
 
-    window.addEventListener('insertDrawing', handleInsertDrawing);
-    return () => window.removeEventListener('insertDrawing', handleInsertDrawing);
-  }, [editor]);
+    onReady(insertDrawing);
+  }, [editor, onReady]);
 
   return null;
 }
@@ -137,6 +135,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [userRole, setUserRole] = useState<number | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
+
+  // Ref to store the drawing insert function
+  const insertDrawingRef = useRef<((data: DrawingData) => void) | null>(null);
 
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
@@ -201,19 +202,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   // Gestion du dessin
   const handleDrawingSave = useCallback((drawingData: DrawingData) => {
-    // Insert the drawing as an ImageNode in the editor
-    const editorElement = document.querySelector('.editor-root');
-    if (editorElement) {
-      // Get the editor instance from the composer context
-      // We'll need to dispatch a custom command to insert the image
-      window.dispatchEvent(new CustomEvent('insertDrawing', { 
-        detail: { 
-          src: drawingData.dataUrl,
-          width: drawingData.width,
-          height: drawingData.height,
-          altText: `Drawing from ${new Date(drawingData.timestamp).toLocaleString()}`
-        } 
-      }));
+    // Use the ref to insert the drawing directly into the editor
+    if (insertDrawingRef.current) {
+      insertDrawingRef.current(drawingData);
     }
   }, []);
 
@@ -393,7 +384,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           </motion.div>
         </div>
       ) : (
-        <div className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible">
+        <div className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col overflow-visible">
           {/* Drawing Board */}
           {!isReadOnly && (
             <DrawingBoard 
@@ -412,7 +403,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
-                      className={`editor-root mt-5 h-full focus:outline-none ${
+                      className={`editor-root mt-5 min-h-[400px] focus:outline-none ${
                         isReadOnly ? 'cursor-not-allowed' : ''
                       }`}
                       contentEditable={!isReadOnly}
@@ -428,7 +419,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
                 <ListPlugin />
                 {!isReadOnly && <AutoFocusPlugin />}
-                {!isReadOnly && <DrawingInsertPlugin />}
+                {!isReadOnly && <DrawingInsertPlugin onReady={(fn) => { insertDrawingRef.current = fn; }} />}
                 
                 {/* ✅ Plugin officiel de collaboration Lexical + YJS */}
                 <CollaborationPlugin
