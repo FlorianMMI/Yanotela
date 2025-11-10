@@ -1,6 +1,7 @@
 "use client";
 
-import { $getRoot, EditorState, $getSelection, $isRangeSelection } from "lexical";
+import ExportPDFButton from "@/ui/exportpdfbutton";
+import {EditorState } from "lexical";
 import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -16,11 +17,8 @@ import { motion } from "motion/react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
-import ConnectedUsers from "@/components/collaboration/ConnectedUsers";
 import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
-import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
-import { $insertNodes } from "lexical";
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
@@ -118,6 +116,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // ✅ NOUVEAU: State pour profil utilisateur (utilisé par CollaborationPlugin)
   const [userProfile, setUserProfile] = useState({ name: 'Anonyme', color: '#FF5733' });
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const editorContentRef = useRef<HTMLDivElement | null>(null); // Ref pour le ContentEditable (export PDF)
 
   // ✅ Provider factory pour CollaborationPlugin
   const providerFactory = useCallback(
@@ -303,6 +302,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           {error}
         </div>
       )}
+      
+      
 
       {/* Mobile Header */}
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
@@ -351,7 +352,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           </motion.div>
         </div>
       ) : (
-        <div className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible">
+        <div className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col flex-1 overflow-visible">
           {/* Drawing Board */}
           {!isReadOnly && (
             <DrawingBoard 
@@ -362,15 +363,22 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           )}
 
           {/* ✅ NOUVEAU: Wrapper LexicalCollaboration + CollaborationPlugin */}
-          <div ref={containerRef}>
+          <div ref={containerRef} className="flex flex-col flex-1 h-full">
             <LexicalCollaboration>
               <LexicalComposer initialConfig={initialConfig}>
-                {!isReadOnly && <ToolbarPlugin onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)} />}
+                {!isReadOnly && (
+                  <ToolbarPlugin 
+                    onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)}
+                    noteTitle={noteTitle}
+                    editorContentRef={editorContentRef}
+                  />
+                )}
                 
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
-                      className={`editor-root mt-5 h-full focus:outline-none ${
+                      ref={editorContentRef as any}
+                      className={`editor-root mt-2 h-full focus:outline-none ${
                         isReadOnly ? 'cursor-not-allowed' : ''
                       }`}
                       contentEditable={!isReadOnly}
