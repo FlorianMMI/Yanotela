@@ -81,6 +81,36 @@ function OnChangeBehavior({ noteId, onContentChange }: { noteId: string, onConte
   return null;
 }
 
+/**
+ * Plugin pour insérer des dessins via événements personnalisés
+ */
+function DrawingInsertPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    const handleInsertDrawing = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { src, width, height, altText } = customEvent.detail;
+      
+      editor.update(() => {
+        const imageNode = $createImageNode({
+          src,
+          width,
+          height,
+          altText,
+          isDrawing: true, // Mark as drawing to show dashed border
+        });
+        $insertNodes([imageNode]);
+      });
+    };
+
+    window.addEventListener('insertDrawing', handleInsertDrawing);
+    return () => window.removeEventListener('insertDrawing', handleInsertDrawing);
+  }, [editor]);
+
+  return null;
+}
+
 interface NoteEditorProps {
   params: Promise<{
     id: string;
@@ -171,8 +201,20 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   // Gestion du dessin
   const handleDrawingSave = useCallback((drawingData: DrawingData) => {
-    
-    // TODO: Implémenter l'insertion via Lexical commands
+    // Insert the drawing as an ImageNode in the editor
+    const editorElement = document.querySelector('.editor-root');
+    if (editorElement) {
+      // Get the editor instance from the composer context
+      // We'll need to dispatch a custom command to insert the image
+      window.dispatchEvent(new CustomEvent('insertDrawing', { 
+        detail: { 
+          src: drawingData.dataUrl,
+          width: drawingData.width,
+          height: drawingData.height,
+          altText: `Drawing from ${new Date(drawingData.timestamp).toLocaleString()}`
+        } 
+      }));
+    }
   }, []);
 
   // ✅ Configuration Lexical - CRITIQUE: editorState DOIT être null pour collaboration
@@ -386,6 +428,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
                 <ListPlugin />
                 {!isReadOnly && <AutoFocusPlugin />}
+                {!isReadOnly && <DrawingInsertPlugin />}
                 
                 {/* ✅ Plugin officiel de collaboration Lexical + YJS */}
                 <CollaborationPlugin

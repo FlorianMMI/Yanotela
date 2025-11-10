@@ -156,6 +156,7 @@ export default function FlashNoteEditor() {
         altText: "Drawing",
         width: Math.min(drawingData.width, 600), // Limit max width
         height: Math.min(drawingData.height, 600),
+        isDrawing: true, // Mark as drawing to show dashed border
       });
       
       // Insert the image node at the current selection or at the end

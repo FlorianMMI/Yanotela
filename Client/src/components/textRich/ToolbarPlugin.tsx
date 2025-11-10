@@ -6,11 +6,12 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, $getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, $isTextNode } from 'lexical';
+import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, $getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, $isTextNode, $insertNodes } from 'lexical';
 import { $patchStyleText } from '@lexical/selection';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list';
 import { mergeRegister } from '@lexical/utils';
 import Icons from '@/ui/Icon';
+import { $createImageNode } from '@/components/flashnote/ImageNode';
 
 interface ToolbarPluginProps {
     onOpenDrawingBoard?: () => void;
@@ -19,6 +20,7 @@ interface ToolbarPluginProps {
 export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps = {}) {
     const [editor] = useLexicalComposerContext();
     const toolbarRef = useRef(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [showFormatMenu, setShowFormatMenu] = useState(false);
     const [showSizeMenu, setShowSizeMenu] = useState(false);
     const [showListMenu, setShowListMenu] = useState(false);
@@ -330,6 +332,47 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
         }
     };
 
+    const handleImageImport = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+
+    const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Check if file is an image
+        if (!file.type.startsWith('image/')) {
+            alert('Veuillez sélectionner un fichier image');
+            return;
+        }
+
+        // Check file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('L\'image est trop volumineuse (max 5MB)');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const src = e.target?.result as string;
+            if (src) {
+                editor.update(() => {
+                    const imageNode = $createImageNode({
+                        src,
+                        altText: file.name,
+                        isDrawing: false, // Imported images are not drawings
+                    });
+                    $insertNodes([imageNode]);
+                });
+            }
+        };
+        reader.readAsDataURL(file);
+
+        // Reset input value to allow re-uploading the same file
+        event.target.value = '';
+    }, [editor]);
+
     return (
         <>
             {/* DESKTOP TOOLBAR - Top sticky bar with all buttons */}
@@ -467,6 +510,24 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                     title="Justifier">
                     <Icons name="text-justify" />
                 </button>
+
+                <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
+
+                {/* Image import button */}
+                <button
+                    onClick={handleImageImport}
+                    className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
+                    aria-label="Importer une image"
+                    title="Importer une image">
+                    <Icons name="image" />
+                </button>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                />
 
                 {/* Drawing Board button */}
                 {onOpenDrawingBoard && (
@@ -736,6 +797,15 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                             </>
                         )}
                     </div>
+
+                    {/* Image import button for mobile */}
+                    <button
+                        onClick={handleImageImport}
+                        className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
+                        aria-label="Importer une image">
+                        <Icons name="image" className="mb-1" />
+                        <span className="text-xs">Image</span>
+                    </button>
 
                     {/* Drawing Board button for mobile */}
                     {onOpenDrawingBoard && (
