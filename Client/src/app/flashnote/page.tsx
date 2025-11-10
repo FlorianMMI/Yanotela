@@ -64,7 +64,7 @@ export default function FlashNoteEditor() {
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editor, setEditor] = useState<any>(null);
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
 
   // États pour les notifications
@@ -256,7 +256,7 @@ export default function FlashNoteEditor() {
   return (
     <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
       {/* Bandeau d'information pour les utilisateurs non connectés */}
-      {!authLoading && !isAuthenticated && (
+      {!loading && !isAuthenticated && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
