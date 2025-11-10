@@ -69,12 +69,9 @@ export function useYjsDocument(
   useEffect(() => {
     if (!noteId || hasJoinedRef.current) return;
 
-    console.log(`[useYjsDocument] 🎬 Initialisation pour note: ${noteId}`);
-
     // 🔌 CRITIQUE: Configurer les listeners Socket.IO AVANT de créer le Y.Doc
     // Pour s'assurer qu'on recevra les updates dès le début
     yjsCollaborationService.setupSocketListeners();
-    console.log('[useYjsDocument] ✅ Listeners Socket.IO configurés');
 
     // 1️⃣ Créer ou obtenir le Y.Doc (sans contenu initial, sera chargé depuis serveur)
     const ydoc = yjsCollaborationService.getOrCreateDocument(noteId);
@@ -85,21 +82,18 @@ export function useYjsDocument(
       return;
     }
 
-    console.log(`[useYjsDocument] ✅ Y.Doc créé, Y.Text length: ${ytext.length}`);
-    
     ydocRef.current = ydoc;
     ytextRef.current = ytext;
 
     // 2️⃣ Rejoindre la room Socket.IO ET ATTENDRE LA CONFIRMATION
-    console.log(`[useYjsDocument] 🚪 Tentative de rejoindre room: ${noteId}`);
+    
     socketService.joinNote(noteId, (data) => {
-      console.log('[useYjsDocument] ✅ noteJoined reçu, on est maintenant dans la room!', data);
-      
+
       // ✅ CORRECTION CRITIQUE: Attendre 100ms pour que le serveur finalise l'ajout à la room
       setTimeout(() => {
         setRoomJoined(true);
         setIsReady(true);
-        console.log('[useYjsDocument] 🟢 Room confirmée, prêt à collaborer');
+        
       }, 100);
     });
 
@@ -116,7 +110,7 @@ export function useYjsDocument(
           
           // Créer l'awareness avec le pseudo
           YjsAwarenessProvider.joinNote(noteId, ydoc, { name: pseudo });
-          console.log(`[useYjsDocument] Awareness initialisé pour ${pseudo}`);
+          
         }
       } catch (error) {
         console.error('[useYjsDocument] Erreur lors de la récupération du pseudo:', error);
@@ -132,12 +126,9 @@ export function useYjsDocument(
     const collaborationState = yjsCollaborationService.getCollaborationState(noteId);
     setState(collaborationState);
 
-    console.log('[useYjsDocument] ✅ Initialisation terminée');
-
     // 🧹 CLEANUP : Quitter la room, détruire le doc ET l'awareness
     return () => {
-      console.log(`[useYjsDocument] Cleanup pour note: ${noteId}`);
-      
+
       YjsAwarenessProvider.leaveNote(noteId);
       socketService.leaveNote();
       yjsCollaborationService.destroyDocument(noteId);
@@ -157,7 +148,7 @@ export function useYjsDocument(
     if (!noteId || !isReady) return;
 
     const handleReconnect = () => {
-      console.log('[useYjsDocument] Reconnexion détectée, synchronisation...');
+      
       yjsCollaborationService.syncOnReconnect(noteId);
     };
 
@@ -191,7 +182,7 @@ export function useYjsDocument(
    */
   const sync = () => {
     if (!noteId) return;
-    console.log('[useYjsDocument] Synchronisation manuelle demandée');
+    
     yjsCollaborationService.syncOnReconnect(noteId);
   };
 
@@ -200,7 +191,7 @@ export function useYjsDocument(
    */
   const createSnapshot = () => {
     if (!noteId) return;
-    console.log('[useYjsDocument] Création snapshot manuel');
+    
     yjsCollaborationService.createSnapshot(noteId);
   };
 

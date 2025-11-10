@@ -16,8 +16,6 @@ async function cleanupDeletedNotes() {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - RETENTION_DAYS);
 
-    console.log(`🗑️  Nettoyage des notes supprimées avant le ${cutoffDate.toISOString()}`);
-
     // Trouver les notes à supprimer définitivement
     const notesToDelete = await prisma.note.findMany({
       where: {
@@ -34,11 +32,10 @@ async function cleanupDeletedNotes() {
     });
 
     if (notesToDelete.length === 0) {
-      console.log("✅ Aucune note à supprimer");
+      
       return;
     }
 
-    console.log(`📋 ${notesToDelete.length} note(s) à supprimer définitivement :`);
     notesToDelete.forEach((note) => {
       console.log(`   - ${note.Titre} (ID: ${note.id}, supprimée le ${note.deletedAt?.toLocaleDateString()})`);
     });
@@ -86,7 +83,7 @@ async function cleanupDeletedNotes() {
 // Exécuter le script
 cleanupDeletedNotes()
   .then(() => {
-    console.log("✨ Nettoyage terminé avec succès");
+    
     process.exit(0);
   })
   .catch((error) => {

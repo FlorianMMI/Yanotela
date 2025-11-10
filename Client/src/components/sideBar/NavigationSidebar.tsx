@@ -48,7 +48,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
 
           <Icon
             name="profile"
-            className={isProfile ? "text-white" : "text-element"}
+            className={isProfile ? "text-white" : "text-primary"}
             size={30}
           />
 
@@ -83,7 +83,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
               >
                 <Icon
                   name={item.icon}
-                  className={item.isActive ? "text-white" : "text-element"}
+                  className={item.isActive ? "text-white" : "text-primary"}
                   size={30}
                   strokeWidth={12}
 

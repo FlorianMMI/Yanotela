@@ -16,9 +16,20 @@ interface NoteListProps {
   allowCreateNote?: boolean; // Autoriser la création de note (par défaut: true)
   folderId?: string; // ID du dossier pour créer la note directement dedans
   onCreateNote?: () => void; // Callback personnalisé pour la création de note
+  searchTerm?: string; // Terme de recherche pour surlignage
+  searchInContent?: boolean; // Mode de recherche actif
 }
 
-export default function NoteList({ notes, onNoteCreated, isLoading = false, allowCreateNote = true, folderId, onCreateNote }: NoteListProps) {
+export default function NoteList({ 
+  notes, 
+  onNoteCreated, 
+  isLoading = false, 
+  allowCreateNote = true, 
+  folderId, 
+  onCreateNote,
+  searchTerm = "",
+  searchInContent = false
+}: NoteListProps) {
 
   const router = useRouter();
 
@@ -91,7 +102,13 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
 
         {/* Notes Grid */}
         {!isLoading && notes.map((note) => (
-          <Note key={note.id} note={note} />
+          <Note 
+            key={note.id} 
+            note={note} 
+            onNoteUpdated={onNoteCreated}
+            searchTerm={searchTerm}
+            searchInContent={searchInContent}
+          />
         ))}
       </div>
     </main>

@@ -2,16 +2,19 @@
 
 import React from 'react';
 import Icon from '../Icon';
+import { useRouter } from "next/navigation";
 
 interface TotalNotesProps {
     totalNotes?: number;
 }
 
-const redirectToNotes = () => {
-    window.location.href = '/notes';
-}
-
 export default function TotalNotes({ totalNotes }: TotalNotesProps) {
+
+    const router = useRouter();
+
+    const redirectToNotes = () => {
+    router.push('/notes');
+    };
     const safeTotalNotes = totalNotes ?? 0;
 
     return (

@@ -212,7 +212,7 @@ export default function DrawingBoard({ isOpen, onSave, onClose }: DrawingBoardPr
   if (!open) return null;
 
   return (
-    <div className="fixed md:sticky md:top-4 md:z-20 top-0 left-0 w-screen h-screen md:w-full md:max-h-[calc(100vh-200px)] md:h-[600px] bg-white rounded-lg overflow-hidden shadow-xl md:mb-4">
+    <div className="fixed md:sticky md:top-4 z-30 top-0 left-0 w-screen h-full md:w-full md:max-h-[calc(100vh-200px)] md:h-[600px] bg-white rounded-lg overflow-hidden shadow-xl md:mb-4">
       <canvas
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"

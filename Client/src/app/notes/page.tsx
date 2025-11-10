@@ -13,9 +13,13 @@ import FlashNoteButton from '@/ui/flash-note-button';
 export default function Home() {
   const { isAuthenticated, loading: authLoading } = useAuthRedirect();
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
+  const [sortBy, setSortBy] = useState<"recent">("recent");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
+  const [searchInContent, setSearchInContent] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  
   // Charger les notes au montage du composant
   useEffect(() => {
     fetchNotes();
@@ -34,15 +38,37 @@ export default function Home() {
     }
   };
 
-  // Filtrer et trier les notes (utilise les propriétés du serveur)
+  // Filtrer et trier les notes
   const filteredNotes = Array.isArray(notes) ? notes
-    .filter(note =>
-      note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      note.Content?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter(note => {
+      // Filtre de recherche
+      let matchesSearch = true;
+      if (searchTerm) {
+        if (searchInContent) {
+          // Rechercher dans le contenu
+          matchesSearch = note.Content?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+        } else {
+          // Rechercher par titre (par défaut)
+          matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+        }
+      }
+      
+      // Filtre de collaboration
+      // Personnelles : 1 seul utilisateur (nous, collaboratorCount = 0 ou undefined ou = 1)
+      // Collaboratives : 2 utilisateurs ou plus (collaboratorCount >= 2)
+      const matchesCollaboration = 
+        collaborationFilter === "all" ? true :
+        collaborationFilter === "collaborative" ? (note.collaboratorCount && note.collaboratorCount >= 2) :
+        collaborationFilter === "solo" ? (!note.collaboratorCount || note.collaboratorCount <= 1) :
+        true;
+      
+      return matchesSearch && matchesCollaboration;
+    })
     .sort((a, b) => {
-      // Tri par date de modification (plus récent en premier)
-      return new Date(b.ModifiedAt).getTime() - new Date(a.ModifiedAt).getTime();
+      // Notes sorted by ModifiedAt (no CreatedAt in schema)
+      const da = new Date(a.ModifiedAt).getTime();
+      const db = new Date(b.ModifiedAt).getTime();
+      return sortDir === "desc" ? db - da : da - db;
     }) : [];
 
   return (
@@ -53,6 +79,12 @@ export default function Home() {
         setSearchTerm={setSearchTerm}
         sortBy={sortBy}
         setSortBy={setSortBy}
+        sortDir={sortDir}
+        setSortDir={setSortDir}
+        collaborationFilter={collaborationFilter}
+        setCollaborationFilter={setCollaborationFilter}
+        searchInContent={searchInContent}
+        setSearchInContent={setSearchInContent}
       />
 
       <Suspense fallback={<div></div>}>
@@ -60,6 +92,8 @@ export default function Home() {
           notes={filteredNotes}
           onNoteCreated={fetchNotes}
           isLoading={loading}
+          searchTerm={searchTerm}
+          searchInContent={searchInContent}
         />
       </Suspense>
 
