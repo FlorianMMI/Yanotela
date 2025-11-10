@@ -98,7 +98,7 @@ export default function Home() {
       </Suspense>
 
       {/* Flash Note Button - Mobile Only - Full width */}
-      <div className="fixed inset-x-4 bottom-6 md:hidden z-50">
+      <div className="fixed inset-x-4 bottom-16 md:hidden z-50">
         <FlashNoteButton
           isOpen={true}
           isActive={false}

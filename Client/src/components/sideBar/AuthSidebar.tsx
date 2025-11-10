@@ -20,7 +20,7 @@ export default function AuthSidebar() {
 
   // Déterminer le formulaire à afficher en fonction de l'URL
   const getCurrentView = () => {
-    if (pathname.startsWith('/register')) {
+    if (pathname.startsWith('/register') || pathname.startsWith('/cgu') || pathname.startsWith('/mentions-legales')) {
       return { view: 'register', token: null };
     } else if (pathname.startsWith('/forgot-password')) {
       // Vérifie si l'URL est /forgot-password/:token

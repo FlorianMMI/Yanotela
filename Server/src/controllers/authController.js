@@ -4,7 +4,7 @@ import { sendValidationEmail, sendResetPasswordEmail } from "../services/emailSe
 
 const prisma = new PrismaClient();
 import crypto from "crypto";
-import { body, validationResult } from "express-validator";
+import { body, check, validationResult } from "express-validator";
 
 const validateRegistration = [
   body("pseudo")
@@ -34,7 +34,13 @@ const register = async (req, res) => {
     });
   }
 
-  const { firstName, lastName, pseudo, email, password } = req.body;
+  const { firstName, lastName, pseudo, email, password, checkedCGU } = req.body;
+
+  if (!checkedCGU) {
+    return res.status(500).json({
+      error: "Erreur lors de la création de votre compte."
+    });
+  }
 
   try {
     let existing = await prisma.user.findUnique({ where: { email } });
