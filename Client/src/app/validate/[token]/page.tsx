@@ -1,109 +1,53 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React from 'react';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import "../../globals.css";
 import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
 
-export default function ValidatePage() {
-  const params = useParams();
-  const router = useRouter();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('');
+interface ValidatePageProps {
+  params: Promise<{
+    token: string;
+  }>;
+}
 
-  useEffect(() => {
-    const validateAccount = async () => {
-      const token = params.token as string;
-      
-      if (!token) {
-        setStatus('error');
-        setMessage('Token de validation manquant');
-        return;
-      }
+async function validateToken(token: string) {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api';
+  
+  try {
+    const response = await fetch(`${API_URL}/validate/${token}`, {
+      method: 'GET',
+      cache: 'no-store', // Don't cache validation requests
+    });
 
-      try {
-        
-        // Appeler l'API de validation du backend avec le token
-        const API_URL = process.env.NEXT_PUBLIC_API_URL;
-        const response = await fetch(`${API_URL}/validate/${token}`, {
-          method: 'GET',
-          credentials: 'include', // Important pour les sessions
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          setStatus('success');
-          setMessage('Votre compte a été validé avec succès ! Connexion automatique...');
-
-          // Délai pour permettre la synchronisation de l'état
-          setTimeout(() => {
-            // Forcer un rechargement complet pour s'assurer que l'état d'auth est mis à jour
-            window.location.href = '/notes';
-          }, 1500);
-         
-        } else {
-          setStatus('error');
-          setMessage(data.error || 'Erreur lors de la validation du compte');
-        }
-      } catch (error) {
-        console.error('Erreur validation:', error);
-        setStatus('error');
-        setMessage(`Erreur de connexion au serveur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
-      }
+    const data = await response.json();
+    
+    return {
+      success: response.ok && data.success,
+      error: data.error || null,
     };
+  } catch (error) {
+    console.error('Erreur validation:', error);
+    return {
+      success: false,
+      error: 'Erreur de connexion au serveur',
+    };
+  }
+}
 
-    validateAccount();
-  }, [params.token, router]);
-
-  return (
-    <div className="min-h-full flex items-center justify-center">
-      <MobileFlashNoteButton />
-      
-      <div className="max-w-md w-full">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-clrprincipal">
-            Validation du compte
-          </h2>
-          
-          {status === 'loading' && (
-            <div className="mt-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-sm text-foreground">
-                Validation en cours...
-              </p>
-            </div>
-          )}
-          
-          {status === 'success' && (
-            <div className="mt-4 flex justify-center">
-              <div className="rounded-md bg-success-50 p-4 w-full max-w-sm">
-                <div className="flex items-center">
-                  <div className="shrink-0">
-                    <svg className="h-10 w-10 text-green" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3 text-center w-full">
-                    <p className="text-sm font-medium text-success-800">
-                      {message}
-                    </p>
-                    <div className="mt-2 flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-success-800"></div>
-                      <span className="text-xs text-success-800">Redirection en cours...</span>
-                    </div>
-                      <Link href="/notes" className="mt-2 block text-sm text-success-800 hover:text-success-800 underline">
-                        Accéder à mes notes maintenant
-                      </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {status === 'error' && (
+export default async function ValidatePage({ params }: ValidatePageProps) {
+  const { token } = await params;
+  
+  if (!token) {
+    return (
+      <div className="min-h-full flex items-center justify-center">
+        <MobileFlashNoteButton />
+        
+        <div className="max-w-md w-full">
+          <div className="text-center">
+            <h2 className="text-3xl font-extrabold text-clrprincipal">
+              Validation du compte
+            </h2>
+            
             <div className="mt-4 flex justify-center">
               <div className="rounded-md bg-dangerous-50 p-4 w-full max-w-sm">
                 <div className="flex items-center">
@@ -114,11 +58,11 @@ export default function ValidatePage() {
                   </div>
                   <div className="ml-3 text-center w-full">
                     <p className="text-sm font-medium text-dangerous-800">
-                      {message}
+                      Token de validation manquant
                     </p>
                     <Link
                       href="/"
-                      className="mt-2 text-sm text-dangerous-800 hover:text-dangerous-600 underline"
+                      className="mt-2 block text-sm text-dangerous-800 hover:text-dangerous-600 underline"
                     >
                       Retour
                     </Link>
@@ -126,7 +70,52 @@ export default function ValidatePage() {
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const result = await validateToken(token);
+  
+  if (result.success) {
+    // Redirect to notes page on success
+    redirect('/notes');
+  }
+
+  // Show error page if validation failed
+  return (
+    <div className="min-h-full flex items-center justify-center">
+      <MobileFlashNoteButton />
+      
+      <div className="max-w-md w-full">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-clrprincipal">
+            Validation du compte
+          </h2>
+          
+          <div className="mt-4 flex justify-center">
+            <div className="rounded-md bg-dangerous-50 p-4 w-full max-w-sm">
+              <div className="flex items-center">
+                <div className="shrink-0">
+                  <svg className="h-10 w-10 text-dangerous-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3 text-center w-full">
+                  <p className="text-sm font-medium text-dangerous-800">
+                    {result.error || 'Erreur lors de la validation du compte'}
+                  </p>
+                  <Link
+                    href="/"
+                    className="mt-2 block text-sm text-dangerous-800 hover:text-dangerous-600 underline"
+                  >
+                    Retour
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

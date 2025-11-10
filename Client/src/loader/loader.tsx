@@ -190,6 +190,40 @@ export async function DeleteNote(id: string): Promise<{ success: boolean; messag
     }
 }
 
+export async function DuplicateNote(id: string): Promise<{ success: boolean; note?: Note; redirectUrl?: string; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/duplicate/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return {
+                success: false,
+                error: errorData.message || `Erreur HTTP ${response.status}`
+            };
+        }
+
+        const data = await response.json();
+        return {
+            success: true,
+            note: data.note,
+            redirectUrl: data.redirectUrl,
+            message: data.message || "Note dupliquée avec succès"
+        };
+    } catch (error) {
+        console.error("Error duplicating note:", error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Erreur inconnue"
+        };
+    }
+}
+
 export async function LeaveNote(id: string): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/leave/${id}`, {

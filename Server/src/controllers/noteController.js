@@ -193,6 +193,76 @@ export const noteController = {
     }
   },
 
+  duplicateNote: async (req, res) => {
+    // Vérifier si l'utilisateur est authentifié via la session
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    const { id } = req.params; // ID de la note à dupliquer
+    const userId = parseInt(req.session.userId);
+
+    try {
+      // Récupérer la note originale
+      const originalNote = await prisma.note.findUnique({
+        where: { id: id },
+        include: {
+          permissions: true,
+        },
+      });
+
+      if (!originalNote) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+
+      // Vérifier si la note est supprimée
+      if (originalNote.deletedAt) {
+        return res.status(404).json({ message: "Cette note a été supprimée" });
+      }
+
+      // Vérifier si l'utilisateur a accès à cette note
+      const userPermission = await getPermission(userId, id);
+      if (!userPermission) {
+        return res.status(403).json({ message: "Vous n'avez pas accès à cette note" });
+      }
+
+      // Générer un nouvel ID pour la note dupliquée
+      const newUID = crypto.randomBytes(8).toString("hex");
+
+      // Créer la nouvelle note avec le contenu de l'originale
+      const duplicatedNote = await prisma.note.create({
+        data: {
+          id: newUID,
+          Titre: `${originalNote.Titre} (copie)`,
+          Content: originalNote.Content,
+          authorId: userId, // L'utilisateur devient le propriétaire de la copie
+          modifierId: userId,
+          permissions: {
+            create: {
+              userId: userId,
+              role: 0, // Rôle 0 = Propriétaire
+              isAccepted: true,
+            },
+          },
+        },
+      });
+
+      res.status(201).json({
+        message: "Note dupliquée avec succès",
+        note: duplicatedNote,
+        redirectUrl: `/notes/${duplicatedNote.id}`,
+      });
+    } catch (error) {
+      console.error("Erreur lors de la duplication de la note:", error);
+      res
+        .status(500)
+        .json({
+          message: "Erreur lors de la duplication de la note",
+          error: error.message,
+        });
+    }
+  },
+
   getNoteById: async (req, res) => {
     const { id } = req.params;
     const { userId } = req.session;

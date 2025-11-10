@@ -36,13 +36,13 @@ export default function SearchBar({
                     placeholder={searchInContent ? "Rechercher dans le contenu..." : "Rechercher par titre..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-100 pl-10 ${showContentToggle ? 'pr-12' : 'pr-4'} py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300`}
+                    className={`w-100 pl-10 ${showContentToggle ? 'pr-12 md:pr-12' : 'pr-4'} py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300`}
                 />
                 {showContentToggle && (
                     <button
                         type="button"
                         onClick={handleToggleSearchMode}
-                        className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded transition-colors ${
+                        className={`absolute right-2 md:right-3 top-1/2 -translate-y-1/2 p-1.5 md:p-1 rounded transition-colors ${
                             searchInContent 
                                 ? 'text-primary hover:text-primary-hover' 
                                 : 'text-gray-400 hover:text-gray-600'
@@ -51,8 +51,8 @@ export default function SearchBar({
                     >
                         <Icon
                             name="docs"
-                            size={18}
-                            className="transition-colors"
+                            size={20}
+                            className="md:w-[18px] md:h-[18px] transition-colors"
                         />
                     </button>
                 )}

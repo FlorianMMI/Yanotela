@@ -45,7 +45,7 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
       node.__altText,
       node.__width,
       node.__height,
-      node.__key
+      (node as any).__key
     );
   }
 
@@ -133,6 +133,7 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
           border: "2px dashed #ccc",
           borderRadius: "4px",
           padding: "4px",
+          cursor: "pointer",
         }}
         width={this.__width}
         height={this.__height}

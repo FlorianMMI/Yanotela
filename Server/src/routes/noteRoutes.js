@@ -12,6 +12,9 @@ router.get('/get', requireAuth, noteController.getNotes);
 // Route Post pour créer une note (authentification requise)
 router.post('/create', requireAuth, noteController.createNote);
 
+// Route Post pour dupliquer une note (authentification requise)
+router.post('/duplicate/:id', requireAuth, noteController.duplicateNote);
+
 // Route Get pour récupérer une note par son ID (vérification des permissions dans le contrôleur)
 router.get('/get/:id', requireAuth, noteController.getNoteById);
 
