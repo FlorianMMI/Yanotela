@@ -25,7 +25,7 @@ export default function AuthWrapper({
   const protectedRoutes = [
     '/notes',
     '/corbeille',
-    '/folder',
+    '/dossiers',
     '/profil'
   ];
   

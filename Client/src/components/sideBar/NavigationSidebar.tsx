@@ -30,10 +30,10 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       isActive: pathname.includes('/notes'),
     },
     {
-      href: '/folder',
+      href: '/dossiers',
       label: 'Mes Dossiers',
       icon: 'folder',
-      isActive: pathname.includes('/folder'),
+      isActive: pathname.includes('/dossiers'),
     },
   ];
 
