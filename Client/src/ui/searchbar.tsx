@@ -42,7 +42,7 @@ export default function SearchBar({
                     <button
                         type="button"
                         onClick={handleToggleSearchMode}
-                        className={`absolute right-2 md:right-3 top-1/2 -translate-y-1/2 p-1.5 md:p-1 rounded transition-colors ${
+                        className={`absolute flex justify-center items-center right-2 md:right-3 top-1/2 -translate-y-1/2 p-1.5 md:p-1 rounded transition-colors ${
                             searchInContent 
                                 ? 'text-primary hover:text-primary-hover' 
                                 : 'text-gray-400 hover:text-gray-600'
