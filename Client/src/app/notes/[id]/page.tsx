@@ -81,6 +81,24 @@ function OnChangeBehavior({ noteId, onContentChange }: { noteId: string, onConte
   return null;
 }
 
+/**
+ * ✅ NOUVEAU: Plugin pour bloquer l'édition en mode lecture seule
+ */
+function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    // Mettre à jour l'état readonly de l'éditeur
+    editor.setEditable(!isReadOnly);
+    
+    if (isReadOnly) {
+      console.log('🔒 [ReadOnly] Éditeur verrouillé');
+    }
+  }, [editor, isReadOnly]);
+
+  return null;
+}
+
 interface NoteEditorProps {
   params: Promise<{
     id: string;
@@ -131,6 +149,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // Sauvegarde HTTP debounced du titre
   const debouncedSaveTitle = useDebouncedCallback(
     (titre: string) => {
+      if (isReadOnly) {
+        console.warn('🔒 [Permissions] Sauvegarde titre bloquée (lecture seule)');
+        return;
+      }
       SaveNote(id, { Titre: titre }).then(() => {
         
       }).catch((error) => {
@@ -141,7 +163,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   );
 
   function updateNoteTitle(newTitle: string) {
-    if (isReadOnly) return;
+    if (isReadOnly) {
+      console.warn('🔒 [Permissions] Modification titre bloquée (lecture seule)');
+      return;
+    }
     
     const finalTitle = newTitle.trim() === '' ? 'Sans titre' : newTitle;
     setNoteTitle(finalTitle);
@@ -156,6 +181,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // Sauvegarde HTTP debounced du contenu
   const debouncedSaveContent = useDebouncedCallback(
     (content: string) => {
+      if (isReadOnly) {
+        console.warn('🔒 [Permissions] Sauvegarde contenu bloquée (lecture seule)');
+        return;
+      }
+      
       SaveNote(id, { Content: content }).then(() => {
         
       }).catch((error) => {
@@ -175,9 +205,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     // TODO: Implémenter l'insertion via Lexical commands
   }, []);
 
-  // ✅ Configuration Lexical - CRITIQUE: editorState DOIT être null pour collaboration
   const initialConfig = {
-    editorState: null,  // ← NE PAS initialiser, laisser CollaborationPlugin gérer
+    editorState: null,  // ← CollaborationPlugin gère l'état depuis YJS
     namespace: 'YanotelaNoteEditor',
     nodes: editorNodes,
     onError,
@@ -200,8 +229,19 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
         const note = noteData;
         setNoteTitle(note.Titre || 'Sans titre');
-        // Note: userRole n'existe pas dans le type Note, on utilise isReadOnly basé sur les permissions
-        setIsReadOnly(false); // TODO: Récupérer depuis permissions
+        if (note.userRole !== undefined) {
+          setUserRole(note.userRole);
+          // Role 3 = lecture seule → bloquer l'édition
+          const readOnly = note.userRole === 3;
+          setIsReadOnly(readOnly);
+          
+          if (readOnly) {
+            console.log('🔒 [Permissions] Mode lecture seule activé (role 3)');
+          }
+        } else {
+            console.warn('⚠️ [Permissions] userRole non reçu du serveur');
+            setIsReadOnly(false);
+        }
 
       } catch (error) {
         console.error('❌ Erreur chargement note:', error);
@@ -361,42 +401,41 @@ export default function NoteEditor({ params }: NoteEditorProps) {
             />
           )}
 
-          {/* ✅ NOUVEAU: Wrapper LexicalCollaboration + CollaborationPlugin */}
           <div ref={containerRef}>
             <LexicalCollaboration>
-              <LexicalComposer initialConfig={initialConfig}>
-                {!isReadOnly && <ToolbarPlugin onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)} />}
-                
-                <RichTextPlugin
-                  contentEditable={
-                    <ContentEditable
-                      className={`editor-root mt-2 h-full focus:outline-none ${
-                        isReadOnly ? 'cursor-not-allowed' : ''
-                      }`}
-                      contentEditable={!isReadOnly}
-                    />
-                  }
-                  placeholder={
-                    <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
-                      Commencez à écrire...
-                    </p>
-                  }
-                  ErrorBoundary={LexicalErrorBoundary}
-                />
+            <LexicalComposer initialConfig={initialConfig}>
+              {!isReadOnly && <ToolbarPlugin onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)} />}
+              
+              <RichTextPlugin
+                contentEditable={
+                  <ContentEditable
+                    className={`editor-root mt-2 h-full focus:outline-none ${
+                      isReadOnly ? 'cursor-not-allowed' : ''
+                    }`}
+                    contentEditable={!isReadOnly}
+                  />
+                }
+                placeholder={
+                  <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
+                    Commencez à écrire...
+                  </p>
+                }
+                ErrorBoundary={LexicalErrorBoundary}
+              />
 
-                <ListPlugin />
-                {!isReadOnly && <AutoFocusPlugin />}
-                
-                {/* ✅ Plugin officiel de collaboration Lexical + YJS */}
-                <CollaborationPlugin
-                  id={id}
-                  providerFactory={providerFactory}
-                  shouldBootstrap={false} 
-                  username={userProfile.name}
-                  cursorColor={userProfile.color}
-                  cursorsContainerRef={containerRef}
-                />
-              </LexicalComposer>
+              <ListPlugin />
+              {!isReadOnly && <AutoFocusPlugin />}
+              
+              <ReadOnlyPlugin isReadOnly={isReadOnly} />
+              <CollaborationPlugin
+                id={id}
+                providerFactory={providerFactory}
+                shouldBootstrap={false} 
+                username={userProfile.name}
+                cursorColor={userProfile.color}
+                cursorsContainerRef={containerRef}
+              />
+            </LexicalComposer>
             </LexicalCollaboration>
           </div>
         </div>
