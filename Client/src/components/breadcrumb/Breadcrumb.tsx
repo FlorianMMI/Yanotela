@@ -235,7 +235,7 @@ export default function Breadcrumb() {
         if (ydoc) {
           const metadata = ydoc.getMap('metadata');
           metadata.set('title', finalTitle);
-          console.log('📤 [Breadcrumb] Titre mis à jour dans YJS:', finalTitle);
+          
         } else {
           console.warn('⚠️ [Breadcrumb] Y.Doc non trouvé pour', noteId);
         }
