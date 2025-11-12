@@ -1,12 +1,12 @@
 ﻿'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from 'next/navigation';
 import LoginForm from '@/components/auth/LoginForm';
 import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
 
-export default function Login() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [urlError, setUrlError] = useState<string | null>(null);
@@ -62,5 +62,33 @@ export default function Login() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-full flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-primary mb-2">
+              Quel plaisir de vous revoir !
+            </h1>
+            <p className="text-clrprincipal">
+              Connectez-vous à votre compte Yanotela
+            </p>
+          </div>
+          <div className="bg-clrsecondaire p-8 rounded-xl shadow-lg">
+            <div className="animate-pulse space-y-4">
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
