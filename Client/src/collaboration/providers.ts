@@ -14,6 +14,12 @@ import * as Y from 'yjs';
 export const providerInstances = new Map<string, WebsocketProvider>();
 
 /**
+ * Map globale des documents YJS pour accès depuis les plugins
+ * Key: noteId, Value: Y.Doc instance
+ */
+export const yjsDocuments = new Map<string, Y.Doc>();
+
+/**
  * Définir les informations utilisateur dans l'awareness d'un provider
  * 
  * @param noteId - ID de la note
@@ -79,6 +85,9 @@ export function createWebsocketProvider(
 
   // Stocker le provider pour accès depuis les composants UI
   providerInstances.set(id, provider);
+  
+  // Stocker le document YJS pour accès depuis les plugins de sync
+  yjsDocuments.set(id, doc);
 
   return provider as unknown as Provider;
 }

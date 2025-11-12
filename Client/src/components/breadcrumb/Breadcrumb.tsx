@@ -9,7 +9,6 @@ import { GetNoteById, GetFolderById, UpdateFolder } from '@/loader/loader';
 import NoteMore from '@/components/noteMore/NoteMore';
 import FolderMore from '@/components/folderMore/FolderMore';
 import Icons from '@/ui/Icon';
-import { socketService } from '@/services/socketService';
 import { useRouter } from 'next/navigation';
 import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 import ConnectedUsers from '../collaboration/ConnectedUsers';
@@ -229,10 +228,9 @@ export default function Breadcrumb() {
       setTempTitle(newTitle);
 
       try {
-        // Émettre la mise à jour via WebSocket (synchronisation temps réel)
-        socketService.emitTitleUpdate(noteId, newTitle);
-
-        // Notification de succès (optionnelle, peut être retirée car le WebSocket est instantané)
+        // Avec y-websocket, la synchronisation du titre se fait automatiquement via le document YJS
+        // Plus besoin d'émettre manuellement via Socket.IO
+        
         setSuccess('Titre synchronisé');
         setTimeout(() => setSuccess(null), 2000);
 
@@ -604,7 +602,7 @@ export default function Breadcrumb() {
             <div className="absolute right-4 top-2 hidden md:block">
               <SaveFlashNoteButton 
                 currentTitle={noteTitle}
-                className="!text-sm"
+                className="text-sm!"
               />
             </div>
           )}

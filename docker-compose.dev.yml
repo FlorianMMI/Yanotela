@@ -95,10 +95,7 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=1234
-      - YPERSISTENCE=/app/yjs-db
-    volumes:
-      - ./Server/yjs-db:/app/yjs-db
-    command: sh -c "npm install -g @y/websocket-server && npx y-websocket"
+    command: sh -c "npm install -g @y/websocket-server && y-websocket-server"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "1234"]

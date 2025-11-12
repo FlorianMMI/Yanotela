@@ -916,4 +916,44 @@ export const noteController = {
       });
     }
   },
+
+  /**
+   * Synchroniser l'état YJS et le contenu Lexical en base de données
+   * Utilisé par la collaboration temps réel pour persister les changements
+   * 
+   * @route POST /note/sync/:id
+   * @middleware requireWriteAccess
+   */
+  syncNoteState: async (req, res) => {
+    const { id } = req.params;
+    const { yjsState, Content } = req.body;
+    const { userId } = req.session;
+
+    try {
+      // Convertir le tableau d'octets en Buffer si nécessaire
+      const yjsBuffer = yjsState ? Buffer.from(yjsState) : null;
+
+      // Mettre à jour la note avec le nouvel état YJS et le contenu
+      const updatedNote = await prisma.note.update({
+        where: { id },
+        data: {
+          yjsState: yjsBuffer,
+          Content: Content,
+          ModifiedAt: new Date(),
+          modifierId: userId,
+        },
+      });
+
+      res.status(200).json({ 
+        message: "État synchronisé",
+        ModifiedAt: updatedNote.ModifiedAt 
+      });
+    } catch (error) {
+      console.error("[syncNoteState] Erreur:", error);
+      res.status(500).json({
+        message: "Erreur lors de la synchronisation",
+        error: error.message,
+      });
+    }
+  },
 };
