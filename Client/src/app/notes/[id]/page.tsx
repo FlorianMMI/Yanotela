@@ -370,21 +370,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     }, 100);
   }, [editor, id]);
 
-    // Forcer une sauvegarde immédiate après l'insertion du dessin
-    setTimeout(() => {
-      if (editor) {
-        editor.getEditorState().read(() => {
-          const json = editor.getEditorState().toJSON();
-          const jsonString = JSON.stringify(json);
-          console.log('💾 Sauvegarde forcée après dessin');
-          SaveNote(id, { Content: jsonString }).catch((error) => {
-            console.error('❌ Erreur sauvegarde après dessin:', error);
-          });
-        });
-      }
-    }, 100);
-  }, [editor, id]);
-
   // ✅ Configuration Lexical - Charger l'état initial depuis la DB
   const initialConfig = {
     editorState: initialEditorState,  // État chargé depuis la DB
