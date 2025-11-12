@@ -2,7 +2,7 @@
 
 import ExportPDFButton from "@/ui/exportpdfbutton";
 import {EditorState } from "lexical";
-import React, { useEffect, useState, use, useRef, useCallback } from "react";
+import React, { useEffect, useState, use, useRef, useCallback, createContext, useContext } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -13,12 +13,13 @@ import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
+import SyncButton, { SyncStatus } from "@/ui/syncButton";
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
@@ -29,6 +30,21 @@ import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import '@/components/textRich/EditorStyles.css';
 import * as Y from 'yjs';
+
+// Contexte pour partager l'état de synchronisation
+interface SyncContextType {
+  syncStatus: SyncStatus;
+  setSyncStatus: (status: SyncStatus) => void;
+  triggerSync: () => void;
+}
+
+const SyncContext = createContext<SyncContextType | null>(null);
+
+const useSyncContext = () => {
+  const context = useContext(SyncContext);
+  if (!context) throw new Error('useSyncContext must be used within SyncProvider');
+  return context;
+};
 
 const theme = {
   heading: {
@@ -80,12 +96,15 @@ function OnChangeBehavior({ noteId, onContentChange }: { noteId: string, onConte
 }
 function YjsSyncPlugin({ noteId, isReadOnly }: { noteId: string, isReadOnly: boolean }) {
   const [editor] = useLexicalComposerContext();
+  const { setSyncStatus, syncStatus } = useSyncContext();
   const lastSyncRef = useRef<number>(0);
   const hasChangesRef = useRef<boolean>(false);
+  const syncTriggerRef = useRef<(() => Promise<boolean>) | null>(null);
 
   useEffect(() => {
     if (isReadOnly) {
       console.log('🔒 [YjsSync] Mode lecture seule, sync désactivé');
+      setSyncStatus('synced');
       return;
     }
 
@@ -94,16 +113,19 @@ function YjsSyncPlugin({ noteId, isReadOnly }: { noteId: string, isReadOnly: boo
     // Marquer qu'il y a eu des changements à chaque update
     const unregister = editor.registerUpdateListener(() => {
       hasChangesRef.current = true;
+      setSyncStatus('pending');
       console.log('📝 [YjsSync] Changement détecté');
     });
 
-    // Sync automatique toutes les 2 secondes si changements
-    const syncInterval = setInterval(async () => {
-      if (!hasChangesRef.current) return;
-      
-      const now = Date.now();
-      if (now - lastSyncRef.current < 2000) return; // Throttle minimum 2s
+    // Fonction de synchronisation réutilisable
+    const syncWithDB = async () => {
+      if (!hasChangesRef.current) {
+        setSyncStatus('synced');
+        return true;
+      }
 
+      setSyncStatus('syncing');
+      
       try {
         // Importer la map globale des documents YJS
         const { yjsDocuments } = await import('@/collaboration/providers');
@@ -111,7 +133,8 @@ function YjsSyncPlugin({ noteId, isReadOnly }: { noteId: string, isReadOnly: boo
         
         if (!ydoc) {
           console.warn('⚠️ [YjsSync] Y.Doc non trouvé pour', noteId);
-          return;
+          setSyncStatus('error');
+          return false;
         }
 
         // Encoder l'état YJS en Uint8Array
@@ -140,22 +163,61 @@ function YjsSyncPlugin({ noteId, isReadOnly }: { noteId: string, isReadOnly: boo
         if (response.ok) {
           const data = await response.json();
           console.log('✅ [YjsSync] Synchronisé avec DB, ModifiedAt:', data.ModifiedAt);
-          lastSyncRef.current = now;
+          lastSyncRef.current = Date.now();
           hasChangesRef.current = false;
+          setSyncStatus('synced');
+          return true;
         } else {
           console.error('❌ [YjsSync] Erreur HTTP', response.status, await response.text());
+          setSyncStatus('error');
+          return false;
         }
       } catch (error) {
         console.error('❌ [YjsSync] Erreur:', error);
+        setSyncStatus('error');
+        return false;
       }
+    };
+
+    // Exposer la fonction de sync pour le bouton manuel
+    syncTriggerRef.current = syncWithDB;
+
+    // Sync automatique toutes les 2 secondes si changements
+    const syncInterval = setInterval(async () => {
+      if (!hasChangesRef.current) return;
+      
+      const now = Date.now();
+      if (now - lastSyncRef.current < 2000) return; // Throttle minimum 2s
+
+      await syncWithDB();
     }, 2000);
 
     return () => {
-      console.log('🛑 [YjsSync] Plugin nettoyé');
+      console.log('🛑 [YjsSync] Plugin en cours de nettoyage...');
+      syncWithDB();
       clearInterval(syncInterval);
       unregister();
+
+      // ✅ SYNC FINALE avant destruction du plugin - FORCÉE même si throttle actif
+      if (hasChangesRef.current) {
+        syncWithDB();
+      } else {
+        console.log('ℹ️ [YjsSync] Pas de changements à synchroniser');
+      }
     };
-  }, [editor, noteId, isReadOnly]);
+  }, [editor, noteId, isReadOnly, setSyncStatus]);
+
+  // Exposer la fonction de sync via un custom event
+  useEffect(() => {
+    const handleManualSync = () => {
+      if (syncTriggerRef.current) {
+        syncTriggerRef.current();
+      }
+    };
+
+    window.addEventListener('trigger-manual-sync', handleManualSync);
+    return () => window.removeEventListener('trigger-manual-sync', handleManualSync);
+  }, []);
 
   return null;
 }
@@ -182,6 +244,21 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('synced');
+
+  const triggerSync = () => {
+    window.dispatchEvent(new Event('trigger-manual-sync'));
+  };
+
+  return (
+    <SyncContext.Provider value={{ syncStatus, setSyncStatus, triggerSync }}>
+      <NoteEditorContent params={params} />
+      <SyncButton status={syncStatus} onSync={triggerSync} />
+    </SyncContext.Provider>
+  );
+}
+
+function NoteEditorContent({ params }: NoteEditorProps) {
   // Détection mobile
   const [isMobile, setIsMobile] = useState(false);
   
