@@ -149,10 +149,9 @@ function YjsSyncPlugin({
   isReadOnly: boolean
 }) {
   const [editor] = useLexicalComposerContext();
-  const { setSyncStatus, syncStatus } = useSyncContext();
+  const { setSyncStatus } = useSyncContext();
   const lastSyncRef = useRef<number>(0);
   const hasChangesRef = useRef<boolean>(false);
-  const syncTriggerRef = useRef<(() => Promise<boolean>) | null>(null);
 
   useEffect(() => {
     if (isReadOnly) {
@@ -167,53 +166,125 @@ function YjsSyncPlugin({
     const unregister = editor.registerUpdateListener(() => {
       hasChangesRef.current = true;
       setSyncStatus('pending');
-      console.log('📝 [YjsSync] Changement détecté');
+      console.log('📝 [YjsSync] Changement détecté → pending');
     });
-
-    // Fonction de synchronisation réutilisable
-    const syncWithDB = async () => {
-      if (!hasChangesRef.current) {
-        setSyncStatus('synced');
-        return true;
-      }
-    };
 
     // Sync automatique toutes les 2 secondes si changements
     const syncInterval = setInterval(async () => {
+      // Vérifier s'il y a des changements de contenu
       if (!hasChangesRef.current) return;
       
       const now = Date.now();
       if (now - lastSyncRef.current < 2000) return; // Throttle minimum 2s
 
-      await syncWithDB();
+      try {
+        setSyncStatus('syncing');
+        console.log('🔄 [YjsSync] Début synchronisation...');
+        
+        // Importer la map globale des documents YJS
+        const { yjsDocuments } = await import('@/collaboration/providers');
+        const ydoc = yjsDocuments.get(noteId);
+        
+        if (!ydoc) {
+          console.warn('⚠️ [YjsSync] Y.Doc non trouvé pour', noteId);
+          setSyncStatus('error');
+          return;
+        }
+
+        // Encoder l'état YJS en Uint8Array
+        const yjsState = Y.encodeStateAsUpdate(ydoc);
+        console.log('📦 [YjsSync] yjsState encodé:', yjsState.length, 'octets');
+        
+        // Récupérer le contenu Lexical JSON
+        const lexicalJSON = editor.getEditorState().toJSON();
+        const Content = JSON.stringify(lexicalJSON);
+        console.log('📄 [YjsSync] Content JSON:', Content.substring(0, 100) + '...');
+
+        // Envoyer au serveur
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        console.log('🚀 [YjsSync] Envoi vers', `${API_URL}/note/sync/${noteId}`);
+        
+        const response = await fetch(`${API_URL}/note/sync/${noteId}`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            yjsState: Array.from(yjsState),
+            Content: Content
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ [YjsSync] Synchronisé avec DB, ModifiedAt:', data.ModifiedAt);
+          lastSyncRef.current = now;
+          hasChangesRef.current = false;
+          setSyncStatus('synced');
+        } else {
+          console.error('❌ [YjsSync] Erreur HTTP', response.status, await response.text());
+          setSyncStatus('error');
+        }
+      } catch (error) {
+        console.error('❌ [YjsSync] Erreur:', error);
+        setSyncStatus('error');
+      }
     }, 2000);
 
-    return () => {
-      console.log('🛑 [YjsSync] Plugin en cours de nettoyage...');
-      syncWithDB();
-      clearInterval(syncInterval);
-      unregister();
-
-      // ✅ SYNC FINALE avant destruction du plugin - FORCÉE même si throttle actif
-      if (hasChangesRef.current) {
-        syncWithDB();
-      } else {
-        console.log('ℹ️ [YjsSync] Pas de changements à synchroniser');
+    // Écouter l'événement de sync manuel
+    const handleManualSync = async () => {
+      if (!hasChangesRef.current) {
+        console.log('ℹ️ [YjsSync] Aucun changement à synchroniser');
+        return;
       }
-    };
-  }, [editor, noteId, isReadOnly, setSyncStatus]);
+      
+      try {
+        setSyncStatus('syncing');
+        
+        const { yjsDocuments } = await import('@/collaboration/providers');
+        const ydoc = yjsDocuments.get(noteId);
+        
+        if (!ydoc) {
+          setSyncStatus('error');
+          return;
+        }
 
-  // Exposer la fonction de sync via un custom event
-  useEffect(() => {
-    const handleManualSync = () => {
-      if (syncTriggerRef.current) {
-        syncTriggerRef.current();
+        const yjsState = Y.encodeStateAsUpdate(ydoc);
+        const lexicalJSON = editor.getEditorState().toJSON();
+        const Content = JSON.stringify(lexicalJSON);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        
+        const response = await fetch(`${API_URL}/note/sync/${noteId}`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            yjsState: Array.from(yjsState),
+            Content: Content
+          })
+        });
+
+        if (response.ok) {
+          lastSyncRef.current = Date.now();
+          hasChangesRef.current = false;
+          setSyncStatus('synced');
+        } else {
+          setSyncStatus('error');
+        }
+      } catch (error) {
+        console.error('❌ [YjsSync] Erreur sync manuel:', error);
+        setSyncStatus('error');
       }
     };
 
     window.addEventListener('trigger-manual-sync', handleManualSync);
-    return () => window.removeEventListener('trigger-manual-sync', handleManualSync);
-  }, []);
+
+    return () => {
+      console.log('🛑 [YjsSync] Plugin nettoyé');
+      clearInterval(syncInterval);
+      unregister();
+      window.removeEventListener('trigger-manual-sync', handleManualSync);
+    };
+  }, [editor, noteId, isReadOnly, setSyncStatus]);
 
   return null;
 }
@@ -487,7 +558,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     fetchUserInfo();
   }, []);
 
-  
+
 
 
    // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
