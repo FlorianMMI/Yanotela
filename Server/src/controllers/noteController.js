@@ -949,7 +949,7 @@ export const noteController = {
       // Ajouter le titre s'il est fourni
       if (Titre !== undefined) {
         updateData.Titre = Titre;
-        console.log(`📝 [syncNoteState] Mise à jour titre: "${Titre}"`);
+        
       }
 
       // Mettre à jour la note avec le nouvel état YJS et le contenu

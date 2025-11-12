@@ -151,7 +151,6 @@ export default function SaveFlashNoteButton({
       const result = await CreateNote();
 
       if (result.note && result.note.id) {
-        console.log('🔄 [FlashNote] Sauvegarde du contenu...');
 
         // Sauvegarder le titre et le contenu JSON Lexical
         // Le yjsState sera créé automatiquement quand la note sera ouverte
@@ -167,8 +166,7 @@ export default function SaveFlashNoteButton({
         });
 
         if (response.ok) {
-          console.log('✅ [FlashNote] Sauvegardée avec succès');
-          
+
           // Vider Flash Note localStorage
           localStorage.removeItem("yanotela:flashnote:title");
           localStorage.removeItem("yanotela:flashnote:content");

@@ -38,13 +38,11 @@ export function TitleSyncPlugin({
     // Créer ou récupérer la map "metadata" qui contient le titre
     const metadata = ydoc.getMap('metadata');
 
-    console.log('✅ [TitleSync] Plugin initialisé pour note', noteId);
-
     // Observer les changements du titre depuis YJS (synchronisation entrante)
     const observer = () => {
       const remoteTitle = metadata.get('title') as string | undefined;
       if (remoteTitle !== undefined && remoteTitle !== title) {
-        console.log('📥 [TitleSync] Titre reçu des autres utilisateurs:', remoteTitle);
+        
         onTitleChange(remoteTitle);
       }
     };
@@ -53,14 +51,14 @@ export function TitleSyncPlugin({
 
     // Initialiser le titre dans YJS si nécessaire (au premier chargement)
     if (!isInitializedRef.current && !metadata.has('title') && title) {
-      console.log('🔄 [TitleSync] Initialisation du titre dans YJS:', title);
+      
       metadata.set('title', title);
       isInitializedRef.current = true;
     }
 
     return () => {
       metadata.unobserve(observer);
-      console.log('🛑 [TitleSync] Plugin nettoyé');
+      
     };
   }, [noteId, title, onTitleChange]);
 
@@ -80,7 +78,7 @@ export function TitleSyncPlugin({
 
     // Mettre à jour YJS seulement si le titre a vraiment changé
     if (currentYjsTitle !== title) {
-      console.log('📤 [TitleSync] Mise à jour du titre dans YJS:', title);
+      
       metadata.set('title', title);
       titleChangedRef.current = true;
     }
@@ -115,7 +113,7 @@ export function TitleSyncPlugin({
         });
 
         if (response.ok) {
-          console.log('✅ [TitleSync] Titre sauvegardé en DB:', currentTitle);
+          
           lastSyncRef.current = now;
           titleChangedRef.current = false;
           
