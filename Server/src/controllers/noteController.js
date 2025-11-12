@@ -347,20 +347,6 @@ export const noteController = {
       return res.status(400).json({ message: "Au moins un champ doit être fourni (Titre ou Content)" });
     }
 
-    // Préparer les données de mise à jour
-    const updateData = {
-      ModifiedAt: new Date(),
-      modifierId: parseInt(userId), // Enregistre le dernier modificateur
-    };
-
-    if (Titre !== undefined) {
-      updateData.Titre = Titre === "" ? "Sans titre" : Titre;
-    }
-
-    if (Content !== undefined) {
-      updateData.Content = Content;
-    }
-
     try {
       // Préparer l'objet de mise à jour avec seulement les champs fournis
       const updateData = {
@@ -369,7 +355,7 @@ export const noteController = {
       };
 
       if (Titre !== undefined) {
-        updateData.Titre = Titre;
+        updateData.Titre = Titre === "" ? "Sans titre" : Titre;
       }
 
       if (Content !== undefined) {

@@ -18,7 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { $createImageNode } from "@/components/flashnote/ImageNode";
 import { $insertNodes } from "lexical";
-import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
+import * as Y from 'yjs';
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
@@ -268,10 +268,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // Unwrap params using React.use()
   const { id } = use(params);
 
-  // ✅ État initial de l'éditeur (chargé depuis la DB)
-  const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
-  
-  // ✅ NOUVEAU: State pour profil utilisateur (utilisé par CollaborationPlugin)
+  // ✅ State pour profil utilisateur (utilisé par CollaborationPlugin)
   const [userProfile, setUserProfile] = useState({ name: 'Anonyme', color: '#FF5733' });
   const containerRef = useRef<HTMLDivElement | null>(null);
   const editorContentRef = useRef<HTMLDivElement | null>(null); // Ref pour le ContentEditable (export PDF)
@@ -287,6 +284,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     },
     []
   );
+
+  // ✅ Référence à l'éditeur Lexical (pour insertion des dessins)
+  const [editor, setEditor] = useState<LexicalEditor | null>(null);
 
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) {
@@ -326,13 +326,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     debouncedSaveContent(content);
   }, [debouncedSaveContent]);
 
-  // Référence à l'éditeur Lexical
-  const [editor, setEditor] = useState<LexicalEditor | null>(null);
-
-  // Référence à l'éditeur Lexical
-  const [editor, setEditor] = useState<LexicalEditor | null>(null);
-
-  // Gestion du dessin - insérer via Lexical/YJS
+  // Gestion du dessin - Insertion dans l'éditeur Lexical
   const handleDrawingSave = useCallback((drawingData: DrawingData) => {
     console.log('🎨 Sauvegarde du dessin dans la note', drawingData);
     
@@ -376,6 +370,21 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     }, 100);
   }, [editor, id]);
 
+    // Forcer une sauvegarde immédiate après l'insertion du dessin
+    setTimeout(() => {
+      if (editor) {
+        editor.getEditorState().read(() => {
+          const json = editor.getEditorState().toJSON();
+          const jsonString = JSON.stringify(json);
+          console.log('💾 Sauvegarde forcée après dessin');
+          SaveNote(id, { Content: jsonString }).catch((error) => {
+            console.error('❌ Erreur sauvegarde après dessin:', error);
+          });
+        });
+      }
+    }, 100);
+  }, [editor, id]);
+
   // ✅ Configuration Lexical - Charger l'état initial depuis la DB
   const initialConfig = {
     editorState: initialEditorState,  // État chargé depuis la DB
@@ -402,43 +411,18 @@ export default function NoteEditor({ params }: NoteEditorProps) {
         const note = noteData;
         setNoteTitle(note.Titre || 'Sans titre');
         
-        // ✅ Charger le contenu de la note dans l'éditeur
-        if (note.Content) {
-          try {
-            // Vérifier si c'est du JSON Lexical valide
-            JSON.parse(note.Content);
-            setInitialEditorState(note.Content);
-          } catch {
-            // Si ce n'est pas du JSON, créer un état Lexical simple
-            const simpleState = {
-              root: {
-                children: [{
-                  children: [{
-                    detail: 0,
-                    format: 0,
-                    mode: "normal",
-                    style: "",
-                    text: note.Content,
-                    type: "text",
-                    version: 1
-                  }],
-                  direction: "ltr",
-                  format: "",
-                  indent: 0,
-                  type: "paragraph",
-                  version: 1
-                }],
-                direction: "ltr",
-                format: "",
-                indent: 0,
-                type: "root",
-                version: 1
-              }
-            };
-            setInitialEditorState(JSON.stringify(simpleState));
+        // ✅ Gestion des permissions (lecture seule)
+        if (note.userRole !== undefined) {
+          // Role 3 = lecture seule → bloquer l'édition
+          const readOnly = note.userRole === 3;
+          setIsReadOnly(readOnly);
+          
+          if (readOnly) {
+            console.log('🔒 [Permissions] Mode lecture seule activé (role 3)');
           }
         } else {
-          setInitialEditorState(null);
+          console.warn('⚠️ [Permissions] userRole non reçu du serveur');
+          setIsReadOnly(false);
         }
         
         setIsReadOnly(false); // TODO: Récupérer depuis permissions
@@ -592,37 +576,58 @@ export default function NoteEditor({ params }: NoteEditorProps) {
             />
           )}
 
-          {/* ✅ Éditeur Lexical simplifié sans collaboration YJS */}
-          <div>
-            <LexicalComposer initialConfig={initialConfig}>
-              {!isReadOnly && <ToolbarPlugin onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)} />}
-              
-              <RichTextPlugin
-                contentEditable={
-                  <ContentEditable
-                    className={`editor-root mt-2 h-full focus:outline-none ${
-                      isReadOnly ? 'cursor-not-allowed' : ''
-                    }`}
-                    contentEditable={!isReadOnly}
+          {/* ✅ Éditeur Lexical avec CollaborationPlugin YJS + support dessin */}
+          <div ref={containerRef}>
+            <LexicalCollaboration>
+              <LexicalComposer initialConfig={initialConfig}>
+                {!isReadOnly && (
+                  <ToolbarPlugin 
+                    onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)}
+                    noteTitle={noteTitle}
+                    editorContentRef={editorContentRef}
                   />
-                }
-                placeholder={
-                  <p className="absolute top-20 left-4 text-textcardNote select-none pointer-events-none">
-                    Commencez à écrire...
-                  </p>
-                }
-                ErrorBoundary={LexicalErrorBoundary}
-              />
+                )}
+                
+                <RichTextPlugin
+                  contentEditable={
+                    <ContentEditable
+                      ref={editorContentRef as any}
+                      className={`editor-root mt-2 h-full focus:outline-none ${
+                        isReadOnly ? 'cursor-not-allowed' : ''
+                      }`}
+                      contentEditable={!isReadOnly}
+                    />
+                  }
+                  ErrorBoundary={LexicalErrorBoundary}
+                />
 
-              <ListPlugin />
-              {!isReadOnly && <AutoFocusPlugin />}
-              
-              {/* Plugin pour récupérer la référence de l'éditeur */}
-              <EditorRefPlugin onEditorReady={setEditor} />
-              
-              {/* Plugin pour sauvegarder le contenu HTTP */}
-              <OnChangeBehavior noteId={id} onContentChange={handleContentChange} />
-            </LexicalComposer>
+                <ListPlugin />
+                {!isReadOnly && <AutoFocusPlugin />}
+                
+                {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
+                <EditorRefPlugin onEditorReady={setEditor} />
+                
+                <ReadOnlyPlugin isReadOnly={isReadOnly} />
+                <CollaborationPlugin
+                  id={id}
+                  providerFactory={providerFactory}
+                  shouldBootstrap={false} 
+                  username={userProfile.name}
+                  cursorColor={userProfile.color}
+                  cursorsContainerRef={containerRef}
+                />
+                <YjsSyncPlugin 
+                  noteId={id} 
+                  isReadOnly={isReadOnly}
+                />
+                <TitleSyncPlugin
+                  noteId={id}
+                  title={noteTitle}
+                  onTitleChange={setNoteTitle}
+                  isReadOnly={isReadOnly}
+                />
+              </LexicalComposer>
+            </LexicalCollaboration>
           </div>
         </div>
       )}
