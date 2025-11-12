@@ -222,8 +222,14 @@ export default function FlashNoteEditor() {
         const contentString = JSON.stringify(editorStateJSON);
         setEditorContent(contentString);
 
-        // Sauvegarder dans localStorage
-        localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
+          // Sauvegarder dans localStorage
+          localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
+          // Notifier les listeners in-tab que le contenu de la Flash Note a changé
+          try {
+            window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: contentString }));
+            } catch {
+              // ignore si CustomEvent non supporté
+          }
 
         setTimeout(() => {
           setIsSavingContent(false);

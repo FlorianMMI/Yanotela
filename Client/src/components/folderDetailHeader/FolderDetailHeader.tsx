@@ -216,7 +216,7 @@ export default function FolderDetailHeader({
 
       {/* Barre de recherche et filtre - Version Desktop */}
       <div className="hidden md:block">
-        <div className="flex items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
+        <div className="flex items-stretch justify-center gap-3 p-6 h-full">
           <div className="flex justify-center items-center">
             <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           </div>

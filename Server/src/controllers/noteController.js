@@ -342,13 +342,9 @@ export const noteController = {
 
     // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
-    // Au moins un champ doit être fourni
+    // ✅ CORRECTION: Permettre les mises à jour partielles (titre OU contenu)
     if (!Titre && !Content) {
-      return res.status(400).json({ message: "Au moins un champ (Titre ou Content) doit être fourni" });
-    }
-
-    if (Titre === "") {
-      Titre = "Sans titre";
+      return res.status(400).json({ message: "Au moins un champ doit être fourni (Titre ou Content)" });
     }
 
     try {
@@ -359,7 +355,7 @@ export const noteController = {
       };
 
       if (Titre !== undefined) {
-        updateData.Titre = Titre;
+        updateData.Titre = Titre === "" ? "Sans titre" : Titre;
       }
 
       if (Content !== undefined) {
