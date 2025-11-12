@@ -48,7 +48,7 @@ export function TitleSyncPlugin({
 
     // Initialiser le titre dans YJS si nécessaire (au premier chargement)
     if (!isInitializedRef.current && !metadata.has('title') && title) {
-      console.log('🔄 [TitleSync] Initialisation du titre dans YJS:', title);
+      
       metadata.set('title', title);
       lastLocalTitleRef.current = title;
       isInitializedRef.current = true;
@@ -74,7 +74,7 @@ export function TitleSyncPlugin({
 
     return () => {
       metadata.unobserve(observer);
-      console.log('🛑 [TitleSync] Plugin nettoyé');
+      
     };
   }, [noteId, onTitleChange]); // Retirer 'title' des dépendances
 
@@ -130,7 +130,7 @@ export function TitleSyncPlugin({
         });
 
         if (response.ok) {
-          console.log('✅ [TitleSync] Titre sauvegardé en DB:', currentTitle);
+          
           lastSyncRef.current = now;
           titleChangedRef.current = false;
           
