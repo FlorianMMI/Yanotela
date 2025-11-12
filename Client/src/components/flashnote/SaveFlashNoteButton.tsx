@@ -41,16 +41,41 @@ export default function SaveFlashNoteButton({
       if (!content.root || !content.root.children || content.root.children.length === 0) {
         return true;
       }
-      const hasContent = content.root.children.some((child: any) => {
-        if (child.children && child.children.length > 0) {
-          return child.children.some((textNode: any) => {
-            return textNode.text && textNode.text.trim().length > 0;
-          });
+
+      // Recursively check nodes for any meaningful content:
+      // - non-empty text
+      // - image nodes (drawings) which may be represented by type === 'image' or by having a src/dataUrl attribute
+      const hasContent = (nodes: unknown[]): boolean => {
+        if (!Array.isArray(nodes)) return false;
+        for (const node of nodes as Record<string, unknown>[]) {
+          const n = node as Record<string, unknown>;
+          const maybeText = n['text'];
+          if (typeof maybeText === 'string' && maybeText.trim().length > 0) return true;
+
+          const maybeType = n['type'];
+          if (typeof maybeType === 'string' && maybeType === 'image') return true;
+
+          const maybeSrc = n['src'];
+          if (typeof maybeSrc === 'string' && maybeSrc.trim().length > 0) return true;
+
+          const maybeDataUrl = n['dataUrl'];
+          if (typeof maybeDataUrl === 'string' && maybeDataUrl.trim().length > 0) return true;
+
+          const maybeImage = n['image'];
+          if (typeof maybeImage === 'string' && maybeImage.trim().length > 0) return true;
+
+          const children = n['children'];
+          if (Array.isArray(children) && children.length > 0) {
+            if (hasContent(children as unknown[])) return true;
+          }
         }
         return false;
-      });
-      return !hasContent;
+      };
+
+      const result = hasContent(content.root.children);
+      return !result;
     } catch {
+      // If parsing fails, treat any non-empty plain string as content
       return flashContentValue.trim().length === 0;
     }
   };
@@ -67,7 +92,7 @@ export default function SaveFlashNoteButton({
         const stored = localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '';
         setFlashContent(stored);
         setFlashEmpty(computeIsEmpty(stored));
-      } catch (e) {
+      } catch {
         setFlashContent('');
         setFlashEmpty(true);
       }
@@ -91,7 +116,7 @@ export default function SaveFlashNoteButton({
         const newVal = typeof ce.detail === 'string' ? ce.detail : (localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '');
         setFlashContent(newVal);
         setFlashEmpty(computeIsEmpty(newVal));
-      } catch (err) {
+      } catch {
         // fallback to reading localStorage
         const newVal = localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '';
         setFlashContent(newVal);
