@@ -28,6 +28,8 @@ import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TitleSyncPlugin } from '@/components/collaboration/TitleSyncPlugin';
+import { $createImageNode } from '@/components/flashnote/ImageNode';
+import { $insertNodes, $getSelection, $isRangeSelection } from 'lexical';
 import '@/components/textRich/EditorStyles.css';
 import * as Y from 'yjs';
 
@@ -79,6 +81,51 @@ function OnChangeBehavior({ noteId, onContentChange }: { noteId: string, onConte
 
   return null;
 }
+
+/**
+ * Plugin pour insérer des images de dessin dans l'éditeur
+ */
+function DrawingInsertPlugin({ 
+  onDrawingInsertRequest 
+}: { 
+  onDrawingInsertRequest: (callback: (data: DrawingData) => void) => void 
+}) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    // Exposer une fonction pour insérer l'image
+    const insertDrawing = (drawingData: DrawingData) => {
+      editor.update(() => {
+        const imageNode = $createImageNode({
+          src: drawingData.dataUrl,
+          altText: 'Dessin',
+          width: drawingData.width,
+          height: drawingData.height,
+        });
+
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          // Insérer à la position du curseur
+          $insertNodes([imageNode]);
+        } else {
+          // Insérer à la fin si pas de sélection
+          const root = editor.getEditorState()._nodeMap.get('root');
+          if (root) {
+            $insertNodes([imageNode]);
+          }
+        }
+
+        console.log('🎨 [Drawing] Image insérée dans l\'éditeur via YJS');
+      });
+    };
+
+    // Exposer la fonction au parent via callback
+    onDrawingInsertRequest(insertDrawing);
+  }, [editor, onDrawingInsertRequest]);
+
+  return null;
+}
+
 function YjsSyncPlugin({ 
   noteId, 
   isReadOnly
@@ -209,6 +256,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [userRole, setUserRole] = useState<number | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
+  
+  // État pour le contenu initial de la note (pour bootstrapping)
+  const [initialEditorContent, setInitialEditorContent] = useState<string | null>(null);
 
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
@@ -221,6 +271,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [userProfile, setUserProfile] = useState({ name: 'Anonyme', color: '#FF5733' });
   const containerRef = useRef<HTMLDivElement | null>(null);
   const editorContentRef = useRef<HTMLDivElement | null>(null); // Ref pour le ContentEditable (export PDF)
+  
+  // Ref pour la fonction d'insertion de dessin
+  const drawingInsertCallbackRef = useRef<((data: DrawingData) => void) | null>(null);
 
   // ✅ Provider factory pour CollaborationPlugin
   const providerFactory = useCallback(
@@ -269,14 +322,26 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     debouncedSaveContent(content);
   }, [debouncedSaveContent]);
 
-  // Gestion du dessin
+  // Gestion du dessin - insérer via Lexical/YJS
   const handleDrawingSave = useCallback((drawingData: DrawingData) => {
+    console.log('🎨 [Drawing] Sauvegarde du dessin, taille:', drawingData.dataUrl.length);
     
-    // TODO: Implémenter l'insertion via Lexical commands
+    // Appeler la fonction d'insertion si elle existe
+    if (drawingInsertCallbackRef.current) {
+      drawingInsertCallbackRef.current(drawingData);
+    } else {
+      console.error('❌ [Drawing] Callback d\'insertion non disponible');
+    }
+  }, []);
+  
+  // Callback pour recevoir la fonction d'insertion du plugin
+  const handleDrawingInsertRequest = useCallback((callback: (data: DrawingData) => void) => {
+    drawingInsertCallbackRef.current = callback;
+    console.log('✅ [Drawing] Plugin d\'insertion connecté');
   }, []);
 
   const initialConfig = {
-    editorState: null,  // ← CollaborationPlugin gère l'état depuis YJS
+    editorState: initialEditorContent || null,  // ← Bootstrap depuis Content si disponible
     namespace: 'YanotelaNoteEditor',
     nodes: editorNodes,
     onError,
@@ -299,6 +364,12 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
         const note = noteData;
         setNoteTitle(note.Titre || 'Sans titre');
+        
+        // Charger le contenu pour le bootstrapping si yjsState est vide/null
+        if (note.Content) {
+          setInitialEditorContent(note.Content);
+        }
+        
         if (note.userRole !== undefined) {
           setUserRole(note.userRole);
           // Role 3 = lecture seule → bloquer l'édition
@@ -536,10 +607,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
               {!isReadOnly && <AutoFocusPlugin />}
               
               <ReadOnlyPlugin isReadOnly={isReadOnly} />
+              <DrawingInsertPlugin onDrawingInsertRequest={handleDrawingInsertRequest} />
               <CollaborationPlugin
                 id={id}
                 providerFactory={providerFactory}
-                shouldBootstrap={false} 
+                shouldBootstrap={true}
                 username={userProfile.name}
                 cursorColor={userProfile.color}
                 cursorsContainerRef={containerRef}

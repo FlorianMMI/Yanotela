@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
-import { CreateNote, SaveNote } from '@/loader/loader';
+import { CreateNote } from '@/loader/loader';
 import { useAuth } from '@/hooks/useAuth';
+import * as Y from 'yjs';
 
 interface SaveFlashNoteButtonProps {
   className?: string;
@@ -125,13 +126,24 @@ export default function SaveFlashNoteButton({
       const result = await CreateNote();
 
       if (result.note && result.note.id) {
-        // Mettre à jour la note avec le titre et contenu de Flash Note
-        const updateSuccess = await SaveNote(result.note.id, {
-          Titre: saveTitle.trim(),
-          Content: flashContent
+        console.log('🔄 [FlashNote] Sauvegarde du contenu...');
+
+        // Sauvegarder le titre et le contenu JSON Lexical
+        // Le yjsState sera créé automatiquement quand la note sera ouverte
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const response = await fetch(`${API_URL}/note/update/${result.note.id}`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            Content: flashContent,
+            Titre: saveTitle.trim()
+          })
         });
 
-        if (updateSuccess) {
+        if (response.ok) {
+          console.log('✅ [FlashNote] Sauvegardée avec succès');
+          
           // Vider Flash Note localStorage
           localStorage.removeItem("yanotela:flashnote:title");
           localStorage.removeItem("yanotela:flashnote:content");
@@ -146,6 +158,8 @@ export default function SaveFlashNoteButton({
           // Rediriger vers la nouvelle note
           router.push(`/notes/${result.note.id}`);
         } else {
+          const errorText = await response.text();
+          console.error('❌ [FlashNote] Erreur HTTP', response.status, errorText);
           setError('Erreur lors de la sauvegarde du contenu');
           setTimeout(() => setError(null), 5000);
         }
