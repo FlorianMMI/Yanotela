@@ -25,6 +25,8 @@ import * as Y from 'yjs';
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
+import { $generateNodesFromDOM } from '@lexical/html';
+import { $createParagraphNode, $createTextNode } from 'lexical';
 
 import ErrorFetch from "@/ui/note/errorFetch";
 import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
@@ -359,7 +361,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
   
   // État pour le contenu initial de la note (pour bootstrapping)
-  const [initialEditorContent, setInitialEditorContent] = useState<string | null>(null);
+  const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
 
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
@@ -375,6 +377,27 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   
   // Ref pour la fonction d'insertion de dessin
   const drawingInsertCallbackRef = useRef<((data: DrawingData) => void) | null>(null);
+
+  // ✅ Helper pour initialiser le Y.Doc avec le contenu initial de la note
+  const initializeYjsDoc = useCallback((doc: Y.Doc, noteData: any) => {
+    console.log('🔧 [YJS Init] Initialisation du Y.Doc avec données note');
+    
+    // Si yjsState existe dans la DB, l'appliquer
+    if (noteData.yjsState && noteData.yjsState.data) {
+      try {
+        const uint8Array = new Uint8Array(noteData.yjsState.data);
+        Y.applyUpdate(doc, uint8Array);
+        console.log('✅ [YJS Init] yjsState appliqué depuis DB');
+        return true; // yjsState chargé, pas besoin de charger Content
+      } catch (error) {
+        console.error('❌ [YJS Init] Erreur application yjsState:', error);
+      }
+    }
+    
+    // Pas de yjsState → on va charger Content dans l'EditorState initial
+    console.log('📄 [YJS Init] Pas de yjsState, Content sera chargé dans EditorState');
+    return false; // Content doit être chargé dans EditorState
+  }, []);
 
   // ✅ Provider factory pour CollaborationPlugin
   const providerFactory = useCallback(
@@ -472,7 +495,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // ✅ Configuration Lexical - Charger l'état initial depuis la DB
   const initialConfig = {
-    editorState: null,  // État chargé depuis la DB
+    editorState: initialEditorState || null,  // État chargé depuis Content si pas de yjsState
     namespace: 'YanotelaNoteEditor',
     nodes: editorNodes,
     onError,
@@ -495,6 +518,22 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
         const note = noteData;
         setNoteTitle(note.Titre || 'Sans titre');
+        
+        // ✅ Initialiser le Y.Doc avec le contenu de la note AVANT le CollaborationPlugin
+        const { yjsDocuments } = await import('@/collaboration/providers');
+        let ydoc = yjsDocuments.get(id);
+        if (!ydoc) {
+          ydoc = new Y.Doc();
+          yjsDocuments.set(id, ydoc);
+        }
+        
+        const hasYjsState = initializeYjsDoc(ydoc, note);
+        
+        // Si pas de yjsState, charger Content dans l'EditorState initial
+        if (!hasYjsState && note.Content) {
+          console.log('📄 [Load] Chargement du Content dans EditorState initial');
+          setInitialEditorState(note.Content);
+        }
         
         // ✅ Gestion des permissions (lecture seule)
         if (note.userRole !== undefined) {

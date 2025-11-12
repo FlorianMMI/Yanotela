@@ -101,3 +101,85 @@ export function needsMigration(note) {
          note.Content && 
          note.Content.trim() !== '';
 }
+
+/**
+ * Extraire le contenu Lexical JSON depuis un yjsState
+ * Utilisé pour sérialiser yjsState → Content lors des sauvegardes
+ * 
+ * @param {Buffer|Uint8Array} yjsState - État YJS encodé
+ * @returns {string|null} - JSON Lexical stringifié, ou null si erreur
+ */
+export function extractContentFromYjs(yjsState) {
+  try {
+    if (!yjsState) {
+      console.warn('⚠️ [YJS Extract] yjsState vide');
+      return null;
+    }
+
+    // 1. Créer un nouveau document YJS
+    const ydoc = new Y.Doc();
+    
+    // 2. Appliquer l'état binaire
+    const stateBuffer = Buffer.isBuffer(yjsState) ? yjsState : Buffer.from(yjsState);
+    Y.applyUpdate(ydoc, new Uint8Array(stateBuffer));
+
+    // 3. Récupérer le YXmlText (même structure que CollaborationPlugin)
+    const yXmlText = ydoc.get('root', Y.XmlText);
+    
+    // 4. Extraire le texte brut
+    const plainText = yXmlText.toString();
+    
+    if (!plainText || plainText.trim() === '') {
+      console.warn('⚠️ [YJS Extract] Contenu vide');
+      // Retourner un document Lexical vide valide
+      return JSON.stringify({
+        root: {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "root",
+          version: 1
+        }
+      });
+    }
+
+    console.log(`📝 [YJS Extract] Texte extrait (${plainText.length} chars): ${plainText.substring(0, 100)}...`);
+
+    // 5. Reconstruire un JSON Lexical depuis le texte brut
+    const lexicalJSON = {
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: "normal",
+                style: "",
+                text: plainText,
+                type: "text",
+                version: 1
+              }
+            ],
+            direction: null,
+            format: "",
+            indent: 0,
+            type: "paragraph",
+            version: 1
+          }
+        ],
+        direction: null,
+        format: "",
+        indent: 0,
+        type: "root",
+        version: 1
+      }
+    };
+
+    return JSON.stringify(lexicalJSON);
+  } catch (error) {
+    console.error('❌ [YJS Extract] Erreur:', error);
+    return null;
+  }
+}
