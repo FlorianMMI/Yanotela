@@ -565,7 +565,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   useEffect(() => {
     // Petit délai pour s'assurer que le provider est créé
     const timer = setTimeout(() => {
-      console.log('👤 [Awareness] Tentative mise à jour avec:', userProfile);
+      
       setAwarenessUserInfo(id, userProfile.name, userProfile.color);
     }, 500);
 
