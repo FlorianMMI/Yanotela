@@ -342,24 +342,29 @@ export const noteController = {
 
     // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
-    if (!Titre || !Content) {
-      
-      return res.status(400).json({ message: "Champs requis manquants" });
+    // ✅ CORRECTION: Permettre les mises à jour partielles (titre OU contenu)
+    if (!Titre && !Content) {
+      return res.status(400).json({ message: "Au moins un champ doit être fourni (Titre ou Content)" });
     }
 
-    if (Titre === "") {
-      Titre = "Sans titre";
+    // Préparer les données de mise à jour
+    const updateData = {
+      ModifiedAt: new Date(),
+      modifierId: parseInt(userId), // Enregistre le dernier modificateur
+    };
+
+    if (Titre !== undefined) {
+      updateData.Titre = Titre === "" ? "Sans titre" : Titre;
+    }
+
+    if (Content !== undefined) {
+      updateData.Content = Content;
     }
 
     try {
       const note = await prisma.note.update({
         where: { id: id },
-        data: {
-          Titre,
-          Content,
-          ModifiedAt: new Date(),
-          modifierId: parseInt(userId), // Enregistre le dernier modificateur
-        },
+        data: updateData,
       });
       
       res.status(200).json({ message: "Note mise à jour avec succès", note });
