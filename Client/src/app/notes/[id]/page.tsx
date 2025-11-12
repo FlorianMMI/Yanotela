@@ -1,6 +1,6 @@
 "use client";
 
-import { $getRoot, EditorState, $getSelection, $isRangeSelection, LexicalEditor } from "lexical";
+import { $getRoot, EditorState, $insertNodes,  $getSelection, $isRangeSelection, LexicalEditor } from "lexical";
 import ExportPDFButton from "@/ui/exportpdfbutton";
 import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
@@ -17,7 +17,6 @@ import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { $createImageNode } from "@/components/flashnote/ImageNode";
-import { $insertNodes } from "lexical";
 import * as Y from 'yjs';
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
@@ -28,8 +27,6 @@ import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TitleSyncPlugin } from '@/components/collaboration/TitleSyncPlugin';
-import { $createImageNode } from '@/components/flashnote/ImageNode';
-import { $insertNodes, $getSelection, $isRangeSelection } from 'lexical';
 import '@/components/textRich/EditorStyles.css';
 
 const theme = {
