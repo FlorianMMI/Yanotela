@@ -15,7 +15,7 @@
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { getPermission } from "./permissionController.js";
-import { migrateContentToYjs, needsMigration } from "../services/yjsMigration.js";
+import { migrateContentToYjs, needsMigration, extractContentFromYjs } from "../services/yjsMigration.js";
 
 const prisma = new PrismaClient();
 
@@ -364,6 +364,7 @@ export const noteController = {
 
       if (Content !== undefined) {
         updateData.Content = Content;
+        console.log('📄 [updateNote] Content sauvegardé, yjsState sera généré côté client');
       }
 
       const note = await prisma.note.update({
