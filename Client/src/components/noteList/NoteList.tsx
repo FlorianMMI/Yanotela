@@ -8,6 +8,7 @@ import { socketService } from '@/services/socketService';
 import { useRouter } from 'next/navigation';
 import Icons from '@/ui/Icon';
 import { motion } from 'motion/react';
+import { SearchMode } from '@/ui/searchbar';
 
 interface NoteListProps {
   notes: NoteType[];
@@ -17,7 +18,7 @@ interface NoteListProps {
   folderId?: string; // ID du dossier pour créer la note directement dedans
   onCreateNote?: () => void; // Callback personnalisé pour la création de note
   searchTerm?: string; // Terme de recherche pour surlignage
-  searchInContent?: boolean; // Mode de recherche actif
+  searchMode?: SearchMode; // Mode de recherche actif
 }
 
 export default function NoteList({ 
@@ -28,7 +29,7 @@ export default function NoteList({
   folderId, 
   onCreateNote,
   searchTerm = "",
-  searchInContent = false
+  searchMode = "all"
 }: NoteListProps) {
 
   const router = useRouter();
@@ -107,7 +108,7 @@ export default function NoteList({
             note={note} 
             onNoteUpdated={onNoteCreated}
             searchTerm={searchTerm}
-            searchInContent={searchInContent}
+            searchMode={searchMode}
           />
         ))}
       </div>

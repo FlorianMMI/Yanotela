@@ -2,7 +2,7 @@
 
 import React from "react";
 import Icon from "@/ui/Icon";
-import SearchBar from "@/ui/searchbar";
+import SearchBar, { SearchMode } from "@/ui/searchbar";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
@@ -16,8 +16,8 @@ interface NoteHeaderProps {
   setSortDir: (d: "asc" | "desc") => void;
   collaborationFilter: "all" | "collaborative" | "solo";
   setCollaborationFilter: (filter: "all" | "collaborative" | "solo") => void;
-  searchInContent?: boolean;
-  setSearchInContent?: (value: boolean) => void;
+  searchMode: SearchMode;
+  setSearchMode: (mode: SearchMode) => void;
 }
 
 export default function NoteHeader({ 
@@ -29,8 +29,8 @@ export default function NoteHeader({
   setSortDir, 
   collaborationFilter, 
   setCollaborationFilter,
-  searchInContent = false,
-  setSearchInContent
+  searchMode,
+  setSearchMode
 }: NoteHeaderProps) {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -85,9 +85,9 @@ export default function NoteHeader({
                 <SearchBar 
                   searchTerm={searchTerm} 
                   setSearchTerm={setSearchTerm}
-                  searchInContent={searchInContent}
-                  setSearchInContent={setSearchInContent}
-                  showContentToggle={true}
+                  searchMode={searchMode}
+                  setSearchMode={setSearchMode}
+                  showModeSelector={true}
                 />
               </motion.div>
             )}
@@ -176,7 +176,7 @@ export default function NoteHeader({
       </div>
 
       {/* Barre de recherche et filtre */}
-      <div className="hidden md:block">
+      <div className="hidden md:block flex justify-center z-[1000]">
         
         <div className="flex items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
 
@@ -184,9 +184,9 @@ export default function NoteHeader({
             <SearchBar 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm}
-              searchInContent={searchInContent}
-              setSearchInContent={setSearchInContent}
-              showContentToggle={true}
+              searchMode={searchMode}
+              setSearchMode={setSearchMode}
+              showModeSelector={true}
             />
           </div>
 
@@ -196,7 +196,7 @@ export default function NoteHeader({
                 // Only recent sort for notes: toggle direction
                 setSortDir(sortDir === "desc" ? "asc" : "desc");
               }}
-              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
+              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
                 "bg-white text-gray-700 border border-gray-300 hover:border-primary"
               }`}
               whileHover={{ scale: 1.02 }}
@@ -215,7 +215,7 @@ export default function NoteHeader({
           <div className="relative">
             <motion.button 
               onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
+              className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
                 collaborationFilter !== "all" 
                   ? "bg-primary text-white" 
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
