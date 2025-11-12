@@ -453,6 +453,43 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   }, [id]);
 
 
+  // Charger le profil utilisateur pour awareness
+  useEffect(() => {
+    async function fetchUserInfo() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        console.log('🔍 [Auth] Appel à:', `${API_URL}/auth/check`);
+
+        const response = await fetch(`${API_URL}/auth/check`, {
+          credentials: "include",
+        });
+
+        console.log('📡 [Auth] Response status:', response.status);
+
+        if (response.ok) {
+          const userData = await response.json();
+          console.log('📦 [Auth] userData reçu:', userData);
+
+          const pseudo = userData.pseudo || userData.user?.pseudo || 'Anonyme';
+
+          // Générer une couleur aléatoire pour ce user
+          const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FF33A1'];
+          const color = colors[Math.floor(Math.random() * colors.length)];
+
+          setUserProfile({ name: pseudo, color });
+
+        }
+      } catch (error) {
+        console.error('❌ Erreur récupération profil:', error);
+      }
+    }
+
+    fetchUserInfo();
+  }, []);
+
+  
+
+
    // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
     // Petit délai pour s'assurer que le provider est créé
