@@ -4,9 +4,24 @@ import Icon from "@/ui/Icon";
 interface SearchBarProps {
     searchTerm: string;
     setSearchTerm: (term: string) => void;
-    }
+    searchInContent?: boolean;
+    setSearchInContent?: (value: boolean) => void;
+    showContentToggle?: boolean; // Pour activer/désactiver le toggle selon le contexte
+}
 
-export default function SearchBar({ searchTerm, setSearchTerm }: SearchBarProps) {
+export default function SearchBar({ 
+    searchTerm, 
+    setSearchTerm, 
+    searchInContent = false,
+    setSearchInContent,
+    showContentToggle = false
+}: SearchBarProps) {
+
+    const handleToggleSearchMode = () => {
+        if (setSearchInContent) {
+            setSearchInContent(!searchInContent);
+        }
+    };
 
     return (
         <>
@@ -14,15 +29,33 @@ export default function SearchBar({ searchTerm, setSearchTerm }: SearchBarProps)
                 <Icon
                     name="recherche"
                     size={20}
-                    className="absolute left-3 top-2.5 z-10"
+                    className="absolute left-3 top-2.5 z-10 text-gray-500"
                 />
                 <input
                     type="text"
-                    placeholder="Recherche..."
+                    placeholder={searchInContent ? "Rechercher dans le contenu..." : "Rechercher par titre..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-100 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300"
+                    className={`w-100 pl-10 ${showContentToggle ? 'pr-12 md:pr-12' : 'pr-4'} py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300`}
                 />
+                {showContentToggle && (
+                    <button
+                        type="button"
+                        onClick={handleToggleSearchMode}
+                        className={`absolute flex justify-center items-center right-2 md:right-3 top-1/2 -translate-y-1/2 p-1.5 md:p-1 rounded transition-colors ${
+                            searchInContent 
+                                ? 'text-primary hover:text-primary-hover' 
+                                : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                        title={searchInContent ? "Rechercher dans le contenu" : "Rechercher par titre"}
+                    >
+                        <Icon
+                            name="docs"
+                            size={20}
+                            className="md:w-[18px] md:h-[18px] transition-colors"
+                        />
+                    </button>
+                )}
             </div>
         </>
     )

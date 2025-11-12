@@ -1,13 +1,13 @@
 "use client";
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
 import NoteList from "@/components/noteList/NoteList";
 import FolderMore from "@/components/folderMore/FolderMore";
+import FolderDetailHeader from "@/components/folderDetailHeader/FolderDetailHeader";
 import { GetFolderById, UpdateFolder, DeleteFolder, CreateNote } from "@/loader/loader";
-import FolderDeleteModal from "@/ui/folder/FolderDeleteModal";
+
 import ReturnButton from "@/ui/returnButton";
 import Icon from "@/ui/Icon";
 
@@ -18,7 +18,6 @@ interface FolderDetailProps {
 }
 
 export default function FolderDetail({ params }: FolderDetailProps) {
-    const { isAuthenticated, loading: authLoading } = useAuthRedirect();
     const router = useRouter();
     const { id } = use(params);
 
@@ -26,8 +25,11 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [notes, setNotes] = useState<Note[]>([]);
     const [totalNotes, setTotalNotes] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [showFolderMore, setShowFolderMore] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
+    const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+    const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
 
     useEffect(() => {
         fetchFolderData();
@@ -104,17 +106,9 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     };
 
     const handleDeleteFolder = () => {
-        setIsDeleteModalOpen(true);
-    };
-
-    const confirmDeleteFolder = async () => {
-        const response = await DeleteFolder(id);
-
-        if (response.success) {
-            router.push("/folder");
-        } else {
-            alert(response.error || "Erreur lors de la suppression du dossier");
-        }
+        // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
+        // Rediriger vers la liste des dossiers
+        router.push("/dossiers");
     };
 
     const handleCreateNote = async () => {
@@ -142,7 +136,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-element text-lg mb-4">Dossier introuvable</p>
                 <button
-                    onClick={() => router.push("/folder")}
+                    onClick={() => router.push("/dossiers")}
                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90"
                 >
                     Retour aux dossiers
@@ -151,56 +145,68 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         );
     }
 
+    // Filtrer et trier les notes
+    const filteredNotes = Array.isArray(notes) ? notes
+        .filter(note => {
+            // Filtre de recherche
+            const matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                note.Content?.toLowerCase().includes(searchTerm.toLowerCase());
+
+            // Filtre de collaboration
+            const matchesCollaboration =
+                collaborationFilter === "all" ? true :
+                    collaborationFilter === "collaborative" ? (note.collaboratorCount && note.collaboratorCount >= 2) :
+                        collaborationFilter === "solo" ? (!note.collaboratorCount || note.collaboratorCount <= 1) :
+                            true;
+
+            return matchesSearch && matchesCollaboration;
+        })
+        .sort((a, b) => {
+            const getDate = (n: any) => new Date((sortBy === "creation" ? (n.CreatedAt || n.ModifiedAt) : n.ModifiedAt));
+            const da = getDate(a).getTime();
+            const db = getDate(b).getTime();
+            return sortDir === "desc" ? db - da : da - db;
+        }) : [];
+
     return (
         <div className="h-full w-full flex flex-col p-2.5 relative">
-            {/* Modale de confirmation de suppression */}
-            {isDeleteModalOpen && (
-                <FolderDeleteModal
-                    folderName={folder?.Nom || "ce dossier"}
-                    onConfirm={confirmDeleteFolder}
-                    onCancel={() => setIsDeleteModalOpen(false)}
-                />
-            )}
+            {/* Header mobile avec filtres */}
+            <FolderDetailHeader
+                folderName={folder?.Nom || ""}
+                folderColor={folder?.CouleurTag || "#882626"}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortDir={sortDir}
+                setSortDir={setSortDir}
+                collaborationFilter={collaborationFilter}
+                setCollaborationFilter={setCollaborationFilter}
+                onMoreClick={() => setShowFolderMore((prev: boolean) => !prev)}
+            />
 
-            {/* Liste des notes dans le dossier - Plein écran */}
-            <div
-                className="md:hidden flex rounded-lg p-2.5 items-center text-white sticky top-2 z-10"
-                style={{ backgroundColor: folder?.CouleurTag || "#882626" }}
-            >
-                <ReturnButton />
-
-                {/* Afficher le nom du dossier (mobile) */}
-                <div className="flex items-center gap-2 w-full">
-                    <h2 className="w-full font-semibold text-base truncate">{folder?.Nom}</h2>
-                    <div className="relative">
-                        <button onClick={() => setShowFolderMore((prev) => !prev)} aria-label="Options du dossier">
-                            <Icon
-                                name="more"
-                                size={20}
-                                className="text-white cursor-pointer"
-                            />
-                        </button>
-                        {showFolderMore && (
-                            <div className="absolute right-0 mt-2 z-20">
-                                <FolderMore
-                                    folder={folder as any}
-                                    folderId={id}
-                                    folderName={folder?.Nom || ""}
-                                    folderDescription={folder?.Description || ""}
-                                    folderColor={folder?.CouleurTag || ""}
-                                    onUpdate={handleUpdateFolder}
-                                    onDelete={handleDeleteFolder}
-                                    onClose={() => setShowFolderMore(false)}
-                                />
-                            </div>
-                        )}
+            {/* Modal FolderMore */}
+            {showFolderMore && (
+                <div className="fixed inset-0 z-50 md:hidden">
+                    <div className="absolute right-4 top-20">
+                        <FolderMore
+                            folder={folder as any}
+                            folderId={id}
+                            folderName={folder?.Nom || ""}
+                            folderDescription={folder?.Description || ""}
+                            folderColor={folder?.CouleurTag || ""}
+                            noteCount={filteredNotes.length}
+                            onUpdate={handleUpdateFolder}
+                            onDelete={handleDeleteFolder}
+                            onClose={() => setShowFolderMore(false)}
+                        />
                     </div>
                 </div>
+            )}
 
-            </div>
             <div className="flex-1 overflow-y-auto">
                 <NoteList
-                    notes={notes}
+                    notes={filteredNotes}
                     onNoteCreated={fetchFolderData}
                     isLoading={loading}
                     allowCreateNote={true}

@@ -35,7 +35,7 @@ export default function NoteInfoUI({ noteId }: NoteInfoUIProps) {
             {loading ? (
                 <div className="py-8 text-center text-element">Chargement...</div>
             ) : error ? (
-                <div className="py-8 text-center text-red-600 font-semibold">{error}</div>
+                <div className="py-8 text-center text-dangerous-600 font-semibold">{error}</div>
             ) : (
                 <div className="space-y-5">
                     <div className="border-b border-gray-100 pb-4">

@@ -66,8 +66,9 @@ export default function RegisterForm({
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
       email: formData.get("email") as string,
-      pseudo: formData.get("username") as string, // Nom corrigé pour correspondre au backend
+      pseudo: formData.get("username") as string,
       password: password,
+      checkedCGU: formData.get("checkedCGU") === "on",
     };
 
     try {
@@ -132,7 +133,7 @@ export default function RegisterForm({
         
         <Link
           href="/register/form"
-          className="block w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-rouge-hover transition-colors text-center"
+          className="block w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors text-center"
         >
           Créer un compte
         </Link>
@@ -181,7 +182,7 @@ export default function RegisterForm({
                 {isInSidebar ? 'Nom d\'utilisateur' : 'Pseudonyme*'}
               </p>
               {!isInSidebar && (
-                <p className="text-zinc-500 text-xs font-light">
+                <p className="text-gray-100 text-xs font-light">
                   *doit être unique
                 </p>
               )}
@@ -258,6 +259,21 @@ export default function RegisterForm({
           disabled={isLoading}
         />
 
+        <label className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            name='checkedCGU'
+            required
+            className="h-4 w-4 border-gray-300 rounded accent-primary"
+          />
+          <span className="text-sm text-clrprincipal">
+            J'accepte les{' '}
+            <Link href="/cgu" className="text-primary hover:underline">
+              Conditions Générales d'Utilisation
+            </Link>
+          </span>
+        </label>
+
         <button
           type="submit"
           className={`w-full p-2.5 rounded-[10px] flex justify-between items-center overflow-hidden transition-all duration-300 ${
@@ -289,7 +305,7 @@ export default function RegisterForm({
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex items-center w-full gap-4">
             <div className="flex-1 h-px bg-gray-300"></div>
-            <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+            <p className="text-gray-100 text-sm font-normal font-gant">ou</p>
             <div className="flex-1 h-px bg-gray-300"></div>
           </div>
           
@@ -306,7 +322,7 @@ export default function RegisterForm({
               type="button"
               onClick={onSwitchToLogin}
 
-              className="text-sm text-rouge-clair hover:underline"
+              className="text-sm text-dangerous-600 hover:underline"
 
             >
                Se connecter

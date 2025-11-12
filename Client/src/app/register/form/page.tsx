@@ -20,7 +20,7 @@ export default function RegisterFormPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-full flex items-center justify-center p-4">
       <MobileFlashNoteButton />
       
       <div className="w-full max-w-lg space-y-8">

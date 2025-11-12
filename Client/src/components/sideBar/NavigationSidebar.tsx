@@ -30,15 +30,15 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       isActive: pathname.includes('/notes'),
     },
     {
-      href: '/folder',
+      href: '/dossiers',
       label: 'Mes Dossiers',
       icon: 'folder',
-      isActive: pathname.includes('/folder'),
+      isActive: pathname.includes('/dossiers'),
     },
   ];
 
   return (
-    <div className="h-full w-full flex flex-col relative">
+    <div className="h-full w-full flex flex-col relative text-nowrap">
 
       <div className="relative flex flex-row items-center p-4 gap-2">
 
@@ -48,7 +48,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
 
           <Icon
             name="profile"
-            className={isProfile ? "text-white" : "text-element"}
+            className={isProfile ? "text-white" : "text-primary"}
             size={30}
           />
 
@@ -79,11 +79,11 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
                   ? 'bg-primary text-white'
                   : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
-                title={`Accéder à mes ${item.label}`}
+                title={`Accéder à ${item.label}`}
               >
                 <Icon
                   name={item.icon}
-                  className={item.isActive ? "text-white" : "text-element"}
+                  className={item.isActive ? "text-white" : "text-primary"}
                   size={30}
                   strokeWidth={12}
 
@@ -101,11 +101,34 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       >
         <Icon
           name={isopen ? `logo` : `logoIcon`}
-          className="text-clrprincipal stroke-25"
+          className="text-primary stroke-25"
           width={isopen ? 150 : 25}
           height={isopen ? 50 : 25}
         />
       </Link>
+
+      {/* Liens légaux */}
+      {isopen && (
+        <div className="px-4 pb-4 space-y-2 text-xs text-element">
+          <div className="flex gap-3 justify-center">
+            <Link 
+              href="/cgu" 
+              className="hover:text-primary transition-colors hover:underline"
+              title="Conditions Générales d'Utilisation"
+            >
+              CGU
+            </Link>
+            <span className="text-gray-300">•</span>
+            <Link 
+              href="/mentions-legales" 
+              className="hover:text-primary transition-colors hover:underline"
+              title="Mentions Légales"
+            >
+              Mentions Légales
+            </Link>
+          </div>
+        </div>
+      )}
 
     </div>
   );

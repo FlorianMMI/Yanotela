@@ -4,7 +4,6 @@ import Note from '@/ui/note/Note';
 import NoteSkeleton from '@/ui/note/NoteSkeleton';
 import { Note as NoteType } from '@/type/Note';
 import { CreateNote } from '@/loader/loader';
-import { socketService } from '@/services/socketService';
 import { useRouter } from 'next/navigation';
 import Icons from '@/ui/Icon';
 import { motion } from 'motion/react';
@@ -16,9 +15,20 @@ interface NoteListProps {
   allowCreateNote?: boolean; // Autoriser la création de note (par défaut: true)
   folderId?: string; // ID du dossier pour créer la note directement dedans
   onCreateNote?: () => void; // Callback personnalisé pour la création de note
+  searchTerm?: string; // Terme de recherche pour surlignage
+  searchInContent?: boolean; // Mode de recherche actif
 }
 
-export default function NoteList({ notes, onNoteCreated, isLoading = false, allowCreateNote = true, folderId, onCreateNote }: NoteListProps) {
+export default function NoteList({ 
+  notes, 
+  onNoteCreated, 
+  isLoading = false, 
+  allowCreateNote = true, 
+  folderId, 
+  onCreateNote,
+  searchTerm = "",
+  searchInContent = false
+}: NoteListProps) {
 
   const router = useRouter();
 
@@ -32,12 +42,9 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
     const { note, redirectUrl } = await CreateNote();
     
     if (note && redirectUrl) {
-      // Essayer de joindre la room socket avant la navigation
-      try {
-        socketService.joinNote(note.id);
-      } catch (err) {
-        console.warn('Could not join socket room after note creation:', err);
-      }
+      // Avec y-websocket, la connexion se fait automatiquement lors de l'ouverture de la note
+      // Plus besoin de joindre manuellement via Socket.IO
+      
       if (onNoteCreated) {
         onNoteCreated(); // Déclencher le refresh des notes
       }
@@ -54,11 +61,11 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
     <main className="p-4 relative min-h-[calc(100vh-200px)]">
       {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && notes.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <p className="text-element text-lg font-gant mx-4 text-center">
+       
+          <p className="absolute inset-0 flex items-center justify-center pointer-events-none text-element text-lg font-gant mx-4 text-center">
             Aucune note trouvée. Créez votre première note !
           </p>
-        </div>
+        
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-4 md:gap-6 justify-items-start">
@@ -91,7 +98,13 @@ export default function NoteList({ notes, onNoteCreated, isLoading = false, allo
 
         {/* Notes Grid */}
         {!isLoading && notes.map((note) => (
-          <Note key={note.id} note={note} />
+          <Note 
+            key={note.id} 
+            note={note} 
+            onNoteUpdated={onNoteCreated}
+            searchTerm={searchTerm}
+            searchInContent={searchInContent}
+          />
         ))}
       </div>
     </main>

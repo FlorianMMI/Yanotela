@@ -232,7 +232,8 @@ export const DossierController = {
         }
     },
 
-    // Supprimer un dossier (soft delete)
+    // Supprimer un dossier (suppression définitive)
+    // Les notes contenues ne sont PAS supprimées, seules les relations noteFolder sont supprimées
     deleteDossier: async (req, res) => {
         try {
             const { id } = req.params;
@@ -257,16 +258,22 @@ export const DossierController = {
                 return res.status(404).json({ error: 'Dossier introuvable ou accès non autorisé' });
             }
 
-            // Soft delete
-            await prisma.folder.update({
+            // Supprimer toutes les relations noteFolder (onDelete: Cascade le fait automatiquement)
+            // Les notes restent intactes, seules les assignations au dossier sont supprimées
+            await prisma.noteFolder.deleteMany({
+                where: {
+                    folderId: id,
+                    userId: authorId
+                }
+            });
+
+            // Suppression définitive du dossier
+            await prisma.folder.delete({
                 where: { id: id },
-                data: {
-                    deletedAt: new Date(),
-                },
             });
 
             res.status(200).json({ 
-                message: 'Dossier supprimé avec succès' 
+                message: 'Dossier supprimé définitivement avec succès' 
             });
         } catch (error) {
             console.error('Erreur lors de la suppression du dossier:', error);

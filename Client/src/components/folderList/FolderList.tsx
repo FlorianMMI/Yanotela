@@ -36,31 +36,44 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
        {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && folders.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <p className="text-element text-lg font-gant mx-4 text-center">
-            Aucun dossier trouvé. Créez votre premier dossier !
-          </p>
-        </div>
+        <p className="absolute top-1/2 left-1/2 pointer-events-none transform  -translate-x-1/2 -translate-y-1/2 text-element text-lg font-gant w-[calc(100%-5rem)] text-center">
+          Aucun dossier trouvé. Créez votre premier dossier !
+        </p>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-3 md:gap-4 justify-items-start">
+  <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-4 max-w-full justify-items-start">
 
         {/* Add Folder Button - Toujours visible */}
-        <motion.button
-          whileHover={{ scale: 1.05, boxShadow: "0 5px 10px rgba(0, 0, 0, 0.25)" }}
-          whileTap={{ scale: 0.95 }}
-          className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-[110px] md:w-65 md:h-50"
-          onClick={handleCreateFolder}
-          aria-label="Créer un nouveau dossier"
-          title="Créer un nouveau dossier"
-        >
+        <div className="relative group  w-full rounded-xl flex items-center justify-center transition-colors cursor-pointer text-primary h-[110px] md:w-65 md:h-50">
+          <motion.svg
+            whileHover={{ scale: 1.03, filter: "drop-shadow(0 12px 28px rgba(0,0,0,0.18))" }}
+            whileTap={{ scale: 0.97, filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.12))" }}
+            onClick={handleCreateFolder}
+            role="button"
+            tabIndex={0}
+            className="w-fit h-[110px] md:w-65 md:h-50 text-primary overflow-visible cursor-pointer focus:outline-none focus-visible:outline-none"
+            style={{ transition: 'filter 180ms ease, transform 180ms ease', outline: 'none' }}
+            width="160"
+            height="129"
+            viewBox="0 0 108 87"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3.1752 82.8919C5.2884 84.9965 7.83 86.0488 10.8 86.0488H97.2C100.174 86.0524 102.717 85.0001 104.83 82.8919C106.943 80.7837 108 78.2506 108 75.2927V21C108 15 103 11 98 11H54L43.2 0H10.8C7.8336 0.00358537 5.292 1.05768 3.1752 3.16229C1.0584 5.2669 0 7.79817 0 10.7561V75.2927C0.0036 78.2542 1.062 80.7873 3.1752 82.8919Z" fill="none"/>
+          </motion.svg>
+
           <Icon
             name="plus"
             size={48}
             strokeWidth={1}
-            className="group-hover:scale-110 transition-transform"
+            className="absolute z-10 group-hover:scale-110 transition-transform pointer-events-none"
+            aria-hidden={true}
           />
-        </motion.button>
+        </div>
 
         {/* Loading Skeletons */}
         {isLoading && (
@@ -73,7 +86,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
 
         {/* Folders Grid */}
         {!isLoading && folders.map((folder) => (
-          <Folder key={folder.id} folder={folder} />
+          <Folder key={folder.id} folder={folder} onFolderUpdated={onFolderCreated} />
         ))}
       </div>
     </main>

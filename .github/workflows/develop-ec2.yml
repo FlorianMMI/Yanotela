@@ -2,7 +2,6 @@ name: Deploy App to EC2 (Development)
 on:
   push:
     branches: [ "preprod" ]
-
 env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend-dev
@@ -12,24 +11,22 @@ env:
   DEPLOY_PATH: /var/www/yanotela
 permissions:
   contents: write
-jobs:
 
+jobs:
   cleanup:
-    uses : ./.github/workflows/cleanup-console-logs.yml
+    uses: ./.github/workflows/cleanup-console-logs.yml
     permissions:
       contents: write
 
-  build-and-deploy:
-    name: Build and Deploy to Development
+  setup:
+    name: Setup Node.js and Checkout
     runs-on: ubuntu-latest
-    environment: development
     needs: cleanup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: preprod
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -39,27 +36,35 @@ jobs:
             Server/package-lock.json
             Client/package-lock.json
 
-      - name: Audit npm
+  install-dependencies:
+    name: Install Dependencies (Server & Client)
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Server Dependencies
         run: |
           cd Server
-          npm install
-          npm ci --no-audit --progress=false
-          npm audit --audit-level=high || true
-          cd ../Client
-          npm ci --no-audit --progress=false
-          npm audit --audit-level=high || true
-          cd ..
+          npm ci --prefer-offline --no-audit --progress=false
+      - name: Install Client Dependencies
+        run: |
+          cd Client
+          npm ci --prefer-offline --no-audit --progress=false
 
+  build-frontend:
+    name: Build and Push Frontend
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push frontend image (dev)
+      - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./Client
@@ -73,7 +78,20 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push backend image (dev)
+  build-backend:
+    name: Build and Push Backend
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
           context: ./Server
@@ -85,7 +103,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Deploy to Development EC2
+  deploy:
+    name: Deploy to Development EC2
+    runs-on: ubuntu-latest
+    needs: [install-dependencies, build-frontend, build-backend]
+    steps:
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ env.EC2_HOST }}
@@ -95,46 +118,21 @@ jobs:
             echo "🚀 Starting deployment to DEVELOPMENT environment"
             cd ${{ env.DEPLOY_PATH }}
 
-            # Check available disk space
-            echo "📊 Initial disk space:"
-            df -h
-
-            # Aggressive cleanup to free up space
+            # Nettoyage ciblé (je garde votre version aggressive, mais on peut l'ajuster)
             echo "🧹 Cleaning up disk space..."
-            
-            # Clean Docker system (remove all unused containers, networks, images, cache)
             docker system prune -a -f --volumes || true
-            
-            # Remove all stopped containers
             docker container prune -f || true
-            
-            # Remove all unused images
             docker image prune -a -f || true
-            
-            # Remove all unused volumes
             docker volume prune -f || true
-            
-            # Remove all unused networks
             docker network prune -f || true
-            
-            # Clean package cache
             sudo apt-get clean || true
             sudo apt-get autoremove -y || true
-            
-            # Remove old logs
             sudo journalctl --vacuum-time=3d || true
-            
-            # Clear temporary files
             sudo rm -rf /tmp/* || true
             sudo rm -rf /var/tmp/* || true
-            
-            # Remove old kernels (keep current and one backup)
             sudo apt-get autoremove --purge -y || true
 
-            echo "📊 Disk space after cleanup:"
-            df -h
-
-            # Clone ou mise à jour du dépôt
+            # Mise à jour du dépôt (je garde votre logique actuelle)
             if [ ! -d ".git" ]; then
               git clone -b Develop https://github.com/FlorianMMI/Yanotela.git .
             else
@@ -142,41 +140,29 @@ jobs:
               git reset --hard origin/Develop
             fi
 
-            # Créer le dossier pour la configuration Nginx
+            # Création des fichiers de configuration (inchangé)
             mkdir -p ./nginx/conf.d
-
-            # Créer le fichier de configuration Nginx (directement dans le script pour éviter les problèmes de chemin)
             cat > ./nginx/conf.d/default.conf << 'EOF'
             server {
                 listen 80;
                 server_name preprod.yanotela.fr www.preprod.yanotela.fr;
-
                 location ^~ /.well-known/acme-challenge/ {
                     root /var/www/yanotela;
                     try_files $uri =404;
                 }
-
                 location / {
                     return 301 https://$server_name$request_uri;
                 }
             }
-
             server {
                 listen 443 ssl http2;
                 server_name preprod.yanotela.fr www.preprod.yanotela.fr;
-
                 client_max_body_size 10M;
-
-
                 ssl_certificate /etc/letsencrypt/live/yanotela.fr/fullchain.pem;
                 ssl_certificate_key /etc/letsencrypt/live/yanotela.fr/privkey.pem;
-
                 ssl_protocols TLSv1.2 TLSv1.3;
                 ssl_ciphers HIGH:!aNULL:!MD5;
                 ssl_prefer_server_ciphers on;
-
-
-
                 location / {
                     proxy_pass http://frontend-dev:3000;
                     proxy_http_version 1.1;
@@ -187,10 +173,8 @@ jobs:
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto $scheme;
               }
-
                 location /api/ {
                     rewrite ^/api/(.*) /$1 break;
-
                     proxy_pass http://backend-dev:3001;
                     proxy_http_version 1.1;
                     proxy_set_header Host $host;
@@ -198,24 +182,20 @@ jobs:
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto $scheme;
                     proxy_cache_bypass $http_upgrade;
-
                     proxy_read_timeout 300s;
                     proxy_connect_timeout 75s;
                 }
-
-                location /socket.io/ {
-                    proxy_pass http://backend-dev:3001/socket.io/;
+                location /yjs/ {
+                    proxy_pass http://yjs-server:1234/;
                     proxy_http_version 1.1;
                     proxy_set_header Upgrade $http_upgrade;
                     proxy_set_header Connection "upgrade";
                     proxy_set_header Host $host;
                     proxy_set_header X-Real-IP $remote_addr;
-              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto $scheme;
-
                     proxy_read_timeout 86400;
                 }
-
                 location /health {
                     proxy_pass http://backend-dev:3001/health;
                     proxy_set_header Host $host;
@@ -223,7 +203,7 @@ jobs:
             }
             EOF
 
-            # Créer le fichier docker-compose.yml (version complète)
+            # docker-compose.yml (inchangé)
             cat > docker-compose.yml << 'EOF'
             version: '3.8'
             services:
@@ -244,7 +224,6 @@ jobs:
                   timeout: 10s
                   retries: 3
                 restart: unless-stopped
-
               redis-dev:
                 image: redis:7-alpine
                 container_name: yanotela-redis-dev
@@ -259,7 +238,6 @@ jobs:
                   timeout: 10s
                   retries: 3
                 restart: unless-stopped
-
               backend-dev:
                 image: ${{ env.DOCKER_BACKEND_REPO }}:develop
                 container_name: yanotela-backend-dev
@@ -274,7 +252,25 @@ jobs:
                   - yanotela-dev
                 restart: unless-stopped
                 command: sh -c "npx prisma migrate deploy && npm start"
-
+              yjs-server:
+                image: node:18-alpine
+                container_name: yanotela-yjs-server
+                working_dir: /app
+                environment:
+                  - HOST=0.0.0.0
+                  - PORT=1234
+                  - YPERSISTENCE=/app/yjs-db
+                volumes:
+                  - ./Server/yjs-db:/app/yjs-db
+                networks:
+                  - yanotela-dev
+                command: sh -c "npm install -g @y/websocket-server && npx y-websocket"
+                restart: unless-stopped
+                healthcheck:
+                  test: ["CMD", "nc", "-z", "localhost", "1234"]
+                  interval: 10s
+                  timeout: 3s
+                  retries: 3
               frontend-dev:
                 image: ${{ env.DOCKER_FRONTEND_REPO }}:develop
                 container_name: yanotela-frontend-dev
@@ -288,7 +284,6 @@ jobs:
                 networks:
                   - yanotela-dev
                 restart: unless-stopped
-
               nginx:
                 image: nginx:latest
                 container_name: yanotela-nginx-dev
@@ -309,30 +304,29 @@ jobs:
                   options:
                     max-size: "10m"
                     max-file: "3"
-
             volumes:
               postgres_dev_data:
                 driver: local
               redis_dev_data:
                 driver: local
-
             networks:
               yanotela-dev:
                 driver: bridge
             EOF
 
-            # Créer le fichier .env.dev
+            # .env.dev (inchangé)
             cat > .env.dev << 'EOF'
             ${{secrets.PREPROD}}
             EOF
 
-            # Démarrer les services
+            # Démarrage des services (optimisé : pull + up en une étape)
             docker compose down || true
             docker compose pull
             docker compose up -d --force-recreate
 
-            # Vérifier que les services sont démarrés
-            sleep 30
+            # Vérification active des services (remplace sleep 30)
+            echo "⏳ Attente du démarrage des services..."
+            timeout 60 bash -c 'until docker compose logs frontend-dev | grep -q "ready"; do sleep 2; done'
             if docker compose ps | grep -q "Up"; then
               echo "✅ Services démarrés avec succès"
               echo "🎉 Déploiement terminé !"

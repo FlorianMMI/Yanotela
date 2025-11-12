@@ -65,6 +65,44 @@ services:
         condition: service_healthy
     command: sh -c "npx prisma migrate deploy && npx nodemon index.js"
 
+  # Service de nettoyage automatique des notes supprimées (exécute tous les jours à 3h)
+  cleanup-notes:
+    build: 
+      context: ./Server
+      dockerfile: Dockerfile.preprod
+    container_name: yanotela-cleanup-local
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://yanotela_local:yanotela_local_2024@db:5432/yanotela_local
+    volumes:
+      - ./Server/scripts:/app/scripts
+      - ./Server/prisma:/app/prisma
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    # Exécute le script toutes les 24h (86400 secondes)
+    command: sh -c "while true; do sleep 86400 && npm run cleanup:notes; done"
+    restart: unless-stopped
+
+  # Serveur YJS WebSocket pour collaboration temps réel
+  yjs-server:
+    image: node:18-alpine
+    container_name: yanotela-yjs-server
+    working_dir: /app
+    ports:
+      - "1234:1234"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=1234
+    command: sh -c "npm install -g @y/websocket-server && y-websocket-server"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "1234"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
   # Frontend Next.js
   frontend:
     build: 

@@ -15,6 +15,7 @@
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { getPermission } from "./permissionController.js";
+import { migrateContentToYjs, needsMigration, extractContentFromYjs } from "../services/yjsMigration.js";
 
 const prisma = new PrismaClient();
 
@@ -32,6 +33,9 @@ export const noteController = {
         where: {
           userId: req.session.userId,
           isAccepted: true,
+          note: {
+            deletedAt: null, // Exclure les notes supprimées
+          },
         },
         include: {
           note: {
@@ -189,6 +193,76 @@ export const noteController = {
     }
   },
 
+  duplicateNote: async (req, res) => {
+    // Vérifier si l'utilisateur est authentifié via la session
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    const { id } = req.params; // ID de la note à dupliquer
+    const userId = parseInt(req.session.userId);
+
+    try {
+      // Récupérer la note originale
+      const originalNote = await prisma.note.findUnique({
+        where: { id: id },
+        include: {
+          permissions: true,
+        },
+      });
+
+      if (!originalNote) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+
+      // Vérifier si la note est supprimée
+      if (originalNote.deletedAt) {
+        return res.status(404).json({ message: "Cette note a été supprimée" });
+      }
+
+      // Vérifier si l'utilisateur a accès à cette note
+      const userPermission = await getPermission(userId, id);
+      if (!userPermission) {
+        return res.status(403).json({ message: "Vous n'avez pas accès à cette note" });
+      }
+
+      // Générer un nouvel ID pour la note dupliquée
+      const newUID = crypto.randomBytes(8).toString("hex");
+
+      // Créer la nouvelle note avec le contenu de l'originale
+      const duplicatedNote = await prisma.note.create({
+        data: {
+          id: newUID,
+          Titre: `${originalNote.Titre} (copie)`,
+          Content: originalNote.Content,
+          authorId: userId, // L'utilisateur devient le propriétaire de la copie
+          modifierId: userId,
+          permissions: {
+            create: {
+              userId: userId,
+              role: 0, // Rôle 0 = Propriétaire
+              isAccepted: true,
+            },
+          },
+        },
+      });
+
+      res.status(201).json({
+        message: "Note dupliquée avec succès",
+        note: duplicatedNote,
+        redirectUrl: `/notes/${duplicatedNote.id}`,
+      });
+    } catch (error) {
+      console.error("Erreur lors de la duplication de la note:", error);
+      res
+        .status(500)
+        .json({
+          message: "Erreur lors de la duplication de la note",
+          error: error.message,
+        });
+    }
+  },
+
   getNoteById: async (req, res) => {
     const { id } = req.params;
     const { userId } = req.session;
@@ -210,6 +284,11 @@ export const noteController = {
         return res.status(404).json({ message: "Note non trouvée" });
       }
 
+      // Vérifier si la note est supprimée
+      if (note.deletedAt) {
+        return res.status(404).json({ message: "Cette note a été supprimée" });
+      }
+
       // Récupérer le rôle de l'utilisateur sur cette note
       const userPermission = await getPermission(userId, id);
 
@@ -217,6 +296,23 @@ export const noteController = {
         return res
           .status(403)
           .json({ message: "Vous n'avez pas accès à cette note" });
+      }
+
+      // 🔄 MIGRATION À LA VOLÉE: Migrer vers YJS si nécessaire
+      if (needsMigration(note)) {
+
+        const yjsState = migrateContentToYjs(note.Content);
+        
+        if (yjsState) {
+          // Sauvegarder le yjsState dans la base
+          await prisma.note.update({
+            where: { id },
+            data: { yjsState },
+          });
+          
+        } else {
+          console.error(`❌ [Migration] Échec migration pour note ${id}`);
+        }
       }
 
       res.status(200).json({
@@ -246,9 +342,9 @@ export const noteController = {
 
     // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
-    if (!Titre || !Content) {
-      
-      return res.status(400).json({ message: "Champs requis manquants" });
+    // Au moins un champ doit être fourni
+    if (!Titre && !Content) {
+      return res.status(400).json({ message: "Au moins un champ (Titre ou Content) doit être fourni" });
     }
 
     if (Titre === "") {
@@ -256,14 +352,24 @@ export const noteController = {
     }
 
     try {
+      // Préparer l'objet de mise à jour avec seulement les champs fournis
+      const updateData = {
+        ModifiedAt: new Date(),
+        modifierId: parseInt(userId), // Enregistre le dernier modificateur
+      };
+
+      if (Titre !== undefined) {
+        updateData.Titre = Titre;
+      }
+
+      if (Content !== undefined) {
+        updateData.Content = Content;
+        
+      }
+
       const note = await prisma.note.update({
         where: { id: id },
-        data: {
-          Titre,
-          Content,
-          ModifiedAt: new Date(),
-          modifierId: parseInt(userId), // Enregistre le dernier modificateur
-        },
+        data: updateData,
       });
       
       res.status(200).json({ message: "Note mise à jour avec succès", note });
@@ -355,7 +461,7 @@ export const noteController = {
           .json({ message: "Invitation non trouvée ou déjà acceptée" });
       }
 
-      res.status(200).json({ message: "Invitation acceptée avec succès" });
+      res.status(200).json({ message: "Invitation acceptée avec succès", noteId: id });
     } catch (error) {
       console.error("Erreur lors de l'acceptation de l'invitation:", error);
       res
@@ -618,6 +724,253 @@ export const noteController = {
       console.error("Erreur lors de la récupération du dossier de la note:", error);
       res.status(500).json({
         message: "Erreur lors de la récupération du dossier de la note",
+        error: error.message,
+      });
+    }
+  },
+
+  deleteNote: async (req, res) => {
+    const { id } = req.params; // noteId
+    const { userId } = req.session;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      // Vérifier que la note existe
+      const note = await prisma.note.findUnique({
+        where: { id },
+      });
+
+      if (!note) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+
+      // Vérifier que la note n'est pas déjà supprimée
+      if (note.deletedAt) {
+        return res.status(400).json({ message: "Cette note est déjà supprimée" });
+      }
+
+      // Vérifier les permissions (seul Owner ou Admin peut supprimer)
+      const userPermission = await getPermission(userId, id);
+      
+      if (!userPermission) {
+        return res.status(403).json({ message: "Vous n'avez pas accès à cette note" });
+      }
+
+      // Role 0 = Owner, Role 1 = Admin
+      if (userPermission.role !== 0 && userPermission.role !== 1) {
+        return res.status(403).json({ 
+          message: "Seul le propriétaire ou un administrateur peut supprimer cette note" 
+        });
+      }
+
+      // Soft delete: définir deletedAt à la date actuelle
+      const deletedNote = await prisma.note.update({
+        where: { id },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+
+      res.status(200).json({ 
+        message: "Note supprimée avec succès",
+        noteId: deletedNote.id 
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la note:", error);
+      res.status(500).json({
+        message: "Erreur lors de la suppression de la note",
+        error: error.message,
+      });
+    }
+  },
+
+  leaveNote: async (req, res) => {
+    const { id } = req.params; // noteId
+    const { userId } = req.session;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      // Vérifier que la note existe
+      const note = await prisma.note.findUnique({
+        where: { id },
+      });
+
+      if (!note) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+
+      // Vérifier les permissions de l'utilisateur
+      const userPermission = await getPermission(userId, id);
+      
+      if (!userPermission) {
+        return res.status(403).json({ message: "Vous n'avez pas accès à cette note" });
+      }
+
+      // Empêcher le propriétaire de quitter sa propre note
+      if (userPermission.role === 0) {
+        return res.status(403).json({ 
+          message: "En tant que propriétaire, vous ne pouvez pas quitter cette note. Vous devez la supprimer." 
+        });
+      }
+
+      // Supprimer la permission (l'utilisateur quitte la note)
+      // La table Permission utilise une clé primaire composite (noteId, userId)
+      await prisma.permission.delete({
+        where: {
+          noteId_userId: {
+            noteId: id,
+            userId: userId,
+          },
+        },
+      });
+
+      res.status(200).json({ 
+        message: "Vous avez quitté la note avec succès",
+        noteId: note.id 
+      });
+    } catch (error) {
+      console.error("Erreur lors de la sortie de la note:", error);
+      res.status(500).json({
+        message: "Erreur lors de la sortie de la note",
+        error: error.message,
+      });
+    }
+  },
+
+  getDeletedNotes: async (req, res) => {
+    const { userId } = req.session;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      // Récupérer toutes les notes supprimées de l'utilisateur
+      const notes = await prisma.note.findMany({
+        where: {
+          authorId: userId,
+          deletedAt: {
+            not: null, // Notes qui ont été supprimées
+          },
+        },
+        orderBy: {
+          deletedAt: 'desc', // Plus récemment supprimées en premier
+        },
+      });
+
+      res.status(200).json({
+        notes: notes,
+        totalNotes: notes.length,
+      });
+    } catch (error) {
+      console.error("Erreur lors de la récupération des notes supprimées:", error);
+      res.status(500).json({
+        message: "Erreur lors de la récupération des notes supprimées",
+        error: error.message,
+      });
+    }
+  },
+
+  restoreNote: async (req, res) => {
+    const { id } = req.params; // noteId
+    const { userId } = req.session;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      // Vérifier que la note existe et est supprimée
+      const note = await prisma.note.findUnique({
+        where: { id },
+      });
+
+      if (!note) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+
+      if (!note.deletedAt) {
+        return res.status(400).json({ message: "Cette note n'est pas supprimée" });
+      }
+
+      // Vérifier que l'utilisateur est le propriétaire
+      if (note.authorId !== userId) {
+        return res.status(403).json({ 
+          message: "Seul le propriétaire peut restaurer cette note" 
+        });
+      }
+
+      // Restaurer la note (remettre deletedAt à null)
+      const restoredNote = await prisma.note.update({
+        where: { id },
+        data: {
+          deletedAt: null,
+        },
+      });
+
+      res.status(200).json({ 
+        message: "Note restaurée avec succès",
+        note: restoredNote 
+      });
+    } catch (error) {
+      console.error("Erreur lors de la restauration de la note:", error);
+      res.status(500).json({
+        message: "Erreur lors de la restauration de la note",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * Synchroniser l'état YJS et le contenu Lexical en base de données
+   * Utilisé par la collaboration temps réel pour persister les changements
+   * 
+   * @route POST /note/sync/:id
+   * @middleware requireWriteAccess
+   */
+  syncNoteState: async (req, res) => {
+    const { id } = req.params;
+    const { yjsState, Content, Titre } = req.body;
+    const { userId } = req.session;
+
+    try {
+      // Convertir le tableau d'octets en Buffer si nécessaire
+      const yjsBuffer = yjsState ? Buffer.from(yjsState) : null;
+
+      // Préparer les données à mettre à jour
+      const updateData = {
+        yjsState: yjsBuffer,
+        Content: Content,
+        ModifiedAt: new Date(),
+        modifierId: userId,
+      };
+
+      // Ajouter le titre s'il est fourni
+      if (Titre !== undefined) {
+        updateData.Titre = Titre;
+        
+      }
+
+      // Mettre à jour la note avec le nouvel état YJS et le contenu
+      const updatedNote = await prisma.note.update({
+        where: { id },
+        data: updateData,
+      });
+
+      res.status(200).json({ 
+        message: "État synchronisé",
+        ModifiedAt: updatedNote.ModifiedAt 
+      });
+    } catch (error) {
+      console.error("[syncNoteState] Erreur:", error);
+      res.status(500).json({
+        message: "Erreur lors de la synchronisation",
         error: error.message,
       });
     }

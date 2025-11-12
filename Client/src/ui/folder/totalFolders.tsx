@@ -2,16 +2,17 @@
 
 import React from 'react';
 import Icon from '../Icon';
+import { useRouter } from 'next/dist/client/components/navigation';
 
 interface TotalFoldersProps {
     totalFolders?: number;
 }
 
-const redirectToFolders = () => {
-    window.location.href = '/folder';
-}
-
 export default function TotalFolders({ totalFolders }: TotalFoldersProps) {
+    const router = useRouter();
+    const redirectToFolders = () => {
+    router.push('/dossiers');
+};
     const safeTotalFolders = totalFolders ?? 0;
 
     return (

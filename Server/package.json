@@ -13,11 +13,11 @@
     "test": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/",
     "dev": "node index.js",
     "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch",
-    "create-test-user": "node scripts/create-test-user.js"
+    "create-test-user": "node scripts/create-test-user.js",
+    "cleanup:notes": "node scripts/cleanup-deleted-notes.js"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
-    "@socket.io/redis-adapter": "^8.3.0",
     "bcrypt": "^5.1.1",
     "connect-redis": "^7.1.1",
     "cors": "^2.8.5",
@@ -27,9 +27,8 @@
     "express-validator": "^7.0.1",
     "googleapis": "^160.0.0",
     "helmet": "^7.1.0",
-    "nodemailer": "^6.10.1",
+    "nodemailer": "^7.0.10",
     "redis": "^5.8.3",
-    "socket.io": "^4.8.1",
     "supertest": "^7.1.4",
     "yjs": "^13.6.27"
   },

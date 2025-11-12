@@ -1,13 +1,18 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export function useAuthRedirect() {
+export function useAuthRedirect(options?: { skipRedirect?: boolean }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkTrigger, setCheckTrigger] = useState(0);
+
+  // Pages publiques qui ne nécessitent pas d'authentification
+  const publicPages = ['/cgu', '/mentions-legales', '/login', '/register', '/forgot-password'];
+  const isPublicPage = publicPages.some(page => pathname?.startsWith(page));
 
   const checkAuth = async () => {
     try {
@@ -22,12 +27,18 @@ export function useAuthRedirect() {
         setIsAuthenticated(data.authenticated);
       } else {
         setIsAuthenticated(false);
-        router.push('/login');
+        // Ne pas rediriger si on est sur une page publique ou si skipRedirect est activé
+        if (!isPublicPage && !options?.skipRedirect) {
+          router.push('/login');
+        }
       }
     } catch (error) {
       console.error('Erreur lors de la vérification d\'authentification:', error);
       setIsAuthenticated(false);
-      router.push('/login');
+      // Ne pas rediriger si on est sur une page publique ou si skipRedirect est activé
+      if (!isPublicPage && !options?.skipRedirect) {
+        router.push('/login');
+      }
     } finally {
       setLoading(false);
     }
@@ -35,7 +46,8 @@ export function useAuthRedirect() {
 
   useEffect(() => {
     checkAuth();
-  }, [router, checkTrigger]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkTrigger, pathname]);
 
   // Écouter les changements d'authentification via storage events
   useEffect(() => {

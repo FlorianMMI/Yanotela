@@ -11,12 +11,15 @@ import { $patchStyleText } from '@lexical/selection';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list';
 import { mergeRegister } from '@lexical/utils';
 import Icons from '@/ui/Icon';
+import ExportPDFButton from '@/ui/exportpdfbutton';
 
 interface ToolbarPluginProps {
     onOpenDrawingBoard?: () => void;
+    noteTitle?: string;
+    editorContentRef?: React.RefObject<HTMLElement | null>;
 }
 
-export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps = {}) {
+export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans titre", editorContentRef }: ToolbarPluginProps = {}) {
     const [editor] = useLexicalComposerContext();
     const toolbarRef = useRef(null);
     const [showFormatMenu, setShowFormatMenu] = useState(false);
@@ -33,6 +36,8 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
     const [isInBulletList, setIsInBulletList] = useState(false);
     const [isInNumberedList, setIsInNumberedList] = useState(false);
     const [alignment, setAlignment] = useState<'left' | 'center' | 'right' | 'justify' | ''>('');
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [viewportTop, setViewportTop] = useState(0);
 
     const $updateToolbar = useCallback(() => {
         const selection = $getSelection();
@@ -217,6 +222,71 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
             ),
         );
     }, [editor, $updateToolbar]);
+
+    // Détecter l'apparition du clavier sur mobile et ajuster la position de la toolbar
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        let ticking = false;
+        
+        const handleViewportChange = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    if (window.visualViewport) {
+                        const viewportHeight = window.visualViewport.height;
+                        const windowHeight = window.innerHeight;
+                        const offsetTop = window.visualViewport.offsetTop || 0;
+                        
+                        // Calculer la hauteur du clavier
+                        const calculatedKeyboardHeight = Math.max(0, windowHeight - viewportHeight);
+                        
+                        // Mettre à jour la position du viewport (pour suivre le scroll)
+                        setViewportTop(offsetTop);
+                        
+                        // Mettre à jour seulement si c'est significatif (> 100px)
+                        if (calculatedKeyboardHeight > 100) {
+                            setKeyboardHeight(calculatedKeyboardHeight);
+                        } else {
+                            setKeyboardHeight(0);
+                            setViewportTop(0); // Reset quand pas de clavier
+                        }
+                    }
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        // Écouter les changements de focus
+        const handleFocusIn = () => {
+            setTimeout(handleViewportChange, 350);
+        };
+
+        const handleFocusOut = () => {
+            setTimeout(() => {
+                setKeyboardHeight(0);
+                setViewportTop(0);
+            }, 350);
+        };
+
+        // Écouter resize ET scroll pour suivre le clavier
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleViewportChange);
+            window.visualViewport.addEventListener('scroll', handleViewportChange);
+            document.addEventListener('focusin', handleFocusIn);
+            document.addEventListener('focusout', handleFocusOut);
+            handleViewportChange();
+        }
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', handleViewportChange);
+                window.visualViewport.removeEventListener('scroll', handleViewportChange);
+                document.removeEventListener('focusin', handleFocusIn);
+                document.removeEventListener('focusout', handleFocusOut);
+            }
+        };
+    }, []);
 
     const applyStyleText = useCallback(
         (styles: Record<string, string>) => {
@@ -414,10 +484,25 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                         </button>
                     </>
                 )}
+
+                {/* Export PDF button */}
+                <div className="w-px h-6 bg-gray-200 mx-1" /> {/* Separator */}
+                <ExportPDFButton 
+                    noteTitle={noteTitle}
+                    editorRef={editorContentRef}
+                    compact={true}
+                />
             </div>
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 safe-area-inset-bottom">
+            <div 
+                className="md:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
+                style={{ 
+                    bottom: `${keyboardHeight}px`,
+                    transform: viewportTop > 0 ? `translateY(${viewportTop}px)` : 'none',
+                    transition: 'bottom 0.3s ease-out, transform 0.1s linear'
+                }}
+            >
                 <div className="flex items-center justify-around p-3 gap-2">
                     {/* Format submenu */}
                     <div className="relative">
@@ -673,6 +758,17 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                             <span className="text-xs">Dessin</span>
                         </button>
                     )}
+
+                    {/* Export PDF button for mobile */}
+                    <div className="flex flex-col items-center justify-center">
+                        <ExportPDFButton 
+                            noteTitle={noteTitle}
+                            editorRef={editorContentRef}
+                            compact={true}
+                            className="p-2"
+                        />
+                        <span className="text-xs mt-1">PDF</span>
+                    </div>
                 </div>
             </div>
         </>

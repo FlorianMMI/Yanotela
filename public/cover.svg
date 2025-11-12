@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-label="Cover Yanotela">
+    <defs>
+        <linearGradient id="bgGrad" x1="0" x2="1">
+            <stop offset="0" stop-color="#F6F0E9"/>
+            <stop offset="1" stop-color="#E9EBDB"/>
+        </linearGradient>
+
+        <filter id="softBlur" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="28" result="b"/>
+            <feBlend in="SourceGraphic" in2="b" mode="normal"/>
+        </filter>
+
+        <filter id="cardShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="8" stdDeviation="18" flood-color="#000" flood-opacity="0.08"/>
+        </filter>
+
+        <!-- Simple note icon (paper with folded corner) -->
+        <symbol id="noteIcon" viewBox="0 0 24 24" width="24" height="24" preserveAspectRatio="xMidYMid meet">
+            <path d="M4 3h10l6 6v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" fill="#FFFFFF"/>
+            <path d="M14 3v6h6" fill="#F3DCDC"/>
+            <rect x="6" y="9" width="12" height="1.4" rx="0.7" fill="#FDE8E8" opacity="0.9"/>
+            <rect x="6" y="12" width="9" height="1.4" rx="0.7" fill="#FDE8E8" opacity="0.9"/>
+        </symbol>
+    </defs>
+
+    <!-- Background -->
+    <rect width="1200" height="360" fill="url(#bgGrad)"/>
+
+    <!-- Soft decorative blobs -->
+    <g filter="url(#softBlur)" opacity="0.7">
+        <ellipse cx="1060" cy="50" rx="160" ry="120" fill="#FDE8E8" opacity="0.7"/>
+        <ellipse cx="200" cy="300" rx="240" ry="160" fill="#E6F2FF" opacity="0.5"/>
+        <ellipse cx="860" cy="220" rx="120" ry="90" fill="#FFF2EF" opacity="0.35"/>
+    </g>
+
+    <!-- Main content group -->
+    <g transform="translate(60,40)">
+        <!-- Title -->
+        <text x="0" y="36" font-family="Gantari, 'Gantari', sans-serif" font-size="48" fill="#222">Yanotela</text>
+        <!-- Tagline -->
+        <text x="0" y="72" font-family="Geologica, 'Geologica', sans-serif" font-size="16" fill="#444">Notes collaboratives • sécurisées • modernes</text>
+
+        <!-- Feature card -->
+        <g transform="translate(0,120)">
+            <rect x="0" y="0" rx="12" ry="12" width="520" height="96" fill="#FFFFFF" opacity="0.92" filter="url(#cardShadow)"/>
+            <!-- Icon area -->
+            <g transform="translate(18,18)">
+                <use href="#noteIcon" width="44" height="44" />
+            </g>
+            <!-- Card text -->
+            <text x="80" y="34" font-family="sans-serif" font-size="16" fill="#222">Full‑stack · Next.js · Node.js · Prisma · PostgreSQL</text>
+            <text x="80" y="58" font-family="sans-serif" font-size="13" fill="#666">Session-based auth • Sécurité & simplicité</text>
+        </g>
+    </g>
+
+    <!-- Small badges / accents on the right -->
+    <g transform="translate(780,40)">
+        <rect x="0" y="0" rx="10" width="360" height="140" fill="transparent"/>
+        <g transform="translate(18,16)">
+            <circle cx="280" cy="18" r="10" fill="#882626" opacity="0.9"/>
+            <circle cx="250" cy="40" r="8" fill="#E6F2FF" opacity="0.8"/>
+            <rect x="0" y="0" width="220" height="92" rx="10" fill="#FFFFFF" opacity="0.04"/>
+            <text x="0" y="22" font-family="sans-serif" font-size="13" fill="#333">Collaboratif en temps réel (bientôt)</text>
+            <text x="0" y="44" font-family="sans-serif" font-size="12" fill="#555">Éditeur Lexical • Sauvegarde sécurisée</text>
+        </g>
+    </g>
+</svg>

@@ -7,32 +7,281 @@
 @layer base {
 
   :root {
-    --background: #E9EBDB;
-    --deskbackground: #EDEDED;
-    --foreground: #171717;
-    --clr-beige-foncer: #d5d7c3;
-    --clr-gris-clair: #272727;
-    --clr-rouge-fonce: #882626;
-    --gris-clair: #727272;
-    --rouge-fonce: #882626;
-    --rouge-hover: #ff0000;
-    --rouge-clair: oklch(63.7% 0.237 25.331);
-    --light: white;
-    --dark: black;
-    --lightNote: white;
-    --textlightNote: oklch(55.1% 0.027 264.364);
-
-
+    /* Fonts */
     --font-title: 'Nixie One', cursive;
     --font-family: "Gantari", Arial, Helvetica, sans-serif;
     --font-gantari: 'Gantari', sans-serif;
     --font-geologica: 'Geologica', sans-serif;
+
+    /* Fixed color palette (non-theme dependent) */
+    --clr-bleu-50: #eef2ff;
+    --clr-bleu-100: #e0e7ff;
+    --clr-bleu-200: #c7d2fe;
+    --clr-bleu-400: #818cf8;
+    --clr-bleu-600: #4f46e5;
+    --clr-bleu-800: #3730a3;
+
+    --clr-green-50: #f0fdf4;
+    --clr-green-100: #dcfce7;
+    --clr-green-200: #bbf7d0;
+    --clr-green-400: #34d399;
+    --clr-green-600: #16a34a;
+    --clr-green-800: #166534;
+
+    --clr-red-50: #fef2f2;
+    --clr-red-100: #fee2e2;
+    --clr-red-200: #fecaca;
+    --clr-red-400: #f87171;
+    --clr-red-600: #dc2626;
+    --clr-red-500: #ef4444;
+    --clr-red-800: #991b1b;
+
+    --clr-gray-50: #f9fafb;
+    --clr-gray-100: #f3f4f6;
+    --clr-gray-200: #e5e7eb;
+    --clr-gray-300: #d1d5db;
+    --clr-gray-400: #9ca3af;
+    --clr-gray-500: #6b7280;
+    --clr-gray-600: #4b5563;
+    --clr-gray-700: #374151;
+    --clr-gray-800: #1f2937;
+    --clr-gray-900: #111827;
+
+    /* Theme-specific variables for LIGHT theme */
+    --light-background: #E9EBDB;
+    --light-deskbackground: #EDEDED;
+    --light-foreground: #171717;
+    --light-beige-foncer: #d5d7c3;
+    --light-gris-clair: #272727;
+    --light-primary: #882626;
+    --light-primary-hover: #ff0000;
+    --light-error-clair: oklch(63.7% 0.237 25.331);
+    --light-light: white;
+    --light-dark: black;
+    --light-light-note: white;
+    --light-text-light-note: oklch(55.1% 0.027 264.364);
+    --light-motif-opacity: 0.03;
+
+    /* Theme-specific variables for DARK "Rouge Crépuscule" theme */
+    --dark-background: #121212;          /* Noir très profond pour le fond */
+    --dark-deskbackground: #1e1e1e;      /* Noir légèrement plus clair pour le bureau */
+    --dark-foreground: #e9eddb;          /* Beige clair pour le texte principal */
+    --dark-beige-foncer: #3a3a3a;        /* Gris foncé pour les éléments secondaires */
+    --dark-gris-clair: #b8b8b8;          /* Gris clair pour les bordures ou textes secondaires */
+    --dark-primary: #882626;             /* Rouge foncé comme couleur principale */
+    --dark-primary-hover: #a83232;       /* Rouge légèrement plus clair au survol */
+    --dark-error-clair: oklch(70% 0.237 25.331); /* Rouge clair pour les erreurs */
+    --dark-light: #0a0a0a;               /* Noir pour les éléments "light" */
+    --dark-dark: #e9eddb;                /* Beige clair pour les éléments "dark" (texte sur fond sombre) */
+    --dark-light-note: #252525;          /* Fond des notes ou zones secondaires */
+    --dark-text-light-note: #c0c0c0;     /* Texte clair sur fond de note */
+    --dark-motif-opacity: 0.02;          /* Opacité subtile pour les motifs */
+    --dark-accent: #5c3a3a;              /* Rouge-brun pour les accents discrets */
+    --dark-shadow: rgba(136, 38, 38, 0.3); /* Ombre douce basée sur le rouge */
+
+    /* Theme-specific variables for BLUE theme */
+    --blue-background: #e0e7ff;
+    --blue-deskbackground: #dbeafe;
+    --blue-foreground: #1e3a8a;
+    --blue-beige-foncer: #c7d2fe;
+    --blue-gris-clair: #3730a3;
+    --blue-primary: #4f46e5;
+    --blue-primary-hover: #4338ca;
+    --blue-error-clair: oklch(63.7% 0.237 25.331);
+    --blue-light: white;
+    --blue-dark: #1e3a8a;
+    --blue-light-note: white;
+    --blue-text-light-note: #312e81;
+    --blue-motif-opacity: 0.03;
+
+    /* Theme-specific variables for GREEN theme */
+    --green-background: #dcfce7;
+    --green-deskbackground: #d1fae5;
+    --green-foreground: #064e3b;
+    --green-beige-foncer: #bbf7d0;
+    --green-gris-clair: #065f46;
+    --green-primary: #16a34a;
+    --green-primary-hover: #15803d;
+    --green-error-clair: oklch(63.7% 0.237 25.331);
+    --green-light: white;
+    --green-dark: #064e3b;
+    --green-light-note: white;
+    --green-text-light-note: #14532d;
+    --green-motif-opacity: 0.03;
+
+    /* Theme-specific variables for PURPLE theme */
+    --purple-background: #f3e8ff;
+    --purple-deskbackground: #fae8ff;
+    --purple-foreground: #581c87;
+    --purple-beige-foncer: #e9d5ff;
+    --purple-gris-clair: #6b21a8;
+    --purple-primary: #9333ea;
+    --purple-primary-hover: #7e22ce;
+    --purple-error-clair: oklch(63.7% 0.237 25.331);
+    --purple-light: white;
+    --purple-dark: #581c87;
+    --purple-light-note: white;
+    --purple-text-light-note: #6b21a8;
+    --purple-motif-opacity: 0.03;
+
+
+    /* Theme-specific variables for Night(blue dark) theme */
+    --night-background: #0f172a;
+    --night-deskbackground: #1e293b;
+    --night-foreground: #e0e7ff;
+    --night-beige-foncer: #1e293b;
+    --night-gris-clair: #c7d2fe;
+    --night-primary: #3142da;
+    --night-primary-hover: #2a2cc4;
+    --night-error-clair: oklch(70% 0.237 25.331);
+    --night-light: #1e293b;
+    --night-dark: #e0e7ff;
+    --night-light-note: #1e293b;
+    --night-text-light-note: #c7d2fe;
+    --night-motif-opacity: 0.01;
+
+  }
+
+  /* Apply theme variables based on body class - DEFAULT: light */
+  body,
+  body.light {
+    --background: var(--light-background);
+    --deskbackground: var(--light-deskbackground);
+    --foreground: var(--light-foreground);
+    --beige-foncer: var(--light-beige-foncer);
+    --clr-beige-foncer: var(--light-beige-foncer);
+    --gris-clair: var(--light-gris-clair);
+    --clr-gris-clair: var(--light-gris-clair);
+    --primary: var(--light-primary);
+    --primary-hover: var(--light-primary-hover);
+    --clr-error-600: var(--light-primary);
+    --error-600: var(--light-primary);
+    --error-clair: var(--light-error-clair);
+    --light: var(--light-light);
+    --dark: var(--light-dark);
+    --light-note: var(--light-light-note);
+    --lightNote: var(--light-light-note);
+    --text-light-note: var(--light-text-light-note);
+    --textlightNote: var(--light-text-light-note);
+    --motif-opacity: var(--light-motif-opacity);
+  }
+
+  body.dark {
+    --background: var(--dark-background);
+    --deskbackground: var(--dark-deskbackground);
+    --foreground: var(--dark-foreground);
+    --beige-foncer: var(--dark-beige-foncer);
+    --clr-beige-foncer: var(--dark-beige-foncer);
+    --gris-clair: var(--dark-gris-clair);
+    --clr-gris-clair: var(--dark-gris-clair);
+    --primary: var(--dark-primary);
+    --primary-hover: var(--dark-primary-hover);
+    --clr-error-600: var(--dark-primary);
+    --error-600: var(--dark-primary);
+    --error-clair: var(--dark-error-clair);
+    --light: var(--dark-light);
+    --dark: var(--dark-dark);
+    --light-note: var(--dark-light-note);
+    --lightNote: var(--dark-light-note);
+    --text-light-note: var(--dark-text-light-note);
+    --textlightNote: var(--dark-text-light-note);
+    --motif-opacity: var(--dark-motif-opacity);
+  }
+
+  body.blue {
+    --background: var(--blue-background);
+    --deskbackground: var(--blue-deskbackground);
+    --foreground: var(--blue-foreground);
+    --beige-foncer: var(--blue-beige-foncer);
+    --clr-beige-foncer: var(--blue-beige-foncer);
+    --gris-clair: var(--blue-gris-clair);
+    --clr-gris-clair: var(--blue-gris-clair);
+    --primary: var(--blue-primary);
+    --primary-hover: var(--blue-primary-hover);
+    --clr-error-600: var(--blue-primary);
+    --error-600: var(--blue-primary);
+    --error-clair: var(--blue-error-clair);
+    --light: var(--blue-light);
+    --dark: var(--blue-dark);
+    --light-note: var(--blue-light-note);
+    --lightNote: var(--blue-light-note);
+    --text-light-note: var(--blue-text-light-note);
+    --textlightNote: var(--blue-text-light-note);
+    --motif-opacity: var(--blue-motif-opacity);
+  }
+
+  body.green {
+    --background: var(--green-background);
+    --deskbackground: var(--green-deskbackground);
+    --foreground: var(--green-foreground);
+    --beige-foncer: var(--green-beige-foncer);
+    --clr-beige-foncer: var(--green-beige-foncer);
+    --gris-clair: var(--green-gris-clair);
+    --clr-gris-clair: var(--green-gris-clair);
+    --primary: var(--green-primary);
+    --primary-hover: var(--green-primary-hover);
+    --clr-error-600: var(--green-primary);
+    --error-600: var(--green-primary);
+    --error-clair: var(--green-error-clair);
+    --light: var(--green-light);
+    --dark: var(--green-dark);
+    --light-note: var(--green-light-note);
+    --lightNote: var(--green-light-note);
+    --text-light-note: var(--green-text-light-note);
+    --textlightNote: var(--green-text-light-note);
+    --motif-opacity: var(--green-motif-opacity);
+  }
+
+  body.purple {
+    --background: var(--purple-background);
+    --deskbackground: var(--purple-deskbackground);
+    --foreground: var(--purple-foreground);
+    --beige-foncer: var(--purple-beige-foncer);
+    --clr-beige-foncer: var(--purple-beige-foncer);
+    --gris-clair: var(--purple-gris-clair);
+    --clr-gris-clair: var(--purple-gris-clair);
+    --primary: var(--purple-primary);
+    --primary-hover: var(--purple-primary-hover);
+    --clr-error-600: var(--purple-primary);
+    --error-600: var(--purple-primary);
+    --error-clair: var(--purple-error-clair);
+    --light: var(--purple-light);
+    --dark: var(--purple-dark);
+    --light-note: var(--purple-light-note);
+    --lightNote: var(--purple-light-note);
+    --text-light-note: var(--purple-text-light-note);
+    --textlightNote: var(--purple-text-light-note);
+    --motif-opacity: var(--purple-motif-opacity);
+  }
+
+  body.night {
+    --background: var(--night-background);
+    --deskbackground: var(--night-deskbackground);
+    --foreground: var(--night-foreground);
+    --beige-foncer: var(--night-beige-foncer);
+    --clr-beige-foncer: var(--night-beige-foncer);
+    --gris-clair: var(--night-gris-clair);
+    --clr-gris-clair: var(--night-gris-clair);
+    --primary: var(--night-primary);
+    --primary-hover: var(--night-primary-hover);
+    --clr-error-600: var(--night-primary);
+    --error-600: var(--night-primary);
+    --error-clair: var(--night-error-clair);
+    --light: var(--night-light);
+    --dark: var(--night-dark);
+    --light-note: var(--night-light-note);
+    --lightNote: var(--night-light-note);
+    --text-light-note: var(--night-text-light-note);
+    --textlightNote: var(--night-text-light-note);
+    --motif-opacity: var(--night-motif-opacity);
   }
 
   body {
     color: var(--foreground);
     font-family: var(--font-gant);
     position: relative;
+    background-color: var(--background);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   body::before {
@@ -42,9 +291,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: var(--motif-opacity);
+    opacity: var(--motif-opacity, 0.03);
     pointer-events: none;
     z-index: -1;
+    transition: opacity 0.3s ease;
   }
 
   button {
@@ -57,40 +307,121 @@
 }
 
 @theme inline {
+  /* Couleurs de base adaptées au thème */
   --color-background: var(--background);
   --color-deskbackground: var(--deskbackground);
-  --color-beige-foncer: var(--clr-beige-foncer);
+  --color-beige-foncer: var(--beige-foncer);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-gantari);
   --font-mono: var(--font-geist-mono);
 
-  --color-primary: var(--rouge-fonce);
-  --color-primary-hover: var(--rouge-hover);
-  --color-rouge-hover: var(--rouge-hover);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-element: var(--gris-clair);
-  --color-rouge-clair: var(--rouge-clair);
+  --color-error-clair: var(--error-clair);
   --color-gris-clair: var(--clr-gris-clair);  
 
   --font-geo: var(--font-geologica);
   --font-gant: var(--font-gantari);
   --font-title: var(--font-title);
 
+  /* Variables de couleur thématiques */
   --color-clrprincipal: var(--dark);
   --color-clrsecondaire: var(--light);
-  --color-fondcardNote: var(--lightNote);
-  --color-textcardNote: var(--textlightNote);
+  --color-fondcardNote: var(--light-note);
+  --color-textcardNote: var(--text-light-note);
+  --color-fondpage: var(--background);
+
+  --color-info-50: var(--clr-bleu-50);
+  --color-info-100: var(--clr-bleu-100);
+  --color-info-200: var(--clr-bleu-200);
+  --color-info-400: var(--clr-bleu-400);
+  --color-info-600: var(--clr-bleu-600);
+  --color-info-800: var(--clr-bleu-800);
+
+  --color-success-50: var(--clr-green-50);
+  --color-success-100: var(--clr-green-100);
+  --color-success-200: var(--clr-green-200);
+  --color-success-400: var(--clr-green-400);
+  --color-success-600: var(--clr-green-600);
+  --color-success-800: var(--clr-green-800);
+
+  --color-dangerous-50: var(--clr-red-50);
+  --color-dangerous-100: var(--clr-red-100);
+  --color-dangerous-200: var(--clr-red-200);
+  --color-dangerous-400: var(--clr-red-400);
+  --color-dangerous-500: var(--clr-red-500);
+  --color-dangerous-600: var(--clr-red-600);
+  --color-dangerous-800: var(--clr-red-800);
+
+  --color-gray-50: var(--clr-gray-50);
+  --color-gray-100: var(--clr-gray-100);
+  --color-gray-200: var(--clr-gray-200);
+  --color-gray-300: var(--clr-gray-300);
+  --color-gray-400: var(--clr-gray-400);
+  --color-gray-500: var(--clr-gray-500);
+  --color-gray-600: var(--clr-gray-600);
+  --color-gray-700: var(--clr-gray-700);
+  --color-gray-800: var(--clr-gray-800);
+  --color-gray-900: var(--clr-gray-900);
+
+  /* Couleur pour le thème violet */
+  --color-purple-600: #9333ea;
+  --color-purple-700: #7e22ce;
+  --color-purple-800: #6b21a8;
 }
 
+/* Support des transitions pour le changement de thème */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #2f2f2f;
-    --deskbackground: #474747;
-    --clr-beige-foncer: #1d1d1d;
-    --light: black;
-    --dark:white;
-    --motif-opacity: 0.01;
-    --lightNote: #1e1e1e;
-    --textlightNote: white;
+/* Exception pour les éléments qui ne doivent pas avoir de transition */
+input, textarea, select, [role="button"], button {
+  transition-property: none;
+}
+
+/* Les thèmes sont maintenant gérés dynamiquement par le hook useTheme 
+   et appliqués via JavaScript pour plus de flexibilité */
+
+/* Style pour les menus contextuels compacts */
+.context-menu-compact {
+  animation: context-menu-appear 0.15s ease-out;
+}
+
+/* Appliquer la taille réduite uniquement au menu contextuel (pas aux modals de confirmation) */
+.context-menu-compact > div:not([class*="inset-0"]):not([class*="bg-black"]) {
+  min-width: 240px !important;
+  max-width: 280px !important;
+  width: auto !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Réduire les paddings dans le menu contextuel uniquement */
+.context-menu-compact > div:not([class*="inset-0"]) button {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+}
+
+.context-menu-compact > div:not([class*="inset-0"]) .p-4 {
+  padding: 0.75rem !important;
+}
+
+.context-menu-compact > div:not([class*="inset-0"]) h3 {
+  font-size: 1rem !important;
+}
+
+/* Animation d'apparition */
+@keyframes context-menu-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
   }
-}    */
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+

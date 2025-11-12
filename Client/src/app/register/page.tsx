@@ -11,7 +11,7 @@ export default function Register() {
   const router = useRouter();
 
   return (
-    <div className="h-full p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal">
+    <div className="h-full p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal md:">
       <MobileFlashNoteButton />
       <ReturnButton />
 
@@ -36,7 +36,7 @@ export default function Register() {
 
        <div className="flex items-center w-full gap-4">
           <div className="flex-1 h-px bg-gray-300"></div>
-          <p className="text-gray-500 text-sm font-normal font-gant">ou</p>
+          <p className="text-gray-100 text-sm font-normal font-gant">ou</p>
           <div className="flex-1 h-px bg-gray-300"></div>
         </div>
 
@@ -49,7 +49,7 @@ export default function Register() {
         </p>
         <button
           onClick={() => router.push("/login")}
-          className="text-center justify-center text-rouge-clair hover:text-primary-hover active:text-primary-hover text-lg font-normal font-gant cursor-pointer"
+          className="text-center justify-center text-dangerous-600 hover:text-primary-hover active:text-primary-hover text-lg font-normal font-gant cursor-pointer"
         >
           Connectez-vous
         </button>
