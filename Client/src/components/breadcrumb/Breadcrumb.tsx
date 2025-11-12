@@ -40,6 +40,10 @@ export default function Breadcrumb() {
   // Détecter si on est sur Flash Note
   const isFlashNote = pathname === '/flashnote';
 
+  // Indicateur pour cacher le breadcrumb sur certaines routes (on effectuera le return
+  // après l'exécution des hooks pour respecter les règles des hooks React)
+  const shouldHideBreadcrumb = pathname === '/' || pathname === '/login' || pathname === '/register';
+
   // Extraire l'ID de la note depuis l'URL
   const extractNoteId = (): string | null => {
     const segments = pathname.split('/').filter(Boolean);
@@ -231,7 +235,6 @@ export default function Breadcrumb() {
         // Avec y-websocket, la synchronisation du titre se fait automatiquement via le document YJS
         // Plus besoin d'émettre manuellement via Socket.IO
         
-        setSuccess('Titre synchronisé');
         setTimeout(() => setSuccess(null), 2000);
 
         // Émettre un événement pour synchroniser avec la page de note
@@ -314,7 +317,7 @@ export default function Breadcrumb() {
     const segments = pathname.split('/').filter(Boolean);
 
     if (pathname === '/' || pathname === '/login' || pathname === '/register') {
-      return [{ label: 'Accueil', isActive: true }];
+      return [];
     }
 
     if (pathname === '/notes') {
@@ -386,6 +389,11 @@ export default function Breadcrumb() {
   };
 
   const breadcrumbs = generateBreadcrumbs();
+
+  // Respecter shouldHideBreadcrumb maintenant que tous les hooks ont été exécutés
+  if (shouldHideBreadcrumb) {
+    return null;
+  }
 
   return (
     <>

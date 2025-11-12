@@ -342,24 +342,29 @@ export const noteController = {
 
     // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
-    if (!Titre || !Content) {
-      
-      return res.status(400).json({ message: "Champs requis manquants" });
-    }
-
-    if (Titre === "") {
-      Titre = "Sans titre";
+    // ✅ CORRECTION: Permettre les mises à jour partielles (titre OU contenu)
+    if (!Titre && !Content) {
+      return res.status(400).json({ message: "Au moins un champ doit être fourni (Titre ou Content)" });
     }
 
     try {
+      // Préparer l'objet de mise à jour avec seulement les champs fournis
+      const updateData = {
+        ModifiedAt: new Date(),
+        modifierId: parseInt(userId), // Enregistre le dernier modificateur
+      };
+
+      if (Titre !== undefined) {
+        updateData.Titre = Titre === "" ? "Sans titre" : Titre;
+      }
+
+      if (Content !== undefined) {
+        updateData.Content = Content;
+      }
+
       const note = await prisma.note.update({
         where: { id: id },
-        data: {
-          Titre,
-          Content,
-          ModifiedAt: new Date(),
-          modifierId: parseInt(userId), // Enregistre le dernier modificateur
-        },
+        data: updateData,
       });
       
       res.status(200).json({ message: "Note mise à jour avec succès", note });
@@ -926,22 +931,31 @@ export const noteController = {
    */
   syncNoteState: async (req, res) => {
     const { id } = req.params;
-    const { yjsState, Content } = req.body;
+    const { yjsState, Content, Titre } = req.body;
     const { userId } = req.session;
 
     try {
       // Convertir le tableau d'octets en Buffer si nécessaire
       const yjsBuffer = yjsState ? Buffer.from(yjsState) : null;
 
+      // Préparer les données à mettre à jour
+      const updateData = {
+        yjsState: yjsBuffer,
+        Content: Content,
+        ModifiedAt: new Date(),
+        modifierId: userId,
+      };
+
+      // Ajouter le titre s'il est fourni
+      if (Titre !== undefined) {
+        updateData.Titre = Titre;
+        console.log(`📝 [syncNoteState] Mise à jour titre: "${Titre}"`);
+      }
+
       // Mettre à jour la note avec le nouvel état YJS et le contenu
       const updatedNote = await prisma.note.update({
         where: { id },
-        data: {
-          yjsState: yjsBuffer,
-          Content: Content,
-          ModifiedAt: new Date(),
-          modifierId: userId,
-        },
+        data: updateData,
       });
 
       res.status(200).json({ 
