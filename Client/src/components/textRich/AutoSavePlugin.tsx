@@ -64,15 +64,13 @@ export function AutoSavePlugin({
       const contentJSON = editorState.toJSON();
       const contentString = JSON.stringify(contentJSON);
 
-      console.log(`💾 [AutoSave] Sauvegarde du contenu pour note ${noteId} (${contentString.length} caractères)`);
-
       // Appel API pour sauvegarder
       const success = await SaveNote(noteId, {
         Content: contentString,
       });
 
       if (success) {
-        console.log(`✅ [AutoSave] Sauvegarde réussie pour note ${noteId}`);
+        
         onSaveSuccess?.();
       } else {
         throw new Error('Échec de la sauvegarde');
@@ -89,8 +87,6 @@ export function AutoSavePlugin({
   useEffect(() => {
     if (isReadOnly) return;
 
-    console.log(`🔌 [AutoSave] Plugin initialisé pour note ${noteId}`);
-
     const removeListener = editor.registerUpdateListener(({ editorState, tags }: { editorState: EditorState; tags: Set<string> }) => {
       // Ignorer les updates provenant de la collaboration YJS
       // (ces updates sont déjà synchronisés, pas besoin de sauvegarder)
@@ -103,8 +99,6 @@ export function AutoSavePlugin({
       if (tags.has('restore-selection')) {
         return;
       }
-
-      console.log(`✏️ [AutoSave] Changement détecté, programmation sauvegarde dans ${debounceMs}ms`);
 
       // Annuler le timer précédent
       if (saveTimer) {
@@ -121,7 +115,7 @@ export function AutoSavePlugin({
 
     // Cleanup
     return () => {
-      console.log(`🧹 [AutoSave] Nettoyage plugin pour note ${noteId}`);
+      
       removeListener();
       if (saveTimer) {
         clearTimeout(saveTimer);

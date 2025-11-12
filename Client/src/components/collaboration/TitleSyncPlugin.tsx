@@ -44,11 +44,9 @@ export function TitleSyncPlugin({
     // Créer ou récupérer la map "metadata" qui contient le titre
     const metadata = ydoc.getMap('metadata');
 
-    console.log('✅ [TitleSync] Plugin initialisé pour note', noteId);
-
     // Initialiser le titre dans YJS si nécessaire (au premier chargement)
     if (!isInitializedRef.current && !metadata.has('title') && title) {
-      console.log('🔄 [TitleSync] Initialisation du titre dans YJS:', title);
+      
       metadata.set('title', title);
       lastLocalTitleRef.current = title;
       isInitializedRef.current = true;
@@ -59,10 +57,9 @@ export function TitleSyncPlugin({
       // Vérifier si la clé 'title' a changé
       if (event.keysChanged.has('title')) {
         const remoteTitle = metadata.get('title') as string | undefined;
-        console.log('📥 [TitleSync] Changement détecté dans YJS. Titre distant:', remoteTitle, 'Titre local:', lastLocalTitleRef.current);
-        
+
         if (remoteTitle !== undefined && remoteTitle !== lastLocalTitleRef.current) {
-          console.log('✅ [TitleSync] Mise à jour du titre depuis YJS:', remoteTitle);
+          
           lastLocalTitleRef.current = remoteTitle;
           onTitleChange(remoteTitle);
           titleChangedRef.current = true; // Marquer pour sauvegarde DB
@@ -74,7 +71,7 @@ export function TitleSyncPlugin({
 
     return () => {
       metadata.unobserve(observer);
-      console.log('🛑 [TitleSync] Plugin nettoyé');
+      
     };
   }, [noteId, onTitleChange]); // Retirer 'title' des dépendances
 
@@ -94,7 +91,7 @@ export function TitleSyncPlugin({
 
     // Mettre à jour YJS seulement si le titre a vraiment changé
     if (currentYjsTitle !== title) {
-      console.log('📤 [TitleSync] Mise à jour du titre dans YJS:', title);
+      
       lastLocalTitleRef.current = title; // Mettre à jour la ref pour éviter le rebond
       metadata.set('title', title);
       titleChangedRef.current = true;
@@ -130,7 +127,7 @@ export function TitleSyncPlugin({
         });
 
         if (response.ok) {
-          console.log('✅ [TitleSync] Titre sauvegardé en DB:', currentTitle);
+          
           lastSyncRef.current = now;
           titleChangedRef.current = false;
           
