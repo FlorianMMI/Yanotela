@@ -28,8 +28,6 @@ import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TitleSyncPlugin } from '@/components/collaboration/TitleSyncPlugin';
-import { $createImageNode } from '@/components/flashnote/ImageNode';
-import { $insertNodes, $getSelection, $isRangeSelection } from 'lexical';
 import '@/components/textRich/EditorStyles.css';
 
 const theme = {
@@ -80,51 +78,6 @@ function OnChangeBehavior({ onContentChange }: { noteId: string, onContentChange
 
   return null;
 }
-
-/**
- * Plugin pour insérer des images de dessin dans l'éditeur
- */
-function DrawingInsertPlugin({ 
-  onDrawingInsertRequest 
-}: { 
-  onDrawingInsertRequest: (callback: (data: DrawingData) => void) => void 
-}) {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    // Exposer une fonction pour insérer l'image
-    const insertDrawing = (drawingData: DrawingData) => {
-      editor.update(() => {
-        const imageNode = $createImageNode({
-          src: drawingData.dataUrl,
-          altText: 'Dessin',
-          width: drawingData.width,
-          height: drawingData.height,
-        });
-
-        const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          // Insérer à la position du curseur
-          $insertNodes([imageNode]);
-        } else {
-          // Insérer à la fin si pas de sélection
-          const root = editor.getEditorState()._nodeMap.get('root');
-          if (root) {
-            $insertNodes([imageNode]);
-          }
-        }
-
-        console.log('🎨 [Drawing] Image insérée dans l\'éditeur via YJS');
-      });
-    };
-
-    // Exposer la fonction au parent via callback
-    onDrawingInsertRequest(insertDrawing);
-  }, [editor, onDrawingInsertRequest]);
-
-  return null;
-}
-
 function YjsSyncPlugin({ 
   noteId, 
   isReadOnly
@@ -257,9 +210,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [showNoteMore, setShowNoteMore] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
-  
-  // État pour le contenu initial de la note (pour bootstrapping)
-  const [initialEditorContent, setInitialEditorContent] = useState<string | null>(null);
 
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
@@ -275,9 +225,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [userProfile, setUserProfile] = useState({ name: 'Anonyme', color: '#FF5733' });
   const containerRef = useRef<HTMLDivElement | null>(null);
   const editorContentRef = useRef<HTMLDivElement | null>(null); // Ref pour le ContentEditable (export PDF)
-  
-  // Ref pour la fonction d'insertion de dessin
-  const drawingInsertCallbackRef = useRef<((data: DrawingData) => void) | null>(null);
 
   // ✅ Provider factory pour CollaborationPlugin
   const providerFactory = useCallback(
@@ -329,10 +276,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // Référence à l'éditeur Lexical
   const [editor, setEditor] = useState<LexicalEditor | null>(null);
 
-  // Référence à l'éditeur Lexical
-  const [editor, setEditor] = useState<LexicalEditor | null>(null);
-
-  // Gestion du dessin - insérer via Lexical/YJS
+  // Gestion du dessin
   const handleDrawingSave = useCallback((drawingData: DrawingData) => {
     console.log('🎨 Sauvegarde du dessin dans la note', drawingData);
     
@@ -523,12 +467,12 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     <div className="flex flex-col gap-4 w-full h-full">
       {/* Notifications */}
       {success && (
-        <div className="fixed top-4 right-4 z-50 bg-success-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
           {success}
         </div>
       )}
       {error && (
-        <div className="fixed top-4 right-4 z-50 bg-dangerous-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
           {error}
         </div>
       )}
