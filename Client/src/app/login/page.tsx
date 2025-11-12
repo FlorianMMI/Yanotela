@@ -12,17 +12,28 @@ function LoginContent() {
   const [urlError, setUrlError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Récupérer l'erreur depuis l'URL (si elle existe)
-    const error = searchParams.get('error');
-    if (error) {
-      setUrlError(decodeURIComponent(error));
-      
-      // Nettoyer l'URL après avoir récupéré l'erreur
-      const url = new URL(window.location.href);
-      url.searchParams.delete('error');
-      window.history.replaceState({}, '', url.toString());
-    }
-  }, [searchParams]);
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('https://yanotela.fr/api/auth/check', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+
+          // Vérifier les deux formats possibles de la réponse
+          if (data.authenticated || data.isAuthenticated) {
+            router.push('/notes');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification d\'authentification:', error);
+      } finally {
+        setIsChecking(false);
+      }
+    };
 
   const handleLoginSuccess = () => {
     // Utiliser replace pour forcer la navigation sans garder l'historique

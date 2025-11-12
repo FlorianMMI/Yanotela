@@ -758,8 +758,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   useEffect(() => {
     async function fetchUserInfo() {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://yanotela.fr";
         const response = await fetch(`${API_URL}/auth/check`, {
           credentials: "include",
         });
