@@ -20,7 +20,7 @@ export default function SaveFlashNoteButton({
   disabled
 }: SaveFlashNoteButtonProps) {
   const router = useRouter();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [showSavePopup, setShowSavePopup] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [saveTitle, setSaveTitle] = useState('');

@@ -9,7 +9,6 @@ import { GetNoteById, GetFolderById, UpdateFolder } from '@/loader/loader';
 import NoteMore from '@/components/noteMore/NoteMore';
 import FolderMore from '@/components/folderMore/FolderMore';
 import Icons from '@/ui/Icon';
-import { socketService } from '@/services/socketService';
 import { useRouter } from 'next/navigation';
 import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 import ConnectedUsers from '../collaboration/ConnectedUsers';
@@ -57,7 +56,7 @@ export default function Breadcrumb() {
   // Extraire l'ID du dossier depuis l'URL
   const extractFolderId = (): string | null => {
     const segments = pathname.split('/').filter(Boolean);
-    if (pathname.startsWith('/folder/') && segments.length > 1) {
+    if (pathname.startsWith('/dossiers/') && segments.length > 1) {
       return segments[1];
     }
     return null;
@@ -233,10 +232,9 @@ export default function Breadcrumb() {
       setTempTitle(newTitle);
 
       try {
-        // Émettre la mise à jour via WebSocket (synchronisation temps réel)
-        socketService.emitTitleUpdate(noteId, newTitle);
-
-        // Notification de succès (optionnelle, peut être retirée car le WebSocket est instantané)
+        // Avec y-websocket, la synchronisation du titre se fait automatiquement via le document YJS
+        // Plus besoin d'émettre manuellement via Socket.IO
+        
         setSuccess('Titre synchronisé');
         setTimeout(() => setSuccess(null), 2000);
 
@@ -339,16 +337,16 @@ export default function Breadcrumb() {
       ];
     }
 
-    if (pathname === '/folder') {
+    if (pathname === '/dossiers') {
       return [
         { label: 'Mes Dossiers', isActive: true },
       ];
     }
 
-    if (pathname.startsWith('/folder/') && segments.length > 1) {
+    if (pathname.startsWith('/dossiers/') && segments.length > 1) {
       const displayName = folderName || 'Dossier';
       return [
-        { label: 'Mes Dossiers', href: '/folder' },
+        { label: 'Mes Dossiers', href: '/dossiers' },
         { label: displayName, isActive: true, isNoteTitle: true }, // Marquer comme éditable
       ];
     }
@@ -468,7 +466,7 @@ export default function Breadcrumb() {
             if (pathname.includes('/notes')) {
               return <Icon name="docs" size={20} strokeWidth={12} className="text-primary" />;
             }
-            if (pathname.includes('/folder')) {
+            if (pathname.includes('/dossiers')) {
               return <Icon name="folder" size={20} className="text-primary" />;
             }
             if (pathname.includes('/profil')) {
@@ -576,14 +574,14 @@ export default function Breadcrumb() {
                             folderColor={folderData.CouleurTag || "#882626"}
                             noteCount={folderData.noteCount || 0}
                             onUpdate={async (name: string, description: string, color: string) => {
-                              // La mise à jour sera gérée par la page folder/[id]
+                              // La mise à jour sera gérée par la page dossiers/[id]
                               // On émet juste un événement pour synchroniser
                               window.dispatchEvent(new CustomEvent('folderUpdateRequested', {
                                 detail: { folderId, name, description, color }
                               }));
                             }}
                             onDelete={() => {
-                              // La suppression sera gérée par la page folder/[id]
+                              // La suppression sera gérée par la page dossiers/[id]
                               window.dispatchEvent(new CustomEvent('folderDeleteRequested', {
                                 detail: { folderId }
                               }));
@@ -613,7 +611,7 @@ export default function Breadcrumb() {
             <div className="absolute right-4 top-2 hidden md:block">
               <SaveFlashNoteButton 
                 currentTitle={noteTitle}
-                className="!text-sm"
+                className="text-sm!"
               />
             </div>
           )}

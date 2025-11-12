@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
 import NoteList from "@/components/noteList/NoteList";
@@ -19,7 +18,6 @@ interface FolderDetailProps {
 }
 
 export default function FolderDetail({ params }: FolderDetailProps) {
-    const { isAuthenticated, loading: authLoading } = useAuthRedirect();
     const router = useRouter();
     const { id } = use(params);
 
@@ -110,7 +108,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const handleDeleteFolder = () => {
         // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
         // Rediriger vers la liste des dossiers
-        router.push("/folder");
+        router.push("/dossiers");
     };
 
     const handleCreateNote = async () => {
@@ -138,7 +136,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-element text-lg mb-4">Dossier introuvable</p>
                 <button
-                    onClick={() => router.push("/folder")}
+                    onClick={() => router.push("/dossiers")}
                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90"
                 >
                     Retour aux dossiers

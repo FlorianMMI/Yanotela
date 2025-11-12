@@ -64,7 +64,7 @@ export default function FlashNoteEditor() {
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editor, setEditor] = useState<any>(null);
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
 
   // États pour les notifications

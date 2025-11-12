@@ -4,7 +4,7 @@ import { sendValidationEmail, sendResetPasswordEmail } from "../services/emailSe
 
 const prisma = new PrismaClient();
 import crypto from "crypto";
-import { body, validationResult } from "express-validator";
+import { body, check, validationResult } from "express-validator";
 
 const validateRegistration = [
   body("pseudo")
@@ -34,7 +34,13 @@ const register = async (req, res) => {
     });
   }
 
-  const { firstName, lastName, pseudo, email, password } = req.body;
+  const { firstName, lastName, pseudo, email, password, checkedCGU } = req.body;
+
+  if (!checkedCGU) {
+    return res.status(500).json({
+      error: "Erreur lors de la création de votre compte."
+    });
+  }
 
   try {
     let existing = await prisma.user.findUnique({ where: { email } });
@@ -93,12 +99,11 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { identifiant, password } = req.body;
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
   
   // Vérifier que les données sont présentes
   if (!identifiant || !password) {
-    return res.status(400).json({
-      error: "Identifiant et mot de passe requis"
-    });
+    return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Identifiant et mot de passe requis')}`);
   }
 
   try {
@@ -111,9 +116,7 @@ const login = async (req, res) => {
     const user = userByPseudo || userByEmail;
     const ok = user ? await bcrypt.compare(password, user.password) : false;
     if (!user || !ok) {
-      return res.status(401).json({
-        error: "Utilisateur ou mot de passe incorrect"
-      });
+      return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Utilisateur ou mot de passe incorrect')}`);
     }
 
     if (!user.is_verified) {
@@ -131,14 +134,10 @@ const login = async (req, res) => {
         // Envoyer l'email de validation
         await sendValidationEmail(user.email, validationToken);
         
-        return res.status(401).json({
-          error: "Compte non activé. Un nouvel email de validation vient d'être envoyé à votre adresse email."
-        });
+        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Compte non activé. Un nouvel email de validation vient d\'être envoyé à votre adresse email.')}`);
       } catch (emailError) {
         console.error("Erreur lors de l'envoi de l'email de validation:", emailError);
-        return res.status(401).json({
-          error: "Utilisateur ou mot de passe incorrect"
-        });
+        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Utilisateur ou mot de passe incorrect')}`);
       }
     }
 
@@ -149,21 +148,13 @@ const login = async (req, res) => {
       const now = new Date();
       
       if (now > expirationDate) {
-        return res.status(410).json({
-          error: "Votre compte a expiré et sera supprimé définitivement. Vous ne pouvez plus vous connecter.",
-          accountExpired: true
-        });
+        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Votre compte a expiré et sera supprimé définitivement. Vous ne pouvez plus vous connecter.')}`);
       } else {
         // Le compte est en attente de suppression, calculer le temps restant
         const timeRemaining = expirationDate - now;
         const secondsRemaining = Math.ceil(timeRemaining / 1000);
         
-        return res.status(403).json({
-          error: `Votre compte sera supprimé dans ${secondsRemaining} seconde${secondsRemaining > 1 ? 's' : ''}. Contactez le support pour annuler.`,
-          accountScheduledForDeletion: true,
-          deletedAt: user.deleted_at,
-          secondsRemaining: secondsRemaining
-        });
+        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(`Votre compte sera supprimé dans ${secondsRemaining} seconde${secondsRemaining > 1 ? 's' : ''}. Contactez le support pour annuler.`)}`);
       }
     }
 
@@ -171,20 +162,14 @@ const login = async (req, res) => {
     req.session.pseudo = user.pseudo;
     await req.session.save();
     
-    return res.json({
-      success: true,
-      user: {
-        id: user.id,
-        pseudo: user.pseudo,
-        email: user.email
-      }
-    });
+    // Redirection vers le client après authentification (même comportement que Google Auth)
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    
+    return res.redirect(`${clientUrl}/notes`);
   } catch (err) {
     console.error("Erreur connexion", err);
-    return res.status(500).json({
-      error: "Erreur serveur",
-      details: err.message
-    });
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Erreur serveur lors de la connexion')}`);
   }
 };
 

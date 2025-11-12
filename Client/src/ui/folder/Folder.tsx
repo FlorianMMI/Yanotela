@@ -28,7 +28,7 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
       e.preventDefault();
       return;
     }
-    router.push(`/folder/${folder.id}`);
+    router.push(`/dossiers/${folder.id}`);
   };
 
   const openContextMenu = (clientX: number, clientY: number) => {

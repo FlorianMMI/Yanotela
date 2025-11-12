@@ -1,7 +1,8 @@
 "use client";
 
 import { $getRoot, EditorState, $getSelection, $isRangeSelection, LexicalEditor } from "lexical";
-import React, { useEffect, useState, use, useCallback } from "react";
+import ExportPDFButton from "@/ui/exportpdfbutton";
+import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -17,6 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { $createImageNode } from "@/components/flashnote/ImageNode";
 import { $insertNodes } from "lexical";
+import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
@@ -75,6 +77,102 @@ function OnChangeBehavior({ onContentChange }: { noteId: string, onContentChange
 
   return null;
 }
+function YjsSyncPlugin({ noteId, isReadOnly }: { noteId: string, isReadOnly: boolean }) {
+  const [editor] = useLexicalComposerContext();
+  const lastSyncRef = useRef<number>(0);
+  const hasChangesRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (isReadOnly) {
+      console.log('🔒 [YjsSync] Mode lecture seule, sync désactivé');
+      return;
+    }
+
+    console.log('✅ [YjsSync] Plugin initialisé pour note', noteId);
+
+    // Marquer qu'il y a eu des changements à chaque update
+    const unregister = editor.registerUpdateListener(() => {
+      hasChangesRef.current = true;
+      console.log('📝 [YjsSync] Changement détecté');
+    });
+
+    // Sync automatique toutes les 2 secondes si changements
+    const syncInterval = setInterval(async () => {
+      if (!hasChangesRef.current) return;
+      
+      const now = Date.now();
+      if (now - lastSyncRef.current < 2000) return; // Throttle minimum 2s
+
+      try {
+        // Importer la map globale des documents YJS
+        const { yjsDocuments } = await import('@/collaboration/providers');
+        const ydoc = yjsDocuments.get(noteId);
+        
+        if (!ydoc) {
+          console.warn('⚠️ [YjsSync] Y.Doc non trouvé pour', noteId);
+          return;
+        }
+
+        // Encoder l'état YJS en Uint8Array
+        const yjsState = Y.encodeStateAsUpdate(ydoc);
+        console.log('📦 [YjsSync] yjsState encodé:', yjsState.length, 'octets');
+        
+        // Récupérer le contenu Lexical JSON
+        const lexicalJSON = editor.getEditorState().toJSON();
+        const Content = JSON.stringify(lexicalJSON);
+        console.log('📄 [YjsSync] Content JSON:', Content.substring(0, 100) + '...');
+
+        // Envoyer au serveur
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        console.log('🚀 [YjsSync] Envoi vers', `${API_URL}/note/sync/${noteId}`);
+        
+        const response = await fetch(`${API_URL}/note/sync/${noteId}`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            yjsState: Array.from(yjsState), // Uint8Array → Array pour JSON
+            Content: Content
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ [YjsSync] Synchronisé avec DB, ModifiedAt:', data.ModifiedAt);
+          lastSyncRef.current = now;
+          hasChangesRef.current = false;
+        } else {
+          console.error('❌ [YjsSync] Erreur HTTP', response.status, await response.text());
+        }
+      } catch (error) {
+        console.error('❌ [YjsSync] Erreur:', error);
+      }
+    }, 2000);
+
+    return () => {
+      console.log('🛑 [YjsSync] Plugin nettoyé');
+      clearInterval(syncInterval);
+      unregister();
+    };
+  }, [editor, noteId, isReadOnly]);
+
+  return null;
+}
+
+function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    // Mettre à jour l'état readonly de l'éditeur
+    editor.setEditable(!isReadOnly);
+    
+    if (isReadOnly) {
+      console.log('🔒 [ReadOnly] Éditeur verrouillé');
+    }
+  }, [editor, isReadOnly]);
+
+  return null;
+}
 
 /**
  * Plugin pour enregistrer l'éditeur dans le state parent
@@ -114,10 +212,28 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
   // ✅ État initial de l'éditeur (chargé depuis la DB)
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
+  
+  // ✅ NOUVEAU: State pour profil utilisateur (utilisé par CollaborationPlugin)
+  const [userProfile, setUserProfile] = useState({ name: 'Anonyme', color: '#FF5733' });
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const editorContentRef = useRef<HTMLDivElement | null>(null); // Ref pour le ContentEditable (export PDF)
+
+  // ✅ Provider factory pour CollaborationPlugin
+  const providerFactory = useCallback(
+    (docId: string, yjsDocMap: Map<string, Y.Doc>) => {
+      
+      return createWebsocketProvider(docId, yjsDocMap);
+    },
+    []
+  );
 
   // Sauvegarde HTTP debounced du titre
   const debouncedSaveTitle = useDebouncedCallback(
     (titre: string) => {
+      if (isReadOnly) {
+        console.warn('🔒 [Permissions] Sauvegarde titre bloquée (lecture seule)');
+        return;
+      }
       SaveNote(id, { Titre: titre }).then(() => {
         
       }).catch((error) => {
@@ -128,7 +244,10 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   );
 
   function updateNoteTitle(newTitle: string) {
-    if (isReadOnly) return;
+    if (isReadOnly) {
+      console.warn('🔒 [Permissions] Modification titre bloquée (lecture seule)');
+      return;
+    }
     
     const finalTitle = newTitle.trim() === '' ? 'Sans titre' : newTitle;
     setNoteTitle(finalTitle);
@@ -143,6 +262,11 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   // Sauvegarde HTTP debounced du contenu
   const debouncedSaveContent = useDebouncedCallback(
     (content: string) => {
+      if (isReadOnly) {
+        console.warn('🔒 [Permissions] Sauvegarde contenu bloquée (lecture seule)');
+        return;
+      }
+      
       SaveNote(id, { Content: content }).then(() => {
         
       }).catch((error) => {
@@ -325,6 +449,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           {error}
         </div>
       )}
+      
+      
 
       {/* Mobile Header */}
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
@@ -373,7 +499,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           </motion.div>
         </div>
       ) : (
-        <div className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col min-h-[calc(100dvh-120px)] h-fit overflow-visible">
+        <div className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col flex-1 overflow-visible">
           {/* Drawing Board */}
           {!isReadOnly && (
             <DrawingBoard 
