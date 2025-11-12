@@ -2,7 +2,6 @@
 
 import { $getRoot, EditorState, $getSelection, $isRangeSelection, LexicalEditor } from "lexical";
 import ExportPDFButton from "@/ui/exportpdfbutton";
-import { $getRoot, EditorState, $getSelection, $isRangeSelection, LexicalEditor } from "lexical";
 import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
