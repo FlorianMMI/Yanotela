@@ -27,6 +27,7 @@ import ErrorFetch from "@/ui/note/errorFetch";
 import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { TitleSyncPlugin } from '@/components/collaboration/TitleSyncPlugin';
 import '@/components/textRich/EditorStyles.css';
 
 const theme = {
@@ -77,7 +78,13 @@ function OnChangeBehavior({ onContentChange }: { noteId: string, onContentChange
 
   return null;
 }
-function YjsSyncPlugin({ noteId, isReadOnly }: { noteId: string, isReadOnly: boolean }) {
+function YjsSyncPlugin({ 
+  noteId, 
+  isReadOnly
+}: { 
+  noteId: string, 
+  isReadOnly: boolean
+}) {
   const [editor] = useLexicalComposerContext();
   const lastSyncRef = useRef<number>(0);
   const hasChangesRef = useRef<boolean>(false);
@@ -98,6 +105,7 @@ function YjsSyncPlugin({ noteId, isReadOnly }: { noteId: string, isReadOnly: boo
 
     // Sync automatique toutes les 2 secondes si changements
     const syncInterval = setInterval(async () => {
+      // Vérifier s'il y a des changements de contenu
       if (!hasChangesRef.current) return;
       
       const now = Date.now();
@@ -123,7 +131,7 @@ function YjsSyncPlugin({ noteId, isReadOnly }: { noteId: string, isReadOnly: boo
         console.log('📄 [YjsSync] Content JSON:', Content.substring(0, 100) + '...');
 
         // Envoyer au serveur
-        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
         console.log('🚀 [YjsSync] Envoi vers', `${API_URL}/note/sync/${noteId}`);
         
         const response = await fetch(`${API_URL}/note/sync/${noteId}`, {
@@ -131,7 +139,7 @@ function YjsSyncPlugin({ noteId, isReadOnly }: { noteId: string, isReadOnly: boo
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            yjsState: Array.from(yjsState), // Uint8Array → Array pour JSON
+            yjsState: Array.from(yjsState),
             Content: Content
           })
         });
@@ -227,22 +235,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     []
   );
 
-  // Sauvegarde HTTP debounced du titre
-  const debouncedSaveTitle = useDebouncedCallback(
-    (titre: string) => {
-      if (isReadOnly) {
-        console.warn('🔒 [Permissions] Sauvegarde titre bloquée (lecture seule)');
-        return;
-      }
-      SaveNote(id, { Titre: titre }).then(() => {
-        
-      }).catch((error) => {
-        console.error('❌ Erreur sauvegarde titre:', error);
-      });
-    },
-    1000
-  );
-
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) {
       console.warn('🔒 [Permissions] Modification titre bloquée (lecture seule)');
@@ -251,7 +243,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     
     const finalTitle = newTitle.trim() === '' ? 'Sans titre' : newTitle;
     setNoteTitle(finalTitle);
-    debouncedSaveTitle(finalTitle);
+    
+    console.log('📝 [Title] Titre mis à jour:', finalTitle);
     
     // Émettre un événement pour synchroniser avec le Breadcrumb
     window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
@@ -435,6 +428,40 @@ export default function NoteEditor({ params }: NoteEditorProps) {
       return () => clearTimeout(timer);
     }
   }, [error]);
+
+  // Écouter les événements de notification depuis les plugins
+  useEffect(() => {
+    const handleNotification = (event: CustomEvent) => {
+      const { message, type } = event.detail;
+      if (type === 'success') {
+        setSuccess(message);
+      } else if (type === 'error') {
+        setError(message);
+      }
+    };
+
+    window.addEventListener('showNotification', handleNotification as EventListener);
+    return () => {
+      window.removeEventListener('showNotification', handleNotification as EventListener);
+    };
+  }, []);
+
+  // Écouter les mises à jour de titre depuis le Breadcrumb (desktop)
+  useEffect(() => {
+    const handleTitleUpdate = (event: CustomEvent) => {
+      const { noteId: updatedNoteId, title } = event.detail;
+      // Vérifier que l'événement concerne bien cette note
+      if (updatedNoteId === id) {
+        console.log('📥 [Title] Mise à jour reçue du Breadcrumb:', title);
+        setNoteTitle(title);
+      }
+    };
+
+    window.addEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+    return () => {
+      window.removeEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
+    };
+  }, [id]);
 
   return (
     <div className="flex flex-col gap-4 w-full h-full">

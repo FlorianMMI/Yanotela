@@ -235,7 +235,6 @@ export default function Breadcrumb() {
         // Avec y-websocket, la synchronisation du titre se fait automatiquement via le document YJS
         // Plus besoin d'émettre manuellement via Socket.IO
         
-        setSuccess('Titre synchronisé');
         setTimeout(() => setSuccess(null), 2000);
 
         // Émettre un événement pour synchroniser avec la page de note
