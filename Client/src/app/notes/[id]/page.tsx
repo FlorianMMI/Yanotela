@@ -1,5 +1,6 @@
 "use client";
 
+import { $getRoot, EditorState, $getSelection, $isRangeSelection, LexicalEditor } from "lexical";
 import ExportPDFButton from "@/ui/exportpdfbutton";
 import { $getRoot, EditorState, $getSelection, $isRangeSelection, LexicalEditor } from "lexical";
 import React, { useEffect, useState, use, useRef, useCallback } from "react";
@@ -8,8 +9,6 @@ import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { LexicalCollaboration } from '@lexical/react/LexicalCollaborationContext';
-import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
@@ -17,7 +16,6 @@ import { motion } from "motion/react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { $createImageNode } from "@/components/flashnote/ImageNode";
 import { $insertNodes } from "lexical";
@@ -31,6 +29,8 @@ import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TitleSyncPlugin } from '@/components/collaboration/TitleSyncPlugin';
+import { $createImageNode } from '@/components/flashnote/ImageNode';
+import { $insertNodes, $getSelection, $isRangeSelection } from 'lexical';
 import '@/components/textRich/EditorStyles.css';
 
 const theme = {
@@ -81,6 +81,51 @@ function OnChangeBehavior({ onContentChange }: { noteId: string, onContentChange
 
   return null;
 }
+
+/**
+ * Plugin pour insérer des images de dessin dans l'éditeur
+ */
+function DrawingInsertPlugin({ 
+  onDrawingInsertRequest 
+}: { 
+  onDrawingInsertRequest: (callback: (data: DrawingData) => void) => void 
+}) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    // Exposer une fonction pour insérer l'image
+    const insertDrawing = (drawingData: DrawingData) => {
+      editor.update(() => {
+        const imageNode = $createImageNode({
+          src: drawingData.dataUrl,
+          altText: 'Dessin',
+          width: drawingData.width,
+          height: drawingData.height,
+        });
+
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          // Insérer à la position du curseur
+          $insertNodes([imageNode]);
+        } else {
+          // Insérer à la fin si pas de sélection
+          const root = editor.getEditorState()._nodeMap.get('root');
+          if (root) {
+            $insertNodes([imageNode]);
+          }
+        }
+
+        console.log('🎨 [Drawing] Image insérée dans l\'éditeur via YJS');
+      });
+    };
+
+    // Exposer la fonction au parent via callback
+    onDrawingInsertRequest(insertDrawing);
+  }, [editor, onDrawingInsertRequest]);
+
+  return null;
+}
+
 function YjsSyncPlugin({ 
   noteId, 
   isReadOnly
@@ -205,16 +250,6 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ params }: NoteEditorProps) {
-  // Détection mobile
-  const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   const [noteTitle, setNoteTitle] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -223,6 +258,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [showNoteMore, setShowNoteMore] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
+  
+  // État pour le contenu initial de la note (pour bootstrapping)
+  const [initialEditorContent, setInitialEditorContent] = useState<string | null>(null);
 
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
@@ -235,6 +273,9 @@ export default function NoteEditor({ params }: NoteEditorProps) {
   const [userProfile, setUserProfile] = useState({ name: 'Anonyme', color: '#FF5733' });
   const containerRef = useRef<HTMLDivElement | null>(null);
   const editorContentRef = useRef<HTMLDivElement | null>(null); // Ref pour le ContentEditable (export PDF)
+  
+  // Ref pour la fonction d'insertion de dessin
+  const drawingInsertCallbackRef = useRef<((data: DrawingData) => void) | null>(null);
 
   // ✅ Provider factory pour CollaborationPlugin
   const providerFactory = useCallback(
@@ -330,8 +371,24 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     }, 100);
   }, [editor, id]);
 
+    // Forcer une sauvegarde immédiate après l'insertion du dessin
+    setTimeout(() => {
+      if (editor) {
+        editor.getEditorState().read(() => {
+          const json = editor.getEditorState().toJSON();
+          const jsonString = JSON.stringify(json);
+          console.log('💾 Sauvegarde forcée après dessin');
+          SaveNote(id, { Content: jsonString }).catch((error) => {
+            console.error('❌ Erreur sauvegarde après dessin:', error);
+          });
+        });
+      }
+    }, 100);
+  }, [editor, id]);
+
+  // ✅ Configuration Lexical - Charger l'état initial depuis la DB
   const initialConfig = {
-    editorState: null,  // ← CollaborationPlugin gère l'état depuis YJS
+    editorState: initialEditorState,  // État chargé depuis la DB
     namespace: 'YanotelaNoteEditor',
     nodes: editorNodes,
     onError,
@@ -368,6 +425,8 @@ export default function NoteEditor({ params }: NoteEditorProps) {
           console.warn('⚠️ [Permissions] userRole non reçu du serveur');
           setIsReadOnly(false);
         }
+        
+        setIsReadOnly(false); // TODO: Récupérer depuis permissions
 
       } catch (error) {
         console.error('❌ Erreur chargement note:', error);
@@ -379,51 +438,6 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
     loadNote();
   }, [id]);
-
-  // Charger le profil utilisateur pour awareness
-  useEffect(() => {
-    async function fetchUserInfo() {
-      try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        console.log('🔍 [Auth] Appel à:', `${API_URL}/auth/check`);
-        
-        const response = await fetch(`${API_URL}/auth/check`, {
-          credentials: "include",
-        });
-        
-        console.log('📡 [Auth] Response status:', response.status);
-        
-        if (response.ok) {
-          const userData = await response.json();
-          console.log('📦 [Auth] userData reçu:', userData);
-          
-          const pseudo = userData.pseudo || userData.user?.pseudo || 'Anonyme';
-          
-          // Générer une couleur aléatoire pour ce user
-          const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FF33A1'];
-          const color = colors[Math.floor(Math.random() * colors.length)];
-          
-          setUserProfile({ name: pseudo, color });
-          
-        }
-      } catch (error) {
-        console.error('❌ Erreur récupération profil:', error);
-      }
-    }
-
-    fetchUserInfo();
-  }, []);
-
-  // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
-  useEffect(() => {
-    // Petit délai pour s'assurer que le provider est créé
-    const timer = setTimeout(() => {
-      console.log('👤 [Awareness] Tentative mise à jour avec:', userProfile);
-      setAwarenessUserInfo(id, userProfile.name, userProfile.color);
-    }, 500);
-
-    setAwarenessUserInfo(id, userProfile.name, userProfile.color);
-  }, [userProfile, id]);
 
   // Gestion des paramètres de recherche (assignation au dossier)
   useEffect(() => {
@@ -494,12 +508,12 @@ export default function NoteEditor({ params }: NoteEditorProps) {
     <div className="flex flex-col gap-4 w-full h-full">
       {/* Notifications */}
       {success && (
-        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        <div className="fixed top-4 right-4 z-50 bg-success-500 text-white px-4 py-2 rounded-lg shadow-lg">
           {success}
         </div>
       )}
       {error && (
-        <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        <div className="fixed top-4 right-4 z-50 bg-dangerous-500 text-white px-4 py-2 rounded-lg shadow-lg">
           {error}
         </div>
       )}
