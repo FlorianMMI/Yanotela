@@ -11,12 +11,15 @@ import { $patchStyleText } from '@lexical/selection';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list';
 import { mergeRegister } from '@lexical/utils';
 import Icons from '@/ui/Icon';
+import ExportPDFButton from '@/ui/exportpdfbutton';
 
 interface ToolbarPluginProps {
     onOpenDrawingBoard?: () => void;
+    noteTitle?: string;
+    editorContentRef?: React.RefObject<HTMLElement | null>;
 }
 
-export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps = {}) {
+export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans titre", editorContentRef }: ToolbarPluginProps = {}) {
     const [editor] = useLexicalComposerContext();
     const toolbarRef = useRef(null);
     const [showFormatMenu, setShowFormatMenu] = useState(false);
@@ -481,6 +484,14 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                         </button>
                     </>
                 )}
+
+                {/* Export PDF button */}
+                <div className="w-px h-6 bg-gray-200 mx-1" /> {/* Separator */}
+                <ExportPDFButton 
+                    noteTitle={noteTitle}
+                    editorRef={editorContentRef}
+                    compact={true}
+                />
             </div>
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
@@ -747,6 +758,17 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                             <span className="text-xs">Dessin</span>
                         </button>
                     )}
+
+                    {/* Export PDF button for mobile */}
+                    <div className="flex flex-col items-center justify-center">
+                        <ExportPDFButton 
+                            noteTitle={noteTitle}
+                            editorRef={editorContentRef}
+                            compact={true}
+                            className="p-2"
+                        />
+                        <span className="text-xs mt-1">PDF</span>
+                    </div>
                 </div>
             </div>
         </>

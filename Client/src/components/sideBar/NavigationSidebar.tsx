@@ -30,10 +30,10 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       isActive: pathname.includes('/notes'),
     },
     {
-      href: '/folder',
+      href: '/dossiers',
       label: 'Mes Dossiers',
       icon: 'folder',
-      isActive: pathname.includes('/folder'),
+      isActive: pathname.includes('/dossiers'),
     },
   ];
 
@@ -79,7 +79,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
                   ? 'bg-primary text-white'
                   : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
-                title={`Accéder à mes ${item.label}`}
+                title={`Accéder à ${item.label}`}
               >
                 <Icon
                   name={item.icon}
@@ -106,6 +106,29 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
           height={isopen ? 50 : 25}
         />
       </Link>
+
+      {/* Liens légaux */}
+      {isopen && (
+        <div className="px-4 pb-4 space-y-2 text-xs text-element">
+          <div className="flex gap-3 justify-center">
+            <Link 
+              href="/cgu" 
+              className="hover:text-primary transition-colors hover:underline"
+              title="Conditions Générales d'Utilisation"
+            >
+              CGU
+            </Link>
+            <span className="text-gray-300">•</span>
+            <Link 
+              href="/mentions-legales" 
+              className="hover:text-primary transition-colors hover:underline"
+              title="Mentions Légales"
+            >
+              Mentions Légales
+            </Link>
+          </div>
+        </div>
+      )}
 
     </div>
   );

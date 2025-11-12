@@ -66,8 +66,9 @@ export default function RegisterForm({
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
       email: formData.get("email") as string,
-      pseudo: formData.get("username") as string, // Nom corrigé pour correspondre au backend
+      pseudo: formData.get("username") as string,
       password: password,
+      checkedCGU: formData.get("checkedCGU") === "on",
     };
 
     try {
@@ -257,6 +258,21 @@ export default function RegisterForm({
           onConfirmPasswordChange={setConfirmPassword}
           disabled={isLoading}
         />
+
+        <label className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            name='checkedCGU'
+            required
+            className="h-4 w-4 border-gray-300 rounded accent-primary"
+          />
+          <span className="text-sm text-clrprincipal">
+            J'accepte les{' '}
+            <Link href="/cgu" className="text-primary hover:underline">
+              Conditions Générales d'Utilisation
+            </Link>
+          </span>
+        </label>
 
         <button
           type="submit"
