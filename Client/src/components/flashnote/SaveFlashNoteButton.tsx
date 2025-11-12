@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
-import { CreateNote } from '@/loader/loader';
+import { CreateNote, SaveNote } from '@/loader/loader';
 import { useAuth } from '@/hooks/useAuth';
-import * as Y from 'yjs';
 
 interface SaveFlashNoteButtonProps {
   className?: string;
@@ -41,41 +40,16 @@ export default function SaveFlashNoteButton({
       if (!content.root || !content.root.children || content.root.children.length === 0) {
         return true;
       }
-
-      // Recursively check nodes for any meaningful content:
-      // - non-empty text
-      // - image nodes (drawings) which may be represented by type === 'image' or by having a src/dataUrl attribute
-      const hasContent = (nodes: unknown[]): boolean => {
-        if (!Array.isArray(nodes)) return false;
-        for (const node of nodes as Record<string, unknown>[]) {
-          const n = node as Record<string, unknown>;
-          const maybeText = n['text'];
-          if (typeof maybeText === 'string' && maybeText.trim().length > 0) return true;
-
-          const maybeType = n['type'];
-          if (typeof maybeType === 'string' && maybeType === 'image') return true;
-
-          const maybeSrc = n['src'];
-          if (typeof maybeSrc === 'string' && maybeSrc.trim().length > 0) return true;
-
-          const maybeDataUrl = n['dataUrl'];
-          if (typeof maybeDataUrl === 'string' && maybeDataUrl.trim().length > 0) return true;
-
-          const maybeImage = n['image'];
-          if (typeof maybeImage === 'string' && maybeImage.trim().length > 0) return true;
-
-          const children = n['children'];
-          if (Array.isArray(children) && children.length > 0) {
-            if (hasContent(children as unknown[])) return true;
-          }
+      const hasContent = content.root.children.some((child: any) => {
+        if (child.children && child.children.length > 0) {
+          return child.children.some((textNode: any) => {
+            return textNode.text && textNode.text.trim().length > 0;
+          });
         }
         return false;
-      };
-
-      const result = hasContent(content.root.children);
-      return !result;
+      });
+      return !hasContent;
     } catch {
-      // If parsing fails, treat any non-empty plain string as content
       return flashContentValue.trim().length === 0;
     }
   };
@@ -92,7 +66,7 @@ export default function SaveFlashNoteButton({
         const stored = localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '';
         setFlashContent(stored);
         setFlashEmpty(computeIsEmpty(stored));
-      } catch {
+      } catch (e) {
         setFlashContent('');
         setFlashEmpty(true);
       }
@@ -116,7 +90,7 @@ export default function SaveFlashNoteButton({
         const newVal = typeof ce.detail === 'string' ? ce.detail : (localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '');
         setFlashContent(newVal);
         setFlashEmpty(computeIsEmpty(newVal));
-      } catch {
+      } catch (err) {
         // fallback to reading localStorage
         const newVal = localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '';
         setFlashContent(newVal);
@@ -151,24 +125,13 @@ export default function SaveFlashNoteButton({
       const result = await CreateNote();
 
       if (result.note && result.note.id) {
-        console.log('🔄 [FlashNote] Sauvegarde du contenu...');
-
-        // Sauvegarder le titre et le contenu JSON Lexical
-        // Le yjsState sera créé automatiquement quand la note sera ouverte
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        const response = await fetch(`${API_URL}/note/update/${result.note.id}`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            Content: flashContent,
-            Titre: saveTitle.trim()
-          })
+        // Mettre à jour la note avec le titre et contenu de Flash Note
+        const updateSuccess = await SaveNote(result.note.id, {
+          Titre: saveTitle.trim(),
+          Content: flashContent
         });
 
-        if (response.ok) {
-          console.log('✅ [FlashNote] Sauvegardée avec succès');
-          
+        if (updateSuccess) {
           // Vider Flash Note localStorage
           localStorage.removeItem("yanotela:flashnote:title");
           localStorage.removeItem("yanotela:flashnote:content");
@@ -183,8 +146,6 @@ export default function SaveFlashNoteButton({
           // Rediriger vers la nouvelle note
           router.push(`/notes/${result.note.id}`);
         } else {
-          const errorText = await response.text();
-          console.error('❌ [FlashNote] Erreur HTTP', response.status, errorText);
           setError('Erreur lors de la sauvegarde du contenu');
           setTimeout(() => setError(null), 5000);
         }

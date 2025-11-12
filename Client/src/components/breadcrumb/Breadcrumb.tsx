@@ -12,6 +12,7 @@ import Icons from '@/ui/Icon';
 import { useRouter } from 'next/navigation';
 import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 import ConnectedUsers from '../collaboration/ConnectedUsers';
+import { yjsDocuments } from '@/collaboration/providers';
 
 interface BreadcrumbItem {
   label: string;
@@ -39,10 +40,6 @@ export default function Breadcrumb() {
 
   // Détecter si on est sur Flash Note
   const isFlashNote = pathname === '/flashnote';
-
-  // Indicateur pour cacher le breadcrumb sur certaines routes (on effectuera le return
-  // après l'exécution des hooks pour respecter les règles des hooks React)
-  const shouldHideBreadcrumb = pathname === '/' || pathname === '/login' || pathname === '/register';
 
   // Extraire l'ID de la note depuis l'URL
   const extractNoteId = (): string | null => {
@@ -228,18 +225,24 @@ export default function Breadcrumb() {
     }
 
     if (noteId) {
-      setNoteTitle(newTitle);
-      setTempTitle(newTitle);
+      const finalTitle = newTitle.trim() === '' ? 'Sans titre' : newTitle;
+      setNoteTitle(finalTitle);
+      setTempTitle(finalTitle);
 
       try {
-        // Avec y-websocket, la synchronisation du titre se fait automatiquement via le document YJS
-        // Plus besoin d'émettre manuellement via Socket.IO
-        
-        setTimeout(() => setSuccess(null), 2000);
+        // ✅ Mettre à jour le titre dans YJS pour synchronisation temps réel
+        const ydoc = yjsDocuments.get(noteId);
+        if (ydoc) {
+          const metadata = ydoc.getMap('metadata');
+          metadata.set('title', finalTitle);
+          console.log('📤 [Breadcrumb] Titre mis à jour dans YJS:', finalTitle);
+        } else {
+          console.warn('⚠️ [Breadcrumb] Y.Doc non trouvé pour', noteId);
+        }
 
         // Émettre un événement pour synchroniser avec la page de note
         window.dispatchEvent(new CustomEvent('noteTitleUpdated', {
-          detail: { noteId, title: newTitle }
+          detail: { noteId, title: finalTitle }
         }));
       } catch (error) {
         console.error('Erreur lors de la synchronisation du titre:', error);
@@ -317,7 +320,7 @@ export default function Breadcrumb() {
     const segments = pathname.split('/').filter(Boolean);
 
     if (pathname === '/' || pathname === '/login' || pathname === '/register') {
-      return [];
+      return [{ label: 'Accueil', isActive: true }];
     }
 
     if (pathname === '/notes') {
@@ -389,11 +392,6 @@ export default function Breadcrumb() {
   };
 
   const breadcrumbs = generateBreadcrumbs();
-
-  // Respecter shouldHideBreadcrumb maintenant que tous les hooks ont été exécutés
-  if (shouldHideBreadcrumb) {
-    return null;
-  }
 
   return (
     <>
