@@ -30,10 +30,10 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
       isActive: pathname.includes('/notes'),
     },
     {
-      href: '/folder',
+      href: '/dossiers',
       label: 'Mes Dossiers',
       icon: 'folder',
-      isActive: pathname.includes('/folder'),
+      isActive: pathname.includes('/dossiers'),
     },
   ];
 
@@ -79,7 +79,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
                   ? 'bg-primary text-white'
                   : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
-                title={`Accéder à mes ${item.label}`}
+                title={`Accéder à ${item.label}`}
               >
                 <Icon
                   name={item.icon}

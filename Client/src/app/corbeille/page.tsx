@@ -3,12 +3,10 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { Note } from "@/type/Note";
 import { GetDeletedNotes, RestoreNote } from "@/loader/loader";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import Icon from "@/ui/Icon";
 import ReturnButton from "@/ui/returnButton";
 
 export default function Corbeille() {
-  const { isAuthenticated, loading: authLoading } = useAuthRedirect();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -63,7 +61,7 @@ export default function Corbeille() {
     }
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-full bg-fondpage">
         <div className="text-center">

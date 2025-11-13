@@ -14,12 +14,15 @@ import Icons from '@/ui/Icon';
 import { $createImageNode } from '@/components/flashnote/ImageNode';
 import { $createAudioNode } from '@/components/flashnote/AudioNode';
 import { $createVideoNode } from '@/components/flashnote/VideoNode';
+import ExportPDFButton from '@/ui/exportpdfbutton';
 
 interface ToolbarPluginProps {
     onOpenDrawingBoard?: () => void;
+    noteTitle?: string;
+    editorContentRef?: React.RefObject<HTMLElement | null>;
 }
 
-export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps = {}) {
+export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans titre", editorContentRef }: ToolbarPluginProps = {}) {
     const [editor] = useLexicalComposerContext();
     const toolbarRef = useRef(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -574,6 +577,14 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                         </button>
                     </>
                 )}
+
+                {/* Export PDF button */}
+                <div className="w-px h-6 bg-gray-200 mx-1" /> {/* Separator */}
+                <ExportPDFButton 
+                    noteTitle={noteTitle}
+                    editorRef={editorContentRef}
+                    compact={true}
+                />
             </div>
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
@@ -849,6 +860,17 @@ export default function ToolbarPlugin({ onOpenDrawingBoard }: ToolbarPluginProps
                             <span className="text-xs">Dessin</span>
                         </button>
                     )}
+
+                    {/* Export PDF button for mobile */}
+                    <div className="flex flex-col items-center justify-center">
+                        <ExportPDFButton 
+                            noteTitle={noteTitle}
+                            editorRef={editorContentRef}
+                            compact={true}
+                            className="p-2"
+                        />
+                        <span className="text-xs mt-1">PDF</span>
+                    </div>
                 </div>
             </div>
         </>

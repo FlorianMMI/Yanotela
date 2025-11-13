@@ -53,16 +53,27 @@ export function migrateContentToYjs(lexicalJSON) {
     try {
       parsedContent = JSON.parse(lexicalJSON);
     } catch (parseError) {
-      console.error('❌ [YJS Migration] JSON invalide:', parseError);
-      return null;
+      console.error('❌ [YJS Migration] JSON invalide - création d\'un document YJS vide');
+      
+      // Créer un document YJS vide pour éviter les boucles de migration
+      const ydoc = new Y.Doc();
+      const yXmlText = ydoc.get('root', Y.XmlText);
+      const yjsState = Y.encodeStateAsUpdate(ydoc);
+      return Buffer.from(yjsState);
     }
 
     // 2. Extraire le texte brut
     const plainText = extractTextFromLexicalNode(parsedContent);
     
     if (!plainText || plainText.trim() === '') {
-      console.warn('⚠️ [YJS Migration] Contenu vide après extraction');
-      return null;
+      console.warn('⚠️ [YJS Migration] Contenu vide après extraction - création d\'un document YJS vide');
+      
+      // Créer un document YJS vide valide pour éviter les boucles de migration
+      const ydoc = new Y.Doc();
+      const yXmlText = ydoc.get('root', Y.XmlText);
+      // Laisser vide intentionnellement
+      const yjsState = Y.encodeStateAsUpdate(ydoc);
+      return Buffer.from(yjsState);
     }
 
     console.log(`📝 [YJS Migration] Texte extrait (${plainText.length} chars): ${plainText.substring(0, 100)}...`);
@@ -100,4 +111,86 @@ export function needsMigration(note) {
   return (!note.yjsState || note.yjsState.length === 0) && 
          note.Content && 
          note.Content.trim() !== '';
+}
+
+/**
+ * Extraire le contenu Lexical JSON depuis un yjsState
+ * Utilisé pour sérialiser yjsState → Content lors des sauvegardes
+ * 
+ * @param {Buffer|Uint8Array} yjsState - État YJS encodé
+ * @returns {string|null} - JSON Lexical stringifié, ou null si erreur
+ */
+export function extractContentFromYjs(yjsState) {
+  try {
+    if (!yjsState) {
+      console.warn('⚠️ [YJS Extract] yjsState vide');
+      return null;
+    }
+
+    // 1. Créer un nouveau document YJS
+    const ydoc = new Y.Doc();
+    
+    // 2. Appliquer l'état binaire
+    const stateBuffer = Buffer.isBuffer(yjsState) ? yjsState : Buffer.from(yjsState);
+    Y.applyUpdate(ydoc, new Uint8Array(stateBuffer));
+
+    // 3. Récupérer le YXmlText (même structure que CollaborationPlugin)
+    const yXmlText = ydoc.get('root', Y.XmlText);
+    
+    // 4. Extraire le texte brut
+    const plainText = yXmlText.toString();
+    
+    if (!plainText || plainText.trim() === '') {
+      console.warn('⚠️ [YJS Extract] Contenu vide');
+      // Retourner un document Lexical vide valide
+      return JSON.stringify({
+        root: {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "root",
+          version: 1
+        }
+      });
+    }
+
+    console.log(`📝 [YJS Extract] Texte extrait (${plainText.length} chars): ${plainText.substring(0, 100)}...`);
+
+    // 5. Reconstruire un JSON Lexical depuis le texte brut
+    const lexicalJSON = {
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: "normal",
+                style: "",
+                text: plainText,
+                type: "text",
+                version: 1
+              }
+            ],
+            direction: null,
+            format: "",
+            indent: 0,
+            type: "paragraph",
+            version: 1
+          }
+        ],
+        direction: null,
+        format: "",
+        indent: 0,
+        type: "root",
+        version: 1
+      }
+    };
+
+    return JSON.stringify(lexicalJSON);
+  } catch (error) {
+    console.error('❌ [YJS Extract] Erreur:', error);
+    return null;
+  }
 }

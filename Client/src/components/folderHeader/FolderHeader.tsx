@@ -2,7 +2,7 @@
 
 import React from "react";
 import Icon from "@/ui/Icon";
-import SearchBar from "@/ui/searchbar";
+import SearchBar, { SearchMode } from "@/ui/searchbar";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import { FOLDER_COLORS } from "@/hooks/folderColors";
@@ -16,9 +16,22 @@ interface FolderHeaderProps {
   setSortDir: (d: "asc" | "desc") => void;
   colorFilters: string[];
   setColorFilters: (colors: string[]) => void;
+  searchMode: SearchMode;
+  setSearchMode: (mode: SearchMode) => void;
 }
 
-export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSortBy, sortDir, setSortDir, colorFilters, setColorFilters }: FolderHeaderProps) {
+export default function FolderHeader({ 
+  searchTerm, 
+  setSearchTerm, 
+  sortBy, 
+  setSortBy, 
+  sortDir, 
+  setSortDir, 
+  colorFilters, 
+  setColorFilters,
+  searchMode,
+  setSearchMode
+}: FolderHeaderProps) {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -77,7 +90,13 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
                 exit={{ height: 0, opacity: 0 }}
                 className="mt-3 overflow-hidden"
               >
-                <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+                <SearchBar 
+                  searchTerm={searchTerm} 
+                  setSearchTerm={setSearchTerm}
+                  searchMode={searchMode}
+                  setSearchMode={setSearchMode}
+                  showModeSelector={false}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -139,7 +158,7 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
                   {/* Couleurs */}
                   <div>
                     <p className="text-sm font-medium text-gray-700 mb-2">Filtrer par couleur</p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 bg-gray-100 p-[0.5em] rounded-lg">
                       {FOLDER_COLORS.map((color) => (
                         <button
                           key={color.id}
@@ -151,8 +170,8 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
                           }`}
                         >
                           <div 
-                            className="w-5 h-5 rounded border border-gray-300 flex-shrink-0"
-                            style={{ backgroundColor: color.value === 'var(--primary)' ? '#882626' : color.value }}
+                            className="w-5 h-5 rounded border border-gray-300 shrink-0"
+                            style={{ backgroundColor: color.value === 'var(--primary)' ? 'var(--primary)' : color.value }}
                           />
                           <span className="text-xs truncate">{color.label}</span>
                           {colorFilters.includes(color.value) && (
@@ -182,7 +201,13 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
         
         <div className="flex items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
           <div className="flex justify-center items-center">
-            <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            <SearchBar 
+              searchTerm={searchTerm} 
+              setSearchTerm={setSearchTerm}
+              searchMode={searchMode}
+              setSearchMode={setSearchMode}
+              showModeSelector={false}
+            />
           </div>
 
           <div className="flex gap-2">
@@ -195,7 +220,7 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
                   setSortDir("desc");
                 }
               }}
-              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
+              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
                 sortBy === "recent"
                   ? "bg-primary text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
@@ -220,7 +245,7 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
                   setSortDir("desc");
                 }
               }}
-              className={`px-4 py-2 grow items-center justify-center cursor-pointer rounded-lg font-medium text-sm transition-colors ${
+              className={`px-4 py-2 grow items-center justify-center cursor-pointer rounded-lg font-medium text-sm transition-colors h-full ${
                 sortBy === "creation"
                   ? "bg-primary text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
@@ -236,7 +261,7 @@ export default function FolderHeader({ searchTerm, setSearchTerm, sortBy, setSor
           <div className="relative">
             <motion.button 
               onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className={`flex flex-row items-center grow cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
+              className={`flex flex-row items-center grow cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
                 colorFilters.length > 0 
                   ? "bg-primary text-white" 
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"

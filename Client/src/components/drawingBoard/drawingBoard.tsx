@@ -340,6 +340,7 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
           onClose?.();
         }}
         className="absolute top-5 right-5 flex items-center justify-center w-10 h-10 bg-gray-300 text-black rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
+        title="Fermer l'outil de dessin"
       >
         <Icon name="close" size={16} className="inline-block" />
       </button>
@@ -348,14 +349,16 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
       <button
         onClick={clearDrawing}
         className="absolute bottom-24 md:bottom-4 left-4 px-6 py-3 bg-gray-300 text-black rounded-lg shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
+        title="Effacer l'ensemble du dessin"
       >
-        Annuler
+        Effacer
       </button>
 
       {/* Save button in bottom right corner */}
       <button
         onClick={saveDrawing}
         className="absolute bottom-24 md:bottom-4 right-4 px-6 py-3 bg-primary text-white rounded-lg shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
+        title="Sauvegarder le dessin"
       >
         Sauvegarder
       </button>

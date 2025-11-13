@@ -11,7 +11,7 @@ interface TotalFoldersProps {
 export default function TotalFolders({ totalFolders }: TotalFoldersProps) {
     const router = useRouter();
     const redirectToFolders = () => {
-    router.push('/folders');
+    router.push('/dossiers');
 };
     const safeTotalFolders = totalFolders ?? 0;
 

@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '@/ui/Icon';
-import { Login } from '@/loader/loader';
 import GoogleAuthButton from './GoogleAuthButton';
 
 interface LoginFormProps {
@@ -38,38 +37,38 @@ export default function LoginForm({
     setError('');
 
     const formData = new FormData(e.currentTarget);
-    const loginData = {
-      identifiant: formData.get('identifiant') as string,
-      password: formData.get('password') as string,
-      error: null as string | null,
-      errors: [] as Array<{ msg: string }>
-    };
-    
-    try {
-      const result = await Login(loginData);
-      
-      if (result.success) {
-        // Charger le thème de l'utilisateur depuis la base de données
+    const identifiant = formData.get('identifiant') as string;
+    const password = formData.get('password') as string;
 
-        // Vérifier s'il y a une redirection enregistrée
-        const redirectAfterLogin = localStorage.getItem('yanotela:redirect-after-login');
-        
-        if (redirectAfterLogin) {
-          localStorage.removeItem('yanotela:redirect-after-login');
-          router.push(redirectAfterLogin);
-        } else if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push('/notes');
-        }
-      } else {
-        setError(result.error || 'Identifiants incorrects');
-      }
-    } catch (error) {
-      setError('Erreur de connexion au serveur');
-    } finally {
+    // Validation côté client de base
+    if (!identifiant || !password) {
+      setError('Veuillez remplir tous les champs');
       setIsLoading(false);
+      return;
     }
+    
+    // Créer un formulaire HTML temporaire pour la soumission, comme avec Google Auth
+    const tempForm = document.createElement('form');
+    tempForm.method = 'POST';
+    tempForm.action = `${process.env.NEXT_PUBLIC_API_URL}/login`;
+
+    // Créer les champs cachés
+    const identifiantInput = document.createElement('input');
+    identifiantInput.type = 'hidden';
+    identifiantInput.name = 'identifiant';
+    identifiantInput.value = identifiant;
+
+    const passwordInput = document.createElement('input');
+    passwordInput.type = 'hidden';
+    passwordInput.name = 'password';
+    passwordInput.value = password;
+
+    tempForm.appendChild(identifiantInput);
+    tempForm.appendChild(passwordInput);
+    document.body.appendChild(tempForm);
+
+    // Soumettre le formulaire pour permettre la redirection serveur
+    tempForm.submit();
   };
 
   const togglePasswordVisibility = () => {
