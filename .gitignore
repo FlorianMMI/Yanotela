@@ -32,3 +32,6 @@ logs/
 # Test coverage
 coverage/
 .env.prod
+
+# yjs
+Server/yjs-db
