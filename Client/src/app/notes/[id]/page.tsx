@@ -924,9 +924,13 @@ function NoteEditorContent({ params }: NoteEditorProps) {
               disabled={isReadOnly}
             />
             <div className="relative">
-              <span onClick={() => setShowNoteMore((prev) => !prev)}>
+              <button 
+                onClick={() => setShowNoteMore((prev) => !prev)}
+                aria-label="Ouvrir les options de la note"
+                className="focus:outline-none focus:ring-2 focus:ring-white rounded p-1"
+              >
                 <Icons name="more" size={20} className="text-white cursor-pointer" />
-              </span>
+              </button>
               {showNoteMore && (
                 <div className="absolute right-0 mt-2 z-30">
                   <NoteMore noteId={id} onClose={() => setShowNoteMore(false)} />
