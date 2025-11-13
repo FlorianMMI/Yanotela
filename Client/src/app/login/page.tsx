@@ -12,6 +12,11 @@ function LoginContent() {
   const [urlError, setUrlError] = useState<string | null>(null);
 
   useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setUrlError(decodeURIComponent(errorParam));
+    }
+
     const checkAuth = async () => {
       try {
         const res = await fetch('https://yanotela.fr/api/auth/check', {
@@ -30,10 +35,11 @@ function LoginContent() {
         }
       } catch (error) {
         console.error('Erreur lors de la vérification d\'authentification:', error);
-      } finally {
-        setIsChecking(false);
       }
     };
+
+    checkAuth();
+  }, [router, searchParams]);
 
   const handleLoginSuccess = () => {
     // Utiliser replace pour forcer la navigation sans garder l'historique
