@@ -1,6 +1,7 @@
 ﻿'use client';
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from 'next/navigation';
 import LoginForm from '@/components/auth/LoginForm';
 import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
@@ -9,7 +10,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [urlError, setUrlError] = useState<string | null>(null);
-  const [isChecking, setIsChecking] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const errorParam = searchParams.get('error');
@@ -19,11 +20,16 @@ function LoginContent() {
 
     const checkAuth = async () => {
       try {
-        const base = process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr';
-        const res = await fetch(`${base}/api/auth/check`, {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const res = await fetch('https://yanotela.fr/api/auth/check', {
           method: 'GET',
           credentials: 'include',
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (res.ok) {
           const data = await res.json();
@@ -35,7 +41,13 @@ function LoginContent() {
           }
         }
       } catch (error) {
-        console.error('Erreur lors de la vérification d\'authentification:', error);
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.error('Timeout de la vérification d\'authentification');
+        } else {
+          console.error('Erreur lors de la vérification d\'authentification:', error);
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -108,31 +120,5 @@ function LoginContent() {
 }
 
 export default function Login() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-full flex items-center justify-center p-4">
-          <div className="w-full max-w-md space-y-8">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-primary mb-2">
-                Quel plaisir de vous revoir !
-              </h1>
-              <p className="text-clrprincipal">
-                Connectez-vous à votre compte Yanotela
-              </p>
-            </div>
-            <div className="bg-clrsecondaire p-8 rounded-xl shadow-lg">
-              <div className="animate-pulse space-y-4">
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      }
-    >
-      <LoginContent />
-    </Suspense>
-  );
+  return <LoginContent />;
 }
