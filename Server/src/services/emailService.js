@@ -30,16 +30,21 @@ async function testTransporter() {
     const transporter = createEmailTransporter();
     
     await transporter.verify();
+    console.log('✅ SMTP connection verified successfully');
     
     return transporter;
   } catch (error) {
-    console.error('❌ Erreur:', error.message);
+    console.error('❌ SMTP Erreur:', error.message);
     throw error;
   }
 }
 
-// Appeler le test au démarrage
-testTransporter().catch(console.error);
+// Test SMTP en arrière-plan (non bloquant pour le démarrage du serveur)
+setTimeout(() => {
+  testTransporter().catch(error => {
+    console.warn('⚠️  SMTP test failed, but server continues:', error.message);
+  });
+}, 1000);
 
 async function sendValidationEmail(to, token) {
   // Désactiver les emails pendant les tests

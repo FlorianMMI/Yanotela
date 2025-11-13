@@ -24,6 +24,9 @@ router.post('/update/:id', requireWriteAccess, noteController.updateNoteById);
 // Route Post pour synchroniser YJS state et Content (collaboration temps réel)
 router.post('/sync/:id', requireWriteAccess, noteController.syncNoteState);
 
+// Route PATCH pour mettre à jour le tag d'une note
+router.patch('/tag/:id', requireWriteAccess, noteController.updateNoteTag);
+
 // Route Post pour supprimer une note par son ID (soft delete, vérification dans le contrôleur)
 router.post('/delete/:id', requireAuth, noteController.deleteNote);
 
