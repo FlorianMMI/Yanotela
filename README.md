@@ -165,15 +165,11 @@ cd Server && npx prisma migrate dev
 
 Pour les questions, PRs ou rapports de bugs, ouvre une issue ou une Pull Request sur GitHub.
 
-Contributeurs principaux (extraits depuis l'historique Git) :
+Contributeurs principaux :
 
-- Florian Bounissou — florian.bounissou@etu.unilim.fr — Owner / Lead dev
-- Julian Doutreligne — julian.doutreligne@gmail.com — Frontend
-- Mael Valin — maelmy19@gmail.com — Backend
-- Ethan Manchon — ethan.manchon@etu.unilim.fr — Contributor
-- François Donzaud — donzaudf@gmail.com — Contributor
-
-Remarque : pour un contact direct, préfère l'adresse indiquée ci‑dessus ou une issue GitHub afin de garder une trace des échanges.
-
-Si tu veux que j'ajoute d'autres éléments (badges supplémentaires, logo vectoriel, ou badge de couverture lié à Codecov/Coveralls), dis‑le et je l'intègre.
+- Florian Bounissou — florian.bounissou@etu.unilim.fr — Lead dev/Hébergement
+- Julian Doutreligne — julian.doutreligne@gmail.com — Frontend/Hébergement
+- Mael Valin — maelmy19@gmail.com — Frontend
+- Ethan Manchon — ethan.manchon@etu.unilim.fr — Backend
+- François Donzaud — donzaudf@gmail.com — Fullstack
 
