@@ -35,11 +35,10 @@ function LoginContent() {
         }
       } catch (error) {
         console.error('Erreur lors de la vérification d\'authentification:', error);
+      } finally {
+        setIsChecking(false);
       }
     };
-
-    checkAuth();
-  }, [router, searchParams]);
 
   const handleLoginSuccess = () => {
     // Utiliser replace pour forcer la navigation sans garder l'historique

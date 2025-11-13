@@ -362,7 +362,7 @@ export const noteController = {
 
       if (Content !== undefined) {
         updateData.Content = Content;
-        console.log('📄 [updateNote] Content sauvegardé, yjsState sera généré côté client');
+        
       }
 
       const note = await prisma.note.update({
