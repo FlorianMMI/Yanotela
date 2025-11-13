@@ -53,16 +53,27 @@ export function migrateContentToYjs(lexicalJSON) {
     try {
       parsedContent = JSON.parse(lexicalJSON);
     } catch (parseError) {
-      console.error('❌ [YJS Migration] JSON invalide:', parseError);
-      return null;
+      console.error('❌ [YJS Migration] JSON invalide - création d\'un document YJS vide');
+      
+      // Créer un document YJS vide pour éviter les boucles de migration
+      const ydoc = new Y.Doc();
+      const yXmlText = ydoc.get('root', Y.XmlText);
+      const yjsState = Y.encodeStateAsUpdate(ydoc);
+      return Buffer.from(yjsState);
     }
 
     // 2. Extraire le texte brut
     const plainText = extractTextFromLexicalNode(parsedContent);
     
     if (!plainText || plainText.trim() === '') {
-      console.warn('⚠️ [YJS Migration] Contenu vide après extraction');
-      return null;
+      console.warn('⚠️ [YJS Migration] Contenu vide après extraction - création d\'un document YJS vide');
+      
+      // Créer un document YJS vide valide pour éviter les boucles de migration
+      const ydoc = new Y.Doc();
+      const yXmlText = ydoc.get('root', Y.XmlText);
+      // Laisser vide intentionnellement
+      const yjsState = Y.encodeStateAsUpdate(ydoc);
+      return Buffer.from(yjsState);
     }
 
     console.log(`📝 [YJS Migration] Texte extrait (${plainText.length} chars): ${plainText.substring(0, 100)}...`);

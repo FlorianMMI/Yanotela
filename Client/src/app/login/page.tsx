@@ -83,7 +83,8 @@ function LoginContent() {
 
 export default function Login() {
   return (
-    <Suspense fallback={
+    <Suspense
+      fallback={
       <div className="min-h-full flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
@@ -103,7 +104,8 @@ export default function Login() {
           </div>
         </div>
       </div>
-    }>
+    }
+    >
       <LoginContent />
     </Suspense>
   );
