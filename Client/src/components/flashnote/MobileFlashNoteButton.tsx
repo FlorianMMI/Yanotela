@@ -18,7 +18,7 @@ export default function MobileFlashNoteButton() {
   return (
     <>
       {/* Bouton flottant en bas à droite */}
-      <div className="fixed bottom-20 right-6 z-40 md:hidden">
+      <div className="fixed bottom-10 right-6 z-40 md:hidden">
         <FlashNoteButton 
           isOpen={false}
           onClick={handleOpenFlashNote}
