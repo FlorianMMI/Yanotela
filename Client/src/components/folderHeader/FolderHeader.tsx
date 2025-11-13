@@ -199,8 +199,8 @@ export default function FolderHeader({
       {/* Barre de recherche et filtre - Desktop */}
       <div className="hidden md:block">
         
-        <div className="flex items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
-          <div className="flex justify-center items-center">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
+          
             <SearchBar 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm}
@@ -208,7 +208,7 @@ export default function FolderHeader({
               setSearchMode={setSearchMode}
               showModeSelector={false}
             />
-          </div>
+          
 
           <div className="flex gap-2">
             <motion.button
