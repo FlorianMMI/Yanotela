@@ -280,7 +280,6 @@ export default function NoteHeader({
             </AnimatePresence>
           </div>
         </div>
-        
 
       </div>
     </>

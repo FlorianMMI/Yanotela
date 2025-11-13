@@ -3,16 +3,23 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { Note } from "@/type/Note";
 import { GetDeletedNotes, RestoreNote } from "@/loader/loader";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import Icon from "@/ui/Icon";
 import ReturnButton from "@/ui/returnButton";
 
 export default function Corbeille() {
-  const { isAuthenticated, loading: authLoading } = useAuthRedirect();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [restoring, setRestoring] = useState<string | null>(null);
+
+  // Fonction pour calculer les jours restants avant suppression définitive
+  const getDaysUntilDeletion = (deletedAt: string | Date) => {
+    const deletionDate = new Date(deletedAt);
+    const finalDeletionDate = new Date(deletionDate.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 jours
+    const now = new Date();
+    const daysRemaining = Math.ceil((finalDeletionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, daysRemaining); // Ne pas retourner de valeur négative
+  };
 
   useEffect(() => {
     fetchDeletedNotes();
@@ -54,7 +61,7 @@ export default function Corbeille() {
     }
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-full bg-fondpage">
         <div className="text-center">
@@ -100,7 +107,16 @@ export default function Corbeille() {
               </p>
               <div className="flex justify-between items-center text-xs text-gray-400">
                 <span>
-                  Supprimée le {new Date(note.deletedAt || "").toLocaleDateString('fr-FR')}
+                  {(() => {
+                    const daysLeft = getDaysUntilDeletion(note.deletedAt || new Date());
+                    if (daysLeft === 0) {
+                      return "Suppression imminente";
+                    } else if (daysLeft === 1) {
+                      return "Supprimé dans 1 jour";
+                    } else {
+                      return `Supprimé dans ${daysLeft} jours`;
+                    }
+                  })()}
                 </span>
               </div>
               <button
@@ -140,10 +156,20 @@ export default function Corbeille() {
           {/* Modal */}
           <div className="fixed inset-4 md:inset-10 lg:inset-20 bg-white rounded-lg shadow-xl z-50 flex flex-col">
             {/* Header du modal */}
-            <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-2xl font-bold text-clrprincipal">
-                {selectedNote.Titre || "Sans titre"}
-              </h2>
+            <div className="flex justify-between items-start p-6 border-b">
+              <div className="flex flex-col gap-2">
+                <h2 className="text-2xl font-bold text-clrprincipal">
+                  {selectedNote.Titre || "Sans titre"}
+                </h2>
+                <span className="text-sm text-gray-500">
+                  {(() => {
+                    const daysLeft = getDaysUntilDeletion(selectedNote.deletedAt || new Date());
+                    if (daysLeft === 0) return "Suppression imminente";
+                    else if (daysLeft === 1) return "Supprimé dans 1 jour";
+                    else return `Supprimé dans ${daysLeft} jours`;
+                  })()}
+                </span>
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleRestore(selectedNote.id)}

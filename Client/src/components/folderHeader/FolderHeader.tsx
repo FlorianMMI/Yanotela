@@ -170,8 +170,8 @@ export default function FolderHeader({
                           }`}
                         >
                           <div 
-                            className="w-5 h-5 rounded border border-gray-300 flex-shrink-0"
-                            style={{ backgroundColor: color.value === 'var(--primary)' ? '#882626' : color.value }}
+                            className="w-5 h-5 rounded border border-gray-300 shrink-0"
+                            style={{ backgroundColor: color.value === 'var(--primary)' ? 'var(--primary)' : color.value }}
                           />
                           <span className="text-xs truncate">{color.label}</span>
                           {colorFilters.includes(color.value) && (

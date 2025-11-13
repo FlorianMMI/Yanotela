@@ -12,11 +12,17 @@ router.get('/get', requireAuth, noteController.getNotes);
 // Route Post pour créer une note (authentification requise)
 router.post('/create', requireAuth, noteController.createNote);
 
+// Route Post pour dupliquer une note (authentification requise)
+router.post('/duplicate/:id', requireAuth, noteController.duplicateNote);
+
 // Route Get pour récupérer une note par son ID (vérification des permissions dans le contrôleur)
 router.get('/get/:id', requireAuth, noteController.getNoteById);
 
 // Route Post pour mettre à jour une note par son ID (vérification des droits d'écriture)
 router.post('/update/:id', requireWriteAccess, noteController.updateNoteById);
+
+// Route Post pour synchroniser YJS state et Content (collaboration temps réel)
+router.post('/sync/:id', requireWriteAccess, noteController.syncNoteState);
 
 // Route Post pour supprimer une note par son ID (soft delete, vérification dans le contrôleur)
 router.post('/delete/:id', requireAuth, noteController.deleteNote);

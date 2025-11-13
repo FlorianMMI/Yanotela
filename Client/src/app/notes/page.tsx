@@ -11,7 +11,6 @@ import SearchBar, { SearchMode } from "@/ui/searchbar";
 import FlashNoteButton from '@/ui/flash-note-button'; 
 
 export default function Home() {
-  const { isAuthenticated, loading: authLoading } = useAuthRedirect();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent">("recent");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -107,7 +106,7 @@ export default function Home() {
       </Suspense>
 
       {/* Flash Note Button - Mobile Only - Full width */}
-      <div className="fixed inset-x-4 bottom-6 md:hidden z-50">
+      <div className="fixed inset-x-4 bottom-16 md:hidden z-50">
         <FlashNoteButton
           isOpen={true}
           isActive={false}

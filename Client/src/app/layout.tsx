@@ -2,13 +2,12 @@ import "./globals.css";
 import React from "react";
 import DesktopLayout from "@/components/layout/DesktopLayout";
 import ThemeClientProvider from "@/components/theme/ThemeClientProvider";
-import ThemeColorMeta from "@/components/ThemeColorMeta";
+import ThemeColorMeta from "@/components/theme/ThemeColorMeta";
 
 export const metadata = {
   title: "Yanotela - Notes collaboratives",
   description: "Application de prise de notes collaborative",
   manifest: "/manifest.json",
-  viewport: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
 };
 
 export const viewport = {

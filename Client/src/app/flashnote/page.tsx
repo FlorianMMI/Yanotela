@@ -64,7 +64,7 @@ export default function FlashNoteEditor() {
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editor, setEditor] = useState<any>(null);
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
 
   // États pour les notifications
@@ -222,8 +222,14 @@ export default function FlashNoteEditor() {
         const contentString = JSON.stringify(editorStateJSON);
         setEditorContent(contentString);
 
-        // Sauvegarder dans localStorage
-        localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
+          // Sauvegarder dans localStorage
+          localStorage.setItem(FLASH_NOTE_CONTENT_KEY, contentString);
+          // Notifier les listeners in-tab que le contenu de la Flash Note a changé
+          try {
+            window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: contentString }));
+            } catch {
+              // ignore si CustomEvent non supporté
+          }
 
         setTimeout(() => {
           setIsSavingContent(false);
@@ -255,31 +261,6 @@ export default function FlashNoteEditor() {
 
   return (
     <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
-      {/* Bandeau d'information pour les utilisateurs non connectés */}
-      {!authLoading && !isAuthenticated && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-info-50 border border-info-50 rounded-lg p-4 flex items-start gap-3"
-        >
-          <Icons name="info" size={20} className="text-info-100 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <h3 className="text-sm font-semibold text-info-800 mb-1">
-              Mode hors ligne
-            </h3>
-            <p className="text-xs text-blue">
-              Les flashnotes sont temporaires. Pour les conserver de façon permanente,
-              <button 
-                onClick={() => window.location.href = '/login'} 
-                className="underline font-medium hover:text-info-100 ml-1"
-              >
-                connectez-vous
-              </button>.
-            </p>
-          </div>
-        </motion.div>
-      )}
-
       {/* Zone de notifications */}
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md pl-4">
