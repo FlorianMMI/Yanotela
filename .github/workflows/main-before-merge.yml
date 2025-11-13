@@ -356,7 +356,7 @@ jobs:
                 volumes:
                   - ./Server/yjs-db:/app/yjs-db
                 networks:
-                  - yanotela-dev
+                  - yanotela
                 command: sh -c "npm install -g @y/websocket-server && npx y-websocket"
                 restart: unless-stopped
                 healthcheck:
