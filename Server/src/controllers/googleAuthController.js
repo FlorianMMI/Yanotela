@@ -94,7 +94,7 @@ export const handleGoogleCallback = async (req, res) => {
       await req.session.save();
 
       // Redirection vers le client après authentification
-      const clientUrl = process.env.CLIENT_URL;
+      const clientUrl = process.env.CLIENT_URL || 'https://yanotela.fr';
       
       return res.redirect(`${clientUrl}/notes`);
     } else {
@@ -138,7 +138,7 @@ export const handleGoogleCallback = async (req, res) => {
       await req.session.save();
 
       // Redirection vers le client après authentification
-      const clientUrl = process.env.CLIENT_URL;
+      const clientUrl = process.env.CLIENT_URL || 'https://yanotela.fr';
       
       return res.redirect(`${clientUrl}/notes`);
     }
