@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Icons from "@/ui/Icon";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
+import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
 
@@ -10,12 +11,13 @@ interface NoteMoreProps {
     onNoteUpdated?: () => void; // Callback pour rafraîchir la liste
 }
 
-type ModalView = "menu" | "share" | "info" | "folder" | "delete" | "leave";
+type ModalView = "menu" | "share" | "info" | "folder" | "tag" | "delete" | "leave";
 
 export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMoreProps) {
     const [currentView, setCurrentView] = useState<ModalView>("menu");
     const [isDeleting, setIsDeleting] = useState(false);
     const [noteTitle, setNoteTitle] = useState<string>("");
+    const [noteTag, setNoteTag] = useState<string>("");
     const [userRole, setUserRole] = useState<number | undefined>(undefined);
     const modalRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
@@ -27,6 +29,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
             if (noteData && typeof noteData === 'object' && 'Titre' in noteData) {
                 setNoteTitle(noteData.Titre);
                 setUserRole(noteData.userRole);
+                setNoteTag(noteData.tag || '');
             }
         };
         loadNoteInfo();
@@ -154,6 +157,8 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                 return "Infos de la note";
             case "folder":
                 return "Dossiers";
+            case "tag":
+                return "Tag couleur";
             default:
                 return "Option de la note";
         }
@@ -167,6 +172,8 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                 return <NoteInfoUI noteId={noteId} />;
             case "folder":
                 return <NoteFolderUI noteId={noteId} onFolderChange={onNoteUpdated} />;
+            case "tag":
+                return <TagNote noteId={noteId} currentTag={noteTag} onTagUpdated={onNoteUpdated} />;
             case "delete":
             case "leave":
                 return null; // Le modal sera rendu en dehors du contenu
@@ -180,6 +187,13 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                             >
                                 <Icons name="folder" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
                                 Dossiers
+                            </button>
+                            <button
+                                className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
+                                onClick={() => setCurrentView("tag")}
+                            >
+                                <Icons name="palette" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                Tag couleur
                             </button>
                             <button
                                 className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"

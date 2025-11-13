@@ -257,7 +257,10 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
         </h3>
 
         {/* Collaborateurs */}
-        <div className="flex h-full bg-blue-700 rounded-r-lg min-w-[56px]">
+        <div 
+          className="flex h-full rounded-r-lg min-w-[56px]"
+          style={{ backgroundColor: note.tag || 'var(--primary)' }}
+        >
           {note.collaboratorCount && note.collaboratorCount > 1 && (
             <div className="flex items-center w-full h-full gap-1 px-3 shrink-0">
               <p className='text-white font-bold'>{note.collaboratorCount}</p>
