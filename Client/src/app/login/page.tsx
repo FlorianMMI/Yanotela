@@ -59,7 +59,7 @@ function LoginContent() {
     router.replace('/notes');
   };
 
-  if (isChecking) {
+  if (isLoading) {
     return (
       <div className="min-h-full flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-8">
