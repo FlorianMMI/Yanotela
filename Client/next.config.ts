@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
     if (!isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        yjs: require.resolve('yjs'),
+        'yjs': 'yjs',
       };
     }
     return config;
