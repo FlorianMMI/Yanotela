@@ -15,7 +15,7 @@
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { getPermission } from "./permissionController.js";
-import { migrateContentToYjs, needsMigration } from "../services/yjsMigration.js";
+import { migrateContentToYjs, needsMigration, extractContentFromYjs } from "../services/yjsMigration.js";
 
 const prisma = new PrismaClient();
 
@@ -300,7 +300,7 @@ export const noteController = {
 
       // 🔄 MIGRATION À LA VOLÉE: Migrer vers YJS si nécessaire
       if (needsMigration(note)) {
-
+        
         const yjsState = migrateContentToYjs(note.Content);
         
         if (yjsState) {
@@ -310,8 +310,6 @@ export const noteController = {
             data: { yjsState },
           });
           
-        } else {
-          console.error(`❌ [Migration] Échec migration pour note ${id}`);
         }
       }
 
@@ -342,9 +340,13 @@ export const noteController = {
 
     // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
-    // ✅ CORRECTION: Permettre les mises à jour partielles (titre OU contenu)
+    // Au moins un champ doit être fourni
     if (!Titre && !Content) {
-      return res.status(400).json({ message: "Au moins un champ doit être fourni (Titre ou Content)" });
+      return res.status(400).json({ message: "Au moins un champ (Titre ou Content) doit être fourni" });
+    }
+
+    if (Titre === "") {
+      Titre = "Sans titre";
     }
 
     try {
@@ -355,11 +357,12 @@ export const noteController = {
       };
 
       if (Titre !== undefined) {
-        updateData.Titre = Titre === "" ? "Sans titre" : Titre;
+        updateData.Titre = Titre;
       }
 
       if (Content !== undefined) {
         updateData.Content = Content;
+        
       }
 
       const note = await prisma.note.update({

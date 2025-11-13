@@ -286,13 +286,226 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    // Mettre à jour l'état readonly de l'éditeur
-    editor.setEditable(!isReadOnly);
-    
-    if (isReadOnly) {
+
+    // ⚠️ NE PAS désactiver l'éditeur via setEditable(false) !
+    // Cela empêche le binding YJS de mettre à jour le DOM
+    // On va UNIQUEMENT bloquer les inputs utilisateur via le DOM
+
+    if (!isReadOnly) {
       
+      editor.setEditable(true);
+      return;
     }
+
+    // Attendre que l'éditeur ET le CollaborationPlugin soient montés
+    const timeoutId = setTimeout(() => {
+      const rootElement = editor.getRootElement();
+      
+      if (!rootElement) {
+        console.error('❌ [ReadOnly] RootElement introuvable après 500ms');
+        return;
+      }
+
+      // Bloquer UNIQUEMENT les événements utilisateur (keyboard, mouse, paste)
+      const blockUserEvent = (e: Event) => {
+        // CRITIQUE : Ne bloquer que les événements utilisateur (isTrusted = true)
+        // Les événements programmatiques (YJS) ont isTrusted = false
+        if (e.isTrusted) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+        }
+      };
+
+      const userInputEvents = [
+        'keydown', 'keypress', 'keyup',
+        'beforeinput', 'input',
+        'paste', 'cut', 'drop',
+        'compositionstart', 'compositionupdate', 'compositionend',
+      ];
+
+      // Ajouter les listeners UNIQUEMENT sur le rootElement (pas en capture)
+      userInputEvents.forEach(eventType => {
+        rootElement.addEventListener(eventType, blockUserEvent, false);
+      });
+
+      // Empêcher le focus utilisateur (mais permettre le focus programmatique)
+      const blockFocus = (e: FocusEvent) => {
+        if (e.isTrusted) {
+          
+          (e.target as HTMLElement).blur();
+        }
+      };
+      rootElement.addEventListener('focus', blockFocus, false);
+
+      // Ajouter un style visuel pour indiquer la lecture seule
+      rootElement.style.cursor = 'default';
+      rootElement.style.userSelect = 'text'; // Permettre la sélection de texte
+      rootElement.setAttribute('data-readonly', 'true');
+
+      // Cleanup
+      return () => {
+        
+        userInputEvents.forEach(eventType => {
+          rootElement.removeEventListener(eventType, blockUserEvent, false);
+        });
+        rootElement.removeEventListener('focus', blockFocus, false);
+        rootElement.style.cursor = '';
+        rootElement.style.userSelect = '';
+        rootElement.removeAttribute('data-readonly');
+      };
+    }, 500); // Délai réduit à 500ms
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [editor, isReadOnly]);
+
+  return null;
+}
+
+/**
+ * Plugin de collaboration en lecture seule
+ * Reçoit les updates des autres utilisateurs sans permettre d'émettre
+ * NE CRÉE PAS de binding bidirectionnel - juste observation
+ */
+function ReadOnlyCollaborationPlugin({ 
+  id, 
+  providerFactory,
+  username,
+  cursorColor,
+  cursorsContainerRef 
+}: {
+  id: string;
+  providerFactory: (id: string, yjsDocMap: Map<string, Y.Doc>) => any;
+  username?: string;
+  cursorColor?: string;
+  cursorsContainerRef?: React.RefObject<HTMLDivElement | null>;
+}) {
+  const [editor] = useLexicalComposerContext();
+  const isInitializedRef = useRef(false);
+
+  useEffect(() => {
+
+    // Utiliser une map locale pour créer le provider et le document YJS
+    const yjsDocMap = new Map<string, Y.Doc>();
+    const provider = providerFactory(id, yjsDocMap);
+    const doc = yjsDocMap.get(id);
+    
+    if (!doc) {
+      console.error('❌ [ReadOnlyCollaboration] Impossible de créer le document YJS');
+      return;
+    }
+
+    // Configurer l'awareness pour montrer qu'on est là (en lecture seule)
+    if (provider.awareness && username) {
+      provider.awareness.setLocalStateField('user', {
+        name: `${username} 👁️`,  // Indiquer visuellement le mode lecture seule
+        color: '#999999',  // Gris pour lecture seule
+      });
+    }
+
+    // Observer les changements du document YJS et les appliquer à Lexical
+    const ytext = doc.getText('lexical');
+    
+    const observer = (event: Y.YTextEvent, transaction: Y.Transaction) => {
+      // Ignorer les transactions locales (ne devrait pas arriver en lecture seule)
+      if (transaction.local) {
+        console.warn('🚫 [ReadOnlyCollaboration] Transaction locale détectée - ignorée');
+        return;
+      }
+
+      const yjsContent = ytext.toString();
+      if (!yjsContent) return;
+
+      try {
+        const parsedState = JSON.parse(yjsContent);
+        if (parsedState.root && parsedState.root.type === 'root') {
+          // Appliquer l'update sans permettre de modifications locales
+          editor.update(() => {
+            const newEditorState = editor.parseEditorState(parsedState);
+            editor.setEditorState(newEditorState);
+          }, {
+            tag: 'collaboration',  // Marquer comme update de collaboration
+            discrete: true,
+          });
+        }
+      } catch (err) {
+        console.warn('[ReadOnlyCollaboration] Erreur parsing YJS:', err);
+      }
+    };
+
+    ytext.observe(observer);
+
+    // Connecter APRÈS avoir configuré l'observer
+    provider.connect();
+
+    // Charger l'état initial
+    provider.on('sync', (isSynced: boolean) => {
+      if (isSynced && !isInitializedRef.current) {
+        
+        isInitializedRef.current = true;
+        
+        // Déclencher un premier render avec le contenu YJS
+        const yjsContent = ytext.toString();
+        if (yjsContent) {
+          try {
+            const parsedState = JSON.parse(yjsContent);
+            if (parsedState.root && parsedState.root.type === 'root') {
+              editor.update(() => {
+                const newEditorState = editor.parseEditorState(parsedState);
+                editor.setEditorState(newEditorState);
+              }, {
+                tag: 'collaboration',
+                discrete: true,
+              });
+            }
+          } catch (err) {
+            console.warn('[ReadOnlyCollaboration] Erreur chargement initial:', err);
+          }
+        }
+      }
+    });
+
+    // Cleanup
+    return () => {
+      
+      ytext.unobserve(observer);
+      provider.disconnect();
+      provider.destroy();
+      isInitializedRef.current = false;
+    };
+  }, [id, editor, providerFactory, username, cursorColor]);
+
+  return null;
+}
+
+/**
+ * Plugin pour charger le contenu initial de la note dans l'éditeur
+ */
+function LoadInitialContentPlugin({ content }: { content: string | null }) {
+  const [editor] = useLexicalComposerContext();
+  const hasLoadedRef = useRef(false);
+
+  useEffect(() => {
+    if (!content || hasLoadedRef.current) return;
+
+    try {
+      const parsedContent = JSON.parse(content);
+      
+      editor.update(() => {
+        const newEditorState = editor.parseEditorState(parsedContent);
+        editor.setEditorState(newEditorState);
+        
+      }, {
+        tag: 'history-merge',
+      });
+
+      hasLoadedRef.current = true;
+    } catch (err) {
+      console.error('❌ [LoadContent] Erreur parsing contenu:', err);
+    }
+  }, [editor, content]);
 
   return null;
 }
@@ -462,7 +675,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // ✅ Configuration Lexical - Charger l'état initial depuis la DB
   const initialConfig = {
-    editorState: null,  // État chargé depuis la DB
+    editorState: initialEditorContent || null,  // État chargé depuis Content si pas de yjsState
     namespace: 'YanotelaNoteEditor',
     nodes: editorNodes,
     onError,
@@ -486,6 +699,15 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         const note = noteData;
         setNoteTitle(note.Titre || 'Sans titre');
         
+        // ✅ Charger le contenu initial dans l'éditeur
+        if (note.Content) {
+          
+          setInitialEditorContent(note.Content);
+        } else {
+          console.warn('⚠️ [LoadNote] Pas de contenu dans la note');
+          setInitialEditorContent(null);
+        }
+        
         // ✅ Gestion des permissions (lecture seule)
         if (note.userRole !== undefined) {
           // Role 3 = lecture seule → bloquer l'édition
@@ -494,13 +716,13 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           
           if (readOnly) {
             
+          } else {
+            
           }
         } else {
-          console.warn('⚠️ [Permissions] userRole non reçu du serveur');
+          console.warn('⚠️ [Permissions] userRole non reçu du serveur, défaut = édition');
           setIsReadOnly(false);
         }
-        
-        setIsReadOnly(false); // TODO: Récupérer depuis permissions
 
       } catch (error) {
         console.error('❌ Erreur chargement note:', error);
@@ -517,8 +739,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   useEffect(() => {
     async function fetchUserInfo() {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://yanotela.fr";
         const response = await fetch(`${API_URL}/auth/check`, {
           credentials: "include",
         });
@@ -707,9 +928,8 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                     <ContentEditable
                       ref={editorContentRef as any}
                       className={`editor-root mt-2 h-full focus:outline-none ${
-                        isReadOnly ? 'cursor-not-allowed' : ''
+                        isReadOnly ? 'cursor-default select-text' : ''
                       }`}
-                      contentEditable={!isReadOnly}
                     />
                   }
                   ErrorBoundary={LexicalErrorBoundary}
@@ -721,25 +941,37 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
                 <EditorRefPlugin onEditorReady={setEditor} />
                 
-                <ReadOnlyPlugin isReadOnly={isReadOnly} />
+                {/* Charger le contenu initial depuis la base de données */}
+                <LoadInitialContentPlugin content={initialEditorContent} />
+                
+                {/* ✅ Toujours utiliser CollaborationPlugin pour la sync temps réel */}
                 <CollaborationPlugin
                   id={id}
                   providerFactory={providerFactory}
-                  shouldBootstrap={false} 
-                  username={userProfile.name}
-                  cursorColor={userProfile.color}
+                  shouldBootstrap={true}
+                  username={isReadOnly ? `${userProfile.name} 👁️` : userProfile.name}
+                  cursorColor={isReadOnly ? '#999999' : userProfile.color}
                   cursorsContainerRef={containerRef}
                 />
-                <YjsSyncPlugin 
-                  noteId={id} 
-                  isReadOnly={isReadOnly}
-                />
-                <TitleSyncPlugin
-                  noteId={id}
-                  title={noteTitle}
-                  onTitleChange={setNoteTitle}
-                  isReadOnly={isReadOnly}
-                />
+                
+                {/* Plugins d'édition (désactivés en lecture seule) */}
+                {!isReadOnly && (
+                  <>
+                    <YjsSyncPlugin 
+                      noteId={id} 
+                      isReadOnly={isReadOnly}
+                    />
+                    <TitleSyncPlugin
+                      noteId={id}
+                      title={noteTitle}
+                      onTitleChange={setNoteTitle}
+                      isReadOnly={isReadOnly}
+                    />
+                  </>
+                )}
+                
+                {/* Bloquer l'édition APRÈS que le binding YJS soit créé */}
+                <ReadOnlyPlugin isReadOnly={isReadOnly} />
               </LexicalComposer>
             </LexicalCollaboration>
           </div>

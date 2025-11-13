@@ -7,6 +7,7 @@ import NoteList from "@/components/noteList/NoteList";
 import FolderMore from "@/components/folderMore/FolderMore";
 import FolderDetailHeader from "@/components/folderDetailHeader/FolderDetailHeader";
 import { GetFolderById, UpdateFolder, DeleteFolder, CreateNote } from "@/loader/loader";
+import { SearchMode } from "@/ui/searchbar";
 
 import ReturnButton from "@/ui/returnButton";
 import Icon from "@/ui/Icon";
@@ -27,7 +28,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [loading, setLoading] = useState(true);
     const [showFolderMore, setShowFolderMore] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-    const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
+    const [searchMode, setSearchMode] = useState<SearchMode>("all");
+    const [sortBy, setSortBy] = useState<"recent">("recent");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
 
@@ -148,9 +150,23 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     // Filtrer et trier les notes
     const filteredNotes = Array.isArray(notes) ? notes
         .filter(note => {
-            // Filtre de recherche
-            const matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                note.Content?.toLowerCase().includes(searchTerm.toLowerCase());
+            // Filtre de recherche avec mode
+            let matchesSearch = true;
+            if (searchTerm) {
+                switch (searchMode) {
+                    case 'title':
+                        matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+                        break;
+                    case 'content':
+                        matchesSearch = note.Content?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+                        break;
+                    case 'all':
+                    default:
+                        matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            note.Content?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+                        break;
+                }
+            }
 
             // Filtre de collaboration
             const matchesCollaboration =
@@ -162,9 +178,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             return matchesSearch && matchesCollaboration;
         })
         .sort((a, b) => {
-            const getDate = (n: any) => new Date((sortBy === "creation" ? (n.CreatedAt || n.ModifiedAt) : n.ModifiedAt));
-            const da = getDate(a).getTime();
-            const db = getDate(b).getTime();
+            const da = new Date(a.ModifiedAt).getTime();
+            const db = new Date(b.ModifiedAt).getTime();
             return sortDir === "desc" ? db - da : da - db;
         }) : [];
 
@@ -176,6 +191,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 folderColor={folder?.CouleurTag || "#882626"}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
+                searchMode={searchMode}
+                setSearchMode={setSearchMode}
                 sortBy={sortBy}
                 setSortBy={setSortBy}
                 sortDir={sortDir}

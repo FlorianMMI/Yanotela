@@ -6,7 +6,8 @@ import { Note } from "@/type/Note";
 import NoteHeader from "@/components/noteHeader/NoteHeader";
 import NoteList from "@/components/noteList/NoteList";
 import { GetNotes } from "@/loader/loader";
-import SearchBar from "@/ui/searchbar";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import SearchBar, { SearchMode } from "@/ui/searchbar";
 import FlashNoteButton from '@/ui/flash-note-button'; 
 
 export default function Home() {
@@ -14,7 +15,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<"recent">("recent");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
-  const [searchInContent, setSearchInContent] = useState(false);
+  const [searchMode, setSearchMode] = useState<SearchMode>("all");
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -42,12 +43,21 @@ export default function Home() {
       // Filtre de recherche
       let matchesSearch = true;
       if (searchTerm) {
-        if (searchInContent) {
-          // Rechercher dans le contenu
-          matchesSearch = note.Content?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
-        } else {
-          // Rechercher par titre (par défaut)
-          matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+        switch (searchMode) {
+          case 'title':
+            // Rechercher uniquement dans le titre
+            matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+            break;
+          case 'content':
+            // Rechercher uniquement dans le contenu
+            matchesSearch = note.Content?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+            break;
+          case 'all':
+          default:
+            // Rechercher dans titre ET contenu
+            matchesSearch = (note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+                           (note.Content?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+            break;
         }
       }
       
@@ -81,8 +91,8 @@ export default function Home() {
         setSortDir={setSortDir}
         collaborationFilter={collaborationFilter}
         setCollaborationFilter={setCollaborationFilter}
-        searchInContent={searchInContent}
-        setSearchInContent={setSearchInContent}
+        searchMode={searchMode}
+        setSearchMode={setSearchMode}
       />
 
       <Suspense fallback={<div></div>}>
@@ -91,7 +101,7 @@ export default function Home() {
           onNoteCreated={fetchNotes}
           isLoading={loading}
           searchTerm={searchTerm}
-          searchInContent={searchInContent}
+          searchMode={searchMode}
         />
       </Suspense>
 

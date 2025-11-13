@@ -97,11 +97,6 @@ services:
       - PORT=1234
     command: sh -c "npm install -g @y/websocket-server && y-websocket-server"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "1234"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
 
   # Frontend Next.js
   frontend:

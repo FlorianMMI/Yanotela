@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { PrismaClient } from '@prisma/client';
+import { body, check, validationResult } from "express-validator";
 import { sendValidationEmail, sendResetPasswordEmail } from "../services/emailService.js";
 
 const prisma = new PrismaClient();
-import crypto from "crypto";
-import { body, check, validationResult } from "express-validator";
 
 const validateRegistration = [
   body("pseudo")
@@ -163,12 +163,9 @@ const login = async (req, res) => {
     await req.session.save();
     
     // Redirection vers le client après authentification (même comportement que Google Auth)
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-    
     return res.redirect(`${clientUrl}/notes`);
   } catch (err) {
     console.error("Erreur connexion", err);
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
     return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Erreur serveur lors de la connexion')}`);
   }
 };

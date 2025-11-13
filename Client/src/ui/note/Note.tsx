@@ -4,15 +4,16 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Note as NoteType } from '@/type/Note';
 import { motion } from 'motion/react';
 import NoteMore from '@/components/noteMore/NoteMore';
+import { SearchMode } from '@/ui/searchbar';
 
 interface NoteProps {
   note: NoteType;
   onNoteUpdated?: () => void; // Callback pour rafraîchir la liste après modification/suppression
   searchTerm?: string; // Terme de recherche pour surlignage
-  searchInContent?: boolean; // Mode de recherche dans le contenu
+  searchMode?: SearchMode; // Mode de recherche
 }
 
-export default function Note({ note, onNoteUpdated, searchTerm = "", searchInContent = false }: NoteProps) {
+export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode = "all" }: NoteProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [showMoreModal, setShowMoreModal] = useState(false);
@@ -30,9 +31,9 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchInCon
       return;
     }
     
-    // Construire l'URL avec le terme de recherche si mode contenu actif
+    // Construire l'URL avec le terme de recherche si mode contenu ou all actif
     let url = `/notes/${note.id}`;
-    if (searchInContent && searchTerm) {
+    if ((searchMode === 'content' || searchMode === 'all') && searchTerm) {
       url += `?search=${encodeURIComponent(searchTerm)}`;
     }
     
@@ -219,7 +220,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchInCon
     }
 
     // Si on est en mode recherche dans le contenu et qu'il y a un terme de recherche
-    if (searchInContent && searchTerm && extractedText) {
+    if ((searchMode === 'content' || searchMode === 'all') && searchTerm && extractedText) {
       return highlightSearchTerm(extractedText, searchTerm);
     }
 
