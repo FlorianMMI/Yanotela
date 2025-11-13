@@ -5,9 +5,7 @@ import "../../globals.css";
 import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
 
 interface ValidatePageProps {
-  params: Promise<{
-    token: string;
-  }>;
+  params: Promise<{ token: string }>;
 }
 
 async function validateToken(token: string) {
