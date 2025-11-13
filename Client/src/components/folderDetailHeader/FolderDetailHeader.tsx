@@ -142,7 +142,7 @@ export default function FolderDetailHeader({
                       }
                       setShowMobileFilters(false);
                     }}
-                    className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors min-w-max ${
                       sortBy === "recent"
                         ? "bg-primary text-white"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -207,8 +207,8 @@ export default function FolderDetailHeader({
 
       {/* Barre de recherche et filtre - Version Desktop */}
       <div className="hidden md:block">
-        <div className="flex items-stretch justify-center gap-3 p-6 h-full">
-          <div className="flex justify-center items-center">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full">
+          
             <SearchBar 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm}
@@ -216,7 +216,7 @@ export default function FolderDetailHeader({
               setSearchMode={setSearchMode}
               showModeSelector={true}
             />
-          </div>
+          
 
           <div className="flex gap-2">
             <motion.button

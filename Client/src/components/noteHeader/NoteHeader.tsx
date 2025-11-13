@@ -176,11 +176,11 @@ export default function NoteHeader({
       </div>
 
       {/* Barre de recherche et filtre */}
-      <div className="hidden md:block flex justify-center z-[1000]">
+      <div className="hidden md:block flex justify-center">
         
-        <div className="flex items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
 
-          <div className="flex justify-center items-center">
+          
             <SearchBar 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm}
@@ -188,7 +188,7 @@ export default function NoteHeader({
               setSearchMode={setSearchMode}
               showModeSelector={true}
             />
-          </div>
+          
 
           <div className="flex gap-2">
             <motion.button
@@ -196,7 +196,7 @@ export default function NoteHeader({
                 // Only recent sort for notes: toggle direction
                 setSortDir(sortDir === "desc" ? "asc" : "desc");
               }}
-              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
+              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full min-w-max ${
                 "bg-white text-gray-700 border border-gray-300 hover:border-primary"
               }`}
               whileHover={{ scale: 1.02 }}
