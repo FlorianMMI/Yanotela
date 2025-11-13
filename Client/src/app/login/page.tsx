@@ -36,8 +36,6 @@ function LoginContent() {
         }
       } catch (error) {
         console.error('Erreur lors de la vérification d\'authentification:', error);
-      } finally {
-        setIsChecking(false);
       }
     };
 
