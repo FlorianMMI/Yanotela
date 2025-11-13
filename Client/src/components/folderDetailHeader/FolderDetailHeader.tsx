@@ -2,7 +2,7 @@
 
 import React from "react";
 import Icon from "@/ui/Icon";
-import SearchBar from "@/ui/searchbar";
+import SearchBar, { SearchMode } from "@/ui/searchbar";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import ReturnButton from "@/ui/returnButton";
@@ -12,12 +12,14 @@ interface FolderDetailHeaderProps {
   folderColor: string;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  sortBy: "recent" | "creation";
-  setSortBy: (sort: "recent" | "creation") => void;
+  sortBy: "recent";
+  setSortBy: (sort: "recent") => void;
   sortDir: "asc" | "desc";
   setSortDir: (d: "asc" | "desc") => void;
   collaborationFilter: "all" | "collaborative" | "solo";
   setCollaborationFilter: (filter: "all" | "collaborative" | "solo") => void;
+  searchMode: SearchMode;
+  setSearchMode: (mode: SearchMode) => void;
   onMoreClick: () => void;
 }
 
@@ -32,6 +34,8 @@ export default function FolderDetailHeader({
   setSortDir,
   collaborationFilter, 
   setCollaborationFilter,
+  searchMode,
+  setSearchMode,
   onMoreClick
 }: FolderDetailHeaderProps) {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -103,7 +107,13 @@ export default function FolderDetailHeader({
             exit={{ height: 0, opacity: 0 }}
             className="px-2.5 pb-2.5 overflow-hidden"
           >
-            <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            <SearchBar 
+              searchTerm={searchTerm} 
+              setSearchTerm={setSearchTerm}
+              searchMode={searchMode}
+              setSearchMode={setSearchMode}
+              showModeSelector={true}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -140,25 +150,6 @@ export default function FolderDetailHeader({
                   >
                     <Icon name="recent" size={20} className={sortBy === "recent" ? "text-white" : "text-gray-700"} />
                     Récents {sortBy === "recent" && (sortDir === "desc" ? "▼" : "▲")}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      if (sortBy === "creation") {
-                        setSortDir(sortDir === "desc" ? "asc" : "desc");
-                      } else {
-                        setSortBy("creation");
-                        setSortDir("desc");
-                      }
-                      setShowMobileFilters(false);
-                    }}
-                    className={`flex-1 p-3 rounded-lg transition-colors ${
-                      sortBy === "creation"
-                        ? "bg-primary text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    Date de création {sortBy === "creation" && (sortDir === "desc" ? "▼" : "▲")}
                   </button>
                 </div>
               </div>
@@ -218,7 +209,13 @@ export default function FolderDetailHeader({
       <div className="hidden md:block">
         <div className="flex items-stretch justify-center gap-3 p-6 h-full">
           <div className="flex justify-center items-center">
-            <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            <SearchBar 
+              searchTerm={searchTerm} 
+              setSearchTerm={setSearchTerm}
+              searchMode={searchMode}
+              setSearchMode={setSearchMode}
+              showModeSelector={true}
+            />
           </div>
 
           <div className="flex gap-2">
@@ -231,7 +228,7 @@ export default function FolderDetailHeader({
                   setSortDir("desc");
                 }
               }}
-              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
+              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
                 sortBy === "recent"
                   ? "bg-primary text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
@@ -246,33 +243,13 @@ export default function FolderDetailHeader({
               />
               Récents {sortBy === "recent" && (sortDir === "desc" ? "▼" : "▲")}
             </motion.button>
-
-            <motion.button
-              onClick={() => {
-                if (sortBy === "creation") {
-                  setSortDir(sortDir === "desc" ? "asc" : "desc");
-                } else {
-                  setSortBy("creation");
-                  setSortDir("desc");
-                }
-              }}
-              className={`px-4 py-2 grow items-center justify-center cursor-pointer rounded-lg font-medium text-sm transition-colors ${
-                sortBy === "creation"
-                  ? "bg-primary text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
-              }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 1 }}
-            >
-              Date de création {sortBy === "creation" && (sortDir === "desc" ? "▼" : "▲")}
-            </motion.button>
           </div>
 
           {/* Filtre de collaboration */}
           <div className="relative">
             <motion.button 
               onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors ${
+              className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
                 collaborationFilter !== "all" 
                   ? "bg-primary text-white" 
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"

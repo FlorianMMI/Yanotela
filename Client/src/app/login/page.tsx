@@ -12,6 +12,11 @@ function LoginContent() {
   const [urlError, setUrlError] = useState<string | null>(null);
 
   useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setUrlError(decodeURIComponent(errorParam));
+    }
+
     const checkAuth = async () => {
       try {
         const res = await fetch('https://yanotela.fr/api/auth/check', {

@@ -4,32 +4,9 @@ import Link from 'next/link';
 import "../../globals.css";
 import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
 
-export default function ValidatePage() {
-  const params = useParams();
-  const router = useRouter();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    const validateAccount = async () => {
-      const token = params.token as string;
-      
-      if (!token) {
-        setStatus('error');
-        setMessage('Token de validation manquant');
-        return;
-      }
-
-      try {
-        
-        // Appeler l'API de validation du backend avec le token
-        const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://yanotela.fr/api';
-        const response = await fetch(`${API_URL}/validate/${token}`, {
-          method: 'GET',
-          credentials: 'include', // Important pour les sessions
-        });
-
-        const data = await response.json();
+interface ValidatePageProps {
+  params: Promise<{ token: string }>;
+}
 
 async function validateToken(token: string) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api';
