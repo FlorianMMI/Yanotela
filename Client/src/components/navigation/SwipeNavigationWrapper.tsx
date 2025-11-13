@@ -64,7 +64,7 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
 
   return (
     <div
-      className="min-h-full w-full touch-pan-y"
+      className="h-full w-full touch-pan-y flex flex-col"
       {...swipeHandlers}
       style={{
         // Prévenir le zoom sur mobile lors du double tap
@@ -88,7 +88,10 @@ export const SwipeNavigationWrapper = ({ children }: SwipeNavigationWrapperProps
         swipeHandlers.onMouseUp?.();
       }}
     >
-      {children}
+      {/* Contenu principal avec scroll */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        {children}
+      </div>
       
       {/* Indicateur visuel pour le swipe (seulement sur mobile) */}
       {isMobile && (
