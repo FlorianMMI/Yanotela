@@ -295,99 +295,80 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
   useEffect(() => {
     console.log('🔒 [ReadOnly] Plugin initialisé, isReadOnly:', isReadOnly);
     
-    // TOUJOURS désactiver l'éditeur en mode readonly
-    editor.setEditable(!isReadOnly);
+    // ⚠️ NE PAS désactiver l'éditeur via setEditable(false) !
+    // Cela empêche le binding YJS de mettre à jour le DOM
+    // On va UNIQUEMENT bloquer les inputs utilisateur via le DOM
 
     if (!isReadOnly) {
       console.log('✅ [ReadOnly] Mode édition actif');
+      editor.setEditable(true);
       return;
     }
 
-    console.log('🔒 [ReadOnly] Mode lecture seule - blocage des inputs utilisateur uniquement');
+    console.log('🔒 [ReadOnly] Mode lecture seule - blocage des inputs utilisateur UNIQUEMENT');
 
     // Attendre que l'éditeur ET le CollaborationPlugin soient montés
-    // Le CollaborationPlugin crée le binding YJS, on doit bloquer APRÈS
     const timeoutId = setTimeout(() => {
       const rootElement = editor.getRootElement();
       
       if (!rootElement) {
-        console.error('❌ [ReadOnly] RootElement introuvable après 1000ms');
+        console.error('❌ [ReadOnly] RootElement introuvable après 500ms');
         return;
       }
 
-      console.log('✅ [ReadOnly] RootElement trouvé, blocage des inputs utilisateur...');
+      console.log('✅ [ReadOnly] RootElement trouvé, configuration lecture seule...');
 
-      // Forcer contenteditable à false SEULEMENT sur l'élément (pas via Lexical)
-      // pour que le binding YJS continue de fonctionner
-      const forceReadOnly = () => {
-        rootElement.contentEditable = 'false';
-        rootElement.setAttribute('spellcheck', 'false');
-      };
-
-      forceReadOnly();
-
-      // Bloquer UNIQUEMENT les événements utilisateur (pas les updates programmatiques)
-      const blockEvent = (e: Event) => {
-        // Ne bloquer QUE si l'événement vient vraiment de l'utilisateur
+      // Bloquer UNIQUEMENT les événements utilisateur (keyboard, mouse, paste)
+      const blockUserEvent = (e: Event) => {
+        // CRITIQUE : Ne bloquer que les événements utilisateur (isTrusted = true)
+        // Les événements programmatiques (YJS) ont isTrusted = false
         if (e.isTrusted) {
           e.preventDefault();
           e.stopPropagation();
-          e.stopImmediatePropagation();
-          console.warn('🚫 [ReadOnly] Input utilisateur bloqué:', e.type);
-          return false;
+          console.log('🚫 [ReadOnly] Input utilisateur bloqué:', e.type);
         }
       };
 
-      const eventsToBlock = [
+      const userInputEvents = [
         'keydown', 'keypress', 'keyup',
-        'input', 'textInput', 'beforeinput',
+        'beforeinput', 'input',
         'paste', 'cut', 'drop',
         'compositionstart', 'compositionupdate', 'compositionend',
-        'dragstart', 'dragover'
       ];
 
-      // Ajouter les listeners avec capture=true
-      eventsToBlock.forEach(eventType => {
-        rootElement.addEventListener(eventType, blockEvent, { 
-          capture: true, 
-          passive: false 
-        });
+      // Ajouter les listeners UNIQUEMENT sur le rootElement (pas en capture)
+      userInputEvents.forEach(eventType => {
+        rootElement.addEventListener(eventType, blockUserEvent, false);
       });
 
-      // Empêcher le focus
-      rootElement.addEventListener('focus', (e: FocusEvent) => {
+      // Empêcher le focus utilisateur (mais permettre le focus programmatique)
+      const blockFocus = (e: FocusEvent) => {
         if (e.isTrusted) {
-          console.warn('🚫 [ReadOnly] Focus utilisateur bloqué');
+          console.log('🚫 [ReadOnly] Focus utilisateur bloqué');
           (e.target as HTMLElement).blur();
-          e.preventDefault();
         }
-      }, { capture: true });
+      };
+      rootElement.addEventListener('focus', blockFocus, false);
 
-      // MutationObserver léger (juste pour contenteditable)
-      const observer = new MutationObserver(() => {
-        const current = rootElement.getAttribute('contenteditable');
-        if (current !== 'false') {
-          console.warn('⚠️ [ReadOnly] contenteditable resetté → Re-blocage');
-          forceReadOnly();
-        }
-      });
+      // Ajouter un style visuel pour indiquer la lecture seule
+      rootElement.style.cursor = 'default';
+      rootElement.style.userSelect = 'text'; // Permettre la sélection de texte
+      rootElement.setAttribute('data-readonly', 'true');
 
-      observer.observe(rootElement, { 
-        attributes: true,
-        attributeFilter: ['contenteditable'],
-      });
-
-      console.log('✅ [ReadOnly] Protection utilisateur activée, binding YJS actif');
+      console.log('✅ [ReadOnly] Protection utilisateur activée, YJS reste actif');
 
       // Cleanup
       return () => {
         console.log('🧹 [ReadOnly] Nettoyage');
-        observer.disconnect();
-        eventsToBlock.forEach(eventType => {
-          rootElement.removeEventListener(eventType, blockEvent, { capture: true });
+        userInputEvents.forEach(eventType => {
+          rootElement.removeEventListener(eventType, blockUserEvent, false);
         });
+        rootElement.removeEventListener('focus', blockFocus, false);
+        rootElement.style.cursor = '';
+        rootElement.style.userSelect = '';
+        rootElement.removeAttribute('data-readonly');
       };
-    }, 1000); // Attendre 1s pour être sûr que CollaborationPlugin est monté
+    }, 500); // Délai réduit à 500ms
 
     return () => {
       clearTimeout(timeoutId);
@@ -1000,7 +981,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 <CollaborationPlugin
                   id={id}
                   providerFactory={providerFactory}
-                  shouldBootstrap={false} 
+                  shouldBootstrap={true}
                   username={isReadOnly ? `${userProfile.name} 👁️` : userProfile.name}
                   cursorColor={isReadOnly ? '#999999' : userProfile.color}
                   cursorsContainerRef={containerRef}
