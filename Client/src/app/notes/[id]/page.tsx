@@ -286,19 +286,16 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    console.log('🔒 [ReadOnly] Plugin initialisé, isReadOnly:', isReadOnly);
-    
+
     // ⚠️ NE PAS désactiver l'éditeur via setEditable(false) !
     // Cela empêche le binding YJS de mettre à jour le DOM
     // On va UNIQUEMENT bloquer les inputs utilisateur via le DOM
 
     if (!isReadOnly) {
-      console.log('✅ [ReadOnly] Mode édition actif');
+      
       editor.setEditable(true);
       return;
     }
-
-    console.log('🔒 [ReadOnly] Mode lecture seule - blocage des inputs utilisateur UNIQUEMENT');
 
     // Attendre que l'éditeur ET le CollaborationPlugin soient montés
     const timeoutId = setTimeout(() => {
@@ -309,8 +306,6 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
         return;
       }
 
-      console.log('✅ [ReadOnly] RootElement trouvé, configuration lecture seule...');
-
       // Bloquer UNIQUEMENT les événements utilisateur (keyboard, mouse, paste)
       const blockUserEvent = (e: Event) => {
         // CRITIQUE : Ne bloquer que les événements utilisateur (isTrusted = true)
@@ -318,7 +313,7 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
         if (e.isTrusted) {
           e.preventDefault();
           e.stopPropagation();
-          console.log('🚫 [ReadOnly] Input utilisateur bloqué:', e.type);
+          
         }
       };
 
@@ -337,7 +332,7 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
       // Empêcher le focus utilisateur (mais permettre le focus programmatique)
       const blockFocus = (e: FocusEvent) => {
         if (e.isTrusted) {
-          console.log('🚫 [ReadOnly] Focus utilisateur bloqué');
+          
           (e.target as HTMLElement).blur();
         }
       };
@@ -348,11 +343,9 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
       rootElement.style.userSelect = 'text'; // Permettre la sélection de texte
       rootElement.setAttribute('data-readonly', 'true');
 
-      console.log('✅ [ReadOnly] Protection utilisateur activée, YJS reste actif');
-
       // Cleanup
       return () => {
-        console.log('🧹 [ReadOnly] Nettoyage');
+        
         userInputEvents.forEach(eventType => {
           rootElement.removeEventListener(eventType, blockUserEvent, false);
         });

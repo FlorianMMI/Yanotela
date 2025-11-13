@@ -300,7 +300,7 @@ export const noteController = {
 
       // 🔄 MIGRATION À LA VOLÉE: Migrer vers YJS si nécessaire
       if (needsMigration(note)) {
-        console.log(`🔄 [Migration] Démarrage migration pour note ${id}`);
+        
         const yjsState = migrateContentToYjs(note.Content);
         
         if (yjsState) {
@@ -309,7 +309,7 @@ export const noteController = {
             where: { id },
             data: { yjsState },
           });
-          console.log(`✅ [Migration] Note ${id} migrée avec succès (${yjsState.length} bytes)`);
+          
         }
       }
 
