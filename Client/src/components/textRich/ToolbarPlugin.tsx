@@ -6,11 +6,14 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, $getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, $isTextNode } from 'lexical';
+import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, $getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, $isTextNode, $insertNodes } from 'lexical';
 import { $patchStyleText } from '@lexical/selection';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list';
 import { mergeRegister } from '@lexical/utils';
 import Icons from '@/ui/Icon';
+import { $createImageNode } from '@/components/flashnote/ImageNode';
+import { $createAudioNode } from '@/components/flashnote/AudioNode';
+import { $createVideoNode } from '@/components/flashnote/VideoNode';
 import ExportPDFButton from '@/ui/exportpdfbutton';
 
 interface ToolbarPluginProps {
@@ -22,6 +25,7 @@ interface ToolbarPluginProps {
 export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans titre", editorContentRef }: ToolbarPluginProps = {}) {
     const [editor] = useLexicalComposerContext();
     const toolbarRef = useRef(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [showFormatMenu, setShowFormatMenu] = useState(false);
     const [showSizeMenu, setShowSizeMenu] = useState(false);
     const [showListMenu, setShowListMenu] = useState(false);
@@ -333,6 +337,77 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         }
     };
 
+    const handleImageImport = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+
+    const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Check if file is an image, audio, or video
+        const isImage = file.type.startsWith('image/');
+        const isAudio = file.type.startsWith('audio/') || file.name.endsWith('.mp3');
+        const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|ogg)$/i);
+
+        if (!isImage && !isAudio && !isVideo) {
+            alert('Veuillez sélectionner un fichier image, audio (MP3) ou vidéo (MP4, WebM)');
+            return;
+        }
+
+        // Check file size (max 50MB for video, 10MB for audio, 5MB for images)
+        let maxSize: number;
+        let maxSizeLabel: string;
+        if (isVideo) {
+            maxSize = 50 * 1024 * 1024;
+            maxSizeLabel = '50MB';
+        } else if (isAudio) {
+            maxSize = 10 * 1024 * 1024;
+            maxSizeLabel = '10MB';
+        } else {
+            maxSize = 5 * 1024 * 1024;
+            maxSizeLabel = '5MB';
+        }
+
+        if (file.size > maxSize) {
+            alert(`Le fichier est trop volumineux (max ${maxSizeLabel})`);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const src = e.target?.result as string;
+            if (src) {
+                editor.update(() => {
+                    if (isImage) {
+                        const imageNode = $createImageNode({
+                            src,
+                            altText: file.name,
+                            isDrawing: false, // Imported images are not drawings
+                        });
+                        $insertNodes([imageNode]);
+                    } else if (isAudio) {
+                        const audioNode = $createAudioNode({
+                            src,
+                            altText: file.name,
+                        });
+                        $insertNodes([audioNode]);
+                    } else if (isVideo) {
+                        const videoNode = $createVideoNode({
+                            src,
+                            altText: file.name,
+                        });
+                        $insertNodes([videoNode]);
+                    }
+                });
+            }
+        };
+        reader.readAsDataURL(file);
+
+        // Reset input value to allow re-uploading the same file
+        event.target.value = '';
+    }, [editor]);
+
     return (
         <>
             {/* DESKTOP TOOLBAR - Top sticky bar with all buttons */}
@@ -470,6 +545,24 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     title="Justifier">
                     <Icons name="text-justify" />
                 </button>
+
+                <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
+
+                {/* Media import button */}
+                <button
+                    onClick={handleImageImport}
+                    className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
+                    aria-label="Importer un média"
+                    title="Importer un média (image, audio ou vidéo)">
+                    <Icons name="media" />
+                </button>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,audio/*,video/*,.mp3,.mp4,.webm"
+                    onChange={handleFileChange}
+                    className="hidden"
+                />
 
                 {/* Drawing Board button */}
                 {onOpenDrawingBoard && (
@@ -747,6 +840,15 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             </>
                         )}
                     </div>
+
+                    {/* Media import button for mobile */}
+                    <button
+                        onClick={handleImageImport}
+                        className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
+                        aria-label="Importer un média">
+                        <Icons name="media" className="mb-1" />
+                        <span className="text-xs">Média</span>
+                    </button>
 
                     {/* Drawing Board button for mobile */}
                     {onOpenDrawingBoard && (
