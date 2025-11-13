@@ -5,11 +5,13 @@ import { Folder } from "@/type/Folder";
 import FolderHeader from "@/components/folderHeader/FolderHeader";
 import FolderList from "@/components/folderList/FolderList";
 import { GetFolders } from "@/loader/loader";
+import { SearchMode } from "@/ui/searchbar";
 
 // Métadonnées SEO gérées côté serveur dans layout.tsx
 
 export default function FoldersPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchMode, setSearchMode] = useState<SearchMode>("title"); // Force title mode pour les dossiers
   const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [colorFilters, setColorFilters] = useState<string[]>([]);
@@ -38,9 +40,9 @@ export default function FoldersPage() {
   // Filtrer et trier les dossiers
   const filteredFolders = Array.isArray(folders) ? folders
     .filter(folder => {
-      // Filtre de recherche
-      const matchesSearch = folder.Nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        folder.Description?.toLowerCase().includes(searchTerm.toLowerCase());
+      // Filtre de recherche - seulement dans le titre
+      const matchesSearch = !searchTerm || 
+        folder.Nom?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
       
       // Filtre de couleur avec normalisation
       const matchesColor = colorFilters.length === 0 || 
@@ -71,6 +73,8 @@ export default function FoldersPage() {
       <FolderHeader
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
+        searchMode={searchMode}
+        setSearchMode={setSearchMode}
         sortBy={sortBy}
         setSortBy={setSortBy}
         sortDir={sortDir}
