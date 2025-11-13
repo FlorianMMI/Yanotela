@@ -975,7 +975,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
                 <ListPlugin />
                 {!isReadOnly && <AutoFocusPlugin />}
-                {!isReadOnly && <DrawingInsertPlugin onReady={(fn) => { insertDrawingRef.current = fn; }} />}
+                {!isReadOnly && <DrawingInsertPlugin onDrawingInsertRequest={(fn) => { insertDrawingRef.current = fn; }} />}
                 
                 {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
                 <EditorRefPlugin onEditorReady={setEditor} />
