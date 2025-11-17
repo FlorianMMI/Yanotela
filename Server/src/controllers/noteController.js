@@ -132,7 +132,7 @@ export const noteController = {
                   format: 0,
                   mode: "normal",
                   style: "",
-                  text: "Commencez à écrire votre note ici...",
+                  text: "",
                   type: "text",
                   version: 1
                 }
