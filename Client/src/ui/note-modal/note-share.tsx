@@ -18,6 +18,8 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     const [loading, setLoading] = useState(false);
     const [newUserIdentifier, setNewUserIdentifier] = useState("");
     const [selectedRole, setSelectedRole] = useState(3); // Par défaut: Lecteur
+    const [isTogglePublic, setIsTogglePublic] = useState(true);
+    const [copied, setCopied] = useState(false);
     const [currentUserRole, setCurrentUserRole] = useState<number | null>(null); // Rôle de l'utilisateur connecté
 
     useEffect(() => {
@@ -34,13 +36,43 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
 
     return (
         <div className="flex-1 overflow-y-auto p-4">
-            {currentUserRole !== null && (
-                <div className={`mb-4 px-3 py-1 rounded-full text-sm inline-block ${currentUserRole === 0 ? 'bg-deskbackground text-primary' :
-                    'bg-deskbackground text-element'
-                    }`}>
-                    Vous êtes {ROLE_LABELS[currentUserRole].toLowerCase()}
+            { 
+                <>
+                <section className= "flex justify-between items-center mb-4">
+                <div className={` px-3 py-1 rounded-full text-sm inline-block ${currentUserRole === 0 ? 'bg-deskbackground text-primary' : 'bg-deskbackground text-element'}`}>
+                    {(() => {
+                        const label = (typeof currentUserRole === 'number' && ROLE_LABELS[currentUserRole]) ? ROLE_LABELS[currentUserRole] : null;
+                        return (
+                            <span>Vous êtes {label ? label.toLowerCase() : 'utilisateur'}</span>
+                        );
+                    })()}
                 </div>
-            )}
+                
+                <div>
+                    <label className="flex items-center gap-3">
+                        {isTogglePublic ? (
+                        <span className="text-sm text-element">Privée</span>
+                        ) : (
+                        <span className="text-sm text-element">Publique</span>
+                        )}
+                        <div className="relative">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                aria-label="Basculer public/privé"
+                                checked={isTogglePublic}
+                                onChange={(e) => {
+                                    setIsTogglePublic(e.target.checked);
+                                }}
+                            />
+                            <div className="w-11 h-6 rounded-full bg-deskbackground peer-checked:bg-primary transition-colors" />
+                            <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform peer-checked:translate-x-5" />
+                        </div>
+                    </label>
+                </div>
+                </section>
+                </>
+            }
 
             {loading ? (
                 <div className="py-8 text-center text-element">Chargement...</div>
@@ -179,33 +211,59 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                             <option value={3}>Lecteur</option>
                         </select>
                     </div>
-                    <button
-                        onClick={async () => {
-                            if (!newUserIdentifier.trim()) return;
-                            const result = await AddPermission(noteId, newUserIdentifier.trim(), selectedRole);
-                            if (result.success) {
-                                setNewUserIdentifier("");
-                                // Refresh permissions
-                                const data = await FetchPermission(noteId);
-                                if (data.success) {
-                                    const perms = data.permissions || [];
-                                    setPermissions(perms);
-                                    // Mettre à jour le rôle courant si nécessaire
-                                    const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
-                                    setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
+                    <div className="flex gap-2">
+                        <button
+                            onClick={async () => {
+                                if (!newUserIdentifier.trim()) return;
+                                const result = await AddPermission(noteId, newUserIdentifier.trim(), selectedRole);
+                                if (result.success) {
+                                    setNewUserIdentifier("");
+                                    // Refresh permissions
+                                    const data = await FetchPermission(noteId);
+                                    if (data.success) {
+                                        const perms = data.permissions || [];
+                                        setPermissions(perms);
+                                        // Mettre à jour le rôle courant si nécessaire
+                                        const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
+                                        setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
+                                    }
+                                    // Appeler le callback pour rafraîchir la liste des notes
+                                    if (onShareSuccess) {
+                                        onShareSuccess();
+                                    }
+                                } else {
+                                    alert(result.error || 'Erreur lors de l\'ajout');
                                 }
-                                // Appeler le callback pour rafraîchir la liste des notes
-                                if (onShareSuccess) {
-                                    onShareSuccess();
+                            }}
+                            className="flex-1 bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-hover transition-colors"
+                        >
+                            Ajouter
+                        </button>
+
+                        <button
+                            onClick={async () => {
+                                // Only copy link when note is private
+                                if (!isTogglePublic) {
+                                    alert('Cette note est publique — le lien ne peut pas être copié.');
+                                    return;
                                 }
-                            } else {
-                                alert(result.error || 'Erreur lors de l\'ajout');
-                            }
-                        }}
-                        className="w-full bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary-hover transition-colors"
-                    >
-                        Ajouter
-                    </button>
+                                try {
+                                    const url = `${window.location.origin}/notes/${noteId}`;
+                                    await navigator.clipboard.writeText(url);
+                                    setCopied(true);
+                                    setTimeout(() => setCopied(false), 2000);
+                                } catch (err) {
+                                    console.error('Erreur copie lien', err);
+                                    alert('Impossible de copier le lien.');
+                                }
+                            }}
+                            disabled={!isTogglePublic}
+                            title={isTogglePublic ? 'Copier le lien de la note privée' : 'Disponible uniquement en mode privé'}
+                            className={`px-4 py-2 border border-element rounded text-sm text-foreground hover:bg-deskbackground transition-colors ${!isTogglePublic ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            {copied ? <Icon name="Link" /> : <Icon name="Link-Copite" />}
+                        </button>
+                    </div>
                 </div>
             )}
 
