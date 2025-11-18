@@ -23,7 +23,8 @@ function LoginContent() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        const res = await fetch('https://yanotela.fr/api/auth/check', {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api';
+        const res = await fetch(`${API_URL}/auth/check`, {
           method: 'GET',
           credentials: 'include',
           signal: controller.signal,
