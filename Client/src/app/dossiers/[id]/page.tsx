@@ -6,11 +6,8 @@ import { Note } from "@/type/Note";
 import NoteList from "@/components/noteList/NoteList";
 import FolderMore from "@/components/folderMore/FolderMore";
 import FolderDetailHeader from "@/components/folderDetailHeader/FolderDetailHeader";
-import { GetFolderById, UpdateFolder, DeleteFolder, CreateNote } from "@/loader/loader";
+import { GetFolderById, UpdateFolder } from "@/loader/loader";
 import { SearchMode } from "@/ui/searchbar";
-
-import ReturnButton from "@/ui/returnButton";
-import Icon from "@/ui/Icon";
 
 interface FolderDetailProps {
     params: Promise<{
@@ -24,7 +21,6 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
     const [folder, setFolder] = useState<Folder | null>(null);
     const [notes, setNotes] = useState<Note[]>([]);
-    const [totalNotes, setTotalNotes] = useState(0);
     const [loading, setLoading] = useState(true);
     const [showFolderMore, setShowFolderMore] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -112,18 +108,6 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
         // Rediriger vers la liste des dossiers
         router.push("/dossiers");
-    };
-
-    const handleCreateNote = async () => {
-        try {
-            const result = await CreateNote();
-            if (result.note && result.redirectUrl) {
-                // Rediriger vers la note créée avec un paramètre pour l'associer au dossier
-                router.push(`${result.redirectUrl}?folderId=${id}`);
-            }
-        } catch (error) {
-            console.error('Erreur lors de la création de la note:', error);
-        }
     };
 
     if (loading) {
@@ -229,6 +213,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 </div>
             )}
 
+            {/* Notes List */}
             <div className="flex-1 overflow-y-auto">
                 <NoteList
                     notes={filteredNotes}

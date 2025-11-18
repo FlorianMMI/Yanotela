@@ -181,7 +181,7 @@ export default function ExportPDFButton({
       ) : (
         <>
           <Icons name="PDF" />
-          Exporter en PDF
+          Export PDF
         </>
       )}
     </button>

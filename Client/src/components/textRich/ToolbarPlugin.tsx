@@ -16,6 +16,8 @@ import { $createAudioNode } from '@/components/flashnote/AudioNode';
 import { $createVideoNode } from '@/components/flashnote/VideoNode';
 import ExportPDFButton from '@/ui/exportpdfbutton';
 
+import ColorPalette from './ColorPalette';
+
 interface ToolbarPluginProps {
     onOpenDrawingBoard?: () => void;
     noteTitle?: string;
@@ -471,29 +473,13 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     <option value="36px">36px</option>
                 </select>
 
-                <label className="relative cursor-pointer flex items-center gap-2">
-                    <span className="w-7 h-7 rounded-md flex items-center justify-center" style={{ color: fontColor }}>
-                        <Icons name="fontColor" />
-                    </span>
-                    <input
-                        type="color"
-                        value={fontColor}
-                        onChange={(e) => handleFontColorChange(e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                </label>
+                <div className="relative flex items-center gap-2">
+                    <ColorPalette value={fontColor} onChange={handleFontColorChange} asButton small buttonIcon={<Icons name="fontColor" />} />
+                </div>
 
-                <label className="relative cursor-pointer flex items-center gap-2">
-                    <span className="w-7 h-7 rounded-md flex items-center justify-center" style={{ backgroundColor: backgroundColor }}>
-                        <Icons name="backgroundColor" />
-                    </span>
-                    <input
-                        type="color"
-                        value={backgroundColor}
-                        onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                </label>
+                <div className="relative flex items-center gap-2">
+                    <ColorPalette value={backgroundColor} onChange={handleBackgroundColorChange} asButton small buttonIcon={<Icons name="backgroundColor" />} />
+                </div>
 
                 <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
 
@@ -713,20 +699,20 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                     <div className="flex gap-3 items-center">
                                         <div>
                                             <label className="text-xs text-gray-600 mb-1 block">Couleur texte</label>
-                                            <input
-                                                type="color"
+                                            <ColorPalette
                                                 value={fontColor}
-                                                onChange={(e) => handleFontColorChange(e.target.value)}
-                                                className="w-12 h-10 rounded border border-gray-200 cursor-pointer"
+                                                onChange={handleFontColorChange}
+                                                asButton
+                                                buttonIcon={<span style={{ display: 'inline-block', width: 18, height: 18, background: fontColor, borderRadius: 2 }} />}
                                             />
                                         </div>
                                         <div>
                                             <label className="text-xs text-gray-600 mb-1 block">Fond</label>
-                                            <input
-                                                type="color"
+                                            <ColorPalette
                                                 value={backgroundColor}
-                                                onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                                                className="w-12 h-10 rounded border border-gray-200 cursor-pointer"
+                                                onChange={handleBackgroundColorChange}
+                                                asButton
+                                                buttonIcon={<span style={{ display: 'inline-block', width: 18, height: 18, background: backgroundColor, borderRadius: 2 }} />}
                                             />
                                         </div>
                                     </div>
