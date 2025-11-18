@@ -19,6 +19,8 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     const [newUserIdentifier, setNewUserIdentifier] = useState("");
     const [selectedRole, setSelectedRole] = useState(3); // Par défaut: Lecteur
     const [currentUserRole, setCurrentUserRole] = useState<number | null>(null); // Rôle de l'utilisateur connecté
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     useEffect(() => {
         setLoading(true);
@@ -34,6 +36,14 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
 
     return (
         <div className="flex-1 overflow-y-auto p-4">
+            {/* Success message */}
+            {showSuccessMessage && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                    <Icon name="check" className="text-green-600 flex-shrink-0 mt-0.5" size={18} />
+                    <p className="text-sm text-green-800">{successMessage}</p>
+                </div>
+            )}
+            
             {currentUserRole !== null && (
                 <div className={`mb-4 px-3 py-1 rounded-full text-sm inline-block ${currentUserRole === 0 ? 'bg-deskbackground text-primary' :
                     'bg-deskbackground text-element'
@@ -185,6 +195,10 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                             const result = await AddPermission(noteId, newUserIdentifier.trim(), selectedRole);
                             if (result.success) {
                                 setNewUserIdentifier("");
+                                // Afficher le message de succès
+                                setSuccessMessage(`${result.user?.pseudo || 'L\'utilisateur'} a été ajouté avec succès. Un email d'invitation a été envoyé.`);
+                                setShowSuccessMessage(true);
+                                setTimeout(() => setShowSuccessMessage(false), 5000);
                                 // Refresh permissions
                                 const data = await FetchPermission(noteId);
                                 if (data.success) {
