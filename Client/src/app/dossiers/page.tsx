@@ -69,7 +69,7 @@ export default function FoldersPage() {
     }) : [];
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full flex flex-col p-4 md:p-6">
       <FolderHeader
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -83,17 +83,19 @@ export default function FoldersPage() {
         setColorFilters={setColorFilters}
       />
 
-      <Suspense fallback={
-        <div className="p-4">
-          <div className="text-center text-gray-100">Chargement des dossiers...</div>
-        </div>
-      }>
-        <FolderList
-          folders={filteredFolders}
-          onFolderCreated={fetchFolders}
-          isLoading={loading}
-        />
-      </Suspense>
+      <div className="flex-1 min-h-0 overflow-y-auto max-h-[calc(100vh-11rem)] md:max-h-none">
+        <Suspense fallback={
+          <div className="p-4">
+            <div className="text-center text-gray-100">Chargement des dossiers...</div>
+          </div>
+        }>
+          <FolderList
+            folders={filteredFolders}
+            onFolderCreated={fetchFolders}
+            isLoading={loading}
+          />
+        </Suspense>
+      </div>
     </div>
   );
 }

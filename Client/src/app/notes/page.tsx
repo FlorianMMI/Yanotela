@@ -80,7 +80,7 @@ export default function Home() {
     }) : [];
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full flex flex-col p-4 md:p-6">
 
       <NoteHeader
         searchTerm={searchTerm}
@@ -95,15 +95,20 @@ export default function Home() {
         setSearchMode={setSearchMode}
       />
 
-      <Suspense fallback={<div></div>}>
-        <NoteList
-          notes={filteredNotes}
-          onNoteCreated={fetchNotes}
-          isLoading={loading}
-          searchTerm={searchTerm}
-          searchMode={searchMode}
-        />
-      </Suspense>
+      {/* Limiter la hauteur visible en mobile pour que seul ce conteneur soit scrollable.
+          calc(100vh - 5.5rem) = viewport minus header + paddings approximatifs.
+          Ajuster la valeur si votre header a une hauteur différente. */}
+      <div className="flex-1 min-h-0 overflow-y-auto md:max-h-none custom-scrollbar">
+        <Suspense fallback={<div></div>}>
+          <NoteList
+            notes={filteredNotes}
+            onNoteCreated={fetchNotes}
+            isLoading={loading}
+            searchTerm={searchTerm}
+            searchMode={searchMode}
+          />
+        </Suspense>
+      </div>
 
       {/* Flash Note Button - Mobile Only - Full width */}
       <div className="fixed inset-x-4 bottom-16 md:hidden z-50">

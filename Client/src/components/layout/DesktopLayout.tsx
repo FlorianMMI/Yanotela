@@ -27,15 +27,15 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
 
   return (
     <>
-      {/* Mobile: comportement actuel avec swipe navigation */}
-      <div className="md:hidden">
+      {/* Mobile: comportement avec hauteur fixe et scroll contenu */}
+      <div className="md:hidden h-dvh flex flex-col">
         {isContentPage ? (
           // Pages de contenu : affichage direct sans swipe navigation
-          <div className="h-screen overflow-auto">
+          <div className="flex-1 overflow-auto">
             {children}
           </div>
         ) : (
-          // Pages protégées : avec swipe navigation
+          // Pages protégées : avec swipe navigation et scroll interne
           <SwipeNavigationWrapper>
             {children}
           </SwipeNavigationWrapper>
