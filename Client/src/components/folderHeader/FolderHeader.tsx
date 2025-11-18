@@ -208,7 +208,6 @@ export default function FolderHeader({
               setSearchMode={setSearchMode}
               showModeSelector={false}
             />
-          
 
           <div className="flex gap-2">
             <motion.button
