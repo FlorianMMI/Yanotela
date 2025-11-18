@@ -1,7 +1,6 @@
 "use client";
 
-import { $getRoot, EditorState, $insertNodes,  $getSelection, $isRangeSelection, LexicalEditor } from "lexical";
-import ExportPDFButton from "@/ui/exportpdfbutton";
+import { $getRoot, $insertNodes, $getSelection, $isRangeSelection, LexicalEditor } from "lexical";
 import React, { useEffect, useState, use, useRef, useCallback, createContext, useContext } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -12,16 +11,13 @@ import { LexicalCollaboration } from '@lexical/react/LexicalCollaborationContext
 import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { useDebouncedCallback } from "use-debounce";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
-import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
-import { AudioNode } from "@/components/flashnote/AudioNode";
-import { VideoNode } from "@/components/flashnote/VideoNode";
+import { $createImageNode } from "@/components/flashnote/ImageNode";
 import SyncButton, { SyncStatus } from "@/ui/syncButton";
 import * as Y from 'yjs';
 
@@ -81,31 +77,12 @@ function onError(error: string | Error) {
 }
 
 /**
- * Plugin pour gérer onChange et sauvegarde HTTP
- */
-function OnChangeBehavior({ onContentChange }: { noteId: string, onContentChange: (content: string) => void }) {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    return editor.registerUpdateListener(({ editorState }: { editorState: EditorState }) => {
-      editorState.read(() => {
-        const json = editorState.toJSON();
-        const jsonString = JSON.stringify(json);
-        onContentChange(jsonString);
-      });
-    });
-  }, [editor, onContentChange]);
-
-  return null;
-}
-
-/**
  * Plugin pour insérer des images de dessin dans l'éditeur
  */
-function DrawingInsertPlugin({ 
-  onDrawingInsertRequest 
-}: { 
-  onDrawingInsertRequest: (callback: (data: DrawingData) => void) => void 
+function DrawingInsertPlugin({
+  onDrawingInsertRequest
+}: {
+  onDrawingInsertRequest: (callback: (data: DrawingData) => void) => void
 }) {
   const [editor] = useLexicalComposerContext();
 
@@ -142,11 +119,11 @@ function DrawingInsertPlugin({
   return null;
 }
 
-function YjsSyncPlugin({ 
-  noteId, 
+function YjsSyncPlugin({
+  noteId,
   isReadOnly
-}: { 
-  noteId: string, 
+}: {
+  noteId: string,
   isReadOnly: boolean
 }) {
   const [editor] = useLexicalComposerContext();
@@ -156,7 +133,7 @@ function YjsSyncPlugin({
 
   useEffect(() => {
     if (isReadOnly) {
-      
+
       setSyncStatus('synced');
       return;
     }
@@ -165,14 +142,14 @@ function YjsSyncPlugin({
     const unregister = editor.registerUpdateListener(() => {
       hasChangesRef.current = true;
       setSyncStatus('pending');
-      
+
     });
 
     // Sync automatique toutes les 2 secondes si changements
     const syncInterval = setInterval(async () => {
       // Vérifier s'il y a des changements de contenu
       if (!hasChangesRef.current) return;
-      
+
       const now = Date.now();
       if (now - lastSyncRef.current < 2000) return; // Throttle minimum 2s
 
@@ -182,7 +159,7 @@ function YjsSyncPlugin({
         // Importer la map globale des documents YJS
         const { yjsDocuments } = await import('@/collaboration/providers');
         const ydoc = yjsDocuments.get(noteId);
-        
+
         if (!ydoc) {
           console.warn('⚠️ [YjsSync] Y.Doc non trouvé pour', noteId);
           setSyncStatus('error');
@@ -210,8 +187,6 @@ function YjsSyncPlugin({
         });
 
         if (response.ok) {
-          const data = await response.json();
-          
           lastSyncRef.current = now;
           hasChangesRef.current = false;
           setSyncStatus('synced');
@@ -228,16 +203,16 @@ function YjsSyncPlugin({
     // Écouter l'événement de sync manuel
     const handleManualSync = async () => {
       if (!hasChangesRef.current) {
-        
+
         return;
       }
-      
+
       try {
         setSyncStatus('syncing');
-        
+
         const { yjsDocuments } = await import('@/collaboration/providers');
         const ydoc = yjsDocuments.get(noteId);
-        
+
         if (!ydoc) {
           setSyncStatus('error');
           return;
@@ -247,7 +222,7 @@ function YjsSyncPlugin({
         const lexicalJSON = editor.getEditorState().toJSON();
         const Content = JSON.stringify(lexicalJSON);
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        
+
         const response = await fetch(`${API_URL}/note/sync/${noteId}`, {
           method: 'POST',
           credentials: 'include',
@@ -274,7 +249,7 @@ function YjsSyncPlugin({
     window.addEventListener('trigger-manual-sync', handleManualSync);
 
     return () => {
-      
+
       clearInterval(syncInterval);
       unregister();
       window.removeEventListener('trigger-manual-sync', handleManualSync);
@@ -294,7 +269,7 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
     // On va UNIQUEMENT bloquer les inputs utilisateur via le DOM
 
     if (!isReadOnly) {
-      
+
       editor.setEditable(true);
       return;
     }
@@ -302,7 +277,7 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
     // Attendre que l'éditeur ET le CollaborationPlugin soient montés
     const timeoutId = setTimeout(() => {
       const rootElement = editor.getRootElement();
-      
+
       if (!rootElement) {
         console.error('❌ [ReadOnly] RootElement introuvable après 500ms');
         return;
@@ -315,7 +290,7 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
         if (e.isTrusted) {
           e.preventDefault();
           e.stopPropagation();
-          
+
         }
       };
 
@@ -334,7 +309,7 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
       // Empêcher le focus utilisateur (mais permettre le focus programmatique)
       const blockFocus = (e: FocusEvent) => {
         if (e.isTrusted) {
-          
+
           (e.target as HTMLElement).blur();
         }
       };
@@ -347,7 +322,7 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
 
       // Cleanup
       return () => {
-        
+
         userInputEvents.forEach(eventType => {
           rootElement.removeEventListener(eventType, blockUserEvent, false);
         });
@@ -367,122 +342,6 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
 }
 
 /**
- * Plugin de collaboration en lecture seule
- * Reçoit les updates des autres utilisateurs sans permettre d'émettre
- * NE CRÉE PAS de binding bidirectionnel - juste observation
- */
-function ReadOnlyCollaborationPlugin({ 
-  id, 
-  providerFactory,
-  username,
-  cursorColor,
-  cursorsContainerRef 
-}: {
-  id: string;
-  providerFactory: (id: string, yjsDocMap: Map<string, Y.Doc>) => any;
-  username?: string;
-  cursorColor?: string;
-  cursorsContainerRef?: React.RefObject<HTMLDivElement | null>;
-}) {
-  const [editor] = useLexicalComposerContext();
-  const isInitializedRef = useRef(false);
-
-  useEffect(() => {
-
-    // Utiliser une map locale pour créer le provider et le document YJS
-    const yjsDocMap = new Map<string, Y.Doc>();
-    const provider = providerFactory(id, yjsDocMap);
-    const doc = yjsDocMap.get(id);
-    
-    if (!doc) {
-      console.error('❌ [ReadOnlyCollaboration] Impossible de créer le document YJS');
-      return;
-    }
-
-    // Configurer l'awareness pour montrer qu'on est là (en lecture seule)
-    if (provider.awareness && username) {
-      provider.awareness.setLocalStateField('user', {
-        name: `${username} 👁️`,  // Indiquer visuellement le mode lecture seule
-        color: '#999999',  // Gris pour lecture seule
-      });
-    }
-
-    // Observer les changements du document YJS et les appliquer à Lexical
-    const ytext = doc.getText('lexical');
-    
-    const observer = (event: Y.YTextEvent, transaction: Y.Transaction) => {
-      // Ignorer les transactions locales (ne devrait pas arriver en lecture seule)
-      if (transaction.local) {
-        console.warn('🚫 [ReadOnlyCollaboration] Transaction locale détectée - ignorée');
-        return;
-      }
-
-      const yjsContent = ytext.toString();
-      if (!yjsContent) return;
-
-      try {
-        const parsedState = JSON.parse(yjsContent);
-        if (parsedState.root && parsedState.root.type === 'root') {
-          // Appliquer l'update sans permettre de modifications locales
-          editor.update(() => {
-            const newEditorState = editor.parseEditorState(parsedState);
-            editor.setEditorState(newEditorState);
-          }, {
-            tag: 'collaboration',  // Marquer comme update de collaboration
-            discrete: true,
-          });
-        }
-      } catch (err) {
-        console.warn('[ReadOnlyCollaboration] Erreur parsing YJS:', err);
-      }
-    };
-
-    ytext.observe(observer);
-
-    // Connecter APRÈS avoir configuré l'observer
-    provider.connect();
-
-    // Charger l'état initial
-    provider.on('sync', (isSynced: boolean) => {
-      if (isSynced && !isInitializedRef.current) {
-        
-        isInitializedRef.current = true;
-        
-        // Déclencher un premier render avec le contenu YJS
-        const yjsContent = ytext.toString();
-        if (yjsContent) {
-          try {
-            const parsedState = JSON.parse(yjsContent);
-            if (parsedState.root && parsedState.root.type === 'root') {
-              editor.update(() => {
-                const newEditorState = editor.parseEditorState(parsedState);
-                editor.setEditorState(newEditorState);
-              }, {
-                tag: 'collaboration',
-                discrete: true,
-              });
-            }
-          } catch (err) {
-            console.warn('[ReadOnlyCollaboration] Erreur chargement initial:', err);
-          }
-        }
-      }
-    });
-
-    // Cleanup
-    return () => {
-      
-      ytext.unobserve(observer);
-      provider.disconnect();
-      provider.destroy();
-      isInitializedRef.current = false;
-    };
-  }, [id, editor, providerFactory, username, cursorColor]);
-
-  return null;
-}
-
-/**
  * Plugin pour charger le contenu initial de la note dans l'éditeur
  */
 function LoadInitialContentPlugin({ content }: { content: string | null }) {
@@ -494,11 +353,11 @@ function LoadInitialContentPlugin({ content }: { content: string | null }) {
 
     try {
       const parsedContent = JSON.parse(content);
-      
+
       editor.update(() => {
         const newEditorState = editor.parseEditorState(parsedContent);
         editor.setEditorState(newEditorState);
-        
+
       }, {
         tag: 'history-merge',
       });
@@ -549,7 +408,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 function NoteEditorContent({ params }: NoteEditorProps) {
   // Détection mobile
   const [isMobile, setIsMobile] = useState(false);
-  
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -565,7 +424,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   const [showNoteMore, setShowNoteMore] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
-  
+
   // État pour le contenu initial de la note (pour bootstrapping)
   const [initialEditorContent, setInitialEditorContent] = useState<string | null>(null);
 
@@ -579,18 +438,15 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   // Unwrap params using React.use()
   const { id } = use(params);
 
-  // ✅ State pour profil utilisateur (utilisé par CollaborationPlugin)
+  // State pour profil utilisateur (utilisé par CollaborationPlugin)
   const [userProfile, setUserProfile] = useState({ name: 'Anonyme', color: '#FF5733' });
   const containerRef = useRef<HTMLDivElement | null>(null);
   const editorContentRef = useRef<HTMLDivElement | null>(null); // Ref pour le ContentEditable (export PDF)
-  
-  // Ref pour la fonction d'insertion de dessin
-  const drawingInsertCallbackRef = useRef<((data: DrawingData) => void) | null>(null);
 
   // ✅ Provider factory pour CollaborationPlugin
   const providerFactory = useCallback(
     (docId: string, yjsDocMap: Map<string, Y.Doc>) => {
-      
+
       return createWebsocketProvider(docId, yjsDocMap);
     },
     []
@@ -604,36 +460,15 @@ function NoteEditorContent({ params }: NoteEditorProps) {
       console.warn('🔒 [Permissions] Modification titre bloquée (lecture seule)');
       return;
     }
-    
+
     const finalTitle = newTitle.trim() === '' ? 'Sans titre' : newTitle;
     setNoteTitle(finalTitle);
 
     // Émettre un événement pour synchroniser avec le Breadcrumb
-    window.dispatchEvent(new CustomEvent('noteTitleUpdated', { 
-      detail: { noteId: id, title: finalTitle } 
+    window.dispatchEvent(new CustomEvent('noteTitleUpdated', {
+      detail: { noteId: id, title: finalTitle }
     }));
   }
-
-  // Sauvegarde HTTP debounced du contenu
-  const debouncedSaveContent = useDebouncedCallback(
-    (content: string) => {
-      if (isReadOnly) {
-        console.warn('🔒 [Permissions] Sauvegarde contenu bloquée (lecture seule)');
-        return;
-      }
-      
-      SaveNote(id, { Content: content }).then(() => {
-        
-      }).catch((error) => {
-        console.error('❌ Erreur sauvegarde contenu:', error);
-      });
-    },
-    2000 // Sauvegarde toutes les 2 secondes max
-  );
-
-  const handleContentChange = useCallback((content: string) => {
-    debouncedSaveContent(content);
-  }, [debouncedSaveContent]);
 
   // Gestion du dessin - Insertion dans l'éditeur Lexical
   const handleDrawingSave = useCallback((drawingData: DrawingData) => {
@@ -642,10 +477,10 @@ function NoteEditorContent({ params }: NoteEditorProps) {
       console.error('❌ Editor non disponible');
       return;
     }
-    
+
     editor.update(() => {
       const selection = $getSelection();
-      
+
       // Créer un nouveau nœud image avec le dessin
       const imageNode = $createImageNode({
         src: drawingData.dataUrl,
@@ -653,7 +488,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         width: Math.min(drawingData.width, 600),
         height: Math.min(drawingData.height, 600),
       });
-      
+
       // Insérer le nœud image à la sélection actuelle ou à la fin
       if ($isRangeSelection(selection)) {
         $insertNodes([imageNode]);
@@ -669,7 +504,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         editor.getEditorState().read(() => {
           const json = editor.getEditorState().toJSON();
           const jsonString = JSON.stringify(json);
-          
+
           SaveNote(id, { Content: jsonString }).catch((error) => {
             console.error('❌ Erreur sauvegarde après dessin:', error);
           });
@@ -678,7 +513,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     }, 100);
   }, [editor, id]);
 
-  // ✅ Configuration Lexical - Charger l'état initial depuis la DB
+  // Configuration Lexical - Charger l'état initial depuis la DB
   const initialConfig = {
     editorState: initialEditorContent || null,  // État chargé depuis Content si pas de yjsState
     namespace: 'YanotelaNoteEditor',
@@ -695,7 +530,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         setHasError(false);
 
         const noteData = await GetNoteById(id);
-        
+
         if (!noteData || 'error' in noteData) {
           setHasError(true);
           return;
@@ -703,26 +538,26 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
         const note = noteData;
         setNoteTitle(note.Titre || 'Sans titre');
-        
+
         // ✅ Charger le contenu initial dans l'éditeur
         if (note.Content) {
-          
+
           setInitialEditorContent(note.Content);
         } else {
           console.warn('⚠️ [LoadNote] Pas de contenu dans la note');
           setInitialEditorContent(null);
         }
-        
+
         // ✅ Gestion des permissions (lecture seule)
         if (note.userRole !== undefined) {
           // Role 3 = lecture seule → bloquer l'édition
           const readOnly = note.userRole === 3;
           setIsReadOnly(readOnly);
-          
+
           if (readOnly) {
-            
+
           } else {
-            
+
           }
         } else {
           console.warn('⚠️ [Permissions] userRole non reçu du serveur, défaut = édition');
@@ -769,11 +604,11 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     fetchUserInfo();
   }, []);
 
-   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
+  // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
     // Petit délai pour s'assurer que le provider est créé
     const timer = setTimeout(() => {
-      
+
       setAwarenessUserInfo(id, userProfile.name, userProfile.color);
     }, 500);
 
@@ -785,7 +620,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     const folderId = searchParams?.get('folderId');
     if (folderId && id) {
       AddNoteToFolder(id, folderId).then(() => {
-        
+
         // Supprimer le paramètre après assignation
         const url = new URL(window.location.href);
         url.searchParams.delete('folderId');
@@ -834,7 +669,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
       const { noteId: updatedNoteId, title } = event.detail;
       // Vérifier que l'événement concerne bien cette note
       if (updatedNoteId === id) {
-        
+
         setNoteTitle(title);
       }
     };
@@ -871,13 +706,12 @@ function NoteEditorContent({ params }: NoteEditorProps) {
               value={noteTitle}
               onChange={(e) => !isReadOnly && setNoteTitle(e.target.value)}
               onBlur={(e) => updateNoteTitle(e.target.value)}
-              className={`w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white ${
-                isReadOnly ? 'cursor-not-allowed' : ''
-              }`}
+              className={`w-full font-semibold bg-transparent p-1 placeholder:text-textcardNote placeholder:font-medium focus:outline-white ${isReadOnly ? 'cursor-not-allowed' : ''
+                }`}
               disabled={isReadOnly}
             />
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowNoteMore((prev) => !prev)}
                 aria-label="Ouvrir les options de la note"
                 className="focus:outline-none focus:ring-2 focus:ring-white rounded p-1"
@@ -913,8 +747,8 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         <div className="relative bg-fondcardNote text-textcardNote p-4 pb-24 rounded-lg flex flex-col flex-1 overflow-visible">
           {/* Drawing Board */}
           {!isReadOnly && (
-            <DrawingBoard 
-              isOpen={isDrawingBoardOpen} 
+            <DrawingBoard
+              isOpen={isDrawingBoardOpen}
               onSave={handleDrawingSave}
               onClose={() => setIsDrawingBoardOpen(false)}
             />
@@ -925,20 +759,19 @@ function NoteEditorContent({ params }: NoteEditorProps) {
             <LexicalCollaboration>
               <LexicalComposer initialConfig={initialConfig}>
                 {!isReadOnly && (
-                  <ToolbarPlugin 
+                  <ToolbarPlugin
                     onOpenDrawingBoard={() => setIsDrawingBoardOpen(true)}
                     noteTitle={noteTitle}
                     editorContentRef={editorContentRef}
                   />
                 )}
-                
+
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
                       ref={editorContentRef as any}
-                      className={`editor-root mt-2 h-full focus:outline-none ${
-                        isReadOnly ? 'cursor-default select-text' : ''
-                      }`}
+                      className={`editor-root mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-default select-text' : ''
+                        }`}
                     />
                   }
                   ErrorBoundary={LexicalErrorBoundary}
@@ -947,13 +780,13 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 <ListPlugin />
                 {!isReadOnly && <AutoFocusPlugin />}
                 {!isReadOnly && <DrawingInsertPlugin onDrawingInsertRequest={(fn) => { insertDrawingRef.current = fn; }} />}
-                
+
                 {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
                 <EditorRefPlugin onEditorReady={setEditor} />
-                
+
                 {/* Charger le contenu initial depuis la base de données */}
                 <LoadInitialContentPlugin content={initialEditorContent} />
-                
+
                 {/* ✅ Toujours utiliser CollaborationPlugin pour la sync temps réel */}
                 <CollaborationPlugin
                   id={id}
@@ -963,12 +796,12 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                   cursorColor={isReadOnly ? '#999999' : userProfile.color}
                   cursorsContainerRef={containerRef}
                 />
-                
+
                 {/* Plugins d'édition (désactivés en lecture seule) */}
                 {!isReadOnly && (
                   <>
-                    <YjsSyncPlugin 
-                      noteId={id} 
+                    <YjsSyncPlugin
+                      noteId={id}
                       isReadOnly={isReadOnly}
                     />
                     <TitleSyncPlugin
@@ -979,7 +812,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                     />
                   </>
                 )}
-                
+
                 {/* Bloquer l'édition APRÈS que le binding YJS soit créé */}
                 <ReadOnlyPlugin isReadOnly={isReadOnly} />
               </LexicalComposer>
