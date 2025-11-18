@@ -45,4 +45,10 @@ router.post('/remove-folder/:id', requireAuth, noteController.removeFolder);
 // Route Get pour récupérer le dossier d'une note
 router.get('/folder/:id', requireAuth, noteController.getNoteFolder);
 
+// Route pour gérer si la notes est publique ou non
+router.post('/set-public/:id', requireAuth, noteController.setPublicNote);
+
+// Route pour vérifier si une note est publique
+router.get('/is-public/:id', requireAuth, noteController.isPublicNote);
+
 export default router;

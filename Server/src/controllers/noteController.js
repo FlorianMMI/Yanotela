@@ -973,4 +973,59 @@ export const noteController = {
       });
     }
   },
+
+
+  setPublicNote: async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+      var note = await prisma.note.findUnique({
+        where: { id },
+        select: { isPublic: true },
+      });
+
+      if (note) {
+        const updated = await prisma.note.update({
+          where: { id },
+          data: { isPublic: !note.isPublic },
+          select: { isPublic: true },
+        });
+        note = updated;
+      }
+    } catch (error) {
+      console.error("Erreur lors de la vérification de la note publique:", error);
+      return res.status(500).json({
+        message: "Erreur lors de la vérification de la note publique",
+        error: error.message,
+      });
+    }
+
+    if (!note) {
+      return res.status(404).json({ message: "Note non trouvée" });
+    }
+
+    res.status(200).json({ isPublic: note.isPublic });
+  },
+
+  isPublicNote: async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+      const note = await prisma.note.findUnique({
+        where: { id },
+        select: { isPublic: true },
+      });
+      
+      if (!note) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+      res.status(200).json({ isPublic: note.isPublic });
+    } catch (error) {
+      console.error("Erreur lors de la vérification de la note publique:", error);
+      return res.status(500).json({
+        message: "Erreur lors de la vérification de la note publique",
+        error: error.message,
+      });
+    }
+  }
 };

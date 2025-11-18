@@ -343,6 +343,70 @@ export async function RestoreNote(id: string): Promise<{ success: boolean; messa
     }
 }
 
+
+export async function setPublic(noteId: string, isPublic: boolean): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/set-public/${noteId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ isPublic })
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            return {
+                success: false,
+                error: errorData.message || `Erreur HTTP ${response.status}`
+            };
+        }
+        const data = await response.json();
+        return {
+            success: true,
+            message: data.message || "Statut public modifié avec succès"
+        };
+    } catch (error) {
+        console.error("Error setting note public status:", error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Erreur inconnue"
+        };
+    }
+}
+
+
+export async function IsPublic(noteId: string): Promise<{ success: boolean; isPublic?: boolean; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/is-public/${noteId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            return {
+                success: false,
+                error: errorData.message || `Erreur HTTP ${response.status}`
+            };
+        }
+        const data = await response.json();
+        return {
+            success: true,
+            isPublic: data.isPublic
+        };
+    } catch (error) {
+        console.error("Error checking if note is public:", error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Erreur inconnue"
+        };
+    }
+}
+
+
 // ============== AUTHENTIFICATION FUNCTIONS ==============
 
 interface LoginCredentials {
@@ -1097,3 +1161,6 @@ export async function GetNoteFolder(noteId: string): Promise<{ success: boolean;
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
+
+
+

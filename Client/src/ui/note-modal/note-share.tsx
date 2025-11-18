@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FetchPermission, UpdatePermission, AddPermission, RemovePermission } from "@/loader/loader";
+import { FetchPermission, UpdatePermission, AddPermission, RemovePermission, IsPublic, setPublic } from "@/loader/loader";
 import { useAuth } from "@/hooks/useAuth";
 import Icon from "../Icon";
 
@@ -18,12 +18,13 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     const [loading, setLoading] = useState(false);
     const [newUserIdentifier, setNewUserIdentifier] = useState("");
     const [selectedRole, setSelectedRole] = useState(3); // Par défaut: Lecteur
-    const [isTogglePublic, setIsTogglePublic] = useState(true);
+    const [isTogglePublic, setIsTogglePublic] = useState(false); // false = privé par défaut
     const [copied, setCopied] = useState(false);
     const [currentUserRole, setCurrentUserRole] = useState<number | null>(null); // Rôle de l'utilisateur connecté
 
     useEffect(() => {
         setLoading(true);
+        // Récupérer les permissions
         FetchPermission(noteId).then((data: any) => {
             const perms = data && data.success && Array.isArray(data.permissions) ? data.permissions : [];
             setPermissions(perms);
@@ -32,7 +33,24 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
             setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
             setLoading(false);
         });
+
+        // Récupérer le statut public/privé
+        IsPublic(noteId).then((data) => {
+            if (data.success && typeof data.isPublic === 'boolean') {
+                setIsTogglePublic(data.isPublic);
+            }
+        });
     }, [noteId, connectedUserId]);
+
+    const handleTogglePublic = async (newValue: boolean) => {
+        setIsTogglePublic(newValue);
+        const result = await setPublic(noteId, newValue);
+        if (!result.success) {
+            // Revenir à l'état précédent en cas d'erreur
+            setIsTogglePublic(!newValue);
+            alert(result.error || 'Erreur lors de la modification du statut');
+        }
+    };
 
     return (
         <div className="flex-1 overflow-y-auto p-4">
@@ -51,9 +69,9 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                 <div>
                     <label className="flex items-center gap-3">
                         {isTogglePublic ? (
-                        <span className="text-sm text-element">Privée</span>
-                        ) : (
                         <span className="text-sm text-element">Publique</span>
+                        ) : (
+                        <span className="text-sm text-element">Privée</span>
                         )}
                         <div className="relative">
                             <input
@@ -62,7 +80,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                 aria-label="Basculer public/privé"
                                 checked={isTogglePublic}
                                 onChange={(e) => {
-                                    setIsTogglePublic(e.target.checked);
+                                    handleTogglePublic(e.target.checked);
                                 }}
                             />
                             <div className="w-11 h-6 rounded-full bg-deskbackground peer-checked:bg-primary transition-colors" />
@@ -243,7 +261,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                         <button
                             onClick={async () => {
                                 // Only copy link when note is private
-                                if (!isTogglePublic) {
+                                if (isTogglePublic) {
                                     alert('Cette note est publique — le lien ne peut pas être copié.');
                                     return;
                                 }
@@ -257,9 +275,9 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                     alert('Impossible de copier le lien.');
                                 }
                             }}
-                            disabled={!isTogglePublic}
-                            title={isTogglePublic ? 'Copier le lien de la note privée' : 'Disponible uniquement en mode privé'}
-                            className={`px-4 py-2 border border-element rounded text-sm text-foreground flex flex-col justify-center hover:bg-deskbackground transition-colors ${!isTogglePublic ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={isTogglePublic}
+                            title={!isTogglePublic ? 'Copier le lien de la note privée' : 'Disponible uniquement en mode privé'}
+                            className={`px-4 py-2 border border-element rounded text-sm text-foreground flex flex-col justify-center hover:bg-deskbackground transition-colors ${isTogglePublic ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {copied ? <Icon name="Link" /> : <Icon name="Link-Copite" />}
                         </button>
