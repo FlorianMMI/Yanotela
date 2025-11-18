@@ -10,6 +10,7 @@
     "test:auth": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/auth/",
     "test:notes": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/notes/",
     "test:bdd": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/bdd/",
+    "test:unit": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/unit/",
     "test": "set NODE_ENV=test&& node --experimental-vm-modules node_modules/jest/bin/jest.js tests/",
     "dev": "node index.js",
     "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch",
