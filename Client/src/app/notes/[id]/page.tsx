@@ -344,29 +344,64 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
 /**
  * Plugin pour charger le contenu initial de la note dans l'éditeur
  */
-function LoadInitialContentPlugin({ content }: { content: string | null }) {
+function LoadInitialContentPlugin({ content, noteId }: { content: string | null, noteId: string }) {
   const [editor] = useLexicalComposerContext();
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!content || hasLoadedRef.current) return;
 
-    try {
-      const parsedContent = JSON.parse(content);
+    let cancelled = false;
 
-      editor.update(() => {
-        const newEditorState = editor.parseEditorState(parsedContent);
-        editor.setEditorState(newEditorState);
+    (async () => {
+      try {
+        // If a Y.Doc already exists and contains state, prefer Y.Doc as source of truth
+        const { yjsDocuments } = await import('@/collaboration/providers');
+        let ydoc = yjsDocuments.get(noteId);
 
-      }, {
-        tag: 'history-merge',
-      });
+        // If the provider hasn't been created yet, wait briefly for it (small race window)
+        if (!ydoc) {
+          const start = Date.now();
+          const maxWait = 300; // ms
+          while (Date.now() - start < maxWait && !cancelled) {
+            await new Promise((r) => setTimeout(r, 50));
+            const { yjsDocuments: yjsDocumentsRetry } = await import('@/collaboration/providers');
+            ydoc = yjsDocumentsRetry.get(noteId);
+            if (ydoc) break;
+          }
+        }
 
-      hasLoadedRef.current = true;
-    } catch (err) {
-      console.error('❌ [LoadContent] Erreur parsing contenu:', err);
-    }
-  }, [editor, content]);
+        if (ydoc) {
+          const encoded = Y.encodeStateAsUpdate(ydoc);
+          if (encoded && encoded.length > 0) {
+            // Y.Doc already has content — skip applying DB content to avoid duplication
+            hasLoadedRef.current = true;
+            return;
+          }
+        }
+
+        if (cancelled) return;
+
+        const parsedContent = JSON.parse(content);
+
+        editor.update(() => {
+          const newEditorState = editor.parseEditorState(parsedContent);
+          editor.setEditorState(newEditorState);
+
+        }, {
+          tag: 'history-merge',
+        });
+
+        hasLoadedRef.current = true;
+      } catch (err) {
+        console.error('❌ [LoadContent] Erreur parsing contenu:', err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editor, content, noteId]);
 
   return null;
 }
@@ -515,7 +550,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // Configuration Lexical - Charger l'état initial depuis la DB
   const initialConfig = {
-    editorState: initialEditorContent || null,  // État chargé depuis Content si pas de yjsState
+    editorState: null, // Do not set initial editor state here when using YJS collaboration
     namespace: 'YanotelaNoteEditor',
     nodes: editorNodes,
     onError,
@@ -784,8 +819,8 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
                 <EditorRefPlugin onEditorReady={setEditor} />
 
-                {/* Charger le contenu initial depuis la base de données */}
-                <LoadInitialContentPlugin content={initialEditorContent} />
+                {/* Charger le contenu initial depuis la base de données (yjs-aware) */}
+                <LoadInitialContentPlugin content={initialEditorContent} noteId={id} />
 
                 {/* ✅ Toujours utiliser CollaborationPlugin pour la sync temps réel */}
                 <CollaborationPlugin
