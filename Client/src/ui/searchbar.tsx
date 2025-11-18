@@ -64,7 +64,7 @@ export default function SearchBar({
 
     return (
         <>
-            <div className="relative flex w-full gap-2">
+            <div className="relative flex w-full maw-w-[40rem] gap-2">
                 {/* Barre de recherche */}
                 <div className="relative w-full flex h-full p-4 gap-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300">
                     <Icon
