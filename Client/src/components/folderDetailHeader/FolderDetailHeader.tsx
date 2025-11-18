@@ -7,6 +7,19 @@ import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import ReturnButton from "@/ui/returnButton";
 
+// Hook pour détecter la largeur de l'écran
+function useWindowWidth() {
+  const [width, setWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 0);
+  React.useEffect(() => {
+    function handleResize() {
+      setWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return width;
+}
+
 interface FolderDetailHeaderProps {
   folderName: string;
   folderColor: string;
@@ -38,19 +51,23 @@ export default function FolderDetailHeader({
   setSearchMode,
   onMoreClick
 }: FolderDetailHeaderProps) {
+
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const windowWidth = useWindowWidth();
 
   return (
     <>
       {/* Header Mobile */}
       <div
-        className="md:hidden flex flex-col rounded-lg text-white sticky top-2 z-10"
-        style={{ backgroundColor: folderColor || "#882626" }}
+        className="md:flex xl:hidden md:bg-none flex flex-col rounded-lg text-white md:text-primary sticky top-2 z-10"
+        style={windowWidth < 768 ? { backgroundColor: folderColor || "#882626" } : undefined}
       >
       <div className="flex p-2.5 items-center gap-2">
-        <ReturnButton />
+        <div className="md:hidden block">
+        <ReturnButton  />
+        </div>
 
         {/* Nom du dossier */}
         <h2 className="flex-1 font-semibold text-base truncate">{folderName}</h2>
@@ -63,7 +80,7 @@ export default function FolderDetailHeader({
             className="flex p-2 rounded-lg hover:bg-white/20 transition-colors"
             aria-label="Rechercher"
           >
-            <Icon name="recherche" size={20} className="text-white" />
+            <Icon name="recherche" size={20} className="text-white md:text-primary" />
           </button>
 
           {/* Bouton Filtre */}
@@ -79,7 +96,7 @@ export default function FolderDetailHeader({
             <Icon 
               name="filtre" 
               size={20} 
-              className="text-white"
+              className="text-white md:text-primary"
             />
           </button>
 
@@ -87,12 +104,12 @@ export default function FolderDetailHeader({
           <button 
             onClick={onMoreClick} 
             aria-label="Options du dossier"
-            className="flex p-2 rounded-lg hover:bg-white/20 transition-colors"
+            className="flex md:hidden p-2 rounded-lg hover:bg-white/20 transition-colors"
           >
             <Icon
               name="more"
               size={20}
-              className="text-white"
+              className="text-white md:text-primary"
             />
           </button>
         </div>
@@ -142,7 +159,7 @@ export default function FolderDetailHeader({
                       }
                       setShowMobileFilters(false);
                     }}
-                    className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors min-w-max ${
                       sortBy === "recent"
                         ? "bg-primary text-white"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -206,9 +223,9 @@ export default function FolderDetailHeader({
       </div>
 
       {/* Barre de recherche et filtre - Version Desktop */}
-      <div className="hidden md:block">
-        <div className="flex items-stretch justify-center gap-3 p-6 h-full">
-          <div className="flex justify-center items-center">
+      <div className="hidden xl:block md:hidden">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full">
+          
             <SearchBar 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm}
@@ -216,7 +233,7 @@ export default function FolderDetailHeader({
               setSearchMode={setSearchMode}
               showModeSelector={true}
             />
-          </div>
+          
 
           <div className="flex gap-2">
             <motion.button

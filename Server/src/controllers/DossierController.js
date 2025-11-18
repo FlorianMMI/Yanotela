@@ -170,7 +170,8 @@ export const DossierController = {
                     Content: note.Content,
                     ModifiedAt: note.ModifiedAt,
                     author: note.author,
-                    userRole: userRole
+                    userRole: userRole,
+                    tag: note.tag // Couleur du tag de la note
                 };
             });
 

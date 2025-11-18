@@ -46,8 +46,8 @@ services:
       - CLIENT_URL=http://localhost:3000
       - SESSION_SECRET=local_session_secret_dev_only
       - MAIL_SERVICE=gmail
-      - MAIL_USER=test@example.com
-      - MAIL_PASSWORD=test_password
+      - GMAIL_USER={mail}
+      - GMAIL_APP_PASSWORD={mdp}
     volumes:
       # Mount source code for hot reload
       - ./Server/src:/app/src

@@ -1,3 +1,18 @@
+/* Scrollbar personnalisée pour notes */
+.custom-scrollbar {
+  scrollbar-color: var(--primary) var(--deskbackground);
+  scrollbar-width: thin;
+}
+
+/* Pour Chrome, Edge, Safari */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  background: var(--deskbackground);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 8px;
+}
 @import url('https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&family=Geologica:wght@100..900&display=swap');
 @import url("https://fonts.googleapis.com/css2?family=Nixie+One&display=swap");
 @import "tailwindcss";
@@ -423,5 +438,12 @@ input, textarea, select, [role="button"], button {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+
+::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
 }
 

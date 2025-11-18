@@ -19,8 +19,10 @@ import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
+import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
+import { AudioNode } from "@/components/flashnote/AudioNode";
+import { VideoNode } from "@/components/flashnote/VideoNode";
 import SyncButton, { SyncStatus } from "@/ui/syncButton";
-import { $createImageNode } from "@/components/flashnote/ImageNode";
 import * as Y from 'yjs';
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
@@ -567,6 +569,9 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   // État pour le contenu initial de la note (pour bootstrapping)
   const [initialEditorContent, setInitialEditorContent] = useState<string | null>(null);
 
+  // Ref to store the drawing insert function
+  const insertDrawingRef = useRef<((data: DrawingData) => void) | null>(null);
+
   // États pour les notifications
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -872,9 +877,13 @@ function NoteEditorContent({ params }: NoteEditorProps) {
               disabled={isReadOnly}
             />
             <div className="relative">
-              <span onClick={() => setShowNoteMore((prev) => !prev)}>
+              <button 
+                onClick={() => setShowNoteMore((prev) => !prev)}
+                aria-label="Ouvrir les options de la note"
+                className="focus:outline-none focus:ring-2 focus:ring-white rounded p-1"
+              >
                 <Icons name="more" size={20} className="text-white cursor-pointer" />
-              </span>
+              </button>
               {showNoteMore && (
                 <div className="absolute right-0 mt-2 z-30">
                   <NoteMore noteId={id} onClose={() => setShowNoteMore(false)} />
@@ -937,6 +946,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
                 <ListPlugin />
                 {!isReadOnly && <AutoFocusPlugin />}
+                {!isReadOnly && <DrawingInsertPlugin onDrawingInsertRequest={(fn) => { insertDrawingRef.current = fn; }} />}
                 
                 {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
                 <EditorRefPlugin onEditorReady={setEditor} />

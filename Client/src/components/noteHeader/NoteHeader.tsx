@@ -39,8 +39,8 @@ export default function NoteHeader({
   return (
     <>
       {/* Header Mobile */}
-      <div className="block md:hidden">
-        <header className="p-4 border-b border-gray-200">
+      <div className="block xl:hidden md:block">
+        <header className="p-4 ">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Mes Notes</h1>
             
@@ -175,12 +175,12 @@ export default function NoteHeader({
         </header>
       </div>
 
-      {/* Barre de recherche et filtre */}
-      <div className="hidden md:block flex justify-center z-[1000]">
+      {/* Barre de recherche et filtre desktop */}
+      <div className="hidden xl:block md:hidden flex justify-center">
         
-        <div className="flex items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
 
-          <div className="flex justify-center items-center">
+          
             <SearchBar 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm}
@@ -188,7 +188,7 @@ export default function NoteHeader({
               setSearchMode={setSearchMode}
               showModeSelector={true}
             />
-          </div>
+          
 
           <div className="flex gap-2">
             <motion.button
@@ -196,7 +196,7 @@ export default function NoteHeader({
                 // Only recent sort for notes: toggle direction
                 setSortDir(sortDir === "desc" ? "asc" : "desc");
               }}
-              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
+              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full min-w-max ${
                 "bg-white text-gray-700 border border-gray-300 hover:border-primary"
               }`}
               whileHover={{ scale: 1.02 }}

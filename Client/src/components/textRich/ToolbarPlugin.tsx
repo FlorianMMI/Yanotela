@@ -6,11 +6,14 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, $getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, $isTextNode } from 'lexical';
+import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, $getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, $isTextNode, $insertNodes } from 'lexical';
 import { $patchStyleText } from '@lexical/selection';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list';
 import { mergeRegister } from '@lexical/utils';
 import Icons from '@/ui/Icon';
+import { $createImageNode } from '@/components/flashnote/ImageNode';
+import { $createAudioNode } from '@/components/flashnote/AudioNode';
+import { $createVideoNode } from '@/components/flashnote/VideoNode';
 import ExportPDFButton from '@/ui/exportpdfbutton';
 
 interface ToolbarPluginProps {
@@ -22,6 +25,7 @@ interface ToolbarPluginProps {
 export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans titre", editorContentRef }: ToolbarPluginProps = {}) {
     const [editor] = useLexicalComposerContext();
     const toolbarRef = useRef(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [showFormatMenu, setShowFormatMenu] = useState(false);
     const [showSizeMenu, setShowSizeMenu] = useState(false);
     const [showListMenu, setShowListMenu] = useState(false);
@@ -31,6 +35,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
     const [isUnderline, setIsUnderline] = useState(false);
     const [isStrikethrough, setIsStrikethrough] = useState(false);
     const [fontSize, setFontSize] = useState('16px');
+    const [fontFamily, setFontFamily] = useState('Gantari');
     const [fontColor, setFontColor] = useState('#727272');
     const [backgroundColor, setBackgroundColor] = useState('#ffffff');
     const [isInBulletList, setIsInBulletList] = useState(false);
@@ -39,163 +44,144 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [viewportTop, setViewportTop] = useState(0);
 
+    // Helper optimisé pour extraire les styles d'un nœud
+    const extractNodeStyles = useCallback((rawStyle: unknown) => {
+        const styles = { fontSize: '', fontFamily: '', fontColor: '', backgroundColor: '' };
+
+        if (!rawStyle) return styles;
+
+        if (typeof rawStyle === 'string') {
+            rawStyle.split(';').forEach((decl: string) => {
+                const [key, val] = decl.split(':').map(s => s?.trim());
+                if (!key || !val) return;
+                if (key === 'font-size') styles.fontSize = val;
+                else if (key === 'font-family') styles.fontFamily = val;
+                else if (key === 'color') styles.fontColor = val;
+                else if (key === 'background-color') styles.backgroundColor = val;
+            });
+        } else if (typeof rawStyle === 'object') {
+            const styleObj = rawStyle as Record<string, unknown>;
+            styles.fontSize = (styleObj['font-size'] ?? styleObj['fontSize'] ?? '') as string;
+            styles.fontFamily = (styleObj['font-family'] ?? styleObj['fontFamily'] ?? '') as string;
+            styles.fontColor = (styleObj['color'] ?? '') as string;
+            styles.backgroundColor = (styleObj['background-color'] ?? styleObj['backgroundColor'] ?? '') as string;
+        }
+
+        return styles;
+    }, []);
+
     const $updateToolbar = useCallback(() => {
         const selection = $getSelection();
         if (!selection) {
-            // No selection available - reset toggles
             setIsBold(false);
             setIsItalic(false);
             setIsUnderline(false);
             setIsStrikethrough(false);
-            // setIsList(false); // supprimé
             return;
         }
 
-        // Collect values across nodes to detect "mixed" styles
+        // Collecter les styles de tous les nœuds sélectionnés
         const fontSizes = new Set<string>();
+        const fontFamilies = new Set<string>();
         const fontColors = new Set<string>();
         const backgroundColors = new Set<string>();
 
-        // Helper to extract styles from a node's rawStyle
-        const extractStyles = (rawStyle: any) => {
-            let nodeFontSize: string | undefined;
-            let nodeFontColor: string | undefined;
-            let nodeBackgroundColor: string | undefined;
-
-            if (rawStyle == null) {
-                // nothing
-            } else if (typeof rawStyle.get === 'function') {
-                nodeFontSize = rawStyle.get('font-size');
-                nodeFontColor = rawStyle.get('color');
-                nodeBackgroundColor = rawStyle.get('background-color');
-            } else if (typeof rawStyle === 'string') {
-                rawStyle.split(';').forEach((decl: string) => {
-                    const [k, v] = decl.split(':').map((s) => s && s.trim());
-                    if (!k || !v) return;
-                    if (k === 'font-size') nodeFontSize = v;
-                    if (k === 'color') nodeFontColor = v;
-                    if (k === 'background-color') nodeBackgroundColor = v;
-                });
-            } else if (typeof rawStyle === 'object') {
-                nodeFontSize = rawStyle['font-size'] ?? rawStyle.fontSize;
-                nodeFontColor = rawStyle['color'] ?? rawStyle.color;
-                nodeBackgroundColor = rawStyle['background-color'] ?? rawStyle.backgroundColor;
-            }
-
-            return { nodeFontSize, nodeFontColor, nodeBackgroundColor };
-        };
-
-        // Get nodes for the selection; when collapsed there may be no nodes, so fall back to anchor
-        let nodes: any[] = [];
+        let nodes: unknown[] = [];
         try {
             if ($isRangeSelection(selection)) {
                 nodes = selection.getNodes();
             }
-        } catch (e) {
+        } catch {
             nodes = [];
         }
-        if (!nodes || nodes.length === 0) {
+
+        if (nodes.length === 0) {
             try {
-                const anchorNode = (selection as any).anchor?.getNode?.();
+                const anchorNode = (selection as { anchor?: { getNode?: () => unknown } }).anchor?.getNode?.();
                 if (anchorNode) nodes = [anchorNode];
-            } catch (e) {
+            } catch {
                 nodes = [];
             }
         }
 
-        nodes.forEach((node: any) => {
-            if ($isTextNode(node)) {
-                const rawStyle = node.getStyle();
-                const { nodeFontSize, nodeFontColor, nodeBackgroundColor } = extractStyles(rawStyle);
-                if (nodeFontSize) fontSizes.add(nodeFontSize);
-                if (nodeFontColor) fontColors.add(nodeFontColor);
-                if (nodeBackgroundColor) backgroundColors.add(nodeBackgroundColor);
+        nodes.forEach((node) => {
+            if ($isTextNode(node as never)) {
+                const rawStyle = (node as { getStyle?: () => unknown }).getStyle?.();
+                const { fontSize, fontFamily, fontColor, backgroundColor } = extractNodeStyles(rawStyle);
+                if (fontSize) fontSizes.add(fontSize);
+                if (fontFamily) fontFamilies.add(fontFamily);
+                if (fontColor) fontColors.add(fontColor);
+                if (backgroundColor) backgroundColors.add(backgroundColor);
             }
         });
 
-        if (fontSizes.size === 1) {
-            setFontSize(Array.from(fontSizes)[0]);
-        } else if (fontSizes.size > 1) {
-            setFontSize('');
-        } else {
-            setFontSize('16px');
-        }
+        // Mettre à jour les états de la toolbar
+        setFontSize(fontSizes.size === 1 ? Array.from(fontSizes)[0] : fontSizes.size > 1 ? '' : '16px');
+        setFontFamily(fontFamilies.size === 1 ? Array.from(fontFamilies)[0] : fontFamilies.size > 1 ? '' : 'Gantari');
+        if (fontColors.size === 1) setFontColor(Array.from(fontColors)[0]);
+        if (backgroundColors.size === 1) setBackgroundColor(Array.from(backgroundColors)[0]);
 
-        if (fontColors.size === 1) {
-            setFontColor(Array.from(fontColors)[0]);
-        }
+        // Format toggles
+        const sel = selection as { hasFormat?: (format: string) => boolean };
+        setIsBold(sel.hasFormat?.('bold') ?? false);
+        setIsItalic(sel.hasFormat?.('italic') ?? false);
+        setIsUnderline(sel.hasFormat?.('underline') ?? false);
+        setIsStrikethrough(sel.hasFormat?.('strikethrough') ?? false);
 
-        if (backgroundColors.size === 1) {
-            setBackgroundColor(Array.from(backgroundColors)[0]);
-        }
-
-        setIsBold(typeof (selection as any).hasFormat === 'function' ? (selection as any).hasFormat('bold') : false);
-        setIsItalic(typeof (selection as any).hasFormat === 'function' ? (selection as any).hasFormat('italic') : false);
-        setIsUnderline(typeof (selection as any).hasFormat === 'function' ? (selection as any).hasFormat('underline') : false);
-        setIsStrikethrough(typeof (selection as any).hasFormat === 'function' ? (selection as any).hasFormat('strikethrough') : false);
-
-        // Detect list type and alignment by walking up from the anchor node (older approach)
+        // Détecter les listes et alignement
         try {
             if ($isRangeSelection(selection)) {
-                const anchorNode = (selection as any).anchor?.getNode?.();
+                const anchorNode = (selection as { anchor?: { getNode?: () => unknown } }).anchor?.getNode?.() as {
+                    getType?: () => string;
+                    getParent?: () => unknown;
+                    __tag?: string;
+                    _tag?: string;
+                    __format?: number;
+                    _format?: number;
+                } | undefined;
+
                 let isBullet = false;
                 let isNumber = false;
                 let align: 'left' | 'center' | 'right' | 'justify' | '' = '';
 
-                if (anchorNode) {
-                    let currentNode: any = anchorNode;
-                    while (currentNode) {
-                        const type = typeof currentNode.getType === 'function' ? currentNode.getType() : null;
+                let currentNode = anchorNode;
+                while (currentNode) {
+                    const type = currentNode.getType?.();
 
-                        if (type === 'list') {
-                            // internal tag may be __tag or _tag
-                            // @ts-ignore
-                            const listType = currentNode.__tag || currentNode._tag;
-                            isBullet = listType === 'ul';
-                            isNumber = listType === 'ol';
-                        }
-
-                        // Detect alignment from paragraph/heading/listitem nodes via internal format
-                        if (type === 'paragraph' || type === 'heading' || type === 'listitem') {
-                            try {
-                                // @ts-ignore
-                                const format = currentNode.__format ?? currentNode._format ?? 0;
-                                const alignmentBits = format & 0xF;
-                                switch (alignmentBits) {
-                                    case 1: align = 'left'; break;
-                                    case 2: align = 'center'; break;
-                                    case 3: align = 'right'; break;
-                                    case 4: align = 'justify'; break;
-                                    default: break;
-                                }
-                            } catch (err) {
-                                // ignore
-                            }
-                        }
-
-                        const parent = currentNode.getParent && currentNode.getParent();
-                        if (!parent) break;
-                        currentNode = parent;
+                    if (type === 'list') {
+                        const listType = currentNode.__tag || currentNode._tag;
+                        isBullet = listType === 'ul';
+                        isNumber = listType === 'ol';
                     }
+
+                    if (type === 'paragraph' || type === 'heading' || type === 'listitem') {
+                        const format = currentNode.__format ?? currentNode._format ?? 0;
+                        const alignmentBits = format & 0xF;
+                        if (alignmentBits === 1) align = 'left';
+                        else if (alignmentBits === 2) align = 'center';
+                        else if (alignmentBits === 3) align = 'right';
+                        else if (alignmentBits === 4) align = 'justify';
+                    }
+
+                    const parent = currentNode.getParent?.();
+                    if (!parent) break;
+                    currentNode = parent as typeof currentNode;
                 }
 
                 setIsInBulletList(isBullet);
                 setIsInNumberedList(isNumber);
                 setAlignment(align);
             } else {
-                // not a range selection -> clear list/alignment
                 setIsInBulletList(false);
                 setIsInNumberedList(false);
                 setAlignment('');
-                // setIsList(false); // supprimé
             }
-        } catch (e) {
+        } catch {
             setIsInBulletList(false);
             setIsInNumberedList(false);
             setAlignment('');
-            // setIsList(false); // supprimé
         }
-    }, [editor]);
+    }, [extractNodeStyles]);
 
     useEffect(() => {
         // Mettre à jour la toolbar immédiatement au montage
@@ -204,15 +190,14 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         });
 
         return mergeRegister(
-            editor.registerUpdateListener(({ editorState }: any) => {
+            editor.registerUpdateListener(({ editorState }: { editorState: { read: (fn: () => void) => void } }) => {
                 editorState.read(() => {
                     $updateToolbar();
                 });
             }),
             editor.registerCommand(
                 SELECTION_CHANGE_COMMAND,
-                (_payload: any, _newEditor: any) => {
-                    // Lire l'état de l'éditeur pour mettre à jour la toolbar
+                () => {
                     editor.getEditorState().read(() => {
                         $updateToolbar();
                     });
@@ -228,7 +213,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         if (typeof window === 'undefined') return;
 
         let ticking = false;
-        
+
         const handleViewportChange = () => {
             if (!ticking) {
                 window.requestAnimationFrame(() => {
@@ -236,13 +221,13 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                         const viewportHeight = window.visualViewport.height;
                         const windowHeight = window.innerHeight;
                         const offsetTop = window.visualViewport.offsetTop || 0;
-                        
+
                         // Calculer la hauteur du clavier
                         const calculatedKeyboardHeight = Math.max(0, windowHeight - viewportHeight);
-                        
+
                         // Mettre à jour la position du viewport (pour suivre le scroll)
                         setViewportTop(offsetTop);
-                        
+
                         // Mettre à jour seulement si c'est significatif (> 100px)
                         if (calculatedKeyboardHeight > 100) {
                             setKeyboardHeight(calculatedKeyboardHeight);
@@ -288,11 +273,13 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         };
     }, []);
 
+    // Application instantanée et réactive des styles
     const applyStyleText = useCallback(
         (styles: Record<string, string>) => {
             editor.update(() => {
                 const selection = $getSelection();
                 if ($isRangeSelection(selection)) {
+                    // Cela enregistre le style dans la sélection pour que les futurs caractères l'héritent
                     $patchStyleText(selection, styles);
                 }
             });
@@ -300,13 +287,26 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         [editor]
     );
 
-    const applyBackgroundColor = useCallback(
-        (color: string) => {
-            setBackgroundColor(color);
-            applyStyleText({ 'background-color': color });
-        },
-        [applyStyleText]
-    );
+    // Handlers optimisés pour changement instantané des couleurs
+    const handleFontColorChange = useCallback((color: string) => {
+        setFontColor(color);
+        applyStyleText({ color });
+    }, [applyStyleText]);
+
+    const handleBackgroundColorChange = useCallback((color: string) => {
+        setBackgroundColor(color);
+        applyStyleText({ 'background-color': color });
+    }, [applyStyleText]);
+
+    const handleFontSizeChange = useCallback((size: string) => {
+        setFontSize(size);
+        applyStyleText({ 'font-size': size });
+    }, [applyStyleText]);
+
+    const handleFontFamilyChange = useCallback((family: string) => {
+        setFontFamily(family);
+        applyStyleText({ 'font-family': family });
+    }, [applyStyleText]);
 
     const formatList = (listType: 'bullet' | 'number') => {
         if (isInBulletList || isInNumberedList) {
@@ -320,18 +320,76 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         }
     };
 
-    const getContrastColor = (hex: string) => {
-        try {
-            const h = hex.replace('#', '');
-            const r = parseInt(h.substring(0, 2), 16);
-            const g = parseInt(h.substring(2, 4), 16);
-            const b = parseInt(h.substring(4, 6), 16);
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            return brightness > 200 ? '#727272' : '#ffffff';
-        } catch {
-            return '#000000';
+    const handleImageImport = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+
+    const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Check if file is an image, audio, or video
+        const isImage = file.type.startsWith('image/');
+        const isAudio = file.type.startsWith('audio/') || file.name.endsWith('.mp3');
+        const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|ogg)$/i);
+
+        if (!isImage && !isAudio && !isVideo) {
+            alert('Veuillez sélectionner un fichier image, audio (MP3) ou vidéo (MP4, WebM)');
+            return;
         }
-    };
+
+        // Check file size (max 50MB for video, 10MB for audio, 5MB for images)
+        let maxSize: number;
+        let maxSizeLabel: string;
+        if (isVideo) {
+            maxSize = 50 * 1024 * 1024;
+            maxSizeLabel = '50MB';
+        } else if (isAudio) {
+            maxSize = 10 * 1024 * 1024;
+            maxSizeLabel = '10MB';
+        } else {
+            maxSize = 5 * 1024 * 1024;
+            maxSizeLabel = '5MB';
+        }
+
+        if (file.size > maxSize) {
+            alert(`Le fichier est trop volumineux (max ${maxSizeLabel})`);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const src = e.target?.result as string;
+            if (src) {
+                editor.update(() => {
+                    if (isImage) {
+                        const imageNode = $createImageNode({
+                            src,
+                            altText: file.name,
+                            isDrawing: false, // Imported images are not drawings
+                        });
+                        $insertNodes([imageNode]);
+                    } else if (isAudio) {
+                        const audioNode = $createAudioNode({
+                            src,
+                            altText: file.name,
+                        });
+                        $insertNodes([audioNode]);
+                    } else if (isVideo) {
+                        const videoNode = $createVideoNode({
+                            src,
+                            altText: file.name,
+                        });
+                        $insertNodes([videoNode]);
+                    }
+                });
+            }
+        };
+        reader.readAsDataURL(file);
+
+        // Reset input value to allow re-uploading the same file
+        event.target.value = '';
+    }, [editor]);
 
     return (
         <>
@@ -349,7 +407,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     aria-label="Gras"
                     title="Gras (Ctrl+B)">
                     <Icons name="bold" />
-                    
+
                 </button>
                 <button
                     onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}
@@ -364,7 +422,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     aria-label="Souligner"
                     title="Souligner (Ctrl+U)">
                     <Icons name="underline" />
-                    
+
                 </button>
                 <button
                     onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')}
@@ -372,18 +430,34 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     aria-label="Barré"
                     title="Barré">
                     <Icons name="strikethrough" />
-         
+
                 </button>
 
                 <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
+                
+                {/* Selection de la police d'écriture */}
+                <select
+                    value={fontFamily || ''}
+                    onChange={(e) => handleFontFamilyChange(e.target.value)}
+                    title="Police d'écriture"
+                    className="rounded-md border border-gray-200 bg-white px-2 py-1 text-sm focus:border-primary focus:outline-none transition-colors duration-200"
+                    style={{ fontFamily: fontFamily || 'Gantari' }}>
+                    <option value="" hidden>Mixte</option>
+                    <option value="Gantari" style={{ fontFamily: 'Gantari' }}>Gantari</option>
+                    <option value="Geologica" style={{ fontFamily: 'Geologica' }}>Geologica</option>
+                    <option value="Arial" style={{ fontFamily: 'Arial' }}>Arial</option>
+                    <option value="Times New Roman" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</option>
+                    <option value="Courier New" style={{ fontFamily: 'Courier New' }}>Courier New</option>
+                    <option value="Georgia" style={{ fontFamily: 'Georgia' }}>Georgia</option>
+                    <option value="Verdana" style={{ fontFamily: 'Verdana' }}>Verdana</option>
+                    <option value="Comic Sans MS" style={{ fontFamily: 'Comic Sans MS' }}>Comic Sans MS</option>
+                    <option value="monospace" style={{ fontFamily: 'monospace' }}>Monospace</option>
+                </select>
 
                 {/* Taille et couleur */}
                 <select
                     value={fontSize || ''}
-                    onChange={(e) => {
-                        setFontSize(e.target.value);
-                        applyStyleText({ 'font-size': e.target.value });
-                    }}
+                    onChange={(e) => handleFontSizeChange(e.target.value)}
                     title="Taille de police"
                     className="rounded-md border border-gray-200 bg-white px-2 py-1 text-sm focus:border-primary focus:outline-none transition-colors duration-200">
                     <option value="" hidden>Mixte</option>
@@ -404,10 +478,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     <input
                         type="color"
                         value={fontColor}
-                        onChange={(e) => {
-                            setFontColor(e.target.value);
-                            applyStyleText({ color: e.target.value });
-                        }}
+                        onChange={(e) => handleFontColorChange(e.target.value)}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                 </label>
@@ -419,10 +490,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     <input
                         type="color"
                         value={backgroundColor}
-                        onChange={(e) => {
-                            setBackgroundColor(e.target.value);
-                            applyBackgroundColor(e.target.value);
-                        }}
+                        onChange={(e) => handleBackgroundColorChange(e.target.value)}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                 </label>
@@ -471,6 +539,24 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     <Icons name="text-justify" />
                 </button>
 
+                <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
+
+                {/* Media import button */}
+                <button
+                    onClick={handleImageImport}
+                    className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
+                    aria-label="Importer un média"
+                    title="Importer un média (image, audio ou vidéo)">
+                    <Icons name="media" />
+                </button>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,audio/*,video/*,.mp3,.mp4,.webm"
+                    onChange={handleFileChange}
+                    className="hidden"
+                />
+
                 {/* Drawing Board button */}
                 {onOpenDrawingBoard && (
                     <>
@@ -487,7 +573,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
 
                 {/* Export PDF button */}
                 <div className="w-px h-6 bg-gray-200 mx-1" /> {/* Separator */}
-                <ExportPDFButton 
+                <ExportPDFButton
                     noteTitle={noteTitle}
                     editorRef={editorContentRef}
                     compact={true}
@@ -495,9 +581,9 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
             </div>
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
-            <div 
+            <div
                 className="md:hidden fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
-                style={{ 
+                style={{
                     bottom: `${keyboardHeight}px`,
                     transform: viewportTop > 0 ? `translateY(${viewportTop}px)` : 'none',
                     transition: 'bottom 0.3s ease-out, transform 0.1s linear'
@@ -518,7 +604,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             <Icons name="bold" />
                             <span className="text-xs">Format</span>
                         </button>
-                        
+
                         {showFormatMenu && (
                             <>
                                 <div
@@ -567,7 +653,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                         )}
                     </div>
 
-                    {/* Size & Color submenu */}
+                    {/* Options submenu (Size, Color, Export) */}
                     <div className="relative">
                         <button
                             onClick={() => {
@@ -577,11 +663,11 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                 setShowAlignMenu(false);
                             }}
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showSizeMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
-                            aria-label="Taille et couleur">
+                            aria-label="Options">
                             <Icons name="fontColor" />
-                            <span className="text-xs">Taille</span>
+                            <span className="text-xs">Options</span>
                         </button>
-                        
+
                         {showSizeMenu && (
                             <>
                                 <div
@@ -593,10 +679,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                         <label className="text-xs text-gray-600 mb-1 block">Taille</label>
                                         <select
                                             value={fontSize || ''}
-                                            onChange={(e) => {
-                                                setFontSize(e.target.value);
-                                                applyStyleText({ 'font-size': e.target.value });
-                                            }}
+                                            onChange={(e) => handleFontSizeChange(e.target.value)}
                                             className="w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm focus:border-primary focus:outline-none">
                                             <option value="" hidden>Mixte</option>
                                             <option value="12px">12px</option>
@@ -609,16 +692,31 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             <option value="36px">36px</option>
                                         </select>
                                     </div>
+                                    <div>
+                                        <label className="text-xs text-gray-600 mb-1 block">Police</label>
+                                        <select
+                                            value={fontFamily || ''}
+                                            onChange={(e) => handleFontFamilyChange(e.target.value)}
+                                            className="w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm focus:border-primary focus:outline-none"
+                                            style={{ fontFamily: fontFamily || 'Gantari' }}>
+                                            <option value="" hidden>Mixte</option>
+                                            <option value="Gantari" style={{ fontFamily: 'Gantari' }}>Gantari</option>
+                                            <option value="Geologica" style={{ fontFamily: 'Geologica' }}>Geologica</option>
+                                            <option value="Arial" style={{ fontFamily: 'Arial' }}>Arial</option>
+                                            <option value="Times New Roman" style={{ fontFamily: 'Times New Roman' }}>Times</option>
+                                            <option value="Courier New" style={{ fontFamily: 'Courier New' }}>Courier</option>
+                                            <option value="Georgia" style={{ fontFamily: 'Georgia' }}>Georgia</option>
+                                            <option value="Verdana" style={{ fontFamily: 'Verdana' }}>Verdana</option>
+                                            <option value="monospace" style={{ fontFamily: 'monospace' }}>Mono</option>
+                                        </select>
+                                    </div>
                                     <div className="flex gap-3 items-center">
                                         <div>
                                             <label className="text-xs text-gray-600 mb-1 block">Couleur texte</label>
                                             <input
                                                 type="color"
                                                 value={fontColor}
-                                                onChange={(e) => {
-                                                    setFontColor(e.target.value);
-                                                    applyStyleText({ color: e.target.value });
-                                                }}
+                                                onChange={(e) => handleFontColorChange(e.target.value)}
                                                 className="w-12 h-10 rounded border border-gray-200 cursor-pointer"
                                             />
                                         </div>
@@ -627,13 +725,19 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             <input
                                                 type="color"
                                                 value={backgroundColor}
-                                                onChange={(e) => {
-                                                    setBackgroundColor(e.target.value);
-                                                    applyBackgroundColor(e.target.value);
-                                                }}
+                                                onChange={(e) => handleBackgroundColorChange(e.target.value)}
                                                 className="w-12 h-10 rounded border border-gray-200 cursor-pointer"
                                             />
                                         </div>
+                                    </div>
+                                    <div className="border-t border-gray-200 pt-2 mt-2">
+                                        <label className="text-xs text-gray-600 mb-2 block">Export</label>
+                                        <ExportPDFButton
+                                            noteTitle={noteTitle}
+                                            editorRef={editorContentRef}
+                                            compact={false}
+                                            className="w-full justify-center"
+                                        />
                                     </div>
                                 </div>
                             </>
@@ -651,10 +755,10 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             }}
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showListMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Listes">
-                            <Icons name="list-ul" className="mb-1" />
+                            <Icons name="list-ul" />
                             <span className="text-xs">Listes</span>
                         </button>
-                        
+
                         {showListMenu && (
                             <>
                                 <div
@@ -696,10 +800,10 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             }}
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showAlignMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Alignement">
-                            <Icons name="text-left" className="mb-1" />
+                            <Icons name="text-left" />
                             <span className="text-xs">Aligner</span>
                         </button>
-                        
+
                         {showAlignMenu && (
                             <>
                                 <div
@@ -748,27 +852,25 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                         )}
                     </div>
 
+                    {/* Media import button for mobile */}
+                    <button
+                        onClick={handleImageImport}
+                        className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
+                        aria-label="Importer un média">
+                        <Icons name="media" />
+                        <span className="text-xs">Média</span>
+                    </button>
+
                     {/* Drawing Board button for mobile */}
                     {onOpenDrawingBoard && (
                         <button
                             onClick={onOpenDrawingBoard}
                             className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
                             aria-label="Ouvrir le tableau de dessin">
-                            <Icons name="modif" className="mb-1" />
+                            <Icons name="modif" />
                             <span className="text-xs">Dessin</span>
                         </button>
                     )}
-
-                    {/* Export PDF button for mobile */}
-                    <div className="flex flex-col items-center justify-center">
-                        <ExportPDFButton 
-                            noteTitle={noteTitle}
-                            editorRef={editorContentRef}
-                            compact={true}
-                            className="p-2"
-                        />
-                        <span className="text-xs mt-1">PDF</span>
-                    </div>
                 </div>
             </div>
         </>

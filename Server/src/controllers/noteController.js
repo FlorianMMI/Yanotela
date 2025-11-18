@@ -64,6 +64,7 @@ export const noteController = {
             id: note.id,
             Titre: note.Titre,
             Content: note.Content,
+            tag: note.tag, // Ajouter le tag de la note
             author: note.author ? note.author.pseudo : null,
             modifier: note.modifier ? note.modifier.pseudo : null,
             ModifiedAt: note.ModifiedAt,
@@ -320,6 +321,7 @@ export const noteController = {
         modifier: note.modifier ? note.modifier.pseudo : null,
         ModifiedAt: note.ModifiedAt,
         userRole: userPermission.role, // Ajouter le rôle pour le front
+        tag: note.tag, // Couleur du tag de la note
       });
     } catch (error) {
       console.error("[getNoteById] Error:", error);
@@ -337,6 +339,11 @@ export const noteController = {
     let { Titre, Content } = req.body;
 
     const { userId } = req.session;
+
+    // Vérification supplémentaire : empêcher toute modification si le rôle est 3 (lecteur)
+    if (req.userPermission && req.userPermission.role === 3) {
+      return res.status(403).json({ message: "Vous n'avez que les droits de lecture sur cette note" });
+    }
 
     // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
@@ -937,6 +944,11 @@ export const noteController = {
     const { yjsState, Content, Titre } = req.body;
     const { userId } = req.session;
 
+    // Vérification supplémentaire : empêcher toute modification si le rôle est 3 (lecteur)
+    if (req.userPermission && req.userPermission.role === 3) {
+      return res.status(403).json({ message: "Vous n'avez que les droits de lecture sur cette note" });
+    }
+
     try {
       // Convertir le tableau d'octets en Buffer si nécessaire
       const yjsBuffer = yjsState ? Buffer.from(yjsState) : null;
@@ -969,6 +981,58 @@ export const noteController = {
       console.error("[syncNoteState] Erreur:", error);
       res.status(500).json({
         message: "Erreur lors de la synchronisation",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * Mettre à jour le tag d'une note
+   * 
+   * @route PATCH /note/tag/:id
+   * @middleware requireWriteAccess
+   */
+  updateNoteTag: async (req, res) => {
+    const { id } = req.params;
+    const { tag } = req.body;
+    const { userId } = req.session;
+
+    // Vérification supplémentaire : empêcher toute modification si le rôle est 3 (lecteur)
+    if (req.userPermission && req.userPermission.role === 3) {
+      return res.status(403).json({ message: "Vous n'avez que les droits de lecture sur cette note" });
+    }
+
+    // Validation du tag (doit être une couleur hex valide ou vide)
+    if (tag && typeof tag === 'string' && tag !== '') {
+      const hexColorRegex = /^#([0-9A-F]{3}|[0-9A-F]{6})$/i;
+      const cssVarRegex = /^var\(--[a-zA-Z-]+\)$/;
+      
+      if (!hexColorRegex.test(tag) && !cssVarRegex.test(tag)) {
+        return res.status(400).json({ 
+          message: "Le tag doit être une couleur hexadécimale valide (#000000) ou une variable CSS (var(--primary))" 
+        });
+      }
+    }
+
+    try {
+      // Mettre à jour le tag de la note
+      const updatedNote = await prisma.note.update({
+        where: { id },
+        data: {
+          tag: tag || null, // Permet de supprimer le tag en passant une chaîne vide
+          ModifiedAt: new Date(),
+          modifierId: userId,
+        },
+      });
+
+      res.status(200).json({ 
+        message: "Tag mis à jour avec succès",
+        tag: updatedNote.tag 
+      });
+    } catch (error) {
+      console.error("[updateNoteTag] Erreur:", error);
+      res.status(500).json({
+        message: "Erreur lors de la mise à jour du tag",
         error: error.message,
       });
     }
