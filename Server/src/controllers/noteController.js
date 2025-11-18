@@ -340,6 +340,11 @@ export const noteController = {
 
     const { userId } = req.session;
 
+    // Vérification supplémentaire : empêcher toute modification si le rôle est 3 (lecteur)
+    if (req.userPermission && req.userPermission.role === 3) {
+      return res.status(403).json({ message: "Vous n'avez que les droits de lecture sur cette note" });
+    }
+
     // Pas besoin de vérifier userId et permissions, le middleware requireWriteAccess l'a déjà fait
 
     // Au moins un champ doit être fourni
@@ -947,6 +952,11 @@ export const noteController = {
     const { yjsState, Content, Titre } = req.body;
     const { userId } = req.session;
 
+    // Vérification supplémentaire : empêcher toute modification si le rôle est 3 (lecteur)
+    if (req.userPermission && req.userPermission.role === 3) {
+      return res.status(403).json({ message: "Vous n'avez que les droits de lecture sur cette note" });
+    }
+
     try {
       // Convertir le tableau d'octets en Buffer si nécessaire
       const yjsBuffer = yjsState ? Buffer.from(yjsState) : null;
@@ -994,6 +1004,11 @@ export const noteController = {
     const { id } = req.params;
     const { tag } = req.body;
     const { userId } = req.session;
+
+    // Vérification supplémentaire : empêcher toute modification si le rôle est 3 (lecteur)
+    if (req.userPermission && req.userPermission.role === 3) {
+      return res.status(403).json({ message: "Vous n'avez que les droits de lecture sur cette note" });
+    }
 
     // Validation du tag (doit être une couleur hex valide ou vide)
     if (tag && typeof tag === 'string' && tag !== '') {
