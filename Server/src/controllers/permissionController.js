@@ -1,4 +1,5 @@
 import {PrismaClient} from "@prisma/client";
+import { sendNoteInvitationEmail } from "../services/emailService.js";
 const prisma = new PrismaClient();
 
 //     {id: 1, role: 0}, // Propriétaire
@@ -163,6 +164,32 @@ async function AddPermission(req, res) {
       }
     });
 
+    // Récupérer les informations de la note et de l'inviteur pour l'email
+    const note = await prisma.note.findUnique({
+      where: { id: noteId },
+      select: { Titre: true }
+    });
+
+    const inviter = await prisma.user.findUnique({
+      where: { id: connected },
+      select: { pseudo: true }
+    });
+
+    // Envoyer l'email d'invitation
+    try {
+      await sendNoteInvitationEmail(
+        targetUser.email,
+        inviter?.pseudo || 'Un utilisateur',
+        note?.Titre || 'Sans titre',
+        noteId,
+        targetRole
+      );
+    } catch (emailError) {
+      // L'email a échoué mais la permission a été créée avec succès
+      console.error('Erreur lors de l\'envoi de l\'email d\'invitation:', emailError);
+      // On continue quand même car la permission est créée
+    }
+
     res.json({ 
       success: true, 
       message: `${targetUser.pseudo} ajouté avec succès`,
@@ -171,7 +198,8 @@ async function AddPermission(req, res) {
         pseudo: targetUser.pseudo,
         email: targetUser.email
       },
-      role: targetRole
+      role: targetRole,
+      emailSent: true // Indiquer que l'email a été tenté
     });
   } catch (error) {
     console.error('Erreur lors de l\'ajout de permission:', error);
