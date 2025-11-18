@@ -98,7 +98,7 @@ export default function Home() {
       {/* Limiter la hauteur visible en mobile pour que seul ce conteneur soit scrollable.
           calc(100vh - 5.5rem) = viewport minus header + paddings approximatifs.
           Ajuster la valeur si votre header a une hauteur différente. */}
-      <div className="flex-1 min-h-0 overflow-y-auto max-h-[calc(100vh-11rem)] md:max-h-none">
+      <div className="flex-1 min-h-0 overflow-y-auto md:max-h-none custom-scrollbar">
         <Suspense fallback={<div></div>}>
           <NoteList
             notes={filteredNotes}

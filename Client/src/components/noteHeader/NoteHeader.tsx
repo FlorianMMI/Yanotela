@@ -40,7 +40,7 @@ export default function NoteHeader({
     <>
       {/* Header Mobile */}
       <div className="block xl:hidden md:block">
-        <header className="p-4 border-b border-gray-200">
+        <header className="p-4 ">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Mes Notes</h1>
             

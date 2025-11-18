@@ -59,7 +59,7 @@ export default function NoteList({
   };
 
   return (
-    <main className="p-4 relative min-h-[calc(100vh-200px)]">
+    <main className="p-4 relative">
       {/* Message si aucune note et pas en chargement - Centré sur la page */}
       {!isLoading && notes.length === 0 && (
        
