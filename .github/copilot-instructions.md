@@ -5,33 +5,61 @@ Yanotela is a full-stack collaborative note-taking application with real-time ed
 ## Core Architecture
 
 **Stack Overview**
-- **Client**: Next.js 15 (App Router), TypeScript, TailwindCSS v4, Lexical rich text editor
-- **Server**: Node.js + Express (ES modules), Prisma ORM, PostgreSQL
-- **Real-time**: Socket.IO for collaboration, YJS for CRDT state synchronization (in development)
-- **Deployment**: Docker Compose for local/preprod, AWS EC2 for production
+- **Client**: Next.js 15.5.3 (App Router), React 19.1.1, TypeScript 5.6, TailwindCSS v4, Lexical 0.38.2
+- **Server**: Node.js + Express 5.1.0 (ES modules), Prisma 6.18.0, PostgreSQL 15
+- **Real-time**: YJS 13.6.27 + y-websocket 2.0.4 for CRDT collaboration, @lexical/yjs 0.38.2
+- **Session**: express-session 1.18.0 with optional Redis 7 adapter
+- **Deployment**: Docker Compose for dev/preprod, Docker Hub + AWS EC2 for production
+- **Mail**: Nodemailer 7.0.10 (Gmail SMTP)
 
 **Data Model** (`Server/prisma/schema.prisma`)
 ```prisma
 User → notes[], folders[], permissions[], noteFolders[]
-Note → id(String), Titre, Content(String), yjsState(Bytes?), authorId, modifierId?, deletedAt?
-Permission → noteId+userId (composite key), role(Int 0-3), isAccepted(Boolean)
-Folder → id(UUID), Nom, Description?, CouleurTag, authorId, deletedAt?
-NoteFolder → noteId+folderId+userId (join table for folder organization)
+  - id: Int (auto-increment), pseudo, email (both unique)
+  - theme: String (default "light") — supports light/dark/blue themes
+  - is_verified: Boolean, token: String (email validation)
+  - deleted_at: DateTime? (soft delete)
+
+Note → id(String/UUID), Titre, Content(String), yjsState(Bytes?), tag(String?), authorId, modifierId?, deletedAt?
+  - Content: Lexical JSON stringified state
+  - yjsState: Binary CRDT state for collaboration (optional, in migration)
+  - tag: Hex color for note tag (independent from folder color)
+  - ModifiedAt: DateTime (auto-updated)
+
+Permission → noteId+userId (composite PK), role(Int 0-3), isAccepted(Boolean)
+  - role: 0=Propriétaire, 1=Admin, 2=Éditeur, 3=Lecteur (read-only)
+  - isAccepted: false until user accepts invitation
+
+Folder → id(UUID), Nom, Description?, CouleurTag, authorId, CreatedAt, ModifiedAt, deletedAt?
+  - CouleurTag: Hex color (default "#D4AF37" — gold)
+  - Cascade deletes propagate to NoteFolder
+
+NoteFolder → noteId+folderId+userId (composite join), addedAt
+  - Single note per user (@@id on noteId only)
+  - Cascade deletes from Folder, Note, User
 ```
-- Note IDs are UUIDs (strings), User/Folder IDs are integers/UUIDs respectively
-- `yjsState` stores CRDT binary state for real-time collaboration (partially implemented)
-- Soft deletes via `deletedAt` timestamp — cleanup runs via `cleanup-notes` Docker service every 24h
-- Folders support color tagging via `CouleurTag` hex values (default: `#D4AF37`)
+
+**Key Design Decisions**
+- Note IDs are UUID strings, User IDs are integers, Folder IDs are UUIDs
+- `yjsState` field exists but is in migration phase — `Content` string is source of truth currently
+- Soft deletes via `deletedAt` — automated cleanup every 24h (deletes notes >30 days old)
+- Folders use hex colors for visual organization (independent from note tags)
 
 ## Authentication & Session Management
 
 **Server-side Sessions** (no JWT)
-- Uses `express-session` with optional Redis adapter (`Server/src/config/sessionConfig.js`)
-- Session cookie: `httpOnly: true`, `sameSite: 'lax'`, 10-year max age
+- Uses `express-session` 1.18.0 with optional Redis 7 adapter (`Server/src/config/sessionConfig.js`)
+- Session storage: In-memory (dev) or Redis (production via `REDIS_URL` env var)
+- Session cookie: `httpOnly: true`, `sameSite: 'lax'`, `secure: false` (dev), 10-year max age
 - All protected routes use middleware in `Server/src/middlewares/authMiddleware.js`:
-  - `requireAuth` — checks `req.session.userId`
-  - `requireNoteOwnership` — verifies note belongs to user
-  - `requireWriteAccess` — checks write permissions (role ≠ 3)
+  - `requireAuth` — checks `req.session.userId`, adds `req.userId` to request
+  - `requireNoteOwnership` — verifies note.authorId matches session userId (converts to Int)
+  - `requireWriteAccess` — checks write permissions (role ≠ 3), prevents read-only users from editing
+
+**OAuth Integration**
+- Google OAuth2 via googleapis 160.0.0 (`Server/src/routes/googleAuthRoutes.js`)
+- Middleware: `Server/src/middlewares/googleAuthMiddleware.js`
+- Controller: `Server/src/controllers/googleAuthController.js`
 
 **Client Auth Pattern** (CRITICAL)
 ```tsx
@@ -49,31 +77,50 @@ useAuthRedirect() // Auto-redirects to /login if session invalid
 // Calls: ${NEXT_PUBLIC_API_URL}/auth/check
 ```
 
-## Real-Time Collaboration (Feature Branch)
+**Email Verification**
+- New users receive verification email via Nodemailer (Gmail SMTP)
+- Token stored in `User.token`, validated via `/validate` route
+- `is_verified` flag gates access to authenticated routes
 
-**Socket.IO Setup** (`Server/src/app.js` lines 100-250)
-- Shared session middleware: `io.engine.use(sessionMiddleware)`
-- Authentication: Socket connects only if `req.session.userId` exists
-- Room pattern: `note-${noteId}` for each collaborative session
+## Real-Time Collaboration (In Development)
 
-**Collaboration Flow**
-1. Client emits `joinNote({ noteId })`
-2. Server verifies permissions via Prisma query
-3. Socket joins room, loads `yjsState` from DB (`Server/src/controllers/yjsController.js`)
-4. Emits `noteJoined` + `yjs-initial-state` to client
-5. User tracking via `Server/src/services/collaborationService.js` (socket ID → noteId mapping)
+**Current Architecture**
+- YJS 13.6.27 + y-websocket 2.0.4 integrated in `docker-compose.dev.yml`
+- Standalone YJS WebSocket server on port 1234 (`yjs-server` service)
+- `Note.yjsState` field (Bytes) exists for binary CRDT state storage
+- **Content source of truth**: `Note.Content` (Lexical JSON string) — YJS state is supplementary
 
-**YJS Integration Status**
-- YJS dependencies installed, `Note.yjsState` field exists in schema
-- Binary state persistence implemented but **NOT production-ready**
-- Current workflow: Lexical JSON stored in `Note.Content` (string), YJS state optional
-- On disconnect: auto-cleanup after 60s of room inactivity
+**Migration Status**
+- `yjsState` field available but not fully implemented in production workflow
+- Migration scripts exist: `Server/scripts/migrate-content-to-yjs.js`, `migrate-yjs-to-text.js`
+- Some YJS integration in `Server/src/controllers/noteController.js` (lines 305-311, 939-948)
+
+**Collaboration Service** (`Server/src/services/collaborationService.js`)
+- Tracks active users per note via `Map<noteId, Set<socketId>>`
+- Functions: `addUserToNote(noteId, socketId)`, `removeUserFromNote(noteId, socketId)`
+- WebSocket references exist but Socket.IO NOT currently used in `app.js`
+
+**Client Components**
+- `Client/src/components/collaboration/` — ConnectedUsers, TitleSyncPlugin, TypingIndicator
+- `TitleSyncPlugin.tsx` — Syncs note titles, respects read-only mode (`isReadOnly` prop)
+- `AutoSavePlugin.tsx` — Handles auto-save with read-only detection
+
+**Docker YJS Server**
+- Service: `yjs-server` (Node 18 Alpine)
+- Command: `npm install -g @y/websocket-server && y-websocket-server`
+- Environment: `HOST=0.0.0.0`, `PORT=1234`
+- Volume: `yjs-db/` directory persists WebSocket state
+
+**Important Notes**
+- NO active Socket.IO implementation in current `Server/src/app.js` (removed or not integrated)
+- Collaboration features are WIP — rely on `Note.Content` for stable editing
+- YJS integration planned but not production-ready
 
 ## API Conventions
 
 **Error Responses**
 ```javascript
-// Validation errors (express-validator)
+// Validation errors (express-validator 7.0.1)
 { errors: [...], message: "..." }
 
 // General errors
@@ -84,23 +131,41 @@ useAuthRedirect() // Auto-redirects to /login if session invalid
 - NOT React components despite `.tsx` extension
 - All network calls centralized here (e.g., `GetNotes()`, `CreateNote()`, `SaveNote()`)
 - Lexical content parsing: extracts plain text from nested JSON structure for display
+- **CRITICAL**: All fetch calls use `credentials: 'include'` for session cookies
 
 **Note Content Storage**
 - DB stores Lexical editor state as **JSON string** in `Note.Content`
 - Client parses and renders: `JSON.parse(note.Content)` → extract text via recursive traversal
 - Example in `GetNotes()` lines 55-98: handles `{root: {children: [...]}}`
 
+**Health Check Endpoint** (`Server/src/app.js`)
+```javascript
+GET /health
+// Returns: { status, timestamp, uptime, environment }
+// Used by Docker healthchecks
+```
+
+**Base API Route**
+```javascript
+GET /
+// Returns: { message, version, status, authenticated, user }
+// Shows session state and user info
+```
+
 ## Development Workflows
 
 **Docker Development** (Recommended)
 ```bash
-# Start full stack (client:3000, server:3001, postgres:5432, redis:6379, cleanup service)
+# Start full stack (client:3000, server:3001, postgres:5432, redis:6379, cleanup service, yjs-server:1234)
 docker compose -f docker-compose.dev.yml up --build
 
 # Volumes mounted for hot reload:
 # - Client/src → /app/src
 # - Server/src → /app/src  
 # - Exclude node_modules via volume mounts
+
+# Backend uses nodemon for auto-restart
+# Frontend uses Next.js Turbopack for fast refresh
 ```
 
 **Manual Development**
@@ -112,7 +177,7 @@ cd Server && npm run dev
 cd Client && npm run dev
 
 # Set env vars:
-# Server: DATABASE_URL, REDIS_URL, SESSION_SECRET, MAIL_USER/PASSWORD
+# Server: DATABASE_URL, REDIS_URL, SESSION_SECRET, GMAIL_USER/GMAIL_APP_PASSWORD
 # Client: NEXT_PUBLIC_API_URL (defaults to http://localhost:3001)
 ```
 
@@ -126,6 +191,9 @@ npx prisma migrate dev   # Create + apply migration
 
 # Production:
 npx prisma migrate deploy  # Apply without prompts
+
+# Database inspection:
+npx prisma studio  # Launch GUI on http://localhost:5555
 ```
 
 **Testing** (Server only)
@@ -143,15 +211,31 @@ npm run test:bdd     # Database integration
 # - generateUniqueToken(testName)
 ```
 
+**View Database Roles** (Debugging)
+```bash
+docker exec yanotela-db-local psql -U yanotela_local -d yanotela_local -c \
+  "SELECT n.\"Titre\", n.id as note_id, u.pseudo, p.role, 
+   CASE WHEN p.role = 0 THEN '👑 Propriétaire' 
+        WHEN p.role = 1 THEN '⚙️ Admin' 
+        WHEN p.role = 2 THEN '✏️ Éditeur' 
+        WHEN p.role = 3 THEN '👁️ Lecteur' 
+   END as role_name 
+   FROM \"Note\" n 
+   LEFT JOIN \"Permission\" p ON n.id = p.id_note 
+   LEFT JOIN \"User\" u ON p.id_user = u.id 
+   ORDER BY n.\"ModifiedAt\" DESC LIMIT 20;"
+```
+
 ## File Organization Patterns
 
 **Client Structure**
 ```
-src/app/[route]/page.tsx          # Next.js App Router pages (all "use client")
+src/app/[route]/page.tsx          # Next.js App Router pages (most use "use client")
 src/components/[feature]/         # Feature-based components
 src/loader/loader.tsx             # Centralized API calls (NOT a component)
 src/hooks/use*.ts                 # Custom hooks (useAuthRedirect, useTheme)
 src/type/[Type].ts               # TypeScript types (PascalCase filenames)
+src/ui/                          # Reusable UI components
 ```
 
 **Server Structure**
@@ -159,19 +243,31 @@ src/type/[Type].ts               # TypeScript types (PascalCase filenames)
 src/controllers/[feature]Controller.js  # Business logic
 src/routes/[feature]Routes.js           # Route definitions with middleware
 src/middlewares/authMiddleware.js       # requireAuth, requireWriteAccess
-src/services/collaborationService.js    # Socket.IO user tracking
+src/services/collaborationService.js    # User tracking per note
 src/config/sessionConfig.js             # express-session setup
+src/config/corsConfig.js                # CORS configuration
+scripts/                                # Utility scripts (cleanup, migration, test data)
 ```
 
 **ES Module Gotchas** (Server)
 - `package.json` has `"type": "module"` → ALL imports MUST use `.js` extensions
 - Example: `import { prisma } from './config/database.js'` (not `.ts`)
 
+**Scripts Directory** (`Server/scripts/`)
+- `cleanup-deleted-notes.js` — Deletes notes where `deletedAt < now() - 30 days`
+- `create-test-user.js` — Generate test users for development
+- `create-test-note.js` — Generate test notes for development
+- `migrate-content-to-yjs.js` — Convert Lexical JSON to YJS state (experimental)
+- `migrate-yjs-to-text.js` — Reverse migration from YJS to text (experimental)
+- `test-folder-model.js` — Test folder model operations
+- `test-yjs-field.js` — Test YJS field handling
+- `remove-consoles-logs.js` — Remove console.log statements
+
 ## Critical Conventions
 
 **Next.js App Router**
-- All pages use `"use client"` directive (Client/src/app/*/page.tsx)
-- Server components NOT used due to authentication patterns
+- Most pages use `"use client"` directive (Client/src/app/*/page.tsx)
+- Server components used where appropriate (layout.tsx doesn't have "use client")
 - Route structure matches file paths: `/notes` → `Client/src/app/notes/page.tsx`
 
 **TailwindCSS v4**
@@ -182,7 +278,9 @@ src/config/sessionConfig.js             # express-session setup
     --color-background: #E9EBDB;
   }
   ```
-- Typography: Gantari (primary), Geologica (secondary) via Google Fonts
+- Three theme support: light (beige/red), dark (red crepuscule), blue
+- Theme variables pattern: `--{theme}-{property}` (e.g., `--light-background`, `--dark-background`)
+- Typography: Gantari (primary), Geologica (secondary), Nixie One (titles) via Google Fonts
 
 **Permission System**
 - `Permission.role`: 0 (owner), 1 (admin), 2 (editor), 3 (read-only)
@@ -190,22 +288,28 @@ src/config/sessionConfig.js             # express-session setup
 - Check in middleware: `requireWriteAccess` blocks role === 3
 - Role hierarchy validation: lower role value = higher privilege (controllers verify `adminRole < targetRole`)
 - Only role 0-1 can delete notes, add permissions, or manage collaborators
-- **Client-side enforcement**: `ReadOnlyPlugin` sets `editor.setEditable(false)` when `userRole === 3`
-- **Visual indicators**: Yellow banner + disabled toolbar + grayed out editor for read-only users
+- **Client-side enforcement**: Read-only UI enforced when `userRole === 3`
+- **Visual indicators**: Disabled toolbar + grayed out editor for read-only users
 
 ## Deployment Architecture
 
-**Docker Compose Services**
-1. `db` — PostgreSQL 15 Alpine (port 5433 locally)
-2. `redis` — Session store (port 6380 locally)
-3. `backend` — Express API with Prisma migrations on startup
-4. `frontend` — Next.js with Turbopack
+**Docker Compose Services** (`docker-compose.dev.yml`)
+1. `db` — PostgreSQL 15 Alpine (port 5433 locally, 5432 internally)
+2. `redis` — Session store (port 6380 locally, 6379 internally)
+3. `backend` — Express API with Prisma migrations on startup (port 3001)
+4. `frontend` — Next.js with Turbopack (port 3000)
 5. `cleanup-notes` — Cron job (runs every 24h): deletes notes where `deletedAt < now() - 30 days`
+6. `yjs-server` — YJS WebSocket server for collaboration (port 1234)
+
+**Environment Variables**
+- Server: `DATABASE_URL`, `REDIS_URL`, `SESSION_SECRET`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `CLIENT_URL`, `NODE_ENV`
+- Client: `NEXT_PUBLIC_API_URL` (defaults to http://localhost:3001)
 
 **Production Flow** (see `deploy/QUICKSTART.md`)
 - GitHub Actions → Docker Hub → EC2 instance
-- Secrets: `DOCKER_USERNAME`, `EC2_HOST`, `EC2_SSH_PRIVATE_KEY`, `ENV_PROD_FILE`
+- Secrets required: `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `EC2_HOST`, `EC2_USER`, `EC2_SSH_PRIVATE_KEY`, `ENV_PROD_FILE`
 - Nginx reverse proxy handles SSL termination (config in `nginx/default.conf`)
+- Docker images: Frontend (standalone Next.js), Backend (Node.js + Prisma)
 
 ## Common Pitfalls
 
@@ -217,9 +321,10 @@ src/config/sessionConfig.js             # express-session setup
 6. **Client env var** → `NEXT_PUBLIC_API_URL` must be set or loader falls back to localhost
 7. **Permission role values** → Use 0-3 scale (0=owner, 3=readonly), not 1-based indexing
 8. **Lexical content parsing** → Content stored as stringified JSON, must parse recursively via `extractText()` in loader
-9. **Socket.IO session sharing** → Uses `io.engine.use(sessionMiddleware)` for auth context
-10. **Read-only enforcement** → Check `note.userRole === 3` client-side + use `ReadOnlyPlugin` to block Lexical editor
-11. **Content sync** → `yjsState` is source of truth, `Content` field auto-synced via `syncContentFromYjs()` every 2s after YJS update + on note load
+9. **Read-only enforcement** → Check `note.userRole === 3` client-side and use `isReadOnly` prop in TitleSyncPlugin + AutoSavePlugin
+10. **Content source of truth** → `Note.Content` is primary, `yjsState` is optional/experimental
+11. **Docker compose file** → Use `docker-compose.dev.yml` for development (not default docker-compose.yml)
+12. **Session middleware** → No Redis password in dev config, uses simple in-memory sessions by default
 
 ## Quick Reference
 
