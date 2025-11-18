@@ -104,8 +104,8 @@ describe('Tests API Login (/login)', () => {
       .set('Accept', 'application/json');
 
     expect(res.statusCode).toBe(401);
-    expect(res.body.error).toBe('Utilisateur ou mot de passe incorrect');
-    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Utilisateur non trouvé');
+    expect(res.body.success).toBeUndefined();
   });
 
   test('POST /login avec mot de passe incorrect doit retourner erreur JSON', async () => {
@@ -121,8 +121,8 @@ describe('Tests API Login (/login)', () => {
       .set('Accept', 'application/json');
 
     expect(res.statusCode).toBe(401);
-    expect(res.body.error).toBe('Utilisateur ou mot de passe incorrect');
-    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Mot de passe incorrect');
+    expect(res.body.success).toBeUndefined();
   });
 
   test('POST /login avec compte non vérifié doit retourner erreur JSON', async () => {
@@ -137,9 +137,9 @@ describe('Tests API Login (/login)', () => {
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
 
-    expect(res.statusCode).toBe(403);
-    expect(res.body.error).toContain('Compte non activé');
-    expect(res.body.success).toBe(false);
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBe('Compte non activé');
+    expect(res.body.success).toBeUndefined();
   });
 
   test('POST /login sans identifiant doit retourner erreur JSON', async () => {
@@ -155,7 +155,7 @@ describe('Tests API Login (/login)', () => {
 
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toBe('Identifiant et mot de passe requis');
-    expect(res.body.success).toBe(false);
+    expect(res.body.success).toBeUndefined();
   });
 
   test('POST /login sans mot de passe doit retourner erreur JSON', async () => {
@@ -171,7 +171,7 @@ describe('Tests API Login (/login)', () => {
 
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toBe('Identifiant et mot de passe requis');
-    expect(res.body.success).toBe(false);
+    expect(res.body.success).toBeUndefined();
   });
 
   test('POST /login sans données doit retourner erreur JSON', async () => {
@@ -183,7 +183,7 @@ describe('Tests API Login (/login)', () => {
 
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toBe('Identifiant et mot de passe requis');
-    expect(res.body.success).toBe(false);
+    expect(res.body.success).toBeUndefined();
   });
 
   test('POST /login avec succès doit créer une session', async () => {

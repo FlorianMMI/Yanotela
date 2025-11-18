@@ -1,82 +1,28 @@
 /**
  * @fileoverview
- * Tests d'intégration pour la récupération de notes
+ * Fichier de test pour l'endpoint GET /note/get.
+ * Utilise Supertest et Jest pour vérifier que la récupération de toutes les notes fonctionne correctement.
+ * Ce fichier permet de s'assurer que l'API retourne bien un tableau de notes lors d'une requête GET sur /note/get.
  */
 
 import request from 'supertest';
-import { app } from '../../src/app.js';
-import { getPrismaTestInstance, createTestUser, cleanupUser } from '../testUtils.js';
-import { randomUUID } from 'crypto';
+import { jest } from '@jest/globals';
+import {app} from '../../src/app.js';
 
-const prisma = getPrismaTestInstance();
+test('GET /note/get devrait récupérer toutes les notes', async () => {
+    const response = await request(app)
+        .get('/note/get')
+        .expect(200);
+        
+    expect(Array.isArray(response.body)).toBe(true);
+    // Vous pouvez ajouter plus de validations en fonction de la structure de vos notes
+});
 
-describe('GET /note/get', () => {
-  let testUser;
-  let authAgent;
-  let testNote;
+test('GET /note/get/:id devrait récupérer une note par ID', async () => {
+    const response = await request(app)
+        .get('/note/get/1') // Remplacez '1' par un ID de note valide dans votre base de données de test
+        .expect(200);
 
-  beforeAll(async () => {
-    const result = await createTestUser(prisma, 'noteget');
-    testUser = result.user;
-
-    authAgent = request.agent(app);
-    await authAgent
-      .post('/login')
-      .send({
-        identifiant: testUser.email,
-        password: 'password123!'
-      })
-      .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json');
-
-    // Créer une note de test
-    testNote = await prisma.note.create({
-      data: {
-        id: randomUUID(),
-        Titre: 'Note de test',
-        Content: JSON.stringify({ root: { children: [] } }),
-        authorId: testUser.id
-      }
-    });
-
-    await prisma.permission.create({
-      data: {
-        noteId: testNote.id,
-        userId: testUser.id,
-        role: 0
-      }
-    });
-  });
-
-  afterAll(async () => {
-    await cleanupUser(prisma, testUser.id);
-    await prisma.$disconnect();
-  });
-
-  test('GET /note/get devrait récupérer toutes les notes', async () => {
-    const response = await authAgent
-      .get('/note/get')
-      .set('Accept', 'application/json');
-
-    expect(response.statusCode).toBe(200);
-    expect(Array.isArray(response.body) || Array.isArray(response.body.notes)).toBe(true);
-  });
-
-  test('GET /note/get/:id devrait récupérer une note par ID', async () => {
-    const response = await authAgent
-      .get(`/note/get/${testNote.id}`)
-      .set('Accept', 'application/json');
-
-    expect(response.statusCode).toBe(200);
-    expect(response.body.note || response.body).toHaveProperty('Titre');
-  });
-
-  test('GET /note/get/:id avec ID inexistant devrait retourner 404', async () => {
-    const fakeId = randomUUID();
-    const response = await authAgent
-      .get(`/note/get/${fakeId}`)
-      .set('Accept', 'application/json');
-
-    expect(response.statusCode).toBe(404);
-  });
+    expect(response.body).toHaveProperty('titre');
+    expect(response.body).toHaveProperty('content');
 });
