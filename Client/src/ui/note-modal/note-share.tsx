@@ -259,7 +259,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                             }}
                             disabled={!isTogglePublic}
                             title={isTogglePublic ? 'Copier le lien de la note privée' : 'Disponible uniquement en mode privé'}
-                            className={`px-4 py-2 border border-element rounded text-sm text-foreground hover:bg-deskbackground transition-colors ${!isTogglePublic ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`px-4 py-2 border border-element rounded text-sm text-foreground flex flex-col justify-center hover:bg-deskbackground transition-colors ${!isTogglePublic ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {copied ? <Icon name="Link" /> : <Icon name="Link-Copite" />}
                         </button>

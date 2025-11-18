@@ -11,7 +11,7 @@ export function useAuthRedirect(options?: { skipRedirect?: boolean }) {
   const [checkTrigger, setCheckTrigger] = useState(0);
 
   // Pages publiques qui ne nécessitent pas d'authentification
-  const publicPages = ['/cgu', '/mentions-legales', '/login', '/register', '/forgot-password'];
+  const publicPages = ['/cgu', '/mentions-legales', '/login', '/register', '/forgot-password', '/validate'];
   const isPublicPage = publicPages.some(page => pathname?.startsWith(page));
 
   const checkAuth = async () => {

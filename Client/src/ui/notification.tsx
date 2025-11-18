@@ -20,8 +20,7 @@ export default function Notification({ id, title, author, onNotificationUpdate, 
             if (result.success && result.noteId) {
                 // Déclencher la mise à jour globale des notifications
                 refreshNotifications();
-                // Redirect to the note
-                window.location.href = `/notes/${result.noteId}`;
+                
             } else {
                 // Appeler le callback pour rafraîchir la liste même en cas d'erreur
                 onNotificationUpdate?.();
