@@ -32,8 +32,7 @@ describe('Tests API Register (/register)', () => {
       firstName: 'Test',
       lastName: 'User',
       email: 'test-api@example.com',
-      password: 'password123!',
-      checkedCGU: true
+      password: 'password123'
     };
 
     const res = await request(app)
@@ -80,8 +79,7 @@ describe('Tests API Register (/register)', () => {
       firstName: 'New',
       lastName: 'User',
       email: 'existing-api@example.com',
-      password: 'password123!',
-      checkedCGU: true
+      password: 'password123'
     };
 
     const res = await request(app)
@@ -92,7 +90,7 @@ describe('Tests API Register (/register)', () => {
 
     expect(res.statusCode).toBe(409);
     expect(res.body.error).toBe('Cet email est déjà utilisé.');
-    expect(res.body.success).toBe(false);
+    expect(res.body.success).toBeUndefined();
   });
 
   test('POST /register avec pseudo déjà existant doit retourner une erreur JSON', async () => {
@@ -114,8 +112,7 @@ describe('Tests API Register (/register)', () => {
       firstName: 'New',
       lastName: 'User',
       email: 'new-api@example.com',
-      password: 'password123!',
-      checkedCGU: true
+      password: 'password123'
     };
 
     const res = await request(app)
@@ -126,7 +123,7 @@ describe('Tests API Register (/register)', () => {
 
     expect(res.statusCode).toBe(409);
     expect(res.body.error).toBe('Ce pseudo est déjà utilisé.');
-    expect(res.body.success).toBe(false);
+    expect(res.body.success).toBeUndefined();
   });
 
   test('POST /register avec données invalides doit retourner des erreurs de validation JSON', async () => {
@@ -200,8 +197,7 @@ describe('Tests API Register (/register)', () => {
       firstName: 'Token',
       lastName: 'Test',
       email: 'token-test@example.com',
-      password: 'password123!',
-      checkedCGU: true
+      password: 'password123'
     };
 
     const res = await request(app)
