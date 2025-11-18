@@ -771,12 +771,20 @@ export const noteController = {
         });
       }
 
-      // Soft delete: définir deletedAt à la date actuelle
-      const deletedNote = await prisma.note.update({
-        where: { id },
-        data: {
-          deletedAt: new Date(),
-        },
+      // Soft delete: définir deletedAt à la date actuelle ET nettoyer les relations NoteFolder
+      const deletedNote = await prisma.$transaction(async (prisma) => {
+        // Supprimer les relations NoteFolder pour éviter les interférences avec les dossiers
+        await prisma.noteFolder.deleteMany({
+          where: { noteId: id }
+        });
+
+        // Soft delete de la note
+        return await prisma.note.update({
+          where: { id },
+          data: {
+            deletedAt: new Date(),
+          },
+        });
       });
 
       res.status(200).json({ 
