@@ -5,6 +5,7 @@ import { Note as NoteType } from '@/type/Note';
 import { motion } from 'motion/react';
 import NoteMore from '@/components/noteMore/NoteMore';
 import { SearchMode } from '@/ui/searchbar';
+import Icons from '@/ui/Icon';
 
 interface NoteProps {
   note: NoteType;
@@ -246,7 +247,8 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
     >
 
       {/* Header - Titre et collaborateurs avec fond rouge */}
-      <div className="flex justify-between m-2 items-center gap-3 rounded-lg bg-primary h-[2rem]">
+      <div className="flex justify-between m-2 items-center gap-3 rounded-lg h-[2rem]" 
+      style={{ backgroundColor: note.tag || 'var(--primary)' }}>
 
         {/* Note Title */}
         <h3
@@ -258,9 +260,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
 
         {/* Collaborateurs */}
         <div 
-          className="flex h-full rounded-r-lg min-w-[56px]"
-          style={{ backgroundColor: note.tag || 'var(--primary)' }}
-        >
+          className="flex h-full rounded-r-lg min-w-[56px]">
           {note.collaboratorCount && note.collaboratorCount > 1 && (
             <div className="flex items-center w-full h-full gap-1 px-3 shrink-0">
               <p className='text-white font-bold'>{note.collaboratorCount}</p>
@@ -285,7 +285,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
         </div>
 
         {/* Date de modification */}
-        <div className="mt-2 pt-1 border-t border-gray-100 md:mt-4 md:pt-2">
+        <div className="mt-2 pt-1 border-t border-gray-100 md:mt-4 md:pt-2 flex justify-between items-center">
           <p className="font-gantari text-xs text-element italic">
             Ouvert le {new Date(note.ModifiedAt).toLocaleDateString('fr-FR', {
               day: 'numeric',
@@ -293,7 +293,21 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
               year: 'numeric'
             })}
           </p>
-        </div>
+
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isInTrash) return;
+              openContextMenu(e.clientX, e.clientY);
+            }}
+            className="p-1 rounded hover:bg-gray-100 transition-colors flex"
+            title="Options de la note"
+          >
+            <Icons name="kebab" size={20} className="text-primary hover:text-primary-hover"/>
+          </button>
+
+          </div>
       </div>
     </motion.div>
 

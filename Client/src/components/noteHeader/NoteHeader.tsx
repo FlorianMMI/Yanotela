@@ -39,7 +39,7 @@ export default function NoteHeader({
   return (
     <>
       {/* Header Mobile */}
-      <div className="block md:hidden">
+      <div className="block xl:hidden md:block">
         <header className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Mes Notes</h1>
@@ -175,8 +175,8 @@ export default function NoteHeader({
         </header>
       </div>
 
-      {/* Barre de recherche et filtre */}
-      <div className="hidden md:block flex justify-center">
+      {/* Barre de recherche et filtre desktop */}
+      <div className="hidden xl:block md:hidden flex justify-center">
         
         <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
 

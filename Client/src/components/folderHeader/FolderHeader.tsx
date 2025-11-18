@@ -47,7 +47,7 @@ export default function FolderHeader({
   return (
     <>
       {/* Header Mobile */}
-      <div className="block md:hidden">
+      <div className="block xl:hidden md:block">
         <header className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Mes Dossiers</h1>
@@ -197,7 +197,7 @@ export default function FolderHeader({
       </div>
 
       {/* Barre de recherche et filtre - Desktop */}
-      <div className="hidden md:block">
+      <div className="hidden xl:block md:hidden">
         
         <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
           

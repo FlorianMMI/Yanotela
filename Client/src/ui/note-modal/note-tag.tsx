@@ -8,13 +8,48 @@ interface TagNoteProps {
   onTagUpdated?: () => void;
 }
 
+// Fonction pour récupérer la vraie valeur de la variable CSS --primary
+const getPrimaryColor = (): string => {
+  if (typeof window !== 'undefined') {
+    const computed = getComputedStyle(document.documentElement);
+    const primaryColor = computed.getPropertyValue('--primary').trim();
+    return primaryColor || '#882626'; // Fallback si la variable n'est pas trouvée
+  }
+  return '#882626';
+};
+
 export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNoteProps) {
   const [selectedColor, setSelectedColor] = useState<string>(currentTag || 'var(--primary)');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [primaryColor, setPrimaryColor] = useState<string>(getPrimaryColor());
 
   useEffect(() => {
     setSelectedColor(currentTag || 'var(--primary)');
   }, [currentTag]);
+
+  // Écouter les changements de thème pour mettre à jour la couleur primary
+  useEffect(() => {
+    const updatePrimaryColor = () => {
+      setPrimaryColor(getPrimaryColor());
+    };
+
+    // Observer les changements de la variable CSS --primary
+    const observer = new MutationObserver(updatePrimaryColor);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'data-theme']
+    });
+
+    // Écouter aussi les événements de changement de thème
+    window.addEventListener('storage', updatePrimaryColor);
+    window.addEventListener('theme-changed', updatePrimaryColor);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', updatePrimaryColor);
+      window.removeEventListener('theme-changed', updatePrimaryColor);
+    };
+  }, []);
 
   const handleColorChange = async (color: string) => {
     if (color === selectedColor) return;
@@ -55,7 +90,7 @@ export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNotePro
 
         <div className="grid grid-cols-3 gap-3">
           {FOLDER_COLORS.map((color) => {
-            const colorValue = color.value === 'var(--primary)' ? '#882626' : color.value;
+            const colorValue = color.value === 'var(--primary)' ? primaryColor : color.value;
             const isSelected = selectedColor === color.value;
             
             return (
@@ -104,7 +139,7 @@ export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNotePro
             <span className="text-sm text-gray-600">Tag de la note :</span>
             <div 
               className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
-              style={{ backgroundColor: selectedColor === 'var(--primary)' ? '#882626' : selectedColor }}
+              style={{ backgroundColor: selectedColor === 'var(--primary)' ? primaryColor : selectedColor }}
             />
             <span className="text-sm font-medium">
               {FOLDER_COLORS.find(c => c.value === selectedColor)?.label || 'Couleur personnalisée'}
