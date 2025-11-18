@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 let prisma = null;
 
@@ -38,5 +39,43 @@ export async function cleanupTestData(prismaInstance, emails = [], pseudos = [])
     });
   } catch (error) {
     console.warn('Erreur lors du nettoyage des données de test:', error.message);
+  }
+}
+
+// Helper pour créer un utilisateur de test unique avec des données générées
+export async function createTestUser(prismaInstance, baseName = 'testuser') {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  const uniqueSuffix = `${timestamp}${random}`;
+
+  // Default plaintext password used across tests
+  const plainPassword = 'password123!';
+  const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+  const userData = {
+    pseudo: `${baseName}_${uniqueSuffix}`,
+    prenom: 'Test',
+    nom: 'User',
+    email: `${baseName}_${uniqueSuffix}@example.com`,
+    password: hashedPassword,
+    token: `token_${uniqueSuffix}`,
+    is_verified: true
+  };
+
+  const user = await prismaInstance.user.create({ data: userData });
+  return { user, userData, plainPassword };
+}
+
+// Helper pour nettoyer un utilisateur spécifique et ses données associées
+export async function cleanupUser(prismaInstance, userId) {
+  try {
+    // Supprimer dans l'ordre des dépendances
+    await prismaInstance.noteFolder.deleteMany({ where: { id_user: userId } });
+    await prismaInstance.permission.deleteMany({ where: { userId } });
+    await prismaInstance.folder.deleteMany({ where: { authorId: userId } });
+    await prismaInstance.note.deleteMany({ where: { authorId: userId } });
+    await prismaInstance.user.delete({ where: { id: userId } });
+  } catch (error) {
+    console.warn('Erreur lors du nettoyage de l\'utilisateur:', error.message);
   }
 }

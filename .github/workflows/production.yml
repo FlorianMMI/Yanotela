@@ -16,10 +16,17 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
 
 jobs:
-  # ===== TESTS =====
+  # ===== TESTS UNITAIRES (Parallélisés) =====
+  unit-tests:
+    uses: ./.github/workflows/unit-tests.yml
+    permissions:
+      contents: read
+
+  # ===== TESTS D'INTÉGRATION =====
   test-backend:
-    name: 🧪 Test Backend
+    name: 🧪 Backend Integration Tests
     runs-on: ubuntu-latest
+    needs: unit-tests
 
     services:
       postgres:
@@ -71,8 +78,9 @@ jobs:
         DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
 
   test-frontend:
-    name: 🧪 Test Frontend
+    name: 🧪 Frontend Integration Tests
     runs-on: ubuntu-latest
+    needs: unit-tests
 
     steps:
     - name: 📥 Checkout Code
