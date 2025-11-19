@@ -64,20 +64,20 @@ export default function SearchBar({
 
     return (
         <>
-            <div className="relative flex items-center w-full gap-2">
+            <div className="relative flex w-full max-w-[40rem] gap-2">
                 {/* Barre de recherche */}
-                <div className="relative flex-1">
+                <div className="relative w-full flex p-4 gap-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300">
                     <Icon
                         name="recherche"
                         size={20}
-                        className="absolute left-3 top-2.5 z-10 text-gray-500"
+                        className="text-gray-500"
                     />
                     <input
                         type="text"
                         placeholder={getPlaceholder()}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full md:w-[25rem] pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300"
+                        className="w-full md:w-[25rem] "
                     />
                 </div>
 
@@ -88,7 +88,7 @@ export default function SearchBar({
                             ref={buttonRef}
                             type="button"
                             onClick={handleToggleDropdown}
-                            className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors min-w-fit touch-manipulation relative z-10"
+                            className="flex items-center h-full border border-gray-300 hover:border-primary gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors min-w-fit touch-manipulation relative z-10"
                             title={currentMode.description}
                         >
                             <Icon
@@ -111,13 +111,13 @@ export default function SearchBar({
                             <>
                                 {/* Overlay pour fermer le dropdown */}
                                 <div 
-                                    className="fixed inset-0 z-[9998]" 
+                                    className="fixed inset-0 " 
                                     onClick={() => setShowDropdown(false)}
                                 />
                                 
                                 {/* Menu dropdown - positionné absolument */}
                                 <div 
-                                    className="fixed bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-[9999] min-w-48 max-w-xs"
+                                    className="fixed bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-48 max-w-xs"
                                     style={{
                                         top: `${dropdownPosition.top}px`,
                                         left: `${Math.max(dropdownPosition.left, 16)}px`, // 16px de marge minimum
@@ -138,8 +138,8 @@ export default function SearchBar({
                                                 className={searchMode === mode.key ? 'text-primary' : 'text-gray-500'}
                                             />
                                             <div className="flex-1">
-                                                <div className="font-medium text-base sm:text-sm">{mode.label}</div>
-                                                <div className="text-sm sm:text-xs text-gray-500">{mode.description}</div>
+                                                <p className="font-medium text-base sm:text-sm">{mode.label}</p>
+                                                <p className="text-sm sm:text-xs text-gray-500">{mode.description}</p>
                                             </div>
                                             {searchMode === mode.key && (
                                                 <Icon

@@ -31,6 +31,7 @@ model Note {
   Titre       String
   Content     String
   yjsState    Bytes?
+  tag         String?      // Couleur du tag de la note (optionnel)
   authorId    Int
   ModifiedAt  DateTime     @default(now())
   modifierId  Int?

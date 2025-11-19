@@ -151,19 +151,35 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
       </svg>
 
       {/* Container du texte - positionné en bas à gauche de l'icône */}
-      <div className="absolute bottom-3 left-6 md:bottom-3 md:left-3 lg:bottom-4 lg:left-4 pointer-events-none z-10">
+      <div className="absolute bottom-3 left-6 md:bottom-3 md:left-3 lg:bottom-4 lg:left-4 pointer-events-none z-10 flex justify-between items-center w-[calc(100%-3rem)] md:w-[calc(100%-2rem)] ">
         {/* Nombre de notes */}
-        <p className="font-geologica italic text-white font-medium drop-shadow-lg text-sm md:text-base lg:text-lg leading-tight mb-0.5">
-          {folder.noteCount || 0} notes
-        </p>
+        <div className="flex flex-col gap-1">
+          <p className="font-geologica italic text-white font-medium drop-shadow-lg text-sm md:text-base lg:text-lg leading-tight mb-0.5">
+            {folder.noteCount || 0} notes
+          </p>
 
-        {/* Nom du dossier */}
-        <h3
-          className="font-geologica text-white font-bold truncate drop-shadow-md text-xs md:text-sm lg:text-base leading-tight  md:max-w-[100px] lg:max-w-[120px]"
-          title={folder.Nom}
-        >
-          {folder.Nom}
-        </h3>
+          {/* Nom du dossier */}
+          <h3
+            className="font-geologica text-white font-bold truncate drop-shadow-md text-xs md:text-sm lg:text-base leading-tight  md:max-w-[100px] lg:max-w-[120px]"
+            title={folder.Nom}
+          >
+            {folder.Nom}
+          </h3>
+
+        </div>
+
+        <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isInTrash) return;
+              openContextMenu(e.clientX, e.clientY);
+            }}
+            className="p-1 rounded hover:bg-[#0003] flex pointer-events-auto"
+            title="Options du dossier"
+          >
+            <Icon name="kebab" size={20} className="text-white hover:text-gray-100"/>
+          </button>
       </div>
 
     </motion.div>

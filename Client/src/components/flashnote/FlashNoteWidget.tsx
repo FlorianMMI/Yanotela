@@ -373,7 +373,7 @@ export default function FlashNoteWidget() {
                       Votre Flash Note...
                     </p>
                   }
-                  className="editor-root md:mt-2 h-full focus:outline-none min-h-[200px]"
+                  className="editor-root md:mt-2 focus:outline-none min-h-[200px]"
                 />
               }
               ErrorBoundary={LexicalErrorBoundary}

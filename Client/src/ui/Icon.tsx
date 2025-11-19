@@ -59,11 +59,11 @@ const Icon = ({ name, className = "", size = 20, width, height, strokeWidth }: I
   }, [name, size, strokeWidth, width, height]);
 
   if (!svgContent) {
-    return <div className={className} role="img" style={{ width: width, height: height }} />;
+    return <span className={className} role="img" style={{ width: width, height: height, display: 'inline-block' }} />;
   }
 
   return (
-    <div 
+    <span 
       className={className}
       role="img"
       style={{ 
@@ -77,7 +77,7 @@ const Icon = ({ name, className = "", size = 20, width, height, strokeWidth }: I
     >
       {(() => {
         const InlineSvg: React.FC<{ content: string }> = ({ content }) => {
-          const elRef = React.useRef<HTMLDivElement | null>(null);
+          const elRef = React.useRef<HTMLSpanElement | null>(null);
 
           React.useEffect(() => {
             const container = elRef.current;
@@ -100,12 +100,12 @@ const Icon = ({ name, className = "", size = 20, width, height, strokeWidth }: I
             };
           }, [content]);
 
-          return <div ref={elRef} style={{ width: '100%', height: '100%' }} aria-hidden />;
+          return <span ref={elRef} style={{ width: '100%', height: '100%', display: 'inline-block' }} aria-hidden />;
         };
 
         return <InlineSvg content={svgContent} />;
       })()}
-    </div>
+    </span>
   );
 };
 

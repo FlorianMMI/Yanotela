@@ -6,11 +6,8 @@ import { Note } from "@/type/Note";
 import NoteList from "@/components/noteList/NoteList";
 import FolderMore from "@/components/folderMore/FolderMore";
 import FolderDetailHeader from "@/components/folderDetailHeader/FolderDetailHeader";
-import { GetFolderById, UpdateFolder, DeleteFolder, CreateNote } from "@/loader/loader";
+import { GetFolderById, UpdateFolder } from "@/loader/loader";
 import { SearchMode } from "@/ui/searchbar";
-
-import ReturnButton from "@/ui/returnButton";
-import Icon from "@/ui/Icon";
 
 interface FolderDetailProps {
     params: Promise<{
@@ -24,7 +21,6 @@ export default function FolderDetail({ params }: FolderDetailProps) {
 
     const [folder, setFolder] = useState<Folder | null>(null);
     const [notes, setNotes] = useState<Note[]>([]);
-    const [totalNotes, setTotalNotes] = useState(0);
     const [loading, setLoading] = useState(true);
     const [showFolderMore, setShowFolderMore] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -32,6 +28,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [sortBy, setSortBy] = useState<"recent">("recent");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
+    const [tagColorFilter, setTagColorFilter] = useState("");
 
     useEffect(() => {
         fetchFolderData();
@@ -113,18 +110,6 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         router.push("/dossiers");
     };
 
-    const handleCreateNote = async () => {
-        try {
-            const result = await CreateNote();
-            if (result.note && result.redirectUrl) {
-                // Rediriger vers la note créée avec un paramètre pour l'associer au dossier
-                router.push(`${result.redirectUrl}?folderId=${id}`);
-            }
-        } catch (error) {
-            console.error('Erreur lors de la création de la note:', error);
-        }
-    };
-
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -175,7 +160,12 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                         collaborationFilter === "solo" ? (!note.collaboratorCount || note.collaboratorCount <= 1) :
                             true;
 
-            return matchesSearch && matchesCollaboration;
+            // Filtre couleur de tag
+            const matchesTagColor = !tagColorFilter
+                ? true
+                : (note.CouleurTag === tagColorFilter || (!note.CouleurTag && tagColorFilter === "var(--primary)"));
+
+            return matchesSearch && matchesCollaboration && matchesTagColor;
         })
         .sort((a, b) => {
             const da = new Date(a.ModifiedAt).getTime();
@@ -199,6 +189,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 setSortDir={setSortDir}
                 collaborationFilter={collaborationFilter}
                 setCollaborationFilter={setCollaborationFilter}
+                tagColorFilter={tagColorFilter}
+                setTagColorFilter={setTagColorFilter}
                 onMoreClick={() => setShowFolderMore((prev: boolean) => !prev)}
             />
 
@@ -221,6 +213,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 </div>
             )}
 
+            {/* Notes List */}
             <div className="flex-1 overflow-y-auto">
                 <NoteList
                     notes={filteredNotes}

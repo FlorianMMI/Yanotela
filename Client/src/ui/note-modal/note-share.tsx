@@ -21,6 +21,8 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     const [isTogglePublic, setIsTogglePublic] = useState(false); // false = privé par défaut
     const [copied, setCopied] = useState(false);
     const [currentUserRole, setCurrentUserRole] = useState<number | null>(null); // Rôle de l'utilisateur connecté
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     useEffect(() => {
         setLoading(true);

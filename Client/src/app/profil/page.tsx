@@ -86,9 +86,9 @@ export default function Profil() {
 
   return (
     <>
-      <div className="relative h-full md:h-full flex flex-col gap-4 bg-fondpage p-4">
+      <div className="relative h-full flex flex-col gap-4 bg-fondpage">
         {/* Boutons settings et déconnexion alignés en haut */}
-        <div className="absolute top-4 left-0 px-4 w-full flex justify-between items-center">
+        <div className="flex-shrink-0 px-4 pt-4 w-full flex justify-between items-center">
           <div className="md:hidden flex gap-1 items-center">
 
             <div className="flex items-center justify-center">
@@ -111,7 +111,9 @@ export default function Profil() {
           </div>
         </div>
 
-        <ModificationProfil />
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
+          <ModificationProfil />
+        </div>
 
       </div>
 

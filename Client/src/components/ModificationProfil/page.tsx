@@ -150,7 +150,7 @@ export default function ModificationProfil() {
   return (
     <>
       {pageLoading ? (
-        <div className="p-4 flex justify-center items-center min-h-full md:min-h-full">
+        <div className="p-4 flex justify-center items-center min-md:min-h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
@@ -217,7 +217,7 @@ export default function ModificationProfil() {
               </div>
           )}
 
-          <div className="flex flex-col w-full h-full justify-end items-center">
+          <div className="flex flex-col w-full justify-end items-center">
             <div className="flex items-end justify-center rounded-full h-[100px] w-[100px] border-8 border-primary overflow-hidden">
               <Icons 
                 name="profile"
@@ -229,7 +229,7 @@ export default function ModificationProfil() {
             <p className="text-sm text-gray-500">{userData.email}</p>
           </div>
 
-          <div className="flex flex-col gap-3 items-center justify-center w-full h-full max-w-[400px]">
+          <div className="flex flex-col gap-3 items-center justify-center w-full max-w-[400px]">
             <InputModified
               name="Pseudonyme"
               placeholder="pseudo"

@@ -12,11 +12,6 @@
       "src": "/logo192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml"
-    },
-    {
-      "src": "/logoIconWebApp.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
     }
   ],
   "categories": ["productivity", "utilities"],

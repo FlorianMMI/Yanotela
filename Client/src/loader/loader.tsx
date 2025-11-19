@@ -1162,5 +1162,27 @@ export async function GetNoteFolder(noteId: string): Promise<{ success: boolean;
     }
 }
 
+// Mettre à jour le tag d'une note
+export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/note/tag/${noteId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ tag })
+        });
 
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la mise à jour du tag' };
+        }
 
+        const data = await response.json();
+        return { success: true, message: data.message || 'Tag mis à jour avec succès' };
+    } catch (error) {
+        console.error("Error updating note tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}

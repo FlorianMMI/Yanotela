@@ -1,4 +1,5 @@
-import {PrismaClient} from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { sendNoteInvitationEmail } from "../services/emailService.js";
 const prisma = new PrismaClient();
 
 //     {id: 1, role: 0}, // Propriétaire
@@ -7,41 +8,43 @@ const prisma = new PrismaClient();
 //     {id: 4, role: 3} // Lecteur
 
 const getPermission = async (userId, noteId) => {
-    try {
-        const permission = await prisma.permission.findFirst({
-            where: {
-                userId: userId,
-                noteId: noteId
-            }
-        });
-        return permission;
-    } catch (error) {
-        console.error('Erreur lors de la récupération des permissions:', error);
-        throw new Error('Erreur lors de la récupération des permissions');
-    }
-}
+  try {
+    const permission = await prisma.permission.findFirst({
+      where: {
+        userId: userId,
+        noteId: noteId,
+      },
+    });
+    return permission;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des permissions:", error);
+    throw new Error("Erreur lors de la récupération des permissions");
+  }
+};
 
 export async function FetchPermission(req, res) {
   const { noteId } = req.params;
   try {
     const permissions = await prisma.permission.findMany({
       where: {
-        noteId: noteId
+        noteId: noteId,
       },
       include: {
         user: {
           select: {
             id: true,
             pseudo: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
-  res.json({ permissions });
+    res.json({ permissions });
   } catch (error) {
-    console.error('Erreur lors de la récupération des permissions:', error);
-    res.status(500).json({ error: 'Erreur lors de la récupération des permissions' });
+    console.error("Erreur lors de la récupération des permissions:", error);
+    res
+      .status(500)
+      .json({ error: "Erreur lors de la récupération des permissions" });
   }
 }
 
@@ -56,47 +59,64 @@ const UpdatePermission = async (req, res) => {
   try {
     // Récupère la permission du user connecté sur cette note
     const adminPermission = await prisma.permission.findFirst({
-      where: { 
+      where: {
         userId: connected,
-        noteId: noteId
-      }
+        noteId: noteId,
+      },
     });
     if (!adminPermission) {
-      return res.status(403).json({ error: "Vous n'avez pas de permission sur cette note" });
+      return res
+        .status(403)
+        .json({ error: "Vous n'avez pas de permission sur cette note" });
     }
 
     // Récupère la permission de l'utilisateur cible sur cette note
     const userPermission = await prisma.permission.findFirst({
-      where: { 
+      where: {
         userId: parseInt(userId),
-        noteId: noteId
-      }
+        noteId: noteId,
+      },
     });
     if (!userPermission) {
-      return res.status(404).json({ error: "Utilisateur cible non trouvé sur cette note" });
+      return res
+        .status(404)
+        .json({ error: "Utilisateur cible non trouvé sur cette note" });
     }
 
     if (adminPermission.role < userPermission.role) {
       const { newRole } = req.body;
-      if (typeof newRole !== 'number' || newRole <= adminPermission.role || newRole > 3) {
-        return res.status(400).json({ error: "Rôle cible invalide ou non autorisé." });
+      if (
+        typeof newRole !== "number" ||
+        newRole <= adminPermission.role ||
+        newRole > 3
+      ) {
+        return res
+          .status(400)
+          .json({ error: "Rôle cible invalide ou non autorisé." });
       }
       await prisma.permission.update({
-        where: { 
+        where: {
           noteId_userId: {
             noteId: noteId,
-            userId: parseInt(userId)
-          }
+            userId: parseInt(userId),
+          },
         },
-        data: { role: newRole }
+        data: { role: newRole },
       });
       return res.json({ success: true, message: `Rôle modifié avec succès` });
     } else {
-      return res.status(403).json({ error: "Vous ne pouvez modifier que les utilisateurs ayant un rôle inférieur au vôtre." });
+      return res
+        .status(403)
+        .json({
+          error:
+            "Vous ne pouvez modifier que les utilisateurs ayant un rôle inférieur au vôtre.",
+        });
     }
   } catch (error) {
-    console.error('Erreur lors de la mise à jour des permissions:', error);
-    return res.status(500).json({ error: "Erreur serveur lors de la mise à jour des permissions" });
+    console.error("Erreur lors de la mise à jour des permissions:", error);
+    return res
+      .status(500)
+      .json({ error: "Erreur serveur lors de la mise à jour des permissions" });
   }
 };
 
@@ -105,7 +125,7 @@ async function AddPermission(req, res) {
   const { noteId } = req.params;
   const { identifier, role } = req.body; // identifier = email ou pseudo
   const connected = req.session.userId;
-  
+
   if (!connected) {
     return res.status(401).json({ error: "Non authentifié" });
   }
@@ -113,25 +133,27 @@ async function AddPermission(req, res) {
   try {
     // Vérifier les permissions de l'utilisateur connecté sur cette note
     const adminPermission = await prisma.permission.findFirst({
-      where: { 
+      where: {
         userId: connected,
-        noteId: noteId
-      }
+        noteId: noteId,
+      },
     });
-    if (!adminPermission || adminPermission.role > 1) { // Seuls propriétaire et admin peuvent ajouter
-      return res.status(403).json({ error: "Permissions insuffisantes pour ajouter des utilisateurs" });
+    if (!adminPermission || adminPermission.role > 1) {
+      // Seuls propriétaire et admin peuvent ajouter
+      return res
+        .status(403)
+        .json({
+          error: "Permissions insuffisantes pour ajouter des utilisateurs",
+        });
     }
 
     // Trouver l'utilisateur par email ou pseudo
     const targetUser = await prisma.user.findFirst({
       where: {
-        OR: [
-          { email: identifier },
-          { pseudo: identifier }
-        ]
-      }
+        OR: [{ email: identifier }, { pseudo: identifier }],
+      },
     });
-    
+
     if (!targetUser) {
       return res.status(404).json({ error: "Utilisateur non trouvé" });
     }
@@ -140,18 +162,24 @@ async function AddPermission(req, res) {
     const existingPermission = await prisma.permission.findFirst({
       where: {
         userId: targetUser.id,
-        noteId: noteId
-      }
+        noteId: noteId,
+      },
     });
-    
+
     if (existingPermission) {
-      return res.status(400).json({ error: "L'utilisateur a déjà accès à cette note" });
+      return res
+        .status(400)
+        .json({ error: "L'utilisateur a déjà accès à cette note" });
     }
 
     // Valider le rôle (doit être inférieur à celui de l'admin)
     const targetRole = parseInt(role) || 3; // Par défaut: Lecteur
     if (targetRole <= adminPermission.role) {
-      return res.status(400).json({ error: "Vous ne pouvez attribuer qu'un rôle inférieur au vôtre" });
+      return res
+        .status(400)
+        .json({
+          error: "Vous ne pouvez attribuer qu'un rôle inférieur au vôtre",
+        });
     }
 
     // Créer la permission
@@ -159,23 +187,55 @@ async function AddPermission(req, res) {
       data: {
         noteId: noteId,
         userId: targetUser.id,
-        role: targetRole
-      }
+        role: targetRole,
+      },
     });
 
-    res.json({ 
-      success: true, 
+    // Récupérer les informations de la note et de l'inviteur pour l'email
+    const note = await prisma.note.findUnique({
+      where: { id: noteId },
+      select: { Titre: true },
+    });
+
+    const inviter = await prisma.user.findUnique({
+      where: { id: connected },
+      select: { pseudo: true },
+    });
+
+    // Envoyer l'email d'invitation
+    try {
+      await sendNoteInvitationEmail(
+        targetUser.email,
+        inviter?.pseudo || "Un utilisateur",
+        note?.Titre || "Sans titre",
+        noteId,
+        targetRole
+      );
+    } catch (emailError) {
+      // L'email a échoué mais la permission a été créée avec succès
+      console.error(
+        "Erreur lors de l'envoi de l'email d'invitation:",
+        emailError
+      );
+      // On continue quand même car la permission est créée
+    }
+
+    res.json({
+      success: true,
       message: `${targetUser.pseudo} ajouté avec succès`,
       user: {
         id: targetUser.id,
         pseudo: targetUser.pseudo,
-        email: targetUser.email
+        email: targetUser.email,
       },
-      role: targetRole
+      role: targetRole,
+      emailSent: true, // Indiquer que l'email a été tenté
     });
   } catch (error) {
-    console.error('Erreur lors de l\'ajout de permission:', error);
-    res.status(500).json({ error: "Erreur serveur lors de l'ajout de l'utilisateur" });
+    console.error("Erreur lors de l'ajout de permission:", error);
+    res
+      .status(500)
+      .json({ error: "Erreur serveur lors de l'ajout de l'utilisateur" });
   }
 }
 
@@ -192,42 +252,57 @@ async function RemovePermission(req, res) {
     const adminPermission = await prisma.permission.findFirst({
       where: {
         userId: connected,
-        noteId: noteId
-      }
+        noteId: noteId,
+      },
     });
     if (!adminPermission || adminPermission.role > 1) {
-      return res.status(403).json({ error: "Permissions insuffisantes pour retirer un utilisateur" });
+      return res
+        .status(403)
+        .json({
+          error: "Permissions insuffisantes pour retirer un utilisateur",
+        });
     }
 
     // Permission de l'utilisateur cible
     const userPermission = await prisma.permission.findFirst({
       where: {
         userId: parseInt(userId),
-        noteId: noteId
-      }
+        noteId: noteId,
+      },
     });
     if (adminPermission.role === 1 && userPermission.role === 1) {
-      return res.status(403).json({ error: "Un administrateur ne peut pas retirer un autre administrateur" });
+      return res
+        .status(403)
+        .json({
+          error:
+            "Un administrateur ne peut pas retirer un autre administrateur",
+        });
     }
     if (!userPermission) {
-      return res.status(404).json({ error: "Permission utilisateur cible introuvable" });
+      return res
+        .status(404)
+        .json({ error: "Permission utilisateur cible introuvable" });
     }
     if (userPermission.role === 0) {
-      return res.status(403).json({ error: "Impossible de retirer le propriétaire de la note" });
+      return res
+        .status(403)
+        .json({ error: "Impossible de retirer le propriétaire de la note" });
     }
 
     await prisma.permission.delete({
       where: {
         noteId_userId: {
           noteId: noteId,
-          userId: parseInt(userId)
-        }
-      }
+          userId: parseInt(userId),
+        },
+      },
     });
     res.json({ success: true, message: "Permission retirée avec succès" });
   } catch (error) {
-    console.error('Erreur lors de la suppression de permission:', error);
-    res.status(500).json({ error: "Erreur serveur lors de la suppression de permission" });
+    console.error("Erreur lors de la suppression de permission:", error);
+    res
+      .status(500)
+      .json({ error: "Erreur serveur lors de la suppression de permission" });
   }
 }
 

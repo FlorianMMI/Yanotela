@@ -263,7 +263,7 @@ export default function FlashNoteEditor() {
   }
 
   return (
-    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
+    <div className="flex flex-col p-2.5 h-fit  gap-2.5">
       {/* Zone de notifications */}
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md pl-4">
@@ -284,7 +284,11 @@ export default function FlashNoteEditor() {
                   </p>
                 </div>
                 <div className="ml-4 shrink-0">
-                  <button className="inline-flex text-green hover:text-success-800">
+                  <button 
+                    className="inline-flex text-green hover:text-success-800 focus:outline-none focus:ring-2 focus:ring-success-500 rounded"
+                    onClick={() => setSuccess(null)}
+                    aria-label="Fermer le message de succès"
+                  >
                     <span className="sr-only">Fermer</span>
                     <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -312,7 +316,11 @@ export default function FlashNoteEditor() {
                   </p>
                 </div>
                 <div className="ml-4 shrink-0">
-                  <button className="inline-flex text-dangerous hover:text-dangerous-800">
+                  <button 
+                    className="inline-flex text-dangerous hover:text-dangerous-800 focus:outline-none focus:ring-2 focus:ring-dangerous-500 rounded"
+                    onClick={() => setError(null)}
+                    aria-label="Fermer le message d'erreur"
+                  >
                     <span className="sr-only">Fermer</span>
                     <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
