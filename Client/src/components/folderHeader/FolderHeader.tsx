@@ -200,7 +200,7 @@ export default function FolderHeader({
       {/* Barre de recherche et filtre - Desktop */}
       <div className="hidden xl:block md:hidden">
         
-        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 " name="filter-bar">
           
             <SearchBar 
               searchTerm={searchTerm} 
@@ -221,7 +221,7 @@ export default function FolderHeader({
                   setSortDir("desc");
                 }
               }}
-              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
+              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors  ${
                 sortBy === "recent"
                   ? "bg-primary text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
@@ -246,7 +246,7 @@ export default function FolderHeader({
                   setSortDir("desc");
                 }
               }}
-              className={`px-4 py-2 grow items-center justify-center cursor-pointer rounded-lg font-medium text-sm transition-colors h-full ${
+              className={`px-4 py-2 grow items-center justify-center cursor-pointer rounded-lg font-medium text-sm transition-colors  ${
                 sortBy === "creation"
                   ? "bg-primary text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"

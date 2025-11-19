@@ -304,7 +304,7 @@ export default function FolderDetailHeader({
 
       {/* Barre de recherche et filtre - Version Desktop */}
       <div className="hidden xl:block md:hidden">
-        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 ">
           <SearchBar
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
@@ -323,7 +323,7 @@ export default function FolderDetailHeader({
                   setSortDir("desc");
                 }
               }}
-              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
+              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors  ${
                 sortBy === "recent"
                   ? "bg-primary text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
@@ -344,7 +344,7 @@ export default function FolderDetailHeader({
           <div className="relative">
             <motion.button
               onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
+              className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors  ${
                 collaborationFilter !== "all"
                   ? "bg-primary text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"

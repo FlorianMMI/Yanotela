@@ -87,7 +87,7 @@ export default function Profil() {
 
   return (
     <>
-      <div className="relative h-full md:h-full flex flex-col gap-4 bg-fondpage">
+      <div className="relative h-full flex flex-col gap-4 bg-fondpage">
         {/* Boutons settings et déconnexion alignés en haut */}
         <div className="px-4 pt-4 w-full flex justify-between items-center">
           <div className="md:hidden flex gap-1 items-center">

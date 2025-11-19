@@ -11,7 +11,7 @@ export default function Register() {
   const router = useRouter();
 
   return (
-    <div className="h-full p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal md:">
+    <div className="p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal md:">
       <MobileFlashNoteButton />
       <ReturnButton />
 

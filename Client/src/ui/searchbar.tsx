@@ -73,13 +73,13 @@ export default function SearchBar({
                         placeholder={getPlaceholder()}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full md:w-[25rem] h-full "
+                        className="w-full md:w-[25rem] "
                     />
                 </div>
 
                 {/* Bouton sélecteur de mode */}
                 {showModeSelector && (
-                    <div className="relative h-full z-50">
+                    <div className="relative z-50">
                         <button
                             ref={buttonRef}
                             type="button"

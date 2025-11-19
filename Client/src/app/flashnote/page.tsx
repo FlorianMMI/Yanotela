@@ -264,7 +264,7 @@ export default function FlashNoteEditor() {
   }
 
   return (
-    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
+    <div className="flex flex-col p-2.5 h-fit  gap-2.5">
       {/* Zone de notifications */}
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md pl-4">

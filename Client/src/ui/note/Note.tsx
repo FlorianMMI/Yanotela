@@ -263,7 +263,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
         <div 
           className="flex h-full rounded-r-lg">
           {note.collaboratorCount && note.collaboratorCount > 1 && (
-            <div className="flex items-center w-full h-full gap-1 px-3 shrink-0">
+            <div className="flex items-center w-full gap-1 px-3 shrink-0">
               <p className='text-white font-bold'>{note.collaboratorCount}</p>
               <ShareIcon
                 width={20}
