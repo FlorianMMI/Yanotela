@@ -341,20 +341,9 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         }
 
         // Check file size (max 50MB for video, 10MB for audio, 5MB for images)
-        let maxSize: number;
-        let maxSizeLabel: string;
-        if (isVideo) {
-            maxSize = 50 * 1024 * 1024;
-            maxSizeLabel = '50MB';
-        } else if (isAudio) {
-            maxSize = 10 * 1024 * 1024;
-            maxSizeLabel = '10MB';
-        } else {
-            maxSize = 5 * 1024 * 1024;
-            maxSizeLabel = '5MB';
-        }
-
-        if (file.size > maxSize) {
+        let maxSize= 10 * 1024 * 1024;
+        let maxSizeLabel= '10MB';
+       if (file.size > maxSize) {
             alert(`Le fichier est trop volumineux (max ${maxSizeLabel})`);
             return;
         }

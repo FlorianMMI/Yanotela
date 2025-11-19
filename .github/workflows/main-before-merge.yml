@@ -11,9 +11,11 @@ env:
   DEPLOY_PATH: /var/www/yanotela
 permissions:
   contents: read
+
 jobs:
-  build-and-deploy:
-    name: Build and Deploy to Production
+  # Job 1: Build Frontend en parallèle
+  build-frontend:
+    name: Build Frontend
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -29,7 +31,7 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push frontend image (prod)
+      - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./Client
@@ -43,7 +45,25 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push backend image (prod)
+  # Job 2: Build Backend en parallèle
+  build-backend:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
           context: ./Server
@@ -55,6 +75,13 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # Job 3: Déploiement (attend les 2 builds)
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [build-frontend, build-backend]
+    steps:
       - name: Deploy to Production EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -169,7 +196,7 @@ jobs:
                   add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' wss://yanotela.fr https://yanotela.fr; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" always;
 
 
-                client_max_body_size 10M;
+                client_max_body_size 100M;
 
 
                 ssl_certificate /etc/letsencrypt/live/yanotela.fr/fullchain.pem;
