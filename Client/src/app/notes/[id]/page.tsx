@@ -15,6 +15,7 @@ import { motion } from "motion/react";
 import Icons from '@/ui/Icon';
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from '@/hooks/useAuth';
 import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { $createImageNode } from "@/components/flashnote/ImageNode";
@@ -611,33 +612,15 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   }, [id]);
 
   // Charger le profil utilisateur pour awareness
+  const { user } = useAuth();
+
   useEffect(() => {
-    async function fetchUserInfo() {
-      try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://yanotela.fr";
-        const response = await fetch(`${API_URL}/auth/check`, {
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-
-          const pseudo = userData.pseudo || userData.user?.pseudo || 'Anonyme';
-
-          // Générer une couleur aléatoire pour ce user
-          const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FF33A1'];
-          const color = colors[Math.floor(Math.random() * colors.length)];
-
-          setUserProfile({ name: pseudo, color });
-
-        }
-      } catch (error) {
-        console.error('❌ Erreur récupération profil:', error);
-      }
-    }
-
-    fetchUserInfo();
-  }, []);
+    if (!user) return;
+    const pseudo = (user as any).pseudo || 'Anonyme';
+    const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FF33A1'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    setUserProfile({ name: pseudo, color });
+  }, [user]);
 
   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
