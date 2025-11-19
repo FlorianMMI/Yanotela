@@ -14,7 +14,7 @@ export default async function ResetPasswordTokenPage({ params }: ResetPasswordTo
   // Server-side token validation
   if (!token || typeof token !== 'string' || token.length < 10) {
     return (
-      <div className="min-h-full flex items-center justify-center p-4">
+      <div className=" flex items-center justify-center p-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-clrprincipal mb-4">Token manquant</h1>
           <p className="text-gray-100">Le lien de réinitialisation semble invalide.</p>
@@ -30,7 +30,7 @@ export default async function ResetPasswordTokenPage({ params }: ResetPasswordTo
   }
 
   return (
-    <div className="min-h-full flex items-center justify-center p-4">
+    <div className=" flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center">

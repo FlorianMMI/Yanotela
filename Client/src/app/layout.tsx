@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="fr" className="h-full">
+    <html lang="fr">
       <body className="antialiased h-dvh bg-background">
         <ThemeClientProvider>
         <ThemeColorMeta />

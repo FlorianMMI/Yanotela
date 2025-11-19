@@ -260,9 +260,9 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
 
         {/* Collaborateurs */}
         <div 
-          className="flex h-full rounded-r-lg min-w-[56px]">
+          className="flex rounded-r-lg min-w-[56px]">
           {note.collaboratorCount && note.collaboratorCount > 1 && (
-            <div className="flex items-center w-full h-full gap-1 px-3 shrink-0">
+            <div className="flex items-center w-full gap-1 px-3 shrink-0">
               <p className='text-white font-bold'>{note.collaboratorCount}</p>
               <Image
                 src="/share.svg"

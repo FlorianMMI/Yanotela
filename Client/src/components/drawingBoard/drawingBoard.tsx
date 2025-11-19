@@ -276,7 +276,7 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
     <div className="fixed inset-0 md:sticky md:top-4 z-30 w-screen h-screen md:w-full md:h-auto md:max-h-[calc(100vh-100px)] md:min-h-[600px] bg-white md:rounded-lg overflow-hidden shadow-xl md:mb-4">
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
+        className="w-full cursor-crosshair"
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}

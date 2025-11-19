@@ -66,7 +66,7 @@ export default function SearchBar({
         <>
             <div className="relative flex w-full max-w-[40rem] gap-2">
                 {/* Barre de recherche */}
-                <div className="relative w-full flex h-full p-4 gap-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300">
+                <div className="relative w-full flex p-4 gap-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300">
                     <Icon
                         name="recherche"
                         size={20}
@@ -77,13 +77,13 @@ export default function SearchBar({
                         placeholder={getPlaceholder()}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full md:w-[25rem] h-full "
+                        className="w-full md:w-[25rem] "
                     />
                 </div>
 
                 {/* Bouton sélecteur de mode */}
                 {showModeSelector && (
-                    <div className="relative h-full z-50">
+                    <div className="relative z-50">
                         <button
                             ref={buttonRef}
                             type="button"

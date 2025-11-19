@@ -30,8 +30,8 @@ export default function SideBar({ className }: SideBarProps) {
 
   if (loading) { 
     return (
-      <div className={`flex w-full h-full bg-background border-r border-gray-300 ${isOpen ? 'md:w-80' : 'md:w-20'} transition-all duration-300`}>
-        <div className="flex items-center justify-center h-full w-full">
+      <div className={`flex w-full bg-background border-r border-gray-300 ${isOpen ? 'md:w-80' : 'md:w-20'} transition-all duration-300`}>
+        <div className="flex items-center justify-center w-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
@@ -39,7 +39,7 @@ export default function SideBar({ className }: SideBarProps) {
   }
 
  return (
-    <div className={`flex h-full relative bg-background border-r border-gray-300 ${isOpen ? 'md:w-80' : 'md:w-20'} transition-all duration-300 z-40`}>
+    <div className={`flex relative bg-background border-r border-gray-300 ${isOpen ? 'md:w-80' : 'md:w-20'} transition-all duration-300 z-40`}>
       {isAuthenticated && user ? (
         <NavigationSidebar user={user} isopen={isOpen} />
       ) : (
