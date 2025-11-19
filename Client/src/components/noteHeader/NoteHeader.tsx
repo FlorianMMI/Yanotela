@@ -6,6 +6,7 @@ import SearchBar, { SearchMode } from "@/ui/searchbar";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
+import { FOLDER_COLORS } from '@/hooks/folderColors';
 
 interface NoteHeaderProps {
   searchTerm: string;
@@ -18,6 +19,8 @@ interface NoteHeaderProps {
   setCollaborationFilter: (filter: "all" | "collaborative" | "solo") => void;
   searchMode: SearchMode;
   setSearchMode: (mode: SearchMode) => void;
+  tagColorFilter: string;
+  setTagColorFilter: (color: string) => void;
 }
 
 export default function NoteHeader({ 
@@ -30,8 +33,28 @@ export default function NoteHeader({
   collaborationFilter, 
   setCollaborationFilter,
   searchMode,
-  setSearchMode
+  setSearchMode,
+  tagColorFilter,
+  setTagColorFilter
 }: NoteHeaderProps) {
+  const [showTagColorMenu, setShowTagColorMenu] = useState(false);
+  const tagColorMenuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!showTagColorMenu) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        tagColorMenuRef.current &&
+        !tagColorMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowTagColorMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showTagColorMenu]);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -168,6 +191,38 @@ export default function NoteHeader({
                       </button>
                     </div>
                   </div>
+                  {/* Filtre par couleur de tag */}
+                  <div className="mt-2 bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Couleur du tag</p>
+                    <div className="flex flex-wrap gap-2">
+                      {FOLDER_COLORS.map((color) => (
+                        <button
+                          key={color.id}
+                          onClick={() => {
+                            setTagColorFilter(color.value);
+                            setShowMobileFilters(false);
+                          }}
+                          className={`w-8 h-8 rounded-full border-2 transition-colors ${
+                            tagColorFilter === color.value
+                              ? 'border-primary ring-2 ring-primary'
+                              : 'border-gray-300 hover:border-primary'
+                          }`}
+                          style={{ backgroundColor: color.value }}
+                          aria-label={color.label}
+                        />
+                      ))}
+                      <button
+                        onClick={() => {
+                          setTagColorFilter('');
+                          setShowMobileFilters(false);
+                        }}
+                        className={`w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs bg-white`}
+                        aria-label="Toutes les couleurs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -193,7 +248,6 @@ export default function NoteHeader({
           <div className="flex gap-2">
             <motion.button
               onClick={() => {
-                // Only recent sort for notes: toggle direction
                 setSortDir(sortDir === "desc" ? "asc" : "desc");
               }}
               className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full min-w-max ${
@@ -209,11 +263,9 @@ export default function NoteHeader({
               />
               Récents {sortDir === "desc" ? "▼" : "▲"}
             </motion.button>
-          </div>
 
-          {/* Filtre de collaboration */}
-          <div className="relative">
-            <motion.button 
+            {/* Bouton filtre type de note */}
+            <motion.button
               onClick={() => setShowFilterMenu(!showFilterMenu)}
               className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
                 collaborationFilter !== "all" 
@@ -233,7 +285,27 @@ export default function NoteHeader({
               {collaborationFilter === "collaborative" && "Collaboratives"}
             </motion.button>
 
-            {/* Menu dropdown pour le filtre de collaboration */}
+            {/* Bouton filtre couleur de tag */}
+            <motion.button
+              onClick={() => setShowTagColorMenu(!showTagColorMenu)}
+              className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
+                tagColorFilter
+                  ? "border-2 border-primary ring-2 ring-primary"
+                  : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
+              }`}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 1 }}
+              aria-label="Filtrer par couleur de tag"
+            >
+              <span className="w-5 h-5 rounded-full border border-gray-300" style={{ backgroundColor: tagColorFilter || 'var(--primary)' }}></span>
+            
+            Tags
+
+            </motion.button>
+          </div>
+
+          {/* Menu dropdown pour le filtre de collaboration */}
+          <div className="relative">
             <AnimatePresence>
               {showFilterMenu && (
                 <motion.div
@@ -242,39 +314,83 @@ export default function NoteHeader({
                   exit={{ opacity: 0, y: -10 }}
                   className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
                 >
-                  <button
-                    onClick={() => {
-                      setCollaborationFilter("all");
-                      setShowFilterMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 hover:bg-gray-100 first:rounded-t-lg ${
-                      collaborationFilter === "all" ? "bg-gray-100 font-medium" : ""
-                    }`}
-                  >
-                    Toutes
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCollaborationFilter("solo");
-                      setShowFilterMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                      collaborationFilter === "solo" ? "bg-gray-100 font-medium" : ""
-                    }`}
-                  >
-                    Personnelles
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCollaborationFilter("collaborative");
-                      setShowFilterMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 hover:bg-gray-100 last:rounded-b-lg ${
-                      collaborationFilter === "collaborative" ? "bg-gray-100 font-medium" : ""
-                    }`}
-                  >
-                    Collaboratives
-                  </button>
+                  <div className="px-4 py-2">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Type de note</p>
+                    <div className="flex flex-col gap-1 mb-2">
+                      <button
+                        onClick={() => {
+                          setCollaborationFilter("all");
+                          setShowFilterMenu(false);
+                        }}
+                        className={`text-left px-2 py-1 rounded transition-colors ${
+                          collaborationFilter === "all" ? "bg-primary text-white font-medium" : "hover:bg-gray-100"
+                        }`}
+                      >Toutes</button>
+                      <button
+                        onClick={() => {
+                          setCollaborationFilter("solo");
+                          setShowFilterMenu(false);
+                        }}
+                        className={`text-left px-2 py-1 rounded transition-colors ${
+                          collaborationFilter === "solo" ? "bg-primary text-white font-medium" : "hover:bg-gray-100"
+                        }`}
+                      >Personnelles</button>
+                      <button
+                        onClick={() => {
+                          setCollaborationFilter("collaborative");
+                          setShowFilterMenu(false);
+                        }}
+                        className={`text-left px-2 py-1 rounded transition-colors ${
+                          collaborationFilter === "collaborative" ? "bg-primary text-white font-medium" : "hover:bg-gray-100"
+                        }`}
+                      >Collaboratives</button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Menu dropdown pour le filtre couleur de tag */}
+          <div className="relative">
+            <AnimatePresence>
+              {showTagColorMenu && (
+                <motion.div
+                  ref={tagColorMenuRef}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                >
+                  <div className="px-4 py-2">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Couleur du tag</p>
+                    <div className="flex flex-wrap gap-2">
+                      {FOLDER_COLORS.map((color) => (
+                        <button
+                          key={color.id}
+                          onClick={() => {
+                            setTagColorFilter(color.value);
+                            setShowTagColorMenu(false);
+                          }}
+                          className={`w-7 h-7 rounded-full border-2 transition-colors ${
+                            tagColorFilter === color.value
+                              ? 'border-primary ring-2 ring-primary'
+                              : 'border-gray-300 hover:border-primary'
+                          }`}
+                          style={{ backgroundColor: color.value }}
+                          aria-label={color.label}
+                        ></button>
+                      ))}
+                      <button
+                        onClick={() => {
+                          setTagColorFilter('');
+                          setShowTagColorMenu(false);
+                        }}
+                        className={`w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs bg-white`}
+                        aria-label="Toutes les couleurs"
+                      >✕</button>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
