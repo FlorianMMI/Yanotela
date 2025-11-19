@@ -28,6 +28,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [sortBy, setSortBy] = useState<"recent">("recent");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
+    const [tagColorFilter, setTagColorFilter] = useState("");
 
     useEffect(() => {
         fetchFolderData();
@@ -159,7 +160,12 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                         collaborationFilter === "solo" ? (!note.collaboratorCount || note.collaboratorCount <= 1) :
                             true;
 
-            return matchesSearch && matchesCollaboration;
+            // Filtre couleur de tag
+            const matchesTagColor = !tagColorFilter
+                ? true
+                : (note.CouleurTag === tagColorFilter || (!note.CouleurTag && tagColorFilter === "var(--primary)"));
+
+            return matchesSearch && matchesCollaboration && matchesTagColor;
         })
         .sort((a, b) => {
             const da = new Date(a.ModifiedAt).getTime();
@@ -183,6 +189,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 setSortDir={setSortDir}
                 collaborationFilter={collaborationFilter}
                 setCollaborationFilter={setCollaborationFilter}
+                tagColorFilter={tagColorFilter}
+                setTagColorFilter={setTagColorFilter}
                 onMoreClick={() => setShowFolderMore((prev: boolean) => !prev)}
             />
 

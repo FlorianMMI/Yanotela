@@ -116,7 +116,7 @@ const login = async (req, res) => {
         success: false
       });
     }
-    return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Identifiant et mot de passe requis')}`);
+    return 
   }
 
   try {
@@ -135,7 +135,7 @@ const login = async (req, res) => {
           success: false
         });
       }
-      return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Utilisateur ou mot de passe incorrect')}`);
+      return 
     }
 
     if (!user.is_verified) {
@@ -159,7 +159,7 @@ const login = async (req, res) => {
             success: false
           });
         }
-        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Compte non activé. Un nouvel email de validation vient d\'être envoyé à votre adresse email.')}`);
+        return 
       } catch (emailError) {
         console.error("Erreur lors de l'envoi de l'email de validation:", emailError);
         if (isJsonRequest) {
@@ -168,7 +168,7 @@ const login = async (req, res) => {
             success: false
           });
         }
-        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Utilisateur ou mot de passe incorrect')}`);
+        return 
       }
     }
 
@@ -184,7 +184,7 @@ const login = async (req, res) => {
             success: false
           });
         }
-        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Votre compte a expiré et sera supprimé définitivement. Vous ne pouvez plus vous connecter.')}`);
+        return 
       } else {
         // Le compte est en attente de suppression, calculer le temps restant
         const timeRemaining = expirationDate - now;
@@ -196,7 +196,7 @@ const login = async (req, res) => {
             success: false
           });
         }
-        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(`Votre compte sera supprimé dans ${secondsRemaining} seconde${secondsRemaining > 1 ? 's' : ''}. Contactez le support pour annuler.`)}`);
+        return 
       }
     }
 
@@ -229,7 +229,7 @@ const login = async (req, res) => {
         success: false
       });
     }
-    return res.redirect(`${clientUrl}/login?error=${encodeURIComponent('Erreur serveur lors de la connexion')}`);
+    return (`${clientUrl}/login?error=${encodeURIComponent('Erreur serveur lors de la connexion')}`);
   }
 };
 
