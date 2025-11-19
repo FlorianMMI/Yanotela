@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Icon from '@/ui/Icon';
+
 import { CreateNote, SaveNote } from '@/loader/loader';
 import { useAuth } from '@/hooks/useAuth';
+import { InfoIcon, SaveIcon } from '@/libs/Icons';
 
 interface SaveFlashNoteButtonProps {
   className?: string;
@@ -180,9 +181,9 @@ export default function SaveFlashNoteButton({
 
   const buttonContent = (
     <>
-      <Icon 
-        name="save" 
-        size={variant === 'mobile' ? 20 : 16} 
+      <SaveIcon 
+        width={variant === 'mobile' ? 20 : 16} 
+        height={variant === 'mobile' ? 20 : 16} 
         className={variant === 'mobile' ? "text-primary" : "text-white"} 
       />
       <span className={`${variant === 'mobile' ? 'text-base text-primary' : 'text-sm text-white'} font-medium`}>
@@ -263,7 +264,7 @@ export default function SaveFlashNoteButton({
         <div className="fixed inset-0 bg-[#00000050] flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-full">
-              <Icon name="alert" size={24} className="text-primary" />
+              <InfoIcon width={24} height={24} className="text-primary" />
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
               Connexion requise

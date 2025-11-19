@@ -6,6 +6,7 @@ import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser, GetNotes, GetFolders } from '@/loader/loader';
 import TotalNotes from "@/ui/note/totalNotes";
 import TotalFolders from "@/ui/folder/totalFolders";
+import { KeyholeIcon, ProfileIcon } from "@/libs/Icons";
 
 export default function ModificationProfil() {
   const [userData, setUserData] = useState({
@@ -219,9 +220,9 @@ export default function ModificationProfil() {
 
           <div className="flex flex-col w-full h-full justify-end items-center">
             <div className="flex items-end justify-center rounded-full h-[100px] w-[100px] border-8 border-primary overflow-hidden">
-              <Icons 
-                name="profile"
-                size={80}
+              <ProfileIcon
+                width={80}
+                height={80}
                 className="text-primary"
               />
             </div>
@@ -269,9 +270,9 @@ export default function ModificationProfil() {
                 ) : (
                   <div className="flex items-center space-x-2">
                     <p className="flex flex-row flex-nowrap gap-1">Modifier <span className="hidden md:block">le mot de passe</span></p>
-                    <Icons
-                      name="keyhole"
-                      size={20}
+                    <KeyholeIcon  
+                      width={20}
+                      height={20}
                       className="text-white"
                     />
                   </div>

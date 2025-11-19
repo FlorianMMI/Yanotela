@@ -12,7 +12,7 @@ import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { motion } from "motion/react";
-import Icons from '@/ui/Icon';
+
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from '@/hooks/useAuth';
@@ -30,6 +30,7 @@ import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TitleSyncPlugin } from '@/components/collaboration/TitleSyncPlugin';
+import { MoreIcon } from "@/libs/Icons";
 import '@/components/textRich/EditorStyles.css';
 
 // Contexte pour partager l'état de synchronisation
@@ -734,7 +735,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 aria-label="Ouvrir les options de la note"
                 className="focus:outline-none focus:ring-2 focus:ring-white rounded p-1"
               >
-                <Icons name="more" size={20} className="text-white cursor-pointer" />
+                <MoreIcon className="text-white cursor-pointer w-5 h-5" />
               </button>
               {showNoteMore && (
                 <div className="absolute right-0 mt-2 z-30">

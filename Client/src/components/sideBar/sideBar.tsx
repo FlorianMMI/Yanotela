@@ -7,6 +7,7 @@ import { useSidebarToggle } from '@/hooks/useSidebarToggle';
 import AuthSidebar from './AuthSidebar';
 import NavigationSidebar from './NavigationSidebar';
 import Icon from '@/ui/Icon';
+import { ArrowIcon } from '@/libs/Icons';
 
 interface SideBarProps {
     className?: string;
@@ -51,7 +52,7 @@ export default function SideBar({ className }: SideBarProps) {
         onClick={toggle}
         className='absolute top-1/2 -right-4 transform -translate-y-1/2 z-1 p-2 bg-background border border-gray-300 rounded-full shadow-md hover:bg-gray-50 transition-colors w-[40px] h-[40px] flex items-center justify-center cursor-pointer'
       >
-        <Icon name='arrow-ss-barre' size={20} className={isOpen ? '' : 'rotate-180'}/>
+        <ArrowIcon width={20} height={20} className={isOpen ? '' : 'rotate-180'}/>
       </button>
       ) : (
         ""

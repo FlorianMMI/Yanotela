@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import Icon from '@/ui/Icon';
+import { GoogleIcon } from '@/libs/Icons';
 
 interface GoogleAuthButtonProps {
   mode: 'login' | 'register';
@@ -59,12 +59,12 @@ export default function GoogleAuthButton({
         ${className}
       `}
     >
-      <Icon 
-        name="google" 
-        className={isLoading ? "text-gray-100" : "text-primary"} 
-        size={20} 
+      <GoogleIcon
+        className={isLoading ? "text-gray-100" : "text-primary"}
+        width={20}
+        height={20}
       />
-      <span className={`text-sm font-medium font-['Gantari'] ${
+      <span className={`text-sm font-medium ${
         isLoading ? 'text-gray-100' : mode === 'login' ? 'text-black' : 'text-gray-700'
       }`}>
         {isLoading ? 'Connexion en cours...' : buttonText}

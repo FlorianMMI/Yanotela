@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FetchPermission, UpdatePermission, AddPermission, RemovePermission } from "@/loader/loader";
 import { useAuth } from "@/hooks/useAuth";
-import Icon from "../Icon";
+import { CheckIcon, CrownIcon } from '@/libs/Icons';
 
 const ROLE_LABELS = ["Propriétaire", "Administrateur", "Éditeur", "Lecteur"];
 
@@ -39,7 +39,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
             {/* Success message */}
             {showSuccessMessage && (
                 <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
-                    <Icon name="check" className="text-green-600 flex-shrink-0 mt-0.5" size={18} />
+                    <CheckIcon width={20} height={20} className="text-green-600 mt-0.5" />
                     <p className="text-sm text-green-800">{successMessage}</p>
                 </div>
             )}
@@ -79,7 +79,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                                 </div>
                                             </div>
                                             {role === 0 && (
-                                                <Icon name="crown" className="text-yellow-500" size={20} />
+                                                <CrownIcon width={20} height={20} className="text-yellow-500" />
                                             )}
                                             {/* Afficher les actions seulement si l'utilisateur a les permissions ET ce n'est pas le propriétaire */}
                                             {role > 0 && currentUserRole !== null && currentUserRole <= 1 && (

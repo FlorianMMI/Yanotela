@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import Icon from '@/ui/Icon';
+import { AlertIcon } from '@/libs/Icons';
 
 interface AccountSupprConfirmProps {
     onClose: () => void;
@@ -39,9 +39,9 @@ export default function AccountSupprConfirm({ onClose, onConfirm, isLoading = fa
 
                     {/* Icône d'alerte */}
                     <div className="mb-4">
-                        <Icon
-                            name="alert"
-                            size={64}
+                        <AlertIcon
+                            width={64}
+                            height={64}
                             className="mx-auto text-white bg-primary rounded-full p-2"
                         />
                     </div>

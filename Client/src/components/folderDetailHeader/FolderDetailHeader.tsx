@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import ReturnButton from "@/ui/returnButton";
 import { FOLDER_COLORS } from "@/hooks/folderColors";
+import { FiltreIcon, MoreIcon, RecentIcon, RechercheIcon } from "@/libs/Icons";
 
 // Hook pour détecter la largeur de l'écran
 function useWindowWidth() {
@@ -110,9 +111,9 @@ export default function FolderDetailHeader({
               className="flex p-2 rounded-lg hover:bg-white/20 transition-colors"
               aria-label="Rechercher"
             >
-              <Icon
-                name="recherche"
-                size={20}
+              <RechercheIcon
+                width={20}
+                height={20}
                 className="text-white md:text-primary"
               />
             </button>
@@ -127,9 +128,9 @@ export default function FolderDetailHeader({
               }`}
               aria-label="Filtrer"
             >
-              <Icon
-                name="filtre"
-                size={20}
+              <FiltreIcon
+                width={20}
+                height={20}
                 className="text-white md:text-primary"
               />
             </button>
@@ -140,9 +141,9 @@ export default function FolderDetailHeader({
               aria-label="Options du dossier"
               className="flex md:hidden p-2 rounded-lg hover:bg-white/20 transition-colors"
             >
-              <Icon
-                name="more"
-                size={20}
+              <MoreIcon
+                width={20}
+                height={20}
                 className="text-white md:text-primary"
               />
             </button>
@@ -201,9 +202,9 @@ export default function FolderDetailHeader({
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >
-                      <Icon
-                        name="recent"
-                        size={20}
+                      <RecentIcon
+                        width={20}
+                        height={20}
                         className={
                           sortBy === "recent" ? "text-white" : "text-gray-700"
                         }
@@ -330,9 +331,9 @@ export default function FolderDetailHeader({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 1 }}
             >
-              <Icon
-                name="recent"
-                size={20}
+              <RecentIcon
+                width={20}
+                height={20}
                 className={sortBy === "recent" ? "text-white" : "text-gray-700"}
               />
               Récents {sortBy === "recent" && (sortDir === "desc" ? "▼" : "▲")}
@@ -351,9 +352,9 @@ export default function FolderDetailHeader({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 1 }}
             >
-              <Icon
-                name="filtre"
-                size={20}
+              <FiltreIcon
+                width={20}
+                height={20}
                 className={
                   collaborationFilter !== "all" ? "text-white" : "text-gray-700"
                 }

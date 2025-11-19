@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Icons from "@/ui/Icon";
+import { SaveIcon, ModifIcon, AlertIcon } from '@/libs/Icons';
 
 interface InputModifiedProps {
   name?: string;
@@ -109,11 +109,11 @@ export default function InputModified({
                 }`}
               aria-label={isEditing ? "Sauvegarder" : `Modifier ${name || 'le champ'}`}
             >
-              <Icons
-                name={isEditing ? "save" : "modif"}
-                size={20}
-                className={`text-white`}
-              />
+              {isEditing ? (
+                <SaveIcon width={20} height={20} className={`text-white`} />
+              ) : (
+                <ModifIcon width={20} height={20} className={`text-white`} />
+              )}
             </button>
           </div>
         }
@@ -122,7 +122,7 @@ export default function InputModified({
       {/* Warning message when field is empty in edit mode */}
       {isEditing && isValueEmpty && type !== "email" && (
         <div className="flex items-center gap-1 text-dangerous-500 text-xs ml-auto max-w-[200px]">
-          <Icons name="warning" size={12} />
+          <AlertIcon width={12} height={12} />
           <span>Ce champ ne peut pas être vide</span>
         </div>
       )}
