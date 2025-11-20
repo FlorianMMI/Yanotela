@@ -13,11 +13,6 @@ export default function AuthSidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleAuthSuccess = () => {
-    // Le refresh sera géré par le hook useAuth dans le layout principal
-    window.location.reload();
-  };
-
   // Déterminer le formulaire à afficher en fonction de l'URL
   const getCurrentView = () => {
     if (pathname.startsWith('/register') || pathname.startsWith('/cgu') || pathname.startsWith('/mentions-legales')) {
@@ -40,7 +35,6 @@ export default function AuthSidebar() {
     <div className="p-6 h-full w-full flex flex-col justify-center">
       {currentView === 'login' && (
         <LoginForm
-          onSuccess={handleAuthSuccess}
           onSwitchToRegister={() => router.push('/register')}
           onSwitchToForgot={() => router.push('/forgot-password')}
           isInSidebar={true}
