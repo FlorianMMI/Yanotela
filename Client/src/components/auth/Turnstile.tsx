@@ -5,9 +5,10 @@ import { useEffect, useRef } from 'react';
 interface TurnstileProps {
   siteKey?: string;
   className?: string;
+  aspectRatio?: string; // e.g. '5/1' or '16/9'
 }
 
-export default function Turnstile({ siteKey, className = '' }: TurnstileProps) {
+export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1' }: TurnstileProps) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const key = siteKey || (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string | undefined);
@@ -33,21 +34,23 @@ export default function Turnstile({ siteKey, className = '' }: TurnstileProps) {
       try {
         const el = containerRef.current;
         if (!el) return;
+        // If we've already rendered into this container, skip to avoid Cloudflare warning
+        if (el.dataset.turnstileRendered === '1') return;
         // If the Cloudflare turnstile lib is available, explicitly render this widget
         const anyWin = window as any;
-        // Prevent duplicate widget: if an iframe is already present, skip rendering
+        // Prevent duplicate widget: if an iframe is already present, mark as rendered and skip rendering
         if (el.querySelector('iframe')) {
-          // apply small scale to existing iframe
           const existing = el.querySelector('iframe') as HTMLIFrameElement | null;
           if (existing) {
-            existing.style.transform = 'scale(0.85)';
-            existing.style.transformOrigin = 'left top';
-            // adjust container height to match scaled iframe
-            setTimeout(() => {
-              try {
-                if (existing && el) el.style.height = `${existing.offsetHeight * 0.85}px`;
-              } catch (e) {}
-            }, 50);
+            // make iframe fill its container (the wrapper uses aspect-ratio)
+            existing.style.position = 'absolute';
+            existing.style.inset = '0';
+            existing.style.width = '100%';
+            existing.style.height = '100%';
+            existing.style.maxWidth = '100%';
+            existing.style.boxSizing = 'border-box';
+            existing.style.border = '0';
+            try { el.dataset.turnstileRendered = '1'; } catch (e) {}
           }
           return;
         }
@@ -56,15 +59,20 @@ export default function Turnstile({ siteKey, className = '' }: TurnstileProps) {
           // render expects the element (or selector) and options
           anyWin.turnstile.render(el, { sitekey: key });
 
-          // small delay to allow widget to mount, then scale it down a bit
+          // mark container rendered to avoid duplicate render attempts
+          try { el.dataset.turnstileRendered = '1'; } catch (e) {}
+
+          // small delay to allow widget to mount, then ensure iframe fills the wrapper
           setTimeout(() => {
             const iframe = el.querySelector('iframe') as HTMLIFrameElement | null;
             if (iframe) {
-              iframe.style.transform = 'scale(0.85)';
-              iframe.style.transformOrigin = 'left top';
-              try {
-                el.style.height = `${iframe.offsetHeight * 0.85}px`;
-              } catch (e) {}
+              iframe.style.position = 'absolute';
+              iframe.style.inset = '0';
+              iframe.style.width = '100%';
+              iframe.style.height = '100%';
+              iframe.style.maxWidth = '100%';
+              iframe.style.boxSizing = 'border-box';
+              iframe.style.border = '0';
             }
           }, 60);
         }
@@ -98,10 +106,20 @@ export default function Turnstile({ siteKey, className = '' }: TurnstileProps) {
     }
   }, [siteKey]);
 
-  // Render placeholder div where Turnstile will render the widget
+  // Render placeholder div where Turnstile will render the widget.
+  // Use a wrapper with CSS `aspect-ratio` to keep a consistent height while allowing full width.
   return (
     <div className={className}>
-      <div ref={containerRef} className="cf-turnstile" data-sitekey={siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} />
+      <div
+        className="w-full relative overflow-hidden"
+        style={{ aspectRatio }}
+      >
+        <div
+          ref={containerRef}
+          className="cf-turnstile absolute inset-0 w-full h-full"
+          data-sitekey={siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+        />
+      </div>
     </div>
   );
 }

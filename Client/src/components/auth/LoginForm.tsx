@@ -164,6 +164,10 @@ export default function LoginForm({
           </button>
         )}
       
+        {/* Turnstile widget (will be a no-op in non-prod) */}
+        <div className="w-full mt-3">
+          <Turnstile />
+        </div>
         <button 
           type="submit" 
           disabled={isLoading}
@@ -175,10 +179,6 @@ export default function LoginForm({
           <ArrowBarIcon className="text-white pointer-events-none" width={40} height={40} />
         </button>
 
-        {/* Turnstile widget (will be a no-op in non-prod) */}
-        <div className="w-full mt-3">
-          <Turnstile />
-        </div>
 
         {/* Séparateur et connexion Google */}
         <div className="flex flex-col items-center gap-4 w-full">

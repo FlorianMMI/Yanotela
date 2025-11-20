@@ -2,9 +2,11 @@ import axios from 'axios';
 
 // verifyTurnstile(token) -> boolean
 export async function verifyTurnstile(token) {
-  // In non-production environments you may want to bypass verification.
-  // Prefer using an explicit env var to disable in tests (e.g. TURNSTILE_DISABLED=1)
-  if (process.env.TURNSTILE_DISABLED === 'localhost' || process.env.NODE_ENV !== 'production' || process.env.NODE_ENV === 'preprod') {
+  // In tests you may want to bypass verification. Use an explicit env var to disable.
+  // Do NOT bypass for 'preprod' or other non-production environments by default.
+  // Set TURNSTILE_DISABLED=1 only for local tests where you intentionally want to skip verification.
+  if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV === 'test') {
+    console.warn('Turnstile verification bypassed by TURNSTILE_DISABLED or test env');
     return true;
   }
 
