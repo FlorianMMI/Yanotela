@@ -10,7 +10,7 @@ export function useAuthRedirect(options?: { skipRedirect?: boolean }) {
   const { isAuthenticated, loading } = useAuth();
 
   // Pages publiques qui ne nécessitent pas d'authentification
-  const publicPages = ['/cgu', '/mentions-legales', '/login', '/register', '/forgot-password'];
+  const publicPages = ['/cgu', '/mentions-legales', '/login', '/register', '/forgot-password', '/validate'];
   const isPublicPage = publicPages.some(page => pathname?.startsWith(page));
 
   // Redirection basée sur l'état centralisé d'authentification.
