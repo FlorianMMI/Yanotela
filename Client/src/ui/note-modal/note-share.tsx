@@ -56,41 +56,41 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
 
     return (
         <div className="flex-1 overflow-y-auto p-4">
-            { 
+            {
                 <>
-                <section className= "flex justify-between items-center mb-4">
-                <div className={` px-3 py-1 rounded-full text-sm inline-block ${currentUserRole === 0 ? 'bg-deskbackground text-primary' : 'bg-deskbackground text-element'}`}>
-                    {(() => {
-                        const label = (typeof currentUserRole === 'number' && ROLE_LABELS[currentUserRole]) ? ROLE_LABELS[currentUserRole] : null;
-                        return (
-                            <span>Vous êtes {label ? label.toLowerCase() : 'utilisateur'}</span>
-                        );
-                    })()}
-                </div>
-                
-                <div>
-                    <label className="flex items-center gap-3">
-                        {isTogglePublic ? (
-                        <span className="text-sm text-element">Publique</span>
-                        ) : (
-                        <span className="text-sm text-element">Privée</span>
-                        )}
-                        <div className="relative">
-                            <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                aria-label="Basculer public/privé"
-                                checked={isTogglePublic}
-                                onChange={(e) => {
-                                    handleTogglePublic(e.target.checked);
-                                }}
-                            />
-                            <div className="w-11 h-6 rounded-full bg-deskbackground peer-checked:bg-primary transition-colors" />
-                            <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform peer-checked:translate-x-5" />
+                    <section className="flex justify-between items-center mb-4">
+                        <div className={` px-3 py-1 rounded-full text-sm inline-block ${currentUserRole === 0 ? 'bg-deskbackground text-primary' : 'bg-deskbackground text-element'}`}>
+                            {(() => {
+                                const label = (typeof currentUserRole === 'number' && ROLE_LABELS[currentUserRole]) ? ROLE_LABELS[currentUserRole] : null;
+                                return (
+                                    <span>Vous êtes {label ? label.toLowerCase() : 'utilisateur'}</span>
+                                );
+                            })()}
                         </div>
-                    </label>
-                </div>
-                </section>
+
+                        <div>
+                            <label className="flex items-center gap-3">
+                                {isTogglePublic ? (
+                                    <span className="text-sm text-element">Publique</span>
+                                ) : (
+                                    <span className="text-sm text-element">Privée</span>
+                                )}
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        aria-label="Basculer public/privé"
+                                        checked={isTogglePublic}
+                                        onChange={(e) => {
+                                            handleTogglePublic(e.target.checked);
+                                        }}
+                                    />
+                                    <div className="w-11 h-6 rounded-full bg-deskbackground peer-checked:bg-primary transition-colors" />
+                                    <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform peer-checked:translate-x-5" />
+                                </div>
+                            </label>
+                        </div>
+                    </section>
                 </>
             }
 
@@ -262,7 +262,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
 
                         <button
                             onClick={async () => {
-                                
+
                                 try {
                                     const url = `${window.location.origin}/notes/${noteId}`;
                                     await navigator.clipboard.writeText(url);
@@ -273,11 +273,11 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                     alert('Impossible de copier le lien.');
                                 }
                             }}
-                           
+
                             title="Copier le lien de la note"
                             className={`px-4 py-2 border border-element rounded text-sm text-foreground flex flex-col justify-center hover:bg-deskbackground transition-colors`}
                         >
-                            {copied ? <CopyIcon width={20} height={20} /> : <CopyLinkIcon/>}
+                            {copied ? <CopyIcon width={20} height={20} /> : <CopyLinkIcon />}
                         </button>
                     </div>
                 </div>

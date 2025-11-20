@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import Icons from "@/ui/Icon";
+import Icons from "@/libs/Icons";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
 import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
-import Folder from "@/ui/folder/Folder";
 import { ArrowBarIcon, DupplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
 
 interface NoteMoreProps {
@@ -247,11 +246,11 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     isLeaving={true}
                 />
             ) : (
-                <div 
+                <div
                     ref={modalRef}
                     className="bg-white rounded-xl w-[240px] md:w-sm shadow-lg overflow-hidden relative h-auto flex flex-col"
                 >
-                    
+
                     <div className="p-3 md:p-4 pb-2 border-b border-element flex items-center">
                         {currentView !== "menu" && (
                             <button
@@ -264,7 +263,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                         )}
                         <h3 className="text-base md:text-lg font-semibold text-foreground">{getModalTitle()}</h3>
                     </div>
-                    
+
                     {renderContent()}
                 </div>
             )}

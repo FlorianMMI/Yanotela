@@ -630,14 +630,18 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
+    // Récupérer l'userId pour la synchronisation automatique des permissions
+    const userId = user ? (user as any).id : undefined;
+    
     // Petit délai pour s'assurer que le provider est créé
     const timer = setTimeout(() => {
-
-      setAwarenessUserInfo(id, userProfile.name, userProfile.color);
+      setAwarenessUserInfo(id, userProfile.name, userProfile.color, userId);
     }, 500);
 
-    setAwarenessUserInfo(id, userProfile.name, userProfile.color);
-  }, [userProfile, id]);
+    setAwarenessUserInfo(id, userProfile.name, userProfile.color, userId);
+    
+    return () => clearTimeout(timer);
+  }, [userProfile, id, user]);
 
   // Gestion des paramètres de recherche (assignation au dossier)
   useEffect(() => {

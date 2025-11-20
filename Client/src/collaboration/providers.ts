@@ -6,6 +6,7 @@
 import { Provider } from '@lexical/yjs';
 import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
+import { AutoAcceptPermission } from '@/loader/loader';
 
 /**
  * Map globale des providers pour accès depuis les composants UI
@@ -25,8 +26,9 @@ export const yjsDocuments = new Map<string, Y.Doc>();
  * @param noteId - ID de la note
  * @param userName - Nom de l'utilisateur
  * @param userColor - Couleur du curseur
+ * @param userId - ID de l'utilisateur
  */
-export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string) {
+export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string, userId?: number) {
   const provider = providerInstances.get(noteId);
   if (!provider) {
     console.warn(`[setAwarenessUserInfo] Provider non trouvé pour note ${noteId}`);
@@ -37,8 +39,39 @@ export function setAwarenessUserInfo(noteId: string, userName: string, userColor
   awareness.setLocalStateField('user', {
     name: userName,
     color: userColor,
+    id: userId, // Inclure l'userId pour la synchronisation
   });
 
+  // AUTO-SYNC: Appeler le serveur pour auto-accepter la permission si nécessaire
+  if (userId) {
+    autoAcceptPermissionOnJoin(noteId).catch(err => {
+      console.warn(`[setAwarenessUserInfo] Erreur auto-accept pour note ${noteId}:`, err);
+    });
+  }
+}
+
+/**
+ * Auto-accepte une permission quand l'utilisateur rejoint une note
+ * Déclenche aussi le rafraîchissement des notifications côté client
+ * 
+ * @param noteId - ID de la note rejointe
+ */
+async function autoAcceptPermissionOnJoin(noteId: string): Promise<void> {
+  try {
+    const result = await AutoAcceptPermission(noteId);
+    
+    // Si une permission a été auto-acceptée, rafraîchir les notifications
+    if (result.success && result.autoAccepted) {
+      console.log(`✅ Permission auto-acceptée pour note ${noteId}`);
+      
+      // Déclencher le rafraîchissement des notifications en temps réel
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('refreshNotifications'));
+      }
+    }
+  } catch (error) {
+    console.warn('[autoAcceptPermissionOnJoin] Erreur:', error);
+  }
 }
 
 /**

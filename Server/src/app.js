@@ -13,6 +13,7 @@ import FolderRoutes from './routes/FolderRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import permissionRoutes from './routes/permissionRoutes.js';
 import googleAuthRoutes from './routes/googleAuthRoutes.js';
+import awarenessRoutes from './routes/awarenessRoutes.js';
 import helmet from 'helmet';
 
 const app = express();
@@ -38,6 +39,7 @@ app.use('/permission', permissionRoutes);
 app.use('/auth', googleAuthRoutes); // Routes Google OAuth
 app.use('/notification', notificationRoutes);
 app.use('/dossiers', FolderRoutes); // Routes pour les dossiers
+app.use('/awareness', awarenessRoutes); // Routes pour l'auto-synchronisation des permissions
 
 // Route de health check pour Docker
 app.get('/health', (req, res) => {

@@ -1,6 +1,4 @@
 import { Note } from '@/type/Note';
-import { create } from 'domain';
-import { ID } from 'yjs';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -1184,5 +1182,37 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
     } catch (error) {
         console.error("Error updating note tag:", error);
         return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// ============== AWARENESS / AUTO-SYNC FUNCTIONS ==============
+
+/**
+ * Auto-accepte une permission quand l'utilisateur rejoint une note
+ * Cette fonction est appelée automatiquement par setAwarenessUserInfo (dans le fichier collaboration/providers.ts)
+ * 
+ * @param noteId - ID de la note rejointe
+ * @returns Promise avec le résultat de l'auto-acceptation
+ */
+export async function AutoAcceptPermission(noteId: string): Promise<{ success: boolean; autoAccepted?: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/awareness/auto-accept/${noteId}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return { success: false, error: errorData.error || 'Erreur lors de l\'auto-acceptation' };
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Erreur lors de l\'auto-acceptation:', error);
+        return { success: false, error: 'Erreur réseau lors de l\'auto-acceptation' };
     }
 }
