@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import GoogleAuthButton from './GoogleAuthButton';
-import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon } from '@/libs/Icons';
+import Turnstile from './Turnstile';
+import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon} from '@/libs/Icons';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -66,6 +67,19 @@ export default function LoginForm({
 
     tempForm.appendChild(identifiantInput);
     tempForm.appendChild(passwordInput);
+    // Attach Turnstile token if present
+    try {
+      const token = (typeof window !== 'undefined') ? (document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value) : undefined;
+      if (token) {
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = 'cf-turnstile-response';
+        tokenInput.value = token;
+        tempForm.appendChild(tokenInput);
+      }
+    } catch (err) {
+      // ignore
+    }
     document.body.appendChild(tempForm);
 
     // Soumettre le formulaire pour permettre la redirection serveur
@@ -158,6 +172,11 @@ export default function LoginForm({
           </p>
           <ArrowBarIcon className="text-white pointer-events-none" width={40} height={40} />
         </button>
+
+        {/* Turnstile widget (will be a no-op in non-prod) */}
+        <div className="w-full mt-3">
+          <Turnstile />
+        </div>
 
         {/* Séparateur et connexion Google */}
         <div className="flex flex-col items-center gap-4 w-full">
