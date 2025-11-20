@@ -80,6 +80,7 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
             ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
