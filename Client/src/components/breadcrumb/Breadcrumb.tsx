@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 import ConnectedUsers from '../collaboration/ConnectedUsers';
 import { yjsDocuments } from '@/collaboration/providers';
-import { DocsIcon, FlashIcon, FolderIcon, MoreIcon, ProfileIcon } from '@/libs/Icons';
+import { DocsIcon, FlashIcon, FolderIcon, MoreIcon, ProfileIcon, Comment } from '@/libs/Icons';
 
 interface BreadcrumbItem {
   label: string;
@@ -531,6 +531,17 @@ export default function Breadcrumb() {
                   {noteId && !isFlashNote && (
                     <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
                       <ConnectedUsers noteId={noteId} />
+
+                      <button
+                       onClick={() => window.dispatchEvent(new Event('openCommentModal'))}
+                        className="ml-2"
+                      >
+                        <Comment 
+                        width={30}
+                        height={30}
+                        className='text-primary cursor-pointer'
+                        />
+                      </button>
 
                       <span
                         onClick={() => setShowNoteMore((prev) => !prev)}
