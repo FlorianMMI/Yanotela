@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 import Note from '@/ui/note/Note';
 import NoteSkeleton from '@/ui/note/NoteSkeleton';
 import { Note as NoteType } from '@/type/Note';

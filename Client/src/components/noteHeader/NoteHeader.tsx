@@ -4,7 +4,6 @@ import React from "react";
 import { RechercheIcon, RecentIcon, FiltreIcon } from "@/libs/Icons";
 import SearchBar, { SearchMode } from "@/ui/searchbar";
 import { motion, AnimatePresence } from "motion/react";
-import Image from "next/image";
 import { useState } from "react";
 import { FOLDER_COLORS } from '@/hooks/folderColors';
 
@@ -26,8 +25,6 @@ interface NoteHeaderProps {
 export default function NoteHeader({ 
   searchTerm, 
   setSearchTerm, 
-  sortBy, 
-  setSortBy, 
   sortDir, 
   setSortDir, 
   collaborationFilter, 

@@ -18,9 +18,7 @@ export default function InputModified({
   placeholder,
   type,
   defaultValue = "",
-  onSave,
-  onEmailConfirmation,
-  isLoading = false,
+  onSave
 }: InputModifiedProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentValue, setCurrentValue] = useState(defaultValue);

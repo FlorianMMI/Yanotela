@@ -74,15 +74,6 @@ export function createWebsocketProvider(
     },
   );
 
-  // Logs pour debugging
-  provider.on('status', ({ status }: { status: string }) => {
-    
-  });
-
-  provider.on('sync', (isSynced: boolean) => {
-    
-  });
-
   // Stocker le provider pour accès depuis les composants UI
   providerInstances.set(id, provider);
   

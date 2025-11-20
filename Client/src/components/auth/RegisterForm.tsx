@@ -4,12 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import ReturnButton from '@/ui/returnButton';
 import ConfirmPassword from '@/ui/confirm-password';
 import { Register } from '@/loader/loader';
-import FormField from '@/ui/form/FormField';
 import FormMessage from '@/ui/form/FormMessage';
 import GoogleAuthButton from './GoogleAuthButton';
+import Turnstile from './Turnstile';
 import { ArrowBarIcon } from '@/libs/Icons';
 
 interface RegisterFormProps {
@@ -268,12 +267,17 @@ export default function RegisterForm({
             className="h-4 w-4 border-gray-300 rounded accent-primary"
           />
           <span className="text-sm text-clrprincipal">
-            J'accepte les{' '}
+            J&apos;accepte les{' '}
             <Link href="/cgu" className="text-primary hover:underline">
-              Conditions Générales d'Utilisation
+              Conditions Générales d&apos;Utilisation
             </Link>
           </span>
         </label>
+
+        {/* Turnstile widget (no-op in non-prod) */}
+        <div className="mb-3 w-full">
+          <Turnstile />
+        </div>
 
         <button
           type="submit"

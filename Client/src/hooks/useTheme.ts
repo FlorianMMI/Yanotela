@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-
-export type ThemeType = "light" | "dark" | "blue" | "green" | "purple" | "night";
+import { ThemeType } from "@/type/Theme";
 
 export interface Theme {
   id: ThemeType;

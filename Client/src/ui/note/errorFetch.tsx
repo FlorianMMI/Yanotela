@@ -3,7 +3,6 @@ import React from "react";
 import { useRouter } from "next/navigation";
 
 import { motion } from "motion/react";
-import { connect } from "http2";
 
 type ErrorFetchProps = {
     type?: "fetch" | "save" | "connect";

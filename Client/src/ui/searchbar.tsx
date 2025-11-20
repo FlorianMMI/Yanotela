@@ -1,6 +1,5 @@
-import Image from "next/image";
 import { RechercheIcon, TextLeftIcon, DocsIcon, ChevronIcon, CheckIcon } from '@/libs/Icons';
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 
 export type SearchMode = 'all' | 'title' | 'content';

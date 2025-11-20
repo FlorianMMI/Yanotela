@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import Icons from "@/ui/Icon";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
 import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
 import Folder from "@/ui/folder/Folder";
-import { ArrowBarIcon, DuplicateIcon, DupplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
+import { ArrowBarIcon, DuplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
 
 interface NoteMoreProps {
     noteId: string;

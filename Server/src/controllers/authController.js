@@ -2,10 +2,8 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import { body, check, validationResult } from "express-validator";
-import {
-  sendValidationEmail,
-  sendResetPasswordEmail,
-} from "../services/emailService.js";
+import { sendValidationEmail, sendResetPasswordEmail, } from "../services/emailService.js";
+import { setTimeout} from 'node:timers/promises';
 
 const prisma = new PrismaClient();
 
@@ -28,37 +26,27 @@ const validateRegistration = [
 ];
 
 const register = async (req, res) => {
+
+  await setTimeout(Math.random() * 1000);
+
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(400).json({
-      errors: errors.array(),
-      message: "Erreurs de validation",
+    return res.status(500).json({
+      error: "Erreur création compte. Vérifiez vos informations.",
     });
   }
 
   const { firstName, lastName, pseudo, email, password, checkedCGU } = req.body;
 
-  if (!checkedCGU) {
-    return res.status(500).json({
-      error: "Erreur lors de la création de votre compte.",
-    });
-  }
-
   try {
-    let existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return res.status(409).json({
-        error: "Erreur de création de votre compte.",
-        success: false
-      });
-    }
+    let existingMail = await prisma.user.findUnique({ where: { email } });
+    let existingPseudo = await prisma.user.findUnique({ where: { pseudo } });
 
-    existing = await prisma.user.findUnique({ where: { pseudo } });
-    if (existing) {
-      return res.status(409).json({
-        error: "Erreur de création de votre compte.",
-        success: false
+    if (
+      existingMail || existingPseudo || !checkedCGU || !firstName || !lastName || !pseudo || !email || !password ) {
+      return res.status(500).json({
+        error: "Erreur création compte. Vérifiez vos informations.",
       });
     }
 
@@ -97,26 +85,30 @@ const register = async (req, res) => {
     });
   } catch (err) {
     console.error("Erreur création compte:", err);
-    return res.status(500).json({
-      error: "Erreur serveur. Réessayez plus tard.",
-    });
+      return res.status(500).json({
+        error: "Erreur création compte. Vérifiez vos informations.",
+      });
   }
 };
 
 const login = async (req, res) => {
+  await setTimeout(Math.random() * 1000);
+
   const { identifiant, password } = req.body;
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-  const isJsonRequest = req.headers['accept']?.includes('application/json') || req.headers['content-type']?.includes('application/json');
-  
+  const clientUrl = process.env.CLIENT_URL;
+  const isJsonRequest =
+    req.headers["accept"]?.includes("application/json") ||
+    req.headers["content-type"]?.includes("application/json");
+
   // Vérifier que les données sont présentes
   if (!identifiant || !password) {
     if (isJsonRequest) {
-      return res.status(400).json({
-        error: 'Identifiant et mot de passe requis',
-        success: false
-      });
+        return res.status(401).json({
+          error: "Utilisateur, mot de passe incorrect ou compte non activé",
+          success: false,
+        });
     }
-    return 
+    return;
   }
 
   try {
@@ -131,11 +123,11 @@ const login = async (req, res) => {
     if (!user || !ok) {
       if (isJsonRequest) {
         return res.status(401).json({
-          error: 'Utilisateur ou mot de passe incorrect',
-          success: false
+          error: "Utilisateur, mot de passe incorrect ou compte non activé",
+          success: false,
         });
       }
-      return 
+      return;
     }
 
     if (!user.is_verified) {
@@ -152,23 +144,22 @@ const login = async (req, res) => {
 
         // Envoyer l'email de validation
         await sendValidationEmail(user.email, validationToken);
-        
+
         if (isJsonRequest) {
-          return res.status(403).json({
-            error: 'Compte non activé. Un nouvel email de validation vient d\'être envoyé à votre adresse email.',
-            success: false
-          });
+        return res.status(401).json({
+          error: "Utilisateur, mot de passe incorrect ou compte non activé",
+          success: false,
+        });
         }
-        return 
+        return;
       } catch (emailError) {
-        console.error("Erreur lors de l'envoi de l'email de validation:", emailError);
         if (isJsonRequest) {
           return res.status(401).json({
-            error: 'Utilisateur ou mot de passe incorrect',
-            success: false
+            error: "Utilisateur, mot de passe incorrect ou compte non activé",
+            success: false,
           });
         }
-        return 
+        return;
       }
     }
 
@@ -180,56 +171,61 @@ const login = async (req, res) => {
       if (now > expirationDate) {
         if (isJsonRequest) {
           return res.status(403).json({
-            error: 'Votre compte a expiré et sera supprimé définitivement. Vous ne pouvez plus vous connecter.',
-            success: false
+            error:
+              "Votre compte a expiré et est supprimé définitivement. Vous ne pouvez plus vous y connecter.",
+            success: false,
           });
         }
-        return 
+        return;
       } else {
         // Le compte est en attente de suppression, calculer le temps restant
         const timeRemaining = expirationDate - now;
         const secondsRemaining = Math.ceil(timeRemaining / 1000);
-        
+
         if (isJsonRequest) {
           return res.status(403).json({
-            error: `Votre compte sera supprimé dans ${secondsRemaining} seconde${secondsRemaining > 1 ? 's' : ''}. Contactez le support pour annuler.`,
-            success: false
+            error: `Votre compte sera supprimé dans ${secondsRemaining} seconde${
+              secondsRemaining > 1 ? "s" : ""
+            }. Contactez le support pour annuler.`,
+            success: false,
           });
         }
-        return 
+        return;
       }
     }
 
     req.session.userId = user.id;
     req.session.pseudo = user.pseudo;
     await req.session.save();
-    
+
     // Retourner JSON ou redirection selon le type de requête
     if (isJsonRequest) {
       return res.status(200).json({
         success: true,
-        message: 'Connexion réussie',
+        message: "Connexion réussie",
         user: {
           id: user.id,
           pseudo: user.pseudo,
           email: user.email,
           prenom: user.prenom,
-          nom: user.nom
-        }
+          nom: user.nom,
+        },
       });
     }
-    
+
     // Redirection vers le client après authentification (même comportement que Google Auth)
     return res.redirect(`${clientUrl}/notes`);
   } catch (err) {
     console.error("Erreur connexion", err);
     if (isJsonRequest) {
-      return res.status(500).json({
-        error: 'Erreur serveur lors de la connexion',
-        success: false
-      });
+        return res.status(401).json({
+          error: "Utilisateur, mot de passe incorrect ou compte non activé",
+          success: false,
+        });
     }
-    return (`${clientUrl}/login?error=${encodeURIComponent('Erreur serveur lors de la connexion')}`);
+    return `${clientUrl}/login?error=${encodeURIComponent(
+      "Erreur serveur lors de la connexion"
+    )}`;
   }
 };
 
@@ -288,6 +284,7 @@ const validate = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
+  setTimeout(Math.random() * 1000);
   const { email } = req.body;
   if (!email) {
     return res.status(400).json({
