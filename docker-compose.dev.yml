@@ -48,6 +48,7 @@ services:
       - MAIL_SERVICE=gmail
       - GMAIL_USER={mail}
       - GMAIL_APP_PASSWORD={mdp}
+      - TURNSTILE_DISABLED=1
     volumes:
       # Mount source code for hot reload
       - ./Server/src:/app/src

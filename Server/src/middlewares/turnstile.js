@@ -4,7 +4,7 @@ import axios from 'axios';
 export async function verifyTurnstile(token) {
   // In non-production environments you may want to bypass verification.
   // Prefer using an explicit env var to disable in tests (e.g. TURNSTILE_DISABLED=1)
-  if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV !== 'production' || process.env.NODE_ENV === 'preprod') {
+  if (process.env.TURNSTILE_DISABLED === 'localhost' || process.env.NODE_ENV !== 'production' || process.env.NODE_ENV === 'preprod') {
     return true;
   }
 
@@ -42,5 +42,3 @@ export function requireTurnstile(fieldName = 'cf-turnstile-response') {
     }
   };
 }
-
-export default verifyTurnstile;
