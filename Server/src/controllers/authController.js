@@ -49,7 +49,7 @@ const register = async (req, res) => {
     let existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return res.status(409).json({
-        error: "Cet email est déjà utilisé.",
+        error: "Erreur de création de votre compte.",
         success: false
       });
     }
@@ -57,7 +57,7 @@ const register = async (req, res) => {
     existing = await prisma.user.findUnique({ where: { pseudo } });
     if (existing) {
       return res.status(409).json({
-        error: "Ce pseudo est déjà utilisé.",
+        error: "Erreur de création de votre compte.",
         success: false
       });
     }

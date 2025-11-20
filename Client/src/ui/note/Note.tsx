@@ -247,7 +247,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
     >
 
       {/* Header - Titre et collaborateurs avec fond rouge */}
-      <div className="flex justify-between m-2 items-center gap-3 rounded-lg h-[2rem]" 
+      <div className="flex justify-between m-2 items-center gap-3 rounded-lg h-8" 
       style={{ backgroundColor: note.tag || 'var(--primary)' }}>
 
         {/* Note Title */}
@@ -260,7 +260,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
 
         {/* Collaborateurs */}
         <div 
-          className="flex rounded-r-lg min-w-[56px]">
+          className="flex rounded-r-lg min-w-14">
           {note.collaboratorCount && note.collaboratorCount > 1 && (
             <div className="flex items-center w-full gap-1 px-3 shrink-0">
               <p className='text-white font-bold'>{note.collaboratorCount}</p>
@@ -280,7 +280,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
       <div className="p-2 bg-fondcardNote flex flex-col h-[78px] md:p-4 md:h-40">
 
         {/* Note Content - Affichage simplifié du texte extrait */}
-        <div className="font-gantari text-sm text-textcardNote leading-relaxed mb-auto line-clamp-2 flex-grow">
+        <div className="font-gantari text-sm text-textcardNote leading-relaxed mb-auto line-clamp-2 grow">
           {getDisplayContent()}
         </div>
 

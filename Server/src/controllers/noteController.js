@@ -268,10 +268,6 @@ export const noteController = {
     const { id } = req.params;
     const { userId } = req.session;
 
-    if (!userId) {
-      return res.status(401).json({ message: "Utilisateur non authentifié" });
-    }
-
     try {
       const note = await prisma.note.findUnique({
         where: { id: id },
@@ -290,13 +286,58 @@ export const noteController = {
         return res.status(404).json({ message: "Cette note a été supprimée" });
       }
 
-      // Récupérer le rôle de l'utilisateur sur cette note
-      const userPermission = await getPermission(userId, id);
+      let userPermission = null;
+      let userRole = 3; // Par défaut : lecteur (pour les utilisateurs non authentifiés sur notes publiques)
 
-      if (!userPermission) {
-        return res
-          .status(403)
-          .json({ message: "Vous n'avez pas accès à cette note" });
+      // Si l'utilisateur est authentifié, vérifier ses permissions
+      if (userId) {
+        userPermission = await getPermission(userId, id);
+        
+        if (userPermission) {
+          // L'utilisateur a une permission spécifique
+          userRole = userPermission.role;
+        } else if (!note.isPublic) {
+          // Note privée et pas de permission : refuser l'accès
+          return res
+            .status(403)
+            .json({ message: "Vous n'avez pas accès à cette note" });
+        } else {
+          
+          try {
+            await prisma.permission.create({
+              data: {
+                noteId: id,
+                userId: userId,
+                role: 3, // Lecteur
+                isAccepted: true, // Auto-acceptée car c'est une note publique
+              },
+            });
+            userRole = 3;
+        
+          } catch (permError) {
+            // Gérer le cas où la permission existe déjà (contrainte unique)
+            if (permError.code === 'P2002') {
+              // Re-fetch la permission qui existe déjà
+              userPermission = await getPermission(userId, id);
+              if (userPermission) {
+                userRole = userPermission.role;
+              }
+            } else {
+              console.error("❌ Erreur lors de la création de la permission:", permError);
+              // Continuer quand même avec le rôle par défaut (3)
+            }
+          }
+        }
+      } else {
+        // Utilisateur non authentifié
+        if (!note.isPublic) {
+          // Note privée : refuser l'accès
+          return res.status(401).json({ 
+            message: "Authentification requise pour accéder à cette note",
+            authenticated: false 
+          });
+        }
+        // Note publique : autoriser l'accès en lecture seule (rôle 3)
       }
 
       // 🔄 MIGRATION À LA VOLÉE: Migrer vers YJS si nécessaire
@@ -320,8 +361,9 @@ export const noteController = {
         author: note.author ? note.author.pseudo : null,
         modifier: note.modifier ? note.modifier.pseudo : null,
         ModifiedAt: note.ModifiedAt,
-        userRole: userPermission.role, // Ajouter le rôle pour le front
+        userRole: userRole, // Rôle de l'utilisateur (3 par défaut pour accès public)
         tag: note.tag, // Couleur du tag de la note
+        isPublic: note.isPublic, // Indiquer si la note est publique
       });
     } catch (error) {
       console.error("[getNoteById] Error:", error);
