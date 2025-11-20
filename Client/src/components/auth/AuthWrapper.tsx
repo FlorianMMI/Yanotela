@@ -32,13 +32,38 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   );
 
   const checkAuth = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+    const doFetch = async (url: string) => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const resp = await fetch(url, { method: 'GET', credentials: 'include', signal: controller.signal });
+        clearTimeout(timeout);
+        return resp;
+      } catch (e) {
+        return null;
+      }
+    };
+
     try {
-      setLoading(true);
-      const API_URL = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${API_URL}/auth/check`, {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const primaryBase = API_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+      let response = null;
+
+      if (primaryBase) {
+        response = await doFetch(`${primaryBase}/auth/check`);
+      }
+
+      // If primary failed and API_URL was set, try a relative fallback
+      if (!response && API_URL) {
+        response = await doFetch('/auth/check');
+        console.warn('[AuthWrapper] primary auth check failed, attempted relative fallback');
+      }
+
+      if (!response) {
+        throw new Error('No response from auth endpoint');
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -56,14 +81,13 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
         const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
         const isNotesList = pathname === '/notes';
-        // Rediriger uniquement pour les routes vraiment protégées (pas les notes individuelles)
         if (isProtected || isNotesList) {
           router.replace('/login');
           return;
         }
       }
     } catch (err) {
-      console.error('Erreur lors de la vérification d\'authentification:', err);
+      console.warn('Auth check failed:', err instanceof Error ? err.message : err);
       setIsAuthenticated(false);
       setUser(null);
 

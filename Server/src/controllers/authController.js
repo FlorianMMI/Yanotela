@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import { body, check, validationResult } from "express-validator";
 import { sendValidationEmail, sendResetPasswordEmail, } from "../services/emailService.js";
-import { setTimeout} from 'node:timers/promises';
+// import { setTimeout} from 'node:timers/promises';
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,7 @@ const validateRegistration = [
 
 const register = async (req, res) => {
 
-  await setTimeout(Math.random() * 1000);
+  // await setTimeout(Math.random() * 1000);
 
   const errors = validationResult(req);
 
@@ -92,7 +92,7 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  await setTimeout(Math.random() * 1000);
+  // await setTimeout(Math.random() * 1000);
 
   const { identifiant, password } = req.body;
   const clientUrl = process.env.CLIENT_URL;
@@ -284,7 +284,7 @@ const validate = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
-  setTimeout(Math.random() * 1000);
+  // setTimeout(Math.random() * 1000);
   const { email } = req.body;
   if (!email) {
     return res.status(400).json({

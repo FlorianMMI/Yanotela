@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { useRouter } from 'next/navigation';
 
 import GoogleAuthButton from './GoogleAuthButton';
@@ -90,6 +90,8 @@ export default function LoginForm({
     setShowPassword(!showPassword);
   };
 
+  const uid = useId();
+
   return (
     <div className={className}>
       {showTitle && (
@@ -100,7 +102,7 @@ export default function LoginForm({
         </p>
       )}
 
-      <form role="form" onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
+      <form role="form" onSubmit={handleSubmit} id={`${uid}-login-form`} className="w-full flex flex-col justify-center items-start gap-2.5">
         {error && (
           <div className="w-full p-2.5 bg-dangerous-100 border-dangerous-600 text-dangerous-600 rounded-[10px] text-sm">
             {error}
@@ -113,12 +115,12 @@ export default function LoginForm({
           </p>
         )}
         
-        <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
+          <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
           <AtIcon className="text-gray-400" width={20} height={20} />
           <input 
             type="text" 
             name="identifiant"
-            id="identifiant"
+            id={`${uid}-identifiant`}
             placeholder="Votre mail ou pseudonyme"
             required
             className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
@@ -132,7 +134,7 @@ export default function LoginForm({
             <input 
               type={showPassword ? "text" : "password"}
               name="password"
-              id="password"
+              id={`${uid}-password`}
               placeholder="Votre mot de passe"
               required
               className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"

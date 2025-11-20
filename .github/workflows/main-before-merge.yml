@@ -99,47 +99,47 @@ jobs:
             echo "🔍 Checking what's using port 80:"
             sudo netstat -tlnp | grep :80 || echo "No process found on port 80"
             sudo lsof -i :80 || echo "No files open on port 80"
-            
+
             # Stop any nginx or apache processes that might be using port 80
             echo "🛑 Stopping any existing web servers..."
             sudo systemctl stop nginx 2>/dev/null || true
             sudo systemctl stop apache2 2>/dev/null || true
             sudo killall nginx 2>/dev/null || true
             sudo killall apache2 2>/dev/null || true
-            
+
             # Check available disk space
             echo "📊 Initial disk space:"
             df -h
 
             # Aggressive cleanup to free up space
             echo "🧹 Cleaning up disk space..."
-            
+
             # Clean Docker system (remove all unused containers, networks, images, cache)
             docker system prune -a -f --volumes || true
-            
+
             # Remove all stopped containers
             docker container prune -f || true
-            
+
             # Remove all unused images
             docker image prune -a -f || true
-            
+
             # Remove all unused volumes
             docker volume prune -f || true
-            
+
             # Remove all unused networks
             docker network prune -f || true
-            
+
             # Clean package cache
             sudo apt-get clean || true
             sudo apt-get autoremove -y || true
-            
+
             # Remove old logs
             sudo journalctl --vacuum-time=3d || true
-            
+
             # Clear temporary files
             sudo rm -rf /tmp/* || true
             sudo rm -rf /var/tmp/* || true
-            
+
             # Remove old kernels (keep current and one backup)
             sudo apt-get autoremove --purge -y || true
 
@@ -161,23 +161,25 @@ jobs:
             # Créer le fichier .env
             cat > .env << 'EOF'
             ${{secrets.ENV_PROD_FILE}}
+            ${{secrets.TURNSTILE_SITE_KEY}}
+            ${{secrets.TURNSTILE_SITE_SECRET_KEY}}
             EOF
 
             # Arrêter les anciens conteneurs
             echo "🛑 Stopping existing containers..."
             docker compose down || true
-            
+
             # More aggressive cleanup
             echo "🧹 Aggressive cleanup of Docker resources..."
             docker system prune -a -f --volumes || true
-            
+
             # Remove any dangling images specifically
             docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null || true
-            
+
             # Check disk space before proceeding
             echo "📊 Disk space before pulling images:"
             df -h
-            
+
             # Ensure we have enough space (at least 2GB free)
             AVAILABLE_SPACE=$(df / | tail -1 | awk '{print $4}')
             if [ "$AVAILABLE_SPACE" -lt 2000000 ]; then
@@ -218,7 +220,7 @@ jobs:
             # Vérifier que les services sont démarrés
             echo "🔍 Checking service status..."
             docker compose ps
-            
+
             if docker compose ps | grep -E "(Up|running)"; then
               echo "✅ Services démarrés avec succès"
               
@@ -229,13 +231,13 @@ jobs:
             else
               echo "⚠️ Nginx not responding yet"
             fi
-            
+
             if curl -f -s -m 10 http://localhost:3001/health > /dev/null; then
               echo "✅ Backend is responding"
             else
               echo "⚠️ Backend not responding yet"
             fi
-            
+
             # Final deployment status report
             echo ""
             echo "🎉 DEPLOYMENT COMPLETE! 🎉"
