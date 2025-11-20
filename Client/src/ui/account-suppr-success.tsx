@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import Icon from "@/ui/Icon";
 import { useRouter } from "next/navigation";
 import { CheckIcon } from "@/libs/Icons";
 
@@ -14,8 +13,7 @@ export default function AccountSupprSuccess() {
             setCountdown((prev) => {
                 if (prev <= 1) {
                     // Rediriger quand le countdown atteint 0
-                    router.push('/');
-                    window.location.reload(); // Forcer le rechargement de la page
+                    router.push('/login');
                     return 0;
                 }
                 return prev - 1;

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Icon from "@/ui/Icon";
 import SearchBar, { SearchMode } from "@/ui/searchbar";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
@@ -200,7 +199,7 @@ export default function FolderHeader({
       {/* Barre de recherche et filtre - Desktop */}
       <div className="hidden xl:block md:hidden">
         
-        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 " name="filter-bar">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 " data-name="filter-bar">
           
             <SearchBar 
               searchTerm={searchTerm} 

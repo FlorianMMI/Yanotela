@@ -3,7 +3,6 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { Note } from "@/type/Note";
 import { GetDeletedNotes, RestoreNote } from "@/loader/loader";
-import Icon from "@/ui/Icon";
 import { TrashIcon, RefreshIcon, CloseIcon } from "@/libs/Icons";
 import ReturnButton from "@/ui/returnButton";
 

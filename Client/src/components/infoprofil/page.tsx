@@ -1,5 +1,4 @@
 import React from "react";
-import Icons from "@/ui/Icon";
 import { useRouter } from "next/navigation";
 import { ModifIcon } from "@/libs/Icons";
 

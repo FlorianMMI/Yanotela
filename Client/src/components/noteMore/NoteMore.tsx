@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import Icons from "@/ui/Icon";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
 import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
-import Folder from "@/ui/folder/Folder";
 import { ArrowBarIcon, DupplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
 
 interface NoteMoreProps {
@@ -51,21 +49,6 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
         };
     }, [onClose]);
 
-    const loadFolders = async () => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
-
-    const loadCurrentFolder = async () => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
-
-    const assignNoteToFolder = async (folderId: string) => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
-
-    const removeNoteFromFolder = async () => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
 
     const handleDeleteNote = async () => {
         setIsDeleting(true);

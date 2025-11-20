@@ -8,6 +8,7 @@ import NoteList from "@/components/noteList/NoteList";
 import { GetNotes } from "@/loader/loader";
 import  { SearchMode } from "@/ui/searchbar";
 import FlashNoteButton from '@/ui/flash-note-button'; 
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,6 +19,7 @@ export default function Home() {
   const [tagColorFilter, setTagColorFilter] = useState<string>("");
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
   
   // Charger les notes au montage du composant
   useEffect(() => {
@@ -123,7 +125,7 @@ export default function Home() {
           isOpen={true}
           isActive={false}
           onClick={() => {
-            window.location.href = '/flashnote';
+            router.push('/flashnote');
           }}
           className="w-full"
         />

@@ -46,7 +46,7 @@ export default function ResetPasswordForm({
         }
       } catch (err) {
         setStatus('error');
-        setMessage("Erreur de connexion au serveur");
+        setMessage("Erreur de connexion au serveur :" + (err as Error).message);
       }
     };
 

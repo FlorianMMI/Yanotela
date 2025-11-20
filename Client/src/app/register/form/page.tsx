@@ -1,10 +1,7 @@
 "use client";
 
 import React from "react";
-import { useState, useEffect } from "react";
-import Icon from "@/ui/Icon";
 import ReturnButton from "@/ui/returnButton";
-import ConfirmPassword from "@/ui/confirm-password";
 import { useRouter } from "next/navigation";
 import RegisterFormComponent from '@/components/auth/RegisterForm';
 import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';

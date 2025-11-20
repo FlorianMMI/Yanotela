@@ -2,6 +2,7 @@ import React from "react";
 import { CheckIcon, CloseIcon } from '@/libs/Icons';
 import { AcceptNotification, RefuseNotification } from "@/loader/loader";
 import { refreshNotifications } from "@/utils/notificationUtils";
+import { useRouter } from "next/navigation";
 
 interface NotificationProps {
     id: string;
@@ -12,7 +13,9 @@ interface NotificationProps {
 }
 
 export default function Notification({ id, title, author, onNotificationUpdate, variant = 'stack' }: NotificationProps) {
-    const handleUpdateNotification = async (event?: React.MouseEvent<HTMLButtonElement>) => {
+  const router = useRouter();
+  
+  const handleUpdateNotification = async (event?: React.MouseEvent<HTMLButtonElement>) => {
         // prevent parent click handlers if any
         event?.stopPropagation();
         try {
@@ -21,7 +24,7 @@ export default function Notification({ id, title, author, onNotificationUpdate, 
                 // Déclencher la mise à jour globale des notifications
                 refreshNotifications();
                 // Redirect to the note
-                window.location.href = `/notes/${result.noteId}`;
+                router.push(`/notes/${result.noteId}`);
             } else {
                 // Appeler le callback pour rafraîchir la liste même en cas d'erreur
                 onNotificationUpdate?.();

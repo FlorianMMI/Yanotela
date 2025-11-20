@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import React, { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from 'next/navigation';
 import LoginForm from '@/components/auth/LoginForm';
 import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
@@ -11,7 +10,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [urlError, setUrlError] = useState<string | null>(null);
-  const { isAuthenticated, loading } = useAuth();
+  const { loading } = useAuth();
 
   useEffect(() => {
     const errorParam = searchParams.get('error');

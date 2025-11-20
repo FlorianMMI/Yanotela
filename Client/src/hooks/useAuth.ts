@@ -1,6 +1,5 @@
 "use client";
 
-import { useContext } from 'react';
 import { useAuthContext } from '@/components/auth/AuthWrapper';
 
 export interface AuthState {
@@ -25,8 +24,8 @@ export function useAuth(): AuthState {
   } catch (e) {
     // Not mounted: return conservative defaults (loading=true so callers
     // don't immediately redirect) and a no-op refetch.
-    // eslint-disable-next-line no-console
     console.warn('useAuth used outside AuthWrapper, returning fallback auth state.');
+    void e;
     return {
       isAuthenticated: null,
       loading: true,

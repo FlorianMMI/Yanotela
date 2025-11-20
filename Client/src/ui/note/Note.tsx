@@ -1,12 +1,11 @@
 import React, { useState, useRef } from 'react';
-import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { Note as NoteType } from '@/type/Note';
 import { motion } from 'motion/react';
 import NoteMore from '@/components/noteMore/NoteMore';
 import { SearchMode } from '@/ui/searchbar';
 
-import { KebabIcon, ShareIcon } from '@/libs/Icons';
+import { KebabIcon, ShareIcon, PublicIcon } from '@/libs/Icons';
 
 interface NoteProps {
   note: NoteType;
@@ -14,6 +13,13 @@ interface NoteProps {
   searchTerm?: string; // Terme de recherche pour surlignage
   searchMode?: SearchMode; // Mode de recherche
 }
+
+interface LexicalNode {
+  type?: string;
+  text?: string;
+  children?: LexicalNode[];
+}
+
 
 export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode = "all" }: NoteProps) {
   const router = useRouter();
@@ -42,7 +48,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
     router.push(url);
   };
 
-  const openContextMenu = (clientX: number, clientY: number) => {
+  const openContextMenu = () => {
     if (isInTrash) return;
 
     // Calculer la position du modal par rapport à l'élément
@@ -90,16 +96,16 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    openContextMenu(e.clientX, e.clientY);
+    openContextMenu();
   };
 
   // Support tactile : maintien appuyé (long press)
   const handleTouchStart = (e: React.TouchEvent) => {
+    void e;
     if (isInTrash) return;
 
     longPressTimer.current = setTimeout(() => {
-      const touch = e.touches[0];
-      openContextMenu(touch.clientX, touch.clientY);
+      openContextMenu();
       // Vibration pour retour haptique sur mobile
       if ('vibrate' in navigator) {
         navigator.vibrate(50);
@@ -173,18 +179,18 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
 
     let extractedText = '';
 
-    // Si c'est une chaîne, essayer de la parser comme JSON
+    // Si c'est une chaîne, essayer de la parser
     if (typeof note.Content === 'string') {
       try {
         const parsed = JSON.parse(note.Content);
         // Si c'est un objet Lexical avec une structure root
         if (parsed.root && parsed.root.children) {
-          const extractText = (node: any): string => {
+          const extractText = (node: LexicalNode): string => {
             if (!node) return '';
             if (node.type === 'text' && node.text) return node.text;
             if (node.type === 'image') return '[Image]';
             if (node.children && Array.isArray(node.children)) {
-              return node.children.map((child: any) => extractText(child)).join(' ');
+              return node.children.map((child: LexicalNode) => extractText(child)).join(' ');
             }
             return '';
           };
@@ -195,21 +201,17 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
           extractedText = note.Content.substring(0, 100) + (note.Content.length > 100 ? '...' : '');
         }
       } catch {
-        // Si le parsing échoue, afficher les 100 premiers caractères
         extractedText = note.Content.substring(0, 100) + (note.Content.length > 100 ? '...' : '');
       }
-    }
-    
-    // Si c'est un objet, essayer d'extraire le texte
-    else if (typeof note.Content === 'object' && note.Content !== null) {
-      const content = note.Content as any;
+    } else if (typeof note.Content === 'object' && note.Content !== null) {
+      const content = note.Content as { root?: { children?: LexicalNode[] } };
       if (content.root && content.root.children) {
-        const extractText = (node: any): string => {
+        const extractText = (node: LexicalNode): string => {
           if (!node) return '';
           if (node.type === 'text' && node.text) return node.text;
           if (node.type === 'image') return '[Image]';
           if (node.children && Array.isArray(node.children)) {
-            return node.children.map((child: any) => extractText(child)).join(' ');
+            return node.children.map((child: LexicalNode) => extractText(child)).join(' ');
           }
           return '';
         };
@@ -228,8 +230,6 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
 
     // Sinon, afficher normalement (limité à 100 caractères)
     return extractedText.length > 100 ? extractedText.substring(0, 100) + '...' : extractedText;
-    
-    return 'Contenu vide';
   };
 
   return (
@@ -262,15 +262,25 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
         {/* Collaborateurs */}
         <div 
           className="flex h-full rounded-r-lg">
-          {note.collaboratorCount && note.collaboratorCount > 1 && (
-            <div className="flex items-center w-full gap-1 px-3 shrink-0">
-              <p className='text-white font-bold'>{note.collaboratorCount}</p>
-              <ShareIcon
+          {note.isPublic ? (
+            <div className="flex items-center w-full gap-1 px-3 shrink-0" title="Public">
+              <PublicIcon
                 width={20}
                 height={20}
                 className="filter brightness-0 invert"
               />
             </div>
+          ) : (
+            note.collaboratorCount && note.collaboratorCount > 1 && (
+              <div className="flex items-center w-full gap-1 px-3 shrink-0">
+                <p className="text-white font-bold">{note.collaboratorCount}</p>
+                <ShareIcon
+                  width={20}
+                  height={20}
+                  className="filter brightness-0 invert"
+                />
+              </div>
+            )
           )}
         </div>
       </div>
@@ -298,7 +308,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
               e.preventDefault();
               e.stopPropagation();
               if (isInTrash) return;
-              openContextMenu(e.clientX, e.clientY);
+              openContextMenu();
             }}
             className="p-1 rounded hover:bg-gray-100 transition-colors flex"
             title="Options de la note"

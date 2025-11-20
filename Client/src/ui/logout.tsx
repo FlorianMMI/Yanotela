@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { ExitIcon } from '@/libs/Icons';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'motion/react';
@@ -22,9 +21,7 @@ export default function Logout(){
             
             if (response.success) {
                 setShowConfirm(false);
-                router.push('/');
-                router.refresh();
-                window.location.reload();
+                router.push('/login');
             } else {
                 console.error('Erreur de déconnexion:', response.error);
                 setShowConfirm(false);

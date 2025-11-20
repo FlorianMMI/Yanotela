@@ -1,41 +1,69 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import { usePathname } from "next/navigation";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import Notification from "@/ui/notification";
 import { GetNotifications } from "@/loader/loader";
-import Icon from "@/ui/Icon";
 import { NotificationsIcon } from "@/libs/Icons";
 
 interface NotificationListProps {
     isOpenSideBar?: boolean;
 }
 
+interface NotificationItem {
+    id: string;
+    Titre: string;
+    author: Record<string, unknown> | string | null;
+}
+
 export default function NotificationList({ isOpenSideBar = true }: NotificationListProps) {
-    const [notifications, setNotifications] = useState<any[]>([]);
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const notificationRef = useRef<HTMLDivElement>(null);
-    const pathname = usePathname();
-    
-    // Déterminer si on est sur la page profil
-    const isProfilePage = pathname.includes('/profil');
     
     // Déterminer si on doit afficher l'indicateur rouge
     const shouldShowRedIndicator = notifications.length > 0;
 
-    const fetchNotifications = async () => {
+    const toNotificationItem = (item: unknown): NotificationItem | null => {
+        if (item && typeof item === "object") {
+            const obj = item as Record<string, unknown>;
+            const id = obj.id ?? obj.ID ?? obj.uuid ?? obj.uid;
+            const titre = obj.Titre ?? obj.title ?? "";
+            return {
+                id: String(id ?? ""),
+                Titre: String(titre ?? ""),
+                author: (obj.author ?? null) as Record<string, unknown> | string | null,
+            };
+        }
+        return null;
+    };
+
+    const fetchNotifications = useCallback(async () => {
         setLoading(true);
         try {
-            const result = await GetNotifications();
-            setNotifications(result.notes ?? []);
+            const result: unknown = await GetNotifications();
+
+            if (result && typeof result === "object") {
+                const resObj = result as Record<string, unknown>;
+                const rawNotes = resObj.notes;
+                if (Array.isArray(rawNotes)) {
+                    const parsed = rawNotes
+                        .map(toNotificationItem)
+                        .filter((x): x is NotificationItem => x !== null);
+                    setNotifications(parsed);
+                } else {
+                    setNotifications([]);
+                }
+            } else {
+                setNotifications([]);
+            }
         } catch (err) {
             console.error("Error fetching notifications", err);
             setNotifications([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     // assure que le panneau est fermé au montage
     useEffect(() => {
@@ -69,14 +97,14 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
             window.removeEventListener('focus', handleFocus);
             window.removeEventListener('refreshNotifications', handleNotificationRefresh);
         };
-    }, []);
+    }, [fetchNotifications]);
 
     useEffect(() => {
         // preload when opening si pas déjà chargées
         if (open && notifications.length === 0) {
             fetchNotifications();
         }
-    }, [open, notifications.length]);
+    }, [open, notifications.length, fetchNotifications]);
 
     // Gérer les clics en dehors du panneau de notifications
     useEffect(() => {
@@ -135,15 +163,22 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                                         <p className="text-gray-600">Chargement...</p>
                                     </div>
                                 ) : notifications.length > 0 ? (
-                                    notifications.map((n: any) => (
-                                        <Notification
-                                            key={n.id}
-                                            id={n.id}
-                                            title={n.Titre}
-                                            author={n.author}
-                                            onNotificationUpdate={fetchNotifications}
-                                        />
-                                    ))
+                                    notifications.map((n: NotificationItem) => {
+                                        const authorName = typeof n.author === 'string' 
+                                            ? n.author 
+                                            : (n.author && typeof n.author === 'object' && 'pseudo' in n.author) 
+                                                ? String(n.author.pseudo) 
+                                                : 'Auteur inconnu';
+                                        return (
+                                            <Notification
+                                                key={n.id}
+                                                id={n.id}
+                                                title={n.Titre}
+                                                author={authorName}
+                                                onNotificationUpdate={fetchNotifications}
+                                            />
+                                        );
+                                    })
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-6 gap-3">
                                         <NotificationsIcon width={36} height={36} className="text-gray-400" />

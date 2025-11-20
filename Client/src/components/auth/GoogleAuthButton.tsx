@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { GoogleIcon } from '@/libs/Icons';
+import { useRouter } from 'next/navigation';
 
 interface GoogleAuthButtonProps {
   mode: 'login' | 'register';
@@ -16,11 +17,11 @@ interface GoogleAuthButtonProps {
  */
 export default function GoogleAuthButton({
   mode,
-  onSuccess,
   className = "",
   isFullWidth = true
 }: GoogleAuthButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
@@ -31,7 +32,7 @@ export default function GoogleAuthButton({
       const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       
       // Redirection directe vers la route Google OAuth du serveur
-      window.location.href = `${baseUrl}/auth/google`;
+      router.push(`${baseUrl}/auth/google`);
     } catch (error) {
       console.error('Erreur lors de la connexion Google:', error);
       setIsLoading(false);

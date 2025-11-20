@@ -8,9 +8,6 @@ export default function ItemBar() {
     const [onFolderPage, setOnFolderPage] = useState(false);
     const [itemColor, setItemColor] = useState<string>('var(--primary)'); // Couleur du tag/dossier
 
-    useEffect(() => {
-        console.log('[ItemBar] Couleur choisie :', itemColor);
-    }, [itemColor]);
     const pathname = usePathname();
 
     useEffect(() => {

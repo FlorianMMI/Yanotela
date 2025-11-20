@@ -1,15 +1,13 @@
 "use client";
 import React from "react";
-import { GetNotes, InfoUser, GetFolders } from "@/loader/loader";
+import { InfoUser } from "@/loader/loader";
 import { useEffect, useState } from "react";
 import Logout from "@/ui/logout";
-import Icons from "@/ui/Icon";
 import ModificationProfil from "@/components/ModificationProfil/page";
 import ParamModal from "@/components/infoprofil/paramModal";
 import { AnimatePresence } from "motion/react";
 // import Notification from "@/ui/notification";
 import NotificationList from "@/components/notificationList/page";
-import ReturnButton from "@/ui/returnButton";
 import { SettingsIcon } from "@/libs/Icons";
 
 interface UserInfo {
@@ -23,7 +21,7 @@ interface UserInfo {
 }
 
 export default function Profil() {
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isParamModalOpen, setIsParamModalOpen] = useState(false);
@@ -71,11 +69,6 @@ export default function Profil() {
       </div>
     );
   }
-
-  const displayName =
-    userInfo?.prenom && userInfo?.nom
-      ? `${userInfo.prenom} ${userInfo.nom}`
-      : userInfo?.pseudo || "Utilisateur";
 
   const openParamModal = () => {
     setIsParamModalOpen(true);

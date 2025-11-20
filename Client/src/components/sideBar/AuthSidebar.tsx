@@ -7,16 +7,10 @@ import RegisterForm from '@/components/auth/RegisterForm';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import ResetPasswordForm from '../auth/ResetPasswordForm';
 
-import Link from 'next/link';
 
 export default function AuthSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-
-  const handleAuthSuccess = () => {
-    // Le refresh sera géré par le hook useAuth dans le layout principal
-    window.location.reload();
-  };
 
   // Déterminer le formulaire à afficher en fonction de l'URL
   const getCurrentView = () => {
@@ -40,7 +34,6 @@ export default function AuthSidebar() {
     <div className="p-6 w-full flex flex-col justify-center">
       {currentView === 'login' && (
         <LoginForm
-          onSuccess={handleAuthSuccess}
           onSwitchToRegister={() => router.push('/register')}
           onSwitchToForgot={() => router.push('/forgot-password')}
           isInSidebar={true}
