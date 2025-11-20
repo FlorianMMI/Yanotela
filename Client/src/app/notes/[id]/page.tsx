@@ -34,8 +34,6 @@ import { MoreIcon } from "@/libs/Icons";
 import '@/components/textRich/EditorStyles.css';
 import CommentModal from "@/components/commentaire/commentModal";
 
-
-
 // Contexte pour partager l'état de synchronisation
 interface SyncContextType {
   syncStatus: SyncStatus;
@@ -715,7 +713,6 @@ function NoteEditorContent({ params }: NoteEditorProps) {
       window.removeEventListener('noteTitleUpdated', handleTitleUpdate as EventListener);
     };
   }, [id]);
-
 
   const [showCommentModal, setShowCommentModal] = useState(false);
 
