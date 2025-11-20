@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import Icon from './Icon';
+import { FlashIcon } from '@/libs/Icons';
 
 interface FlashNoteButtonProps {
   isOpen?: boolean;
@@ -43,13 +43,13 @@ export default function FlashNoteButton({ isOpen = true, isActive = false, onCli
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
         ) : (
           <>
-            <Icon
-              name="flash"
+            <FlashIcon
               className={`stroke-[4] transition-colors ${isActive
                 ? 'text-white'
                 : 'text-primary group-hover:text-white'
                 }`}
-              size={30}
+              width={30}
+              height={30}
             />
             <span className={`font-medium ${isOpen ? `flex` : `hidden`}`}>Flash Note</span>
           </>

@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import Icon from "./Icon";
+import { ExitIcon } from '@/libs/Icons';
 
 interface LogoutConfirmProps {
     onConfirm: () => void;
@@ -31,8 +31,8 @@ export default function LogoutConfirm({ onConfirm, onCancel }: LogoutConfirmProp
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-dangerous-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Icon name="exit" size={32} className="text-dangerous-600" />
+                        <div className="w-16 h-16 bg-dangerous-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ExitIcon width={32} height={32} className="text-dangerous-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Confirmer la déconnexion</h2>
                     <p className="text-gray-600">Êtes-vous sûr de vouloir vous déconnecter de votre compte ?</p>
@@ -51,7 +51,7 @@ export default function LogoutConfirm({ onConfirm, onCancel }: LogoutConfirmProp
                         className="px-6 py-3 flex flex-row justify-center items-center gap-1 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all duration-200 font-medium shadow-md hover:shadow-lg cursor-pointer shadow-md hover:shadow-lg "
                         title="Se déconnecter"
                     >
-                        <Icon name="exit" size={25} className="text-white" />
+                        <ExitIcon width={20} height={20} className="text-white" />
                         Déconnexion
                     </button>
                 </div>

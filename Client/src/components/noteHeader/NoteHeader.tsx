@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Icon from "@/ui/Icon";
+import { RechercheIcon, RecentIcon, FiltreIcon } from "@/libs/Icons";
 import SearchBar, { SearchMode } from "@/ui/searchbar";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
@@ -74,7 +74,7 @@ export default function NoteHeader({
                 className="flex p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 aria-label="Rechercher"
               >
-                <Icon name="recherche" size={24} className="text-primary" />
+                <RechercheIcon className="text-primary" width={24} height={24} />
               </button>
 
               {/* Bouton Filtre */}
@@ -87,10 +87,10 @@ export default function NoteHeader({
                 }`}
                 aria-label="Filtrer"
               >
-                <Icon 
-                  name="filtre" 
-                  size={24} 
-                  className={collaborationFilter !== "all" ? "text-white" : "text-primary"}
+                <FiltreIcon 
+                width={24}
+                height={24}
+                className={collaborationFilter !== "all" ? "text-white" : "text-primary"}
                 />
               </button>
             </div>
@@ -140,7 +140,7 @@ export default function NoteHeader({
                           "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                       >
-                        <Icon name="recent" size={20} className={"text-gray-700"} />
+                        <RecentIcon width={20} height={20} className={"text-gray-700"} />
                         Récents {sortDir === "desc" ? "▼" : "▲"}
                       </button>
                     </div>
@@ -233,7 +233,7 @@ export default function NoteHeader({
       {/* Barre de recherche et filtre desktop */}
       <div className="hidden xl:block md:hidden flex justify-center">
         
-        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full" name="filter-bar">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full">
 
           
             <SearchBar 
@@ -256,11 +256,7 @@ export default function NoteHeader({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 1 }}
             >
-              <Icon
-                name="recent"
-                size={20}
-                className={"text-gray-700"}
-              />
+              <RecentIcon width={20} height={20} className={"text-gray-700"} />
               Récents {sortDir === "desc" ? "▼" : "▲"}
             </motion.button>
 
@@ -275,9 +271,9 @@ export default function NoteHeader({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 1 }}
             >
-              <Icon 
-                name="filtre" 
-                size={20} 
+              <FiltreIcon
+                width={20}
+                height={20}
                 className={collaborationFilter !== "all" ? "text-white" : "text-gray-700"}
               />
               {collaborationFilter === "all" && "Toutes"}

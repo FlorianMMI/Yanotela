@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React from "react";
-import Icon from "@/ui/Icon";
+import { MailIcon } from '@/libs/Icons';
 import { useRouter } from "next/navigation";
 import ReturnButton from "@/ui/returnButton";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
@@ -11,7 +11,7 @@ export default function Register() {
   const router = useRouter();
 
   return (
-    <div className="h-full p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal md:">
+    <div className="p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal md:">
       <MobileFlashNoteButton />
       <ReturnButton />
 
@@ -28,7 +28,7 @@ export default function Register() {
           onClick={() => router.push("/register/form")}
           className="w-full p-2.5 bg-primary rounded-lg flex items-center gap-3 hover:bg-primary-hover active:bg-primary-hover transition-colors cursor-pointer justify-center"
         >
-          <Icon name="mail" className="text-white" size={20} />
+          <MailIcon className="text-white w-6 h-6" />
           <span className="text-white text-sm font-medium font-['Gantari']">
             S&apos;inscrire avec un mail
           </span>

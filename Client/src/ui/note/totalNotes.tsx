@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Icon from '../Icon';
+import { DocsIcon } from '@/libs/Icons';
 import { useRouter } from "next/navigation";
 
 interface TotalNotesProps {
@@ -24,7 +24,7 @@ export default function TotalNotes({ totalNotes }: TotalNotesProps) {
             title='Voir toutes mes notes'
             aria-label='Voir toutes mes notes'
         >
-            <Icon name='docs' size={40} className='text-primary mb-2' />
+            <DocsIcon width={40} height={40} className='text-primary mb-2' />
             <div className='flex flex-row items-center justify-center space-x-2'>
                 <span className="text-2xl font-semibold text-clrprincipal group-hover:text-primary">{totalNotes !== undefined ? totalNotes : '...'}</span>
                 {safeTotalNotes > 1 || safeTotalNotes === 0 ?

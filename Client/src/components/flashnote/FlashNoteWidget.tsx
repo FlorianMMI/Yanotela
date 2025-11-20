@@ -13,7 +13,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 import { useAuth } from '@/hooks/useAuth';
-import Icons from '@/ui/Icon';
+
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
 import DrawingBoard, { DrawingData } from "../drawingBoard/drawingBoard";
 import { $createImageNode } from "./ImageNode";
@@ -23,6 +23,7 @@ import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import ImageClickPlugin from "./ImageClickPlugin";
 import '@/components/textRich/EditorStyles.css';
+import { CheckIcon, FlashIcon, InfoIcon } from "@/libs/Icons";
 
 const theme = {
   heading: {
@@ -299,7 +300,7 @@ export default function FlashNoteWidget() {
       {/* En-tête avec titre et bouton de sauvegarde */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icons name="flash" size={24} strokeWidth={12} className="text-primary" />
+          <FlashIcon width={24} height={24} strokeWidth={12} className="text-primary" />
           <h2 className="text-xl font-semibold text-clrprincipal">Flash Note</h2>
         </div>
         <SaveFlashNoteButton variant="default" />
@@ -312,7 +313,7 @@ export default function FlashNoteWidget() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-info-50 border border-info-100 rounded-lg p-3 flex items-start gap-3"
         >
-          <Icons name="info" size={18} className="text-blue shrink-0 mt-0.5" />
+          <InfoIcon width={18} height={18} className="text-blue shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-xs text-info-800">
               Les flashnotes sont temporaires. Pour les conserver de façon permanente,{' '}
@@ -346,7 +347,7 @@ export default function FlashNoteWidget() {
               {(isSavingContent || isTyping) ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               ) : (
-                <Icons name="Checkk" size={20} className="h-5 w-5 text-primary" />
+                <CheckIcon width={20} height={20} className="h-5 w-5 text-primary" />
               )}
               <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-primary text-background text-xs rounded py-1 px-2 whitespace-nowrap">
                 Enregistrement automatique de votre note temporaire
@@ -373,7 +374,7 @@ export default function FlashNoteWidget() {
                       Votre Flash Note...
                     </p>
                   }
-                  className="editor-root md:mt-2 h-full focus:outline-none min-h-[200px]"
+                  className="editor-root md:mt-2 focus:outline-none min-h-[200px]"
                 />
               }
               ErrorBoundary={LexicalErrorBoundary}

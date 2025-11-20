@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import ReturnButton from "@/ui/returnButton";
 import { FOLDER_COLORS } from "@/hooks/folderColors";
+import { FiltreIcon, MoreIcon, RecentIcon, RechercheIcon } from "@/libs/Icons";
 
 // Hook pour détecter la largeur de l'écran
 function useWindowWidth() {
@@ -110,9 +111,9 @@ export default function FolderDetailHeader({
               className="flex p-2 rounded-lg hover:bg-white/20 transition-colors"
               aria-label="Rechercher"
             >
-              <Icon
-                name="recherche"
-                size={20}
+              <RechercheIcon
+                width={20}
+                height={20}
                 className="text-white md:text-primary"
               />
             </button>
@@ -127,9 +128,9 @@ export default function FolderDetailHeader({
               }`}
               aria-label="Filtrer"
             >
-              <Icon
-                name="filtre"
-                size={20}
+              <FiltreIcon
+                width={20}
+                height={20}
                 className="text-white md:text-primary"
               />
             </button>
@@ -140,9 +141,9 @@ export default function FolderDetailHeader({
               aria-label="Options du dossier"
               className="flex md:hidden p-2 rounded-lg hover:bg-white/20 transition-colors"
             >
-              <Icon
-                name="more"
-                size={20}
+              <MoreIcon
+                width={20}
+                height={20}
                 className="text-white md:text-primary"
               />
             </button>
@@ -201,9 +202,9 @@ export default function FolderDetailHeader({
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >
-                      <Icon
-                        name="recent"
-                        size={20}
+                      <RecentIcon
+                        width={20}
+                        height={20}
                         className={
                           sortBy === "recent" ? "text-white" : "text-gray-700"
                         }
@@ -303,7 +304,7 @@ export default function FolderDetailHeader({
 
       {/* Barre de recherche et filtre - Version Desktop */}
       <div className="hidden xl:block md:hidden">
-        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 ">
           <SearchBar
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
@@ -322,7 +323,7 @@ export default function FolderDetailHeader({
                   setSortDir("desc");
                 }
               }}
-              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
+              className={`flex flex-row items-center grow cursor-pointer p-2 gap-2 rounded-lg font-medium text-sm transition-colors  ${
                 sortBy === "recent"
                   ? "bg-primary text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
@@ -330,9 +331,9 @@ export default function FolderDetailHeader({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 1 }}
             >
-              <Icon
-                name="recent"
-                size={20}
+              <RecentIcon
+                width={20}
+                height={20}
                 className={sortBy === "recent" ? "text-white" : "text-gray-700"}
               />
               Récents {sortBy === "recent" && (sortDir === "desc" ? "▼" : "▲")}
@@ -343,7 +344,7 @@ export default function FolderDetailHeader({
           <div className="relative">
             <motion.button
               onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors h-full ${
+              className={`flex flex-row items-center cursor-pointer px-4 py-2 gap-2 rounded-lg font-medium text-sm transition-colors  ${
                 collaborationFilter !== "all"
                   ? "bg-primary text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:border-primary"
@@ -351,9 +352,9 @@ export default function FolderDetailHeader({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 1 }}
             >
-              <Icon
-                name="filtre"
-                size={20}
+              <FiltreIcon
+                width={20}
+                height={20}
                 className={
                   collaborationFilter !== "all" ? "text-white" : "text-gray-700"
                 }

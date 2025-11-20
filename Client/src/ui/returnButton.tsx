@@ -1,5 +1,5 @@
 import React from "react";
-import Icon from "@/ui/Icon";
+import { ArrowIcon } from '@/libs/Icons';
 import { useRouter } from "next/navigation";
 
 export default function ReturnButton() {
@@ -10,11 +10,7 @@ export default function ReturnButton() {
       onClick={() => router.back()}
       className="self-start p-0 h-8 cursor-pointer items-center"
     >
-      <Icon
-        name="arrow-ss-barre"
-        className="hover:scale-75 transition-transform duration-200"
-        size={32}
-      />
+      <ArrowIcon width={32} height={32} className="hover:scale-75 transition-transform duration-200" />
     </button>
   );
 }

@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Icon from '@/ui/Icon';
 
+import { ArrowIcon } from '@/libs/Icons';
 export const noAuth = true;
 
 export default function MentionsLegalesPage() {
@@ -16,7 +16,7 @@ export default function MentionsLegalesPage() {
             href="/" 
             className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors mb-4"
           >
-            <Icon name="arrow-ss-barre" size={20} className="rotate-90" />
+            <ArrowIcon className="w-5 h-5" />
             <span className="font-medium">Retour</span>
           </Link>
           <h1 className="text-4xl font-bold text-clrprincipal mb-2">

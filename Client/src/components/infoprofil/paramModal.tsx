@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import Icon from '@/ui/Icon';
+import { CloseIcon, TrashIcon} from '@/libs/Icons';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
@@ -94,11 +94,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                         className="p-6"
                         onClick={onClose}
                     >
-                        <Icon
-                            name="close"
-                            size={35}
-                            className="absolute top-4 right-4 cursor-pointer text-clrprincipal hover:text-color-primary-hover transition-all duration-300"
-                        />
+                        <CloseIcon width={35} height={35} className="absolute top-4 right-4 cursor-pointer text-clrprincipal hover:text-color-primary-hover transition-all duration-300" />
                     </div>
                     {/* Contenu du modal */}
                     <div className='flex flex-col justify-end h-full w-fill p-2 relative mt-10'>
@@ -120,7 +116,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                             onClick={() => router.push('/corbeille')}
                             title='Voir les notes supprimées'
                         >
-                            <Icon name="trash" size={20} />
+                            <TrashIcon width={20} height={20} />
                             Corbeille
                         </button>
 

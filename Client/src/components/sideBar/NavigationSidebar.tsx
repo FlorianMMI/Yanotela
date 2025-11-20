@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthState } from '@/hooks/useAuth';
 import NotificationList from '../notificationList/page';
-import Icon from '@/ui/Icon';
+
+import { DocsIcon, FlashIcon, FolderIcon, LogoFullIcon, LogoIcon, ProfileIcon } from '@/libs/Icons';
 
 interface NavigationSidebarProps {
   user: AuthState['user'];
@@ -38,7 +39,7 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
   ];
 
   return (
-    <div className="h-full w-full flex flex-col relative text-nowrap">
+    <div className="w-full flex flex-col relative text-nowrap">
 
       <div className="relative flex flex-row items-center p-4 gap-2">
 
@@ -46,10 +47,10 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
           className={`flex items-center ${isopen ? `flex-1 px-4  ` : `w-fit px-2  `} py-3 gap-3 rounded-lg transition-all text-gray-700 ${isProfile ? 'bg-primary text-white' : ' hover:bg-gray-100 hover:shadow-sm'}`}
           title='Accéder à mon profil'>
 
-          <Icon
-            name="profile"
+          <ProfileIcon
             className={isProfile ? "text-white" : "text-primary"}
-            size={30}
+            width={30}
+            height={30}
           />
 
           {isopen ? <div className="flex flex-col flex-1 min-w-0">
@@ -81,13 +82,29 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
                   }`}
                 title={`Accéder à ${item.label}`}
               >
-                <Icon
-                  name={item.icon}
+                {item.icon === 'flash' ? (
+                <FlashIcon
                   className={item.isActive ? "text-white" : "text-primary"}
-                  size={30}
+                  width={30}
+                  height={30}
                   strokeWidth={12}
-
                 />
+                ) : item.icon === 'docs' ? ( 
+                <DocsIcon
+                  className={item.isActive ? "text-white" : "text-primary"}
+                  width={30}
+                  height={30}
+                  strokeWidth={12}
+                />
+                ) :  (item.icon === 'folder' && 
+                <FolderIcon
+                  className={item.isActive ? "text-white" : "text-primary"}
+                  width={30}
+                  height={30}
+                  strokeWidth={12}
+                />
+                )} 
+
                 <span className={`font-medium ${isopen ? `flex` : `hidden`}`}>{item.label}</span>
               </Link>
             </li>
@@ -99,12 +116,18 @@ export default function NavigationSidebar({ user, isopen }: NavigationSidebarPro
         href="/"
         title='retour à l`accueil'
       >
-        <Icon
-          name={isopen ? `logo` : `logoIcon`}
-          className="text-primary stroke-25"
+        {isopen ? (
+          <LogoFullIcon 
+           className="text-primary stroke-25"
           width={isopen ? 150 : 25}
           height={isopen ? 50 : 25}
         />
+      ) : (
+          <LogoIcon 
+           className="text-primary stroke-25"
+          width={isopen ? 150 : 25}
+          height={isopen ? 50 : 25}
+        />)}
       </Link>
 
       {/* Liens légaux */}

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Icon from "@/ui/Icon";
+import { RechercheIcon, TextLeftIcon, DocsIcon, ChevronIcon, CheckIcon } from '@/libs/Icons';
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 
@@ -67,23 +67,19 @@ export default function SearchBar({
             <div className="relative flex w-full max-w-[40rem] gap-2">
                 {/* Barre de recherche */}
                 <div className="relative w-full flex h-full p-4 gap-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300">
-                    <Icon
-                        name="recherche"
-                        size={20}
-                        className="text-gray-500"
-                    />
+                    <RechercheIcon width={20} height={20} className="text-gray-500" />
                     <input
                         type="text"
                         placeholder={getPlaceholder()}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full md:w-[25rem] h-full "
+                        className="w-full md:w-[25rem] "
                     />
                 </div>
 
                 {/* Bouton sélecteur de mode */}
                 {showModeSelector && (
-                    <div className="relative h-full z-50">
+                    <div className="relative z-50">
                         <button
                             ref={buttonRef}
                             type="button"
@@ -91,19 +87,13 @@ export default function SearchBar({
                             className="flex items-center h-full border border-gray-300 hover:border-primary gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors min-w-fit touch-manipulation relative z-10"
                             title={currentMode.description}
                         >
-                            <Icon
-                                name={currentMode.icon}
-                                size={18}
-                                className="text-primary"
-                            />
+                            {currentMode.key === 'all' && <RechercheIcon width={18} height={18} className="text-primary" />}
+                            {currentMode.key === 'title' && <TextLeftIcon width={18} height={18} className="text-primary" />}
+                            {currentMode.key === 'content' && <DocsIcon width={18} height={18} className="text-primary" />}
                             <span className="text-sm font-medium text-gray-700 whitespace-nowrap hidden sm:inline">
                                 {currentMode.label}
                             </span>
-                            <Icon
-                                name="chevron-down"
-                                size={16}
-                                className={`text-gray-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
-                            />
+                            <ChevronIcon width={16} height={16} className={`text-gray-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
                         </button>
 
                         {/* Dropdown menu avec portail */}
@@ -132,21 +122,15 @@ export default function SearchBar({
                                                 searchMode === mode.key ? 'bg-primary/10 text-primary' : 'text-gray-700'
                                             }`}
                                         >
-                                            <Icon
-                                                name={mode.icon}
-                                                size={20}
-                                                className={searchMode === mode.key ? 'text-primary' : 'text-gray-500'}
-                                            />
+                                            {mode.key === 'all' && <RechercheIcon width={20} height={20} className={searchMode === mode.key ? 'text-primary' : 'text-gray-500'} />}
+                                            {mode.key === 'title' && <TextLeftIcon width={20} height={20} className={searchMode === mode.key ? 'text-primary' : 'text-gray-500'} />}
+                                            {mode.key === 'content' && <DocsIcon width={20} height={20} className={searchMode === mode.key ? 'text-primary' : 'text-gray-500'} />}
                                             <div className="flex-1">
                                                 <p className="font-medium text-base sm:text-sm">{mode.label}</p>
                                                 <p className="text-sm sm:text-xs text-gray-500">{mode.description}</p>
                                             </div>
                                             {searchMode === mode.key && (
-                                                <Icon
-                                                    name="check"
-                                                    size={18}
-                                                    className="text-primary"
-                                                />
+                                                <CheckIcon width={18} height={18} className="text-primary" />
                                             )}
                                         </button>
                                     ))}

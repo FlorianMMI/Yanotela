@@ -6,7 +6,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import ResetPasswordForm from '../auth/ResetPasswordForm';
-import Icon from '@/ui/Icon';
+
 import Link from 'next/link';
 
 export default function AuthSidebar() {
@@ -32,7 +32,7 @@ export default function AuthSidebar() {
   const { view: currentView, token } = getCurrentView();
 
   return(
-    <div className="p-6 h-full w-full flex flex-col justify-center">
+    <div className="p-6 w-full flex flex-col justify-center">
       {currentView === 'login' && (
         <LoginForm
           onSwitchToRegister={() => router.push('/register')}
