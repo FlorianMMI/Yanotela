@@ -36,7 +36,22 @@ export function requireTurnstile(fieldName = 'cf-turnstile-response') {
     try {
       const token = (req.body && req.body[fieldName]) || req.headers['x-cf-turnstile-response'];
       const ok = await verifyTurnstile(token);
-      if (!ok) return res.status(403).json({ error: 'CAPTCHA requis' });
+      if (!ok) {
+        // If the client expects JSON (AJAX/API), send JSON error.
+        const accepts = (req.headers.accept || '').toString();
+        const isAjax = req.xhr || (req.headers['x-requested-with'] === 'XMLHttpRequest');
+        const wantsJson = isAjax || accepts.indexOf('application/json') !== -1 || (req.headers['content-type'] || '').indexOf('application/json') !== -1;
+
+        if (wantsJson) {
+          return res.status(403).json({ error: 'CAPTCHA requis' });
+        }
+
+        // For normal form submissions (browser POST), redirect back to the referer (or to /login)
+        // Use 303 See Other so browsers will perform a GET to the redirect target.
+        const referer = req.get('referer') || '/login';
+        const sep = referer.includes('?') ? '&' : '?';
+        return res.redirect(303, `${referer}${sep}error=captcha`);
+      }
       return next();
     } catch (err) {
       console.error('Turnstile middleware error:', err);
