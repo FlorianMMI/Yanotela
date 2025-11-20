@@ -70,6 +70,7 @@ export const noteController = {
             ModifiedAt: note.ModifiedAt,
             userRole: perm.role,
             collaboratorCount: collaboratorCount,
+            isPublic: note.isPublic
           };
         })
       );
@@ -340,7 +341,6 @@ export const noteController = {
         // Note publique : autoriser l'accès en lecture seule (rôle 3)
       }
 
-      // 🔄 MIGRATION À LA VOLÉE: Migrer vers YJS si nécessaire
       if (needsMigration(note)) {
         
         const yjsState = migrateContentToYjs(note.Content);
