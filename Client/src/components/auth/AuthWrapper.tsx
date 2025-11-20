@@ -23,10 +23,13 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const [user, setUser] = useState<User>(null);
 
   const publicRoutes = ['/login', '/register', '/forgot-password', '/'];
-  const protectedRoutes = ['/notes', '/corbeille', '/dossiers', '/profil'];
+  const protectedRoutes = ['/corbeille', '/dossiers', '/profil'];
+  // Les notes individuelles peuvent être publiques, donc on ne les bloque pas systématiquement
 
   const isPublicRoute = publicRoutes.some(route => pathname === route) || pathname.startsWith('/validate/');
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  // Notes listing nécessite l'authentification, mais pas les notes individuelles
+  const isNotesListing = pathname === '/notes';
 
   const checkAuth = async () => {
     try {
@@ -50,7 +53,8 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         setIsAuthenticated(false);
         setUser(null);
 
-        if (isProtectedRoute) {
+        // Rediriger uniquement pour les routes vraiment protégées (pas les notes individuelles)
+        if (isProtectedRoute || isNotesListing) {
           router.replace('/login');
           return;
         }
@@ -60,7 +64,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       setIsAuthenticated(false);
       setUser(null);
 
-      if (isProtectedRoute) {
+      if (isProtectedRoute || isNotesListing) {
         router.replace('/login');
         return;
       }

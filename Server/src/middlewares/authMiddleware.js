@@ -23,6 +23,22 @@ export const requireAuth = (req, res, next) => {
 };
 
 /**
+ * Middleware optionnel pour l'authentification (ne bloque pas si non authentifié)
+ * Utile pour les ressources publiques qui peuvent avoir des fonctionnalités supplémentaires pour les utilisateurs authentifiés
+ * @param {Request} req - Requête Express
+ * @param {Response} res - Réponse Express
+ * @param {Function} next - Fonction next d'Express
+ */
+export const optionalAuth = (req, res, next) => {
+    // Si l'utilisateur est authentifié, ajouter son ID dans req
+    if (req.session.userId) {
+        req.userId = req.session.userId;
+    }
+    // Continuer dans tous les cas (authentifié ou non)
+    next();
+};
+
+/**
  * Middleware pour vérifier si l'utilisateur possède une note
  * @param {Request} req - Requête Express
  * @param {Response} res - Réponse Express  
