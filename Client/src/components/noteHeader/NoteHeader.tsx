@@ -232,7 +232,6 @@ export default function NoteHeader({
         
         <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full">
 
-          
             <SearchBar 
               searchTerm={searchTerm} 
               setSearchTerm={setSearchTerm}
@@ -240,7 +239,6 @@ export default function NoteHeader({
               setSearchMode={setSearchMode}
               showModeSelector={true}
             />
-          
 
           <div className="flex gap-2">
             <motion.button

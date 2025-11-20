@@ -30,8 +30,7 @@ async function testTransporter() {
     const transporter = createEmailTransporter();
     
     await transporter.verify();
-    console.log('✅ SMTP connection verified successfully');
-    
+
     return transporter;
   } catch (error) {
     console.error('❌ SMTP Erreur:', error.message);
