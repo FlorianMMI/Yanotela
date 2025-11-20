@@ -179,7 +179,6 @@ export default function LoginForm({
           <ArrowBarIcon className="text-white pointer-events-none" width={40} height={40} />
         </button>
 
-
         {/* Séparateur et connexion Google */}
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex items-center w-full gap-4">
