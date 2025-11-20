@@ -51,21 +51,6 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
         };
     }, [onClose]);
 
-    const loadFolders = async () => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
-
-    const loadCurrentFolder = async () => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
-
-    const assignNoteToFolder = async (folderId: string) => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
-
-    const removeNoteFromFolder = async () => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
 
     const handleDeleteNote = async () => {
         setIsDeleting(true);

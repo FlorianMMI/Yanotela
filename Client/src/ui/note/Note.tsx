@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 import NoteMore from '@/components/noteMore/NoteMore';
 import { SearchMode } from '@/ui/searchbar';
 
-import { KebabIcon, ShareIcon } from '@/libs/Icons';
+import { KebabIcon, ShareIcon, PublicIcon } from '@/libs/Icons';
 
 interface NoteProps {
   note: NoteType;
@@ -15,6 +15,7 @@ interface NoteProps {
   searchMode?: SearchMode; // Mode de recherche
 }
 
+
 export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode = "all" }: NoteProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -22,6 +23,8 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const noteRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  console.log('Note public status:', note.isPublic);
 
   // Vérifier si on est dans la corbeille
   const isInTrash = pathname?.includes('/trash') || pathname?.includes('/corbeille');
@@ -228,8 +231,6 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
 
     // Sinon, afficher normalement (limité à 100 caractères)
     return extractedText.length > 100 ? extractedText.substring(0, 100) + '...' : extractedText;
-    
-    return 'Contenu vide';
   };
 
   return (
@@ -262,15 +263,25 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
         {/* Collaborateurs */}
         <div 
           className="flex h-full rounded-r-lg">
-          {note.collaboratorCount && note.collaboratorCount > 1 && (
-            <div className="flex items-center w-full gap-1 px-3 shrink-0">
-              <p className='text-white font-bold'>{note.collaboratorCount}</p>
-              <ShareIcon
+          {note.isPublic ? (
+            <div className="flex items-center w-full gap-1 px-3 shrink-0" title="Public">
+              <PublicIcon
                 width={20}
                 height={20}
                 className="filter brightness-0 invert"
               />
             </div>
+          ) : (
+            note.collaboratorCount && note.collaboratorCount > 1 && (
+              <div className="flex items-center w-full gap-1 px-3 shrink-0">
+                <p className="text-white font-bold">{note.collaboratorCount}</p>
+                <ShareIcon
+                  width={20}
+                  height={20}
+                  className="filter brightness-0 invert"
+                />
+              </div>
+            )
           )}
         </div>
       </div>

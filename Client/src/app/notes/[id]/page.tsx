@@ -616,7 +616,12 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) return;
+    // Si pas d'utilisateur authentifié, définir un profil anonyme
+    if (!user) {
+      setUserProfile({ name: 'Anonyme', color: '#999999' });
+      return;
+    }
+    
     const pseudo = (user as any).pseudo || 'Anonyme';
     const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FF33A1'];
     const color = colors[Math.floor(Math.random() * colors.length)];
@@ -636,6 +641,9 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // Gestion des paramètres de recherche (assignation au dossier)
   useEffect(() => {
+    // Ne pas permettre l'assignation de dossier pour les utilisateurs non authentifiés
+    if (!user) return;
+    
     const folderId = searchParams?.get('folderId');
     if (folderId && id) {
       AddNoteToFolder(id, folderId).then(() => {
@@ -648,7 +656,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         console.error('❌ Erreur assignation dossier:', error);
       });
     }
-  }, [searchParams, id, router]);
+  }, [searchParams, id, router, user]);
 
   // Auto-dismiss notifications
   useEffect(() => {
