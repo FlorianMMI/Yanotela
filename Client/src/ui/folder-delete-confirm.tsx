@@ -45,7 +45,7 @@ export default function FolderDeleteConfirm({
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Supprimer le dossier</h2>
                     <p className="text-gray-600 mb-3">
-                        Êtes-vous sûr de vouloir supprimer définitivement le dossier <span className="font-semibold">"{folderName}"</span> ?
+                        Êtes-vous sûr de vouloir supprimer définitivement le dossier <span className="font-semibold">&quot;{folderName}&quot;</span> ?
                     </p>
                     {noteCount > 0 && (
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">

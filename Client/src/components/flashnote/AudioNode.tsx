@@ -37,7 +37,7 @@ export class AudioNode extends DecoratorNode<React.ReactElement> {
     return new AudioNode(
       node.__src,
       node.__altText,
-      (node as any).__key
+      node.getKey()
     );
   }
 

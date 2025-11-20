@@ -55,7 +55,7 @@ export default function AccountSupprConfirm({ onClose, onConfirm, isLoading = fa
                     <p className="text-foreground mb-6 leading-relaxed">
                         Êtes-vous sûr de vouloir supprimer votre compte ?
                         Vos données ne seront pas complètement supprimées immédiatement. 
-                        Elles seront conservées pendant <strong>30 jours</strong> avant d'être définitivement supprimées.
+                        Elles seront conservées pendant <strong>30 jours</strong> avant d&apos;être définitivement supprimées.
                     </p>
 
                     {/* Boutons d'action */}

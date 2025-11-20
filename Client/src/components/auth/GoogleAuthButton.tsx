@@ -17,7 +17,6 @@ interface GoogleAuthButtonProps {
  */
 export default function GoogleAuthButton({
   mode,
-  onSuccess,
   className = "",
   isFullWidth = true
 }: GoogleAuthButtonProps) {

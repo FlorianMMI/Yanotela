@@ -45,7 +45,7 @@ export class VideoNode extends DecoratorNode<React.ReactElement> {
       node.__altText,
       node.__width,
       node.__height,
-      (node as any).__key
+      node.getKey()
     );
   }
 

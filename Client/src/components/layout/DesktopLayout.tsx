@@ -23,10 +23,6 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
   
   // Notes publiques individuelles : afficher le contenu (login à gauche) SANS FlashNote
   const isPublicNote = pathname?.startsWith('/notes/') && pathname !== '/notes';
-  
-  // Pages d'authentification où on affiche UNIQUEMENT la FlashNote (pas le formulaire)
-  const authPages = ['/login', '/register', '/forgot-password'];
-  const isAuthPage = authPages.some(page => pathname.startsWith(page));
 
   return (
     <>

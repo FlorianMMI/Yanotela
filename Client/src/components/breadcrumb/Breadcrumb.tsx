@@ -3,13 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
 
 import { GetNoteById, GetFolderById, UpdateFolder } from '@/loader/loader';
 import NoteMore from '@/components/noteMore/NoteMore';
 import FolderMore from '@/components/folderMore/FolderMore';
 
-import { useRouter } from 'next/navigation';
 import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 import ConnectedUsers from '../collaboration/ConnectedUsers';
 import { yjsDocuments } from '@/collaboration/providers';
@@ -24,10 +22,20 @@ interface BreadcrumbItem {
 
 export default function Breadcrumb() {
   const pathname = usePathname();
-  const router = useRouter();
   const [noteTitle, setNoteTitle] = useState<string>('');
   const [folderName, setFolderName] = useState<string>('');
-  const [folderData, setFolderData] = useState<any>(null); // Pour stocker toutes les infos du dossier
+
+  interface FolderData {
+    Nom: string;
+    Description?: string | null;
+    CouleurTag?: string | null;
+    ModifiedAt?: string | null;
+    noteCount?: number;
+    // allow other properties returned by the API without using `any`
+    [key: string]: unknown;
+  }
+
+  const [folderData, setFolderData] = useState<FolderData | null>(null); // Pour stocker toutes les infos du dossier
   const [tempFolderName, setTempFolderName] = useState<string>('');
   const [showNoteMore, setShowNoteMore] = useState(false);
   const [showFolderMore, setShowFolderMore] = useState(false);
@@ -331,7 +339,6 @@ export default function Breadcrumb() {
     }
 
     if (pathname.startsWith('/notes/') && segments.length > 1) {
-      const noteId = segments[1];
       // Utiliser noteTitle s'il existe et n'est pas vide, sinon utiliser le fallback par défaut
       const displayTitle = noteTitle && noteTitle.trim() !== '' ? noteTitle : '';
       return [
@@ -579,7 +586,7 @@ export default function Breadcrumb() {
                       {showFolderMore && folderData && (
                         <div className="absolute right-0 mt-10 z-100">
                           <FolderMore 
-                            folder={{ ModifiedAt: folderData.ModifiedAt }}
+                            folder={{ ModifiedAt: folderData.ModifiedAt ?? "" }}
                             folderId={folderId!} 
                             folderName={folderData.Nom || folderName}
                             folderDescription={folderData.Description || ""}

@@ -1,10 +1,10 @@
 import { Note } from '@/type/Note';
-import { create } from 'domain';
-import { ID } from 'yjs';
+import { Folder } from '@/type/Folder';
+import { Permission } from '@/type/Permission';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-export async function CreateNote(noteData?: Partial<Note>): Promise<{ note: Note | null; redirectUrl?: string }> {
+export async function CreateNote(): Promise<{ note: Note | null; redirectUrl?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/create`, {
             method: "POST",
@@ -73,7 +73,13 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
                 // Si c'est un objet Lexical, extraire le texte
                 if (parsedContent.root && parsedContent.root.children) {
                     // Extraction récursive du texte depuis la structure Lexical (gère tous les nœuds)
-                    const extractText = (node: any): string => {
+                    interface LexicalNode {
+                        type?: string;
+                        text?: string;
+                        children?: LexicalNode[];
+                    }
+                    
+                    const extractText = (node: LexicalNode): string => {
                         if (!node) return '';
                         
                         // Si c'est un nœud texte
@@ -83,7 +89,7 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
                         
                         // Si c'est un nœud avec enfants (paragraph, heading, list, etc.)
                         if (node.children && Array.isArray(node.children)) {
-                            return node.children.map((child: any) => extractText(child)).join(' ');
+                            return node.children.map((child: LexicalNode) => extractText(child)).join(' ');
                         }
                         
                         // Si c'est un nœud image ou autre sans texte
@@ -101,6 +107,7 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
                     note.Content = JSON.stringify(parsedContent).substring(0, 100) + '...';
                 }
             } catch (error) {
+                void error;
                 // Si le parsing échoue, garder le contenu tel quel ou afficher le début
                 const content = String(note.Content);
                 note.Content = content.length > 100 ? content.substring(0, 100) + '...' : content;
@@ -283,10 +290,10 @@ export async function GetDeletedNotes(): Promise<{ notes: Note[]; totalNotes: nu
                 const parsedContent = JSON.parse(note.Content);
                 if (typeof parsedContent === 'object' && parsedContent !== null) {
                     if (parsedContent.root && parsedContent.root.children) {
-                        const extractText = (children: any[]): string => {
-                            return children.map((child: any) => {
+                        const extractText = (children: Array<{ type?: string; children?: unknown[]; text?: string }>): string => {
+                            return children.map((child: { type?: string; children?: unknown[]; text?: string }) => {
                                 if (child.type === 'paragraph' && child.children) {
-                                    return extractText(child.children);
+                                    return extractText(child.children as Array<{ type?: string; children?: unknown[]; text?: string }>);
                                 } else if (child.type === 'text' && child.text) {
                                     return child.text;
                                 }
@@ -576,7 +583,6 @@ export async function ValidateResetToken(token: string): Promise<AuthResponse> {
     try {
         
         const response = await fetch(`${apiUrl}/reset-password/${token}`);
-        const data = await response.json();
         
         if (response.ok) {
             return { success: true };
@@ -584,7 +590,7 @@ export async function ValidateResetToken(token: string): Promise<AuthResponse> {
             return { success: false, error: "Token invalide ou expiré" };
         }
     } catch (error) {
-        return { success: false, error: "Erreur de connexion au serveur" };
+        return { success: false, error: "Erreur de connexion au serveur :" + (error as Error).message};
     }
 }
 
@@ -738,7 +744,7 @@ export async function updateUser(data: { prenom?: string; nom?: string; pseudo?:
     }
 }
 
-export async function FetchPermission(noteId: string): Promise<{ success: boolean; permissions?: any[]; error?: string }> {
+export async function FetchPermission(noteId: string): Promise<{ success: boolean; permissions?: Permission[]; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/permission/note/${noteId}`, {
             method: 'GET',
@@ -785,7 +791,7 @@ export async function UpdatePermission(noteId: string, userId: number, newRole: 
     }
 }
 
-export async function AddPermission(noteId: string, identifier: string, role: number = 3): Promise<{ success: boolean; message?: string; user?: any; error?: string }> {
+export async function AddPermission(noteId: string, identifier: string, role: number = 3): Promise<{ success: boolean; message?: string; user?: { id: number; pseudo: string; email: string }; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/permission/add/${noteId}`, {
             method: 'POST',
@@ -834,7 +840,17 @@ export async function RemovePermission(noteId: string, userId: number): Promise<
 
 // ============== NOTIFICATION  FUNCTIONS ==============
 
-export async function GetNotifications(): Promise<{ success: boolean; notes?: any[]; error?: string }> {
+interface NotificationNote {
+    id: string;
+    Titre: string;
+    role: number;
+    isAccepted: boolean;
+    author?: {
+        pseudo: string;
+    };
+}
+
+export async function GetNotifications(): Promise<{ success: boolean; notes?: NotificationNote[]; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/notification/get`, {
             method: 'GET',
@@ -905,7 +921,7 @@ export async function RefuseNotification(invitationId: string): Promise<{ succes
 
 // ============== FOLDER  FUNCTIONS ==============
 
-export async function GetFolders(): Promise<{ folders: any[]; totalFolders: number }> {
+export async function GetFolders(): Promise<{ folders: Folder[]; totalFolders: number }> {
     try {
         const response = await fetch(`${apiUrl}/dossiers/get`, {
             method: "GET",
@@ -930,7 +946,7 @@ export async function GetFolders(): Promise<{ folders: any[]; totalFolders: numb
     }
 }
 
-export async function GetFolderById(id: string): Promise<{ folder: any; notes?: any[]; error?: string } | null> {
+export async function GetFolderById(id: string): Promise<{ folder: Folder | null; notes?: Note[]; error?: string } | null> {
     try {
         const response = await fetch(`${apiUrl}/dossiers/get/${id}`, {
             method: "GET",
@@ -945,7 +961,7 @@ export async function GetFolderById(id: string): Promise<{ folder: any; notes?: 
             return { folder: null, error: errorData.error || 'Dossier introuvable' };
         }
 
-        const data = await response.json();
+        const data: { folder: Folder; notes?: Note[] } = await response.json();
         
         // Transformation du JSON stringifié en objet lisible (même traitement que GetNotes)
         if (data.notes && Array.isArray(data.notes)) {
@@ -956,8 +972,14 @@ export async function GetFolderById(id: string): Promise<{ folder: any; notes?: 
                         // Si c'est un objet Lexical, extraire le texte
                         if (parsedContent.root && parsedContent.root.children) {
                             // Extraction du texte depuis la structure Lexical
-                            const extractText = (children: any[]): string => {
-                                return children.map((child: any) => {
+                            interface LexicalNode {
+                                type?: string;
+                                text?: string;
+                                children?: LexicalNode[];
+                            }
+                            
+                            const extractText = (children: LexicalNode[]): string => {
+                                return children.map((child: LexicalNode) => {
                                     if (child.type === 'paragraph' && child.children) {
                                         return extractText(child.children);
                                     } else if (child.type === 'text' && child.text) {
@@ -987,7 +1009,7 @@ export async function GetFolderById(id: string): Promise<{ folder: any; notes?: 
     }
 }
 
-export async function CreateFolder(folderData?: { Nom?: string; Description?: string; CouleurTag?: string }): Promise<{ folder: any | null; redirectUrl?: string }> {
+export async function CreateFolder(folderData?: { Nom?: string; Description?: string; CouleurTag?: string }): Promise<{ folder: Folder | null; redirectUrl?: string }> {
     try {
         const response = await fetch(`${apiUrl}/dossiers/create`, {
             method: "POST",
@@ -1019,7 +1041,7 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
     }
 }
 
-export async function UpdateFolder(id: string, folderData: { Nom?: string; Description?: string; CouleurTag?: string }): Promise<{ success: boolean; folder?: any; error?: string }> {
+export async function UpdateFolder(id: string, folderData: { Nom?: string; Description?: string; CouleurTag?: string }): Promise<{ success: boolean; folder?: Folder; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/dossiers/update/${id}`, {
             method: "POST",
@@ -1139,7 +1161,7 @@ export async function RemoveNoteFromFolder(noteId: string): Promise<{ success: b
     }
 }
 
-export async function GetNoteFolder(noteId: string): Promise<{ success: boolean; folder?: any; error?: string }> {
+export async function GetNoteFolder(noteId: string): Promise<{ success: boolean; folder?: Folder; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/folder/${noteId}`, {
             method: "GET",

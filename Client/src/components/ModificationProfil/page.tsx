@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Icons from "@/ui/Icon";
 import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser, GetNotes, GetFolders } from '@/loader/loader';
 import TotalNotes from "@/ui/note/totalNotes";
@@ -39,6 +38,7 @@ export default function ModificationProfil() {
         }
       } catch (err) {
         setError("Erreur lors du chargement des informations");
+        void err;
       } finally {
         setPageLoading(false);
       }
@@ -48,13 +48,13 @@ export default function ModificationProfil() {
   }, []);
 
   // Fonction pour sauvegarder un champ spécifique
-  const handleFieldSave = async (fieldName: string, newValue: string) => {
+  const handleFieldSave = async (fieldName: keyof typeof userData, newValue: string) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const updateData: any = {};
+      const updateData: Partial<Record<keyof typeof userData, string>> = {};
       updateData[fieldName] = newValue;
 
       const result = await updateUser(updateData);

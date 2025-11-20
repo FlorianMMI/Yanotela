@@ -28,6 +28,14 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
   const [activeUsers, setActiveUsers] = useState<AwarenessUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Typage de l'état d'awareness attendu
+  type AwarenessState = {
+    user?: {
+      name?: string;
+      color?: string;
+    } | null;
+  };
+
   useEffect(() => {
     let retryTimer: NodeJS.Timeout | null = null;
     function updateUsersFromAwareness() {
@@ -40,9 +48,9 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
         }
         const awareness: Awareness = provider.awareness;
         const localClientID = awareness.clientID;
-        const states = awareness.getStates();
+        const states = awareness.getStates() as Map<number, AwarenessState>;
         const users: AwarenessUser[] = [];
-        states.forEach((state: any, clientID: number) => {
+        states.forEach((state, clientID: number) => {
           if (state && state.user) {
             users.push({
               name: clientID === localClientID ? (state.user.name || 'Vous') : (state.user.name || 'Anonyme'),

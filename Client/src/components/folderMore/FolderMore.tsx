@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import Icons from "@/ui/Icon";
 import { FOLDER_COLORS } from "@/hooks/folderColors";
 import FolderDeleteConfirm from "@/ui/folder-delete-confirm";
 import { DeleteFolder, UpdateFolder } from "@/loader/loader";

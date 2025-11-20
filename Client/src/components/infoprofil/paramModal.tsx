@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { CloseIcon, TrashIcon} from '@/libs/Icons';
@@ -17,14 +17,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-    const [isWebappInstalled, setIsWebappInstalled] = useState<boolean>(() => {
-        try {
-            return !!localStorage.getItem('webappInstalled');
-        } catch (e) {
-            return false;
-        }
-    });
 
     const handleDeleteAccount = () => {
         setShowDeleteConfirm(true);
