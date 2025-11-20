@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { AuthState } from '@/hooks/useAuth';
 import NotificationList from '../notificationList/page';
 
@@ -14,7 +14,6 @@ interface NavigationSidebarProps {
 }
 
 export default function NavigationSidebar({ user, isopen }: NavigationSidebarProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const isProfile = pathname.includes('/profil');
   const navItems = [

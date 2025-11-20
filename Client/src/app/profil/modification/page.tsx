@@ -2,7 +2,6 @@
 
 import ReturnButton from "@/ui/returnButton";
 import React, { useState, useEffect } from "react";
-import Icons from "@/ui/Icon";
 import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser } from '@/loader/loader';
 import { KeyholeIcon } from "@/libs/Icons";
@@ -34,8 +33,8 @@ export default function ModificationProfil() {
         } else {
           setError("Impossible de charger les informations utilisateur");
         }
-      } catch (err) {
-        setError("Erreur lors du chargement des informations");
+      } catch (error) {
+        setError("Erreur lors du chargement des informations :" + error);
       } finally {
         setPageLoading(false);
       }
@@ -45,13 +44,13 @@ export default function ModificationProfil() {
   }, []);
 
   // Fonction pour sauvegarder un champ spécifique
-  const handleFieldSave = async (fieldName: string, newValue: string) => {
+    const handleFieldSave = async (fieldName: keyof typeof userData, newValue: string) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const updateData: any = {};
+      const updateData: Partial<typeof userData> = {};
       updateData[fieldName] = newValue;
 
       const result = await updateUser(updateData);

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import Icon from "@/ui/Icon";
 import { useRouter } from "next/navigation";
 import { CheckIcon } from "@/libs/Icons";
 

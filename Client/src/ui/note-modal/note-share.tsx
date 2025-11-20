@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FetchPermission, UpdatePermission, AddPermission, RemovePermission, IsPublic, setPublic } from "@/loader/loader";
+import { Permission } from "@/type/Permission";
 import { useAuth } from "@/hooks/useAuth";
 import { CheckIcon, CopyIcon, CopyLinkIcon, CrownIcon } from '@/libs/Icons';
 
@@ -27,11 +28,11 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     useEffect(() => {
         setLoading(true);
         // Récupérer les permissions
-        FetchPermission(noteId).then((data: any) => {
+        FetchPermission(noteId).then((data) => {
             const perms = data && data.success && Array.isArray(data.permissions) ? data.permissions : [];
             setPermissions(perms);
             // Trouver le rôle de l'utilisateur connecté
-            const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
+            const currentUserPerm = perms.find((perm: Permission) => perm.user?.id === connectedUserId);
             setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
             setLoading(false);
         });
@@ -132,15 +133,15 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                                         style={item.user.id === connectedUserId ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                                                         onChange={async (e) => {
                                                             const newRole = parseInt(e.target.value);
-                                                            const result = await UpdatePermission(noteId, item.user.id, newRole);
-                                                            if (result.success) {
-                                                                // Refresh permissions
-                                                                const data = await FetchPermission(noteId);
-                                                                if (data.success) {
-                                                                    const perms = data.permissions || [];
-                                                                    setPermissions(perms);
-                                                                    // Mettre à jour le rôle courant si nécessaire
-                                                                    const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
+                                                                const result = await UpdatePermission(noteId, item.user.id, newRole);
+                                                                if (result.success) {
+                                                                    // Refresh permissions
+                                                                    const data = await FetchPermission(noteId);
+                                                                    if (data.success) {
+                                                                        const perms = data.permissions || [];
+                                                                        setPermissions(perms);
+                                                                        // Mettre à jour le rôle courant si nécessaire
+                                                                        const currentUserPerm = perms.find((perm: Permission) => perm.user?.id === connectedUserId);
                                                                     setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
                                                                 }
                                                                 // Appeler le callback pour rafraîchir la liste des notes
@@ -175,7 +176,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                                                         const perms = data.permissions || [];
                                                                         setPermissions(perms);
                                                                         // Mettre à jour le rôle courant si nécessaire
-                                                                        const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
+                                                                        const currentUserPerm = perms.find((perm: Permission) => perm.user?.id === connectedUserId);
                                                                         setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
                                                                     }
                                                                     // Appeler le callback pour rafraîchir la liste des notes
@@ -244,7 +245,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                         const perms = data.permissions || [];
                                         setPermissions(perms);
                                         // Mettre à jour le rôle courant si nécessaire
-                                        const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
+                                        const currentUserPerm = perms.find((perm: Permission) => perm.user?.id === connectedUserId);
                                         setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
                                     }
                                     // Appeler le callback pour rafraîchir la liste des notes

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { ExitIcon } from '@/libs/Icons';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'motion/react';

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import Icon from "@/ui/Icon";
 import { CloseIcon } from "@/libs/Icons";
 
 export interface DrawingData {

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Icon from "@/ui/Icon";
 import SearchBar, { SearchMode } from "@/ui/searchbar";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";

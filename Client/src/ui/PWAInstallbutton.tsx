@@ -108,17 +108,17 @@ export default function PWAInstallButton() {
                 <h4 className="font-semibold text-primary mb-2">Sur mobile (Chrome/Edge Android)</h4>
                 <ol className="list-decimal list-inside space-y-1 text-sm">
                   <li>Appuyez sur le menu ⋮ (trois points)</li>
-                  <li>Sélectionnez "Ajouter à l'écran d'accueil"</li>
-                  <li>Confirmez l'installation</li>
+                  <li>Sélectionnez &quot;Ajouter à l&apos;écran d&apos;accueil&quot;</li>
+                  <li>Confirmez l&apos;installation</li>
                 </ol>
               </div>
 
               <div>
                 <h4 className="font-semibold text-primary mb-2">Sur PC (Chrome/Edge)</h4>
                 <ol className="list-decimal list-inside space-y-1 text-sm">
-                  <li>Cliquez sur l'icône ⊕ ou ⋮ dans la barre d'adresse</li>
-                  <li>Ou Menu → "Installer Yanotela"</li>
-                  <li>Confirmez l'installation</li>
+                  <li>Cliquez sur l&apos;icône ⊕ ou ⋮ dans la barre d&apos;adresse</li>
+                  <li>Ou Menu → &quot;Installer Yanotela&quot;</li>
+                  <li>Confirmez l&apos;installation</li>
                 </ol>
               </div>
 
@@ -126,8 +126,8 @@ export default function PWAInstallButton() {
                 <h4 className="font-semibold text-primary mb-2">Sur iPhone/iPad (Safari)</h4>
                 <ol className="list-decimal list-inside space-y-1 text-sm">
                   <li>Appuyez sur le bouton Partager</li>
-                  <li>Sélectionnez "Sur l'écran d'accueil"</li>
-                  <li>Confirmez l'ajout</li>
+                  <li>Sélectionnez &quot;Sur l&apos;écran d&apos;accueil&quot;</li>
+                  <li>Confirmez l&apos;ajout</li>
                 </ol>
               </div>
             </div>

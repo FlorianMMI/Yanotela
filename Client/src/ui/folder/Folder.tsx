@@ -32,7 +32,7 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
     router.push(`/dossiers/${folder.id}`);
   };
 
-  const openContextMenu = (clientX: number, clientY: number) => {
+  const openContextMenu = () => {
     if (isInTrash) return;
 
     // Calculer la position du modal par rapport à l'élément
@@ -65,16 +65,16 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    openContextMenu(e.clientX, e.clientY);
+    openContextMenu();
   };
 
   // Support tactile : maintien appuyé (long press)
   const handleTouchStart = (e: React.TouchEvent) => {
+    void e;
     if (isInTrash) return;
 
     longPressTimer.current = setTimeout(() => {
-      const touch = e.touches[0];
-      openContextMenu(touch.clientX, touch.clientY);
+      openContextMenu();
       // Vibration pour retour haptique sur mobile
       if ('vibrate' in navigator) {
         navigator.vibrate(50);
@@ -101,7 +101,7 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
     setShowMoreModal(false);
   };
 
-  const handleUpdateFolder = async (name: string, description: string, color: string) => {
+  const handleUpdateFolder = async () => {
     // Cette fonction sera appelée par FolderMore pour mettre à jour le dossier
     // Appeler le callback parent pour rafraîchir la liste
     if (onFolderUpdated) {
@@ -141,7 +141,9 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
       onKeyDown={(e: React.KeyboardEvent) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleFolderClick(e as any);
+          if (!showMoreModal) {
+            router.push(`/dossiers/${folder.id}`);
+          }
         }
       }}
       style={{ color: backgroundColor }}
@@ -174,7 +176,7 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
               e.preventDefault();
               e.stopPropagation();
               if (isInTrash) return;
-              openContextMenu(e.clientX, e.clientY);
+              openContextMenu();
             }}
             className="p-1 rounded hover:bg-[#0003] flex pointer-events-auto"
             title="Options du dossier"
