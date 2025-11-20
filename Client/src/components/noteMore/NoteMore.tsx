@@ -3,7 +3,8 @@ import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/n
 import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
-import { ArrowBarIcon, DupplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
+import Folder from "@/ui/folder/Folder";
+import { ArrowBarIcon, DuplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
 
 interface NoteMoreProps {
     noteId: string;
@@ -198,7 +199,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                                 className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
                                 onClick={handleDuplicateNote}
                             >
-                                <DupplicateIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                <DuplicateIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
                                 Dupliquer la note
                             </button>
 
@@ -247,7 +248,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
             ) : (
                 <div 
                     ref={modalRef}
-                    className="bg-white rounded-xl w-[240px] md:w-sm shadow-lg overflow-hidden relative h-auto flex flex-col"
+                    className="bg-white rounded-xl w-60 md:w-sm shadow-lg overflow-hidden relative h-auto flex flex-col"
                 >
                     
                     <div className="p-3 md:p-4 pb-2 border-b border-element flex items-center">

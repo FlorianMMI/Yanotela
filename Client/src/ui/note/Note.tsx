@@ -264,6 +264,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
           className="flex h-full rounded-r-lg">
           {note.isPublic ? (
             <div className="flex items-center w-full gap-1 px-3 shrink-0" title="Public">
+              <p className="text-white font-bold">{note.collaboratorCount}</p>
               <PublicIcon
                 width={20}
                 height={20}
