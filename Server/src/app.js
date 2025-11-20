@@ -47,15 +47,7 @@ app.get('/health', (req, res) => {
 
 // Route de base - API uniquement
 app.get('/', (req, res) => {
-  res.json({
-    message: 'Yanotela API',
-    version: '1.0.0',
-    status: 'running',
-    authenticated: !!req.session.userId,
-    user: req.session.userId ? {
-      id: req.session.userId,
-      pseudo: req.session.pseudo
-    } : null
+res.status(200).send({
   });
 });
 
