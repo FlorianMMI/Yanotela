@@ -26,6 +26,7 @@ export function AtIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function BackgroundColorIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg viewBox="0 0 500 522" {...props} fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -34,6 +35,7 @@ export function BackgroundColorIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function BoldIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg viewBox="0 0 16 16" {...props} fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -42,6 +44,7 @@ export function BoldIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function ChevronIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg viewBox="0 0 24 24" fill="none" {...props} xmlns="http://www.w3.org/2000/svg">
@@ -49,6 +52,7 @@ export function ChevronIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -56,6 +60,7 @@ export function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function CloseIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -63,6 +68,7 @@ export function CloseIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function CrownIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -71,6 +77,7 @@ export function CrownIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function DocsIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 49 49" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -79,6 +86,7 @@ export function DocsIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function DownloadIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -89,6 +97,7 @@ export function DownloadIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function DupplicateIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 32 32" version="1.1">
@@ -97,11 +106,13 @@ export function DupplicateIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function ExitIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg viewBox="0 0 24 24" {...props} fill="none" xmlns="http://www.w3.org/2000/svg"><path opacity="0.5" d="M9.052 4.5C9 5.07763 9 5.80355 9 6.72183V17.2781C9 18.1964 9 18.9224 9.05201 19.5H8C5.64298 19.5 4.46447 19.5 3.73223 18.7678C3 18.0355 3 16.857 3 14.5V9.5C3 7.14298 3 5.96447 3.73223 5.23223C4.46447 4.5 5.64298 4.5 8 4.5H9.052Z" fill="currentColor"></path> <path fillRule="evenodd" clipRule="evenodd" d="M9.70725 2.4087C9 3.03569 9 4.18259 9 6.4764V17.5236C9 19.8174 9 20.9643 9.70725 21.5913C10.4145 22.2183 11.4955 22.0297 13.6576 21.6526L15.9864 21.2465C18.3809 20.8288 19.5781 20.62 20.2891 19.7417C21 18.8635 21 17.5933 21 15.0529V8.94711C21 6.40671 21 5.13652 20.2891 4.25826C19.5781 3.37999 18.3809 3.17118 15.9864 2.75354L13.6576 2.34736C11.4955 1.97026 10.4145 1.78171 9.70725 2.4087ZM12.75 10.9535C12.75 10.52 12.4142 10.1686 12 10.1686C11.5858 10.1686 11.25 10.52 11.25 10.9535V13.0465C11.25 13.48 11.5858 13.8314 12 13.8314C12.4142 13.8314 12.75 13.48 12.75 13.0465V10.9535Z" fill="currentColor"></path></svg>
     );
 }
+
 export function EyesCloseIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -110,6 +121,7 @@ export function EyesCloseIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function EyesIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -117,6 +129,7 @@ export function EyesIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function FileIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} fill="currentColor" viewBox="0 0 24 24">
@@ -124,6 +137,7 @@ export function FileIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function FiltreIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -131,6 +145,7 @@ export function FiltreIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     )
 }
+
 export function FlashIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 120 188" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -139,6 +154,7 @@ export function FlashIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function FolderIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 108 87" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -146,6 +162,7 @@ export function FolderIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function FontColorIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 500 522" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -154,6 +171,7 @@ export function FontColorIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="-0.5 0 48 48" version="1.1" >
@@ -164,6 +182,7 @@ export function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function ImageIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -173,6 +192,7 @@ export function ImageIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function InfoIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -181,6 +201,7 @@ export function InfoIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function ItalicIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -189,6 +210,7 @@ export function ItalicIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function KebabIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -198,6 +220,7 @@ export function KebabIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function KeyholeIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -343,6 +366,7 @@ export function ProfileIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function RecentIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 19 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -351,6 +375,7 @@ export function RecentIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function RechercheIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -358,6 +383,7 @@ export function RechercheIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function RefreshIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -372,6 +398,7 @@ export function SaveIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function SearchIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -381,6 +408,7 @@ export function SearchIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function SettingsIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -396,6 +424,7 @@ export function ShareIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function StrikethroughIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -407,6 +436,7 @@ export function StrikethroughIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function StyleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -422,6 +452,7 @@ export function TextCenterIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function TextJustifyIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -430,6 +461,7 @@ export function TextJustifyIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function TextLeftIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -438,6 +470,7 @@ export function TextLeftIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function TextRightIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -446,6 +479,7 @@ export function TextRightIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function TrashIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -453,6 +487,7 @@ export function TrashIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
+
 export function UnderlineIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -461,6 +496,7 @@ export function UnderlineIcon(props: React.SVGProps<SVGSVGElement>) {
 
     );
 }
+
 export function XIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
