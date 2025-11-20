@@ -2,7 +2,19 @@ import { Note } from '@/type/Note';
 import { Folder } from '@/type/Folder';
 import { Permission } from '@/type/Permission';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+function getApiUrl() {
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
+    return '';
+}
+
+function getTurnstileToken() {
+    if (typeof window === 'undefined') return undefined;
+    const el = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
+    return el?.value;
+}
+
+const apiUrl = getApiUrl();
 
 export async function CreateNote(): Promise<{ note: Note | null; redirectUrl?: string }> {
     try {
@@ -442,13 +454,18 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
 
     try {
         
+        const apiUrl = getApiUrl();
+        const token = getTurnstileToken();
+        const body = { ...credentials } as any;
+        if (token) body['cf-turnstile-response'] = token;
+
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include', 
-            body: JSON.stringify(credentials)
+            body: JSON.stringify(body)
         });
 
         if (response.ok) {
@@ -488,13 +505,18 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
 export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
         
+        const apiUrl = getApiUrl();
+        const token = getTurnstileToken();
+        const payload = { ...userData } as any;
+        if (token) payload['cf-turnstile-response'] = token;
+
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             credentials: "include",
-            body: JSON.stringify(userData),
+            body: JSON.stringify(payload),
         });
 
         // Vérifier si la réponse est du JSON
@@ -532,13 +554,18 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
 export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
         
+        const apiUrl = getApiUrl();
+        const token = getTurnstileToken();
+        const payload: any = { email };
+        if (token) payload['cf-turnstile-response'] = token;
+
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({ email }),
+            body: JSON.stringify(payload),
         });
 
         const data = await response.json();
@@ -557,13 +584,18 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
 export async function ResetPassword(token: string, password: string): Promise<AuthResponse> {
     try {
         
+        const apiUrl = getApiUrl();
+        const tokenVal = getTurnstileToken();
+        const payload: any = { password, token };
+        if (tokenVal) payload['cf-turnstile-response'] = tokenVal;
+
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({ password, token }),
+            body: JSON.stringify(payload),
         });
 
         const data = await response.json();
