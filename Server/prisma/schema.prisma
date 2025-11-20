@@ -24,6 +24,7 @@ model User {
   modifiedNotes Note[]       @relation("NoteModifier")
   permissions   Permission[]
   noteFolders   NoteFolder[]
+    commentaires Commentaire[]
 }
 
 model Note {
@@ -41,6 +42,7 @@ model Note {
   permissions Permission[]
   noteFolder  NoteFolder?
   isPublic    Boolean      @default(false)
+    commentaires Commentaire[]
 }
 
 model Permission {
@@ -81,4 +83,15 @@ model NoteFolder {
   @@index([folderId])
   @@index([userId])
   @@map("note_folder")
+}
+
+
+model Commentaire {
+  id        String   @id @default(uuid())
+  text      String
+  date      DateTime @default(now())
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  idnote    String   @map("id_note")
+  note      Note     @relation(fields: [idnote], references: [id], onDelete: Cascade)
 }
