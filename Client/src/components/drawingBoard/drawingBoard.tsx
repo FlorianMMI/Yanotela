@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import Icon from "@/ui/Icon";
+import { CloseIcon } from "@/libs/Icons";
 
 export interface DrawingData {
   dataUrl: string;
@@ -449,7 +450,7 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
         className="absolute top-5 right-5 flex items-center justify-center w-10 h-10 bg-gray-300 text-black rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
         title="Fermer l'outil de dessin"
       >
-        <Icon name="close" size={16} className="inline-block" />
+        <CloseIcon width={16} height={16} className="inline-block" />
       </button>
       
       {/* Clear button in bottom left corner */}

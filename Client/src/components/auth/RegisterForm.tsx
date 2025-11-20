@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Icon from '@/ui/Icon';
+
 import ReturnButton from '@/ui/returnButton';
 import ConfirmPassword from '@/ui/confirm-password';
 import { Register } from '@/loader/loader';
 import FormField from '@/ui/form/FormField';
 import FormMessage from '@/ui/form/FormMessage';
 import GoogleAuthButton from './GoogleAuthButton';
+import { ArrowBarIcon } from '@/libs/Icons';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -290,14 +291,14 @@ export default function RegisterForm({
           >
             {isLoading ? "Inscription..." : "S'inscrire"}
           </span>
-          <Icon
-            name="arrow-barre"
+          <ArrowBarIcon
             className={
               isFormValid && !isLoading
                 ? "text-white pointer-events-none"
                 : "text-stone-300 pointer-events-none"
             }
-            size={40}
+            width={40}
+            height={40}
           />
         </button>
 

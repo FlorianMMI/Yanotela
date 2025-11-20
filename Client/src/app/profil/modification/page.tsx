@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Icons from "@/ui/Icon";
 import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser } from '@/loader/loader';
+import { KeyholeIcon } from "@/libs/Icons";
 
 export default function ModificationProfil() {
   const [userData, setUserData] = useState({
@@ -239,11 +240,7 @@ export default function ModificationProfil() {
             ) : (
               <div className="flex items-center space-x-2">
                 <span>Modifier le mot de passe</span>
-                <Icons
-                  name="keyhole"
-                  size={20}
-                  className="text-white"
-                />
+                <KeyholeIcon className="text-white w-5 h-5" />
               </div>
             )}
           </button>

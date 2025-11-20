@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import Icon from '@/ui/Icon';
+
 import FlashNoteButton from '@/ui/flash-note-button';
 
 export default function MobileFlashNoteButton() {

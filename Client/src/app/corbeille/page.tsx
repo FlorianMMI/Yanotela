@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Note } from "@/type/Note";
 import { GetDeletedNotes, RestoreNote } from "@/loader/loader";
 import Icon from "@/ui/Icon";
+import { TrashIcon, RefreshIcon, CloseIcon } from "@/libs/Icons";
 import ReturnButton from "@/ui/returnButton";
 
 export default function Corbeille() {
@@ -78,7 +79,7 @@ export default function Corbeille() {
       <div className="flex items-center gap-4 mb-6">
         <ReturnButton />
         <div className="flex items-center gap-2">
-          <Icon name="trash" size={24} className="text-clrprincipal" />
+          <TrashIcon className="text-clrprincipal w-6 h-6" />
           <h1 className="text-2xl font-bold text-clrprincipal">Corbeille</h1>
         </div>
       </div>
@@ -86,7 +87,7 @@ export default function Corbeille() {
       {/* Liste des notes */}
       {notes.length === 0 ? (
         <div className="text-center py-12">
-          <Icon name="trash" size={48} className="text-gray-400 mx-auto mb-4" />
+          <TrashIcon className="text-gray-400 mx-auto mb-4 w-12 h-12" />
           <p className="text-gray-500">Aucune note dans la corbeille</p>
         </div>
       ) : (
@@ -134,7 +135,7 @@ export default function Corbeille() {
                   </>
                 ) : (
                   <>
-                    <Icon name="refresh" size={16} />
+                    <RefreshIcon className="w-4 h-4" />
                     Restaurer
                   </>
                 )}
@@ -183,7 +184,7 @@ export default function Corbeille() {
                     </>
                   ) : (
                     <>
-                      <Icon name="refresh" size={16} />
+                      <RefreshIcon className="w-4 h-4" />
                       Restaurer
                     </>
                   )}
@@ -192,7 +193,7 @@ export default function Corbeille() {
                   onClick={() => setSelectedNote(null)}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <Icon name="close" size={24} className="text-clrprincipal" />
+                  <CloseIcon className="text-clrprincipal w-6 h-6" />
                 </button>
               </div>
             </div>

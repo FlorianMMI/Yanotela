@@ -5,7 +5,8 @@ import { Note as NoteType } from '@/type/Note';
 import { motion } from 'motion/react';
 import NoteMore from '@/components/noteMore/NoteMore';
 import { SearchMode } from '@/ui/searchbar';
-import Icons from '@/ui/Icon';
+
+import { KebabIcon, ShareIcon, PublicIcon } from '@/libs/Icons';
 
 interface NoteProps {
   note: NoteType;
@@ -14,6 +15,7 @@ interface NoteProps {
   searchMode?: SearchMode; // Mode de recherche
 }
 
+
 export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode = "all" }: NoteProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -21,6 +23,8 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const noteRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  console.log('Note public status:', note.isPublic);
 
   // Vérifier si on est dans la corbeille
   const isInTrash = pathname?.includes('/trash') || pathname?.includes('/corbeille');
@@ -227,8 +231,6 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
 
     // Sinon, afficher normalement (limité à 100 caractères)
     return extractedText.length > 100 ? extractedText.substring(0, 100) + '...' : extractedText;
-    
-    return 'Contenu vide';
   };
 
   return (
@@ -247,7 +249,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
     >
 
       {/* Header - Titre et collaborateurs avec fond rouge */}
-      <div className="flex justify-between m-2 items-center gap-3 rounded-lg h-8" 
+      <div className="flex justify-between m-2 items-center gap-3 p-1 rounded-lg" 
       style={{ backgroundColor: note.tag || 'var(--primary)' }}>
 
         {/* Note Title */}
@@ -260,18 +262,26 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
 
         {/* Collaborateurs */}
         <div 
-          className="flex rounded-r-lg min-w-14">
-          {note.collaboratorCount && note.collaboratorCount > 1 && (
-            <div className="flex items-center w-full gap-1 px-3 shrink-0">
-              <p className='text-white font-bold'>{note.collaboratorCount}</p>
-              <Image
-                src="/share.svg"
-                alt="Participants"
+          className="flex h-full rounded-r-lg">
+          {note.isPublic ? (
+            <div className="flex items-center w-full gap-1 px-3 shrink-0" title="Public">
+              <PublicIcon
                 width={20}
                 height={20}
                 className="filter brightness-0 invert"
               />
             </div>
+          ) : (
+            note.collaboratorCount && note.collaboratorCount > 1 && (
+              <div className="flex items-center w-full gap-1 px-3 shrink-0">
+                <p className="text-white font-bold">{note.collaboratorCount}</p>
+                <ShareIcon
+                  width={20}
+                  height={20}
+                  className="filter brightness-0 invert"
+                />
+              </div>
+            )
           )}
         </div>
       </div>
@@ -280,7 +290,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
       <div className="p-2 bg-fondcardNote flex flex-col h-[78px] md:p-4 md:h-40">
 
         {/* Note Content - Affichage simplifié du texte extrait */}
-        <div className="font-gantari text-sm text-textcardNote leading-relaxed mb-auto line-clamp-2 grow">
+        <div className="font-gantari text-sm text-textcardNote leading-relaxed mb-auto line-clamp-2">
           {getDisplayContent()}
         </div>
 
@@ -304,7 +314,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
             className="p-1 rounded hover:bg-gray-100 transition-colors flex"
             title="Options de la note"
           >
-            <Icons name="kebab" size={20} className="text-primary hover:text-primary-hover"/>
+            <KebabIcon className="text-primary hover:text-primary-hover w-5 h-5" />
           </button>
 
           </div>

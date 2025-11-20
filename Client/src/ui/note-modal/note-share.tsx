@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FetchPermission, UpdatePermission, AddPermission, RemovePermission, IsPublic, setPublic } from "@/loader/loader";
 import { useAuth } from "@/hooks/useAuth";
-import Icon from "../Icon";
+import { CheckIcon, CopyIcon, CopyLinkIcon, CrownIcon } from '@/libs/Icons';
 
 const ROLE_LABELS = ["Propriétaire", "Administrateur", "Éditeur", "Lecteur"];
 
@@ -121,7 +121,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                                 </div>
                                             </div>
                                             {role === 0 && (
-                                                <Icon name="crown" className="text-yellow-500" size={20} />
+                                                <CrownIcon width={20} height={20} className="text-yellow-500" />
                                             )}
                                             {/* Afficher les actions seulement si l'utilisateur a les permissions ET ce n'est pas le propriétaire */}
                                             {role > 0 && currentUserRole !== null && currentUserRole <= 1 && (
@@ -262,11 +262,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
 
                         <button
                             onClick={async () => {
-                                // Only copy link when note is private
-                                if (isTogglePublic) {
-                                    alert('Cette note est publique — le lien ne peut pas être copié.');
-                                    return;
-                                }
+                                
                                 try {
                                     const url = `${window.location.origin}/notes/${noteId}`;
                                     await navigator.clipboard.writeText(url);
@@ -277,11 +273,11 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                     alert('Impossible de copier le lien.');
                                 }
                             }}
-                            disabled={isTogglePublic}
-                            title={!isTogglePublic ? 'Copier le lien de la note privée' : 'Disponible uniquement en mode privé'}
-                            className={`px-4 py-2 border border-element rounded text-sm text-foreground flex flex-col justify-center hover:bg-deskbackground transition-colors ${isTogglePublic ? 'opacity-50 cursor-not-allowed' : ''}`}
+                           
+                            title="Copier le lien de la note"
+                            className={`px-4 py-2 border border-element rounded text-sm text-foreground flex flex-col justify-center hover:bg-deskbackground transition-colors`}
                         >
-                            {copied ? <Icon name="Link" /> : <Icon name="Link-Copite" />}
+                            {copied ? <CopyIcon width={20} height={20} /> : <CopyLinkIcon/>}
                         </button>
                     </div>
                 </div>

@@ -3,6 +3,7 @@ import Icons from "@/ui/Icon";
 import { FOLDER_COLORS } from "@/hooks/folderColors";
 import FolderDeleteConfirm from "@/ui/folder-delete-confirm";
 import { DeleteFolder, UpdateFolder } from "@/loader/loader";
+import { ArrowBarIcon, InfoIcon, ModifIcon, TrashIcon } from "@/libs/Icons";
 
 interface FolderMoreProps {
     folder: { ModifiedAt: string; };
@@ -237,7 +238,7 @@ export default function FolderMore({
                                 className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium transition-colors rounded-lg"
                                 onClick={() => setCurrentView("edit")}
                             >
-                                <Icons name="modif" size={22} className="text-primary" />
+                                <ModifIcon width={22} height={22} className="text-primary" />
                                 Modifier le dossier
                             </button>
 
@@ -245,7 +246,7 @@ export default function FolderMore({
                                 className="flex items-center gap-3 px-5 py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-base font-medium transition-colors rounded-lg"
                                 onClick={() => setCurrentView("info")}
                             >
-                                <Icons name="info" size={22} className="text-primary" />
+                                <InfoIcon width={22} height={22} className="text-primary" />
                                 Informations
                             </button>
 
@@ -253,7 +254,7 @@ export default function FolderMore({
                                 className="flex items-center gap-3 px-5 py-3 text-dangerous-800 hover:bg-dangerous-50 cursor-pointer w-full text-left text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
                                 onClick={() => setCurrentView("delete")}
                             >
-                                <Icons name="trash" size={22} className="text-dangerous-800" />
+                                <TrashIcon width={22} height={22} className="text-dangerous-800" />
                                 Supprimer le dossier
                             </button>
                         </div>
@@ -278,14 +279,14 @@ export default function FolderMore({
                     className="bg-white rounded-xl min-w-2xs md:w-sm w-xs shadow-lg overflow-hidden relative flex flex-col max-h-[80vh]"
                 >
                     {/* Header avec titre et bouton retour */}
-                    <div className="p-4 pb-2 border-b border-element flex items-center flex-shrink-0">
+                    <div className="p-4 pb-2 border-b border-element flex items-center">
                         {currentView !== "menu" && (
                             <button
                                 className="mr-2 p-1 rounded hover:bg-deskbackground transition-colors"
                                 onClick={() => setCurrentView("menu")}
                                 aria-label="Retour"
                             >
-                                <Icons name="arrow-ss-barre" size={22} className="text-primary" />
+                                <ArrowBarIcon width={22} height={22} className="text-primary" />
                             </button>
                         )}
                         <h3 className="text-lg font-semibold text-foreground">{getModalTitle()}</h3>

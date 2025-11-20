@@ -3,7 +3,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Folder as FolderType } from '@/type/Folder';
 import { FOLDER_COLORS } from '@/hooks/folderColors';
 import { motion } from "motion/react";
-import Icon from '@/ui/Icon';
+
+import { KebabIcon } from '@/libs/Icons';
 import FolderMore from '@/components/folderMore/FolderMore';
 
 interface FolderProps {
@@ -178,7 +179,7 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
             className="p-1 rounded hover:bg-[#0003] flex pointer-events-auto"
             title="Options du dossier"
           >
-            <Icon name="kebab" size={20} className="text-white hover:text-gray-100"/>
+            <KebabIcon className="text-white hover:text-gray-100 w-5 h-5"/>
           </button>
       </div>
 

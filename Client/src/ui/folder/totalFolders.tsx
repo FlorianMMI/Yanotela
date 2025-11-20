@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Icon from '../Icon';
+import { FolderIcon } from '@/libs/Icons';
 import { useRouter } from 'next/dist/client/components/navigation';
 
 interface TotalFoldersProps {
@@ -22,7 +22,7 @@ export default function TotalFolders({ totalFolders }: TotalFoldersProps) {
             title='Voir tous mes dossiers'
             aria-label='Voir tous mes dossiers'
         >
-            <Icon name='folder' size={40} className='text-primary mb-2' />
+            <FolderIcon width={40} height={40} className='text-primary mb-2' />
             <div className='flex flex-row items-center justify-center space-x-2'>
                 <span className="text-2xl font-semibold text-clrprincipal group-hover:text-primary">{totalFolders !== undefined ? totalFolders : '...'}</span>
                 {safeTotalFolders > 1 || safeTotalFolders === 0 ?

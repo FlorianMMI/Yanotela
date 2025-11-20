@@ -1,5 +1,5 @@
 import React from "react";
-import Icon from "./Icon";
+import { CheckIcon, CloseIcon } from '@/libs/Icons';
 import { AcceptNotification, RefuseNotification } from "@/loader/loader";
 import { refreshNotifications } from "@/utils/notificationUtils";
 
@@ -12,7 +12,7 @@ interface NotificationProps {
 }
 
 export default function Notification({ id, title, author, onNotificationUpdate, variant = 'stack' }: NotificationProps) {
-    const handleUpdateNotification = async (event?: React.MouseEvent<HTMLDivElement>) => {
+    const handleUpdateNotification = async (event?: React.MouseEvent<HTMLButtonElement>) => {
         // prevent parent click handlers if any
         event?.stopPropagation();
         try {
@@ -31,7 +31,7 @@ export default function Notification({ id, title, author, onNotificationUpdate, 
             console.error("Erreur lors de la mise à jour de la notification:", error);
         }
     };
-    const handleRefuseNotification = async (event?: React.MouseEvent<HTMLDivElement>) => {
+    const handleRefuseNotification = async (event?: React.MouseEvent<HTMLButtonElement>) => {
         // prevent parent click handlers if any
         event?.stopPropagation();
         try {
@@ -56,8 +56,8 @@ export default function Notification({ id, title, author, onNotificationUpdate, 
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <button onClick={handleUpdateNotification} className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-success-500" aria-label="Accepter la notification"><Icon  name="Checkk" size={20} className=" text-success-500"/></button>
-                    <button onClick={handleRefuseNotification} className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-dangerous-500" aria-label="Refuser la notification"><Icon  name="close" size={20} className=" text-dangerous-500"/></button>
+                    <button onClick={handleUpdateNotification} className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-success-500" aria-label="Accepter la notification"><CheckIcon width={20} height={20} className=" text-success-500"/></button>
+                    <button onClick={handleRefuseNotification} className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-dangerous-500" aria-label="Refuser la notification"><CloseIcon width={20} height={20} className=" text-dangerous-500"/></button>
                 </div>
             </div>
         </>

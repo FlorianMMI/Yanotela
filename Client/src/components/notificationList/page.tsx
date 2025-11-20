@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Notification from "@/ui/notification";
 import { GetNotifications } from "@/loader/loader";
 import Icon from "@/ui/Icon";
+import { NotificationsIcon } from "@/libs/Icons";
 
 interface NotificationListProps {
     isOpenSideBar?: boolean;
@@ -113,9 +114,7 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                     onClick={() => setOpen((s) => !s)}
                     aria-label="Notifications"
                 >
-                    <Icon
-                        name="notification"
-                        size={22}
+                    <NotificationsIcon width={22} height={22}
                         className="text-primary "
                     />
                 </button>
@@ -132,7 +131,7 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                             <div className="p-4 space-y-3 overflow-y-auto flex-1 min-h-0">
                                 {loading ? (
                                     <div className="flex flex-col items-center justify-center py-6">
-                                        <Icon name="notification" size={36} className="text-gray-400 mb-3 animate-spin" />
+                                        <NotificationsIcon width={36} height={36} className="text-gray-400 mb-3 animate-spin" />
                                         <p className="text-gray-600">Chargement...</p>
                                     </div>
                                 ) : notifications.length > 0 ? (
@@ -147,7 +146,7 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                                     ))
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-6 gap-3">
-                                        <Icon name="notification" size={36} className="text-gray-400" />
+                                        <NotificationsIcon width={36} height={36} className="text-gray-400" />
                                         <p className="text-gray-600">Aucune notification</p>
                                     </div>
                                 )}

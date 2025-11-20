@@ -14,7 +14,7 @@ import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 import OnChangePlugin from "@lexical/react/LexicalOnChangePlugin";
 import { useCallback } from "react";
-import Icons from '@/ui/Icon';
+
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
 import { useAuth } from "@/hooks/useAuth";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
@@ -25,6 +25,7 @@ import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import '@/components/textRich/EditorStyles.css';
+import { SaveIcon } from "@/libs/Icons";
 
 const theme = {
   heading: {
@@ -367,7 +368,7 @@ export default function FlashNoteEditor() {
               {(isSavingContent || isTyping) ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               ) : (
-              <Icons name="save" size={20} className="h-5 w-5 text-primary" />
+              <SaveIcon className="h-5 w-5 text-primary" />
               )}
               <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-primary text-background text-xs rounded py-1 px-2 whitespace-nowrap">
                 Sauvegarder dans la mémoire de votre machine
