@@ -12,9 +12,10 @@ import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { motion } from "motion/react";
-import Icons from '@/ui/Icon';
+
 import NoteMore from "@/components/noteMore/NoteMore";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from '@/hooks/useAuth';
 import { createWebsocketProvider, setAwarenessUserInfo } from "@/collaboration/providers";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
 import { $createImageNode } from "@/components/flashnote/ImageNode";
@@ -29,7 +30,11 @@ import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TitleSyncPlugin } from '@/components/collaboration/TitleSyncPlugin';
+import { MoreIcon } from "@/libs/Icons";
 import '@/components/textRich/EditorStyles.css';
+import CommentModal from "@/components/commentaire/commentModal";
+
+
 
 // Contexte pour partager l'état de synchronisation
 interface SyncContextType {
@@ -442,7 +447,7 @@ export default function NoteEditor({ params }: NoteEditorProps) {
 
 function NoteEditorContent({ params }: NoteEditorProps) {
   // Détection mobile
-  const [isMobile, setIsMobile] = useState(false);
+  const [, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -611,38 +616,31 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   }, [id]);
 
   // Charger le profil utilisateur pour awareness
+  const { user } = useAuth();
+
   useEffect(() => {
-    async function fetchUserInfo() {
-      try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://yanotela.fr";
-        const response = await fetch(`${API_URL}/auth/check`, {
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-
-          const pseudo = userData.pseudo || userData.user?.pseudo || 'Anonyme';
-
-          // Générer une couleur aléatoire pour ce user
-          const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FF33A1'];
-          const color = colors[Math.floor(Math.random() * colors.length)];
-
-          setUserProfile({ name: pseudo, color });
-
-        }
-      } catch (error) {
-        console.error('❌ Erreur récupération profil:', error);
-      }
+    // Si pas d'utilisateur authentifié, définir un profil anonyme
+    if (!user) {
+      setUserProfile({ name: 'Anonyme', color: '#999999' });
+      return;
     }
 
-    fetchUserInfo();
-  }, []);
+    // Sécuriser l'accès à la propriété 'pseudo' sans utiliser 'any'
+    const pseudo = (() => {
+      if (typeof user !== 'object' || user === null) return 'Anonyme';
+      const maybePseudo = (user as { pseudo?: unknown }).pseudo;
+      return typeof maybePseudo === 'string' && maybePseudo.trim() !== '' ? maybePseudo : 'Anonyme';
+    })();
+
+    const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FF33A1'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    setUserProfile({ name: pseudo, color });
+  }, [user]);
 
   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
     // Petit délai pour s'assurer que le provider est créé
-    const timer = setTimeout(() => {
+    setTimeout(() => {
 
       setAwarenessUserInfo(id, userProfile.name, userProfile.color);
     }, 500);
@@ -652,6 +650,9 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // Gestion des paramètres de recherche (assignation au dossier)
   useEffect(() => {
+    // Ne pas permettre l'assignation de dossier pour les utilisateurs non authentifiés
+    if (!user) return;
+    
     const folderId = searchParams?.get('folderId');
     if (folderId && id) {
       AddNoteToFolder(id, folderId).then(() => {
@@ -664,7 +665,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         console.error('❌ Erreur assignation dossier:', error);
       });
     }
-  }, [searchParams, id, router]);
+  }, [searchParams, id, router, user]);
 
   // Auto-dismiss notifications
   useEffect(() => {
@@ -715,6 +716,15 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     };
   }, [id]);
 
+
+  const [showCommentModal, setShowCommentModal] = useState(false);
+
+  useEffect(() => {
+  const handleOpenCommentModal = () => setShowCommentModal(true);
+  window.addEventListener('openCommentModal', handleOpenCommentModal);
+  return () => window.removeEventListener('openCommentModal', handleOpenCommentModal);
+}, []);
+
   return (
     <div className="flex flex-col gap-4 w-full h-full">
       {/* Notifications */}
@@ -728,6 +738,10 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           {error}
         </div>
       )}
+
+      {showCommentModal && (
+  <CommentModal onClose={() => setShowCommentModal(false)} />
+)}
 
       {/* Mobile Header */}
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
@@ -751,7 +765,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 aria-label="Ouvrir les options de la note"
                 className="focus:outline-none focus:ring-2 focus:ring-white rounded p-1"
               >
-                <Icons name="more" size={20} className="text-white cursor-pointer" />
+                <MoreIcon className="text-white cursor-pointer w-5 h-5" />
               </button>
               {showNoteMore && (
                 <div className="absolute right-0 mt-2 z-30">
@@ -804,10 +818,10 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable
-                      ref={editorContentRef as any}
-                      className={`editor-root mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-default select-text' : ''
-                        }`}
-                    />
+                        ref={editorContentRef}
+                        className={`editor-root mt-2 h-full focus:outline-none ${isReadOnly ? 'cursor-default select-text' : ''
+                          }`}
+                      />
                   }
                   ErrorBoundary={LexicalErrorBoundary}
                 />

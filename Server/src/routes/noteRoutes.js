@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { noteController } from '../controllers/noteController.js';
-import { requireAuth, requireNoteOwnership, requireWriteAccess } from '../middlewares/authMiddleware.js';
+import { requireAuth, requireNoteOwnership, requireWriteAccess, optionalAuth } from '../middlewares/authMiddleware.js';
 
 //** Ce fichier permet de gérer les routes liées aux notes */
 
@@ -15,8 +15,8 @@ router.post('/create', requireAuth, noteController.createNote);
 // Route Post pour dupliquer une note (authentification requise)
 router.post('/duplicate/:id', requireAuth, noteController.duplicateNote);
 
-// Route Get pour récupérer une note par son ID (vérification des permissions dans le contrôleur)
-router.get('/get/:id', requireAuth, noteController.getNoteById);
+// Route Get pour récupérer une note par son ID (authentification optionnelle pour notes publiques)
+router.get('/get/:id', optionalAuth, noteController.getNoteById);
 
 // Route Post pour mettre à jour une note par son ID (vérification des droits d'écriture)
 router.post('/update/:id', requireWriteAccess, noteController.updateNoteById);
@@ -47,5 +47,11 @@ router.post('/remove-folder/:id', requireAuth, noteController.removeFolder);
 
 // Route Get pour récupérer le dossier d'une note
 router.get('/folder/:id', requireAuth, noteController.getNoteFolder);
+
+// Route pour gérer si la notes est publique ou non
+router.post('/set-public/:id', requireAuth, noteController.setPublicNote);
+
+// Route pour vérifier si une note est publique (authentification optionnelle)
+router.get('/is-public/:id', optionalAuth, noteController.isPublicNote);
 
 export default router;

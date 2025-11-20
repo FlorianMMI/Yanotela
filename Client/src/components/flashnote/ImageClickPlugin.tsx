@@ -46,16 +46,20 @@ export default function ImageClickPlugin({ onClick }: ImageClickPluginProps) {
           
           // Try to find the node key from the parent span element
           let nodeKey: string | undefined;
-          let parent = imgElement.parentElement;
+          let parent: HTMLElement | null = imgElement.parentElement;
           
           // Walk up the DOM to find the decorator node
           while (parent && !nodeKey) {
-            const key = (parent as any).__lexicalKey;
-            if (key) {
+            // Define a local typed interface to access the internal Lexical key without using `any`
+            interface LexicalKeyElement {
+              __lexicalKey?: string;
+            }
+            const key = (parent as unknown as LexicalKeyElement).__lexicalKey;
+            if (typeof key === "string" && key.length > 0) {
               nodeKey = key;
               break;
             }
-            parent = parent.parentElement;
+            parent = parent.parentElement as HTMLElement | null;
           }
           
           onClick(src, nodeKey);

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
-import Icon from './Icon';
+import { ExitIcon } from '@/libs/Icons';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'motion/react';
 import { Logout as LogoutAPI } from '@/loader/loader';
@@ -22,9 +21,7 @@ export default function Logout(){
             
             if (response.success) {
                 setShowConfirm(false);
-                router.push('/');
-                router.refresh();
-                window.location.reload();
+                router.push('/login');
             } else {
                 console.error('Erreur de déconnexion:', response.error);
                 setShowConfirm(false);
@@ -47,7 +44,7 @@ export default function Logout(){
                     className="w-full flex items-center justify-center cursor-pointer group gap-2"
                 >
                     <span className="font-normal text-md hidden md:block">Déconnexion</span>
-                    <Icon name="exit" size={25} className="text-primary" />
+                    <ExitIcon width={24} height={24} className="text-primary" />
                 </button>
             </div>
 

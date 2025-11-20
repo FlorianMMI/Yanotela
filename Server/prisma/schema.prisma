@@ -40,6 +40,7 @@ model Note {
   modifier    User?        @relation("NoteModifier", fields: [modifierId], references: [id])
   permissions Permission[]
   noteFolder  NoteFolder?
+  isPublic    Boolean      @default(false)
 }
 
 model Permission {

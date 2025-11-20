@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Icon from './Icon';
+import { EyesIcon, EyesCloseIcon } from '@/libs/Icons';
 
 interface ConfirmPasswordProps {
   password: string;
@@ -25,8 +25,6 @@ export default function ConfirmPassword({
   const [passwordInvalid, setPasswordInvalid] = useState(false);
   const [passwordMismatch, setPasswordMismatch] = useState(false);
 
-  // Critères de validation du mot de passe
-  const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_\-\.]).+$/;
 
   // Fonctions pour gérer la visibilité des mots de passe
   const togglePasswordVisibility = () => {
@@ -39,6 +37,8 @@ export default function ConfirmPassword({
 
   // Vérification du mot de passe en temps réel
   useEffect(() => {
+  // Critères de validation du mot de passe
+    const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_\-\.]).+$/;
     if (password === "") {
       setPasswordInvalid(false);
       return;
@@ -90,11 +90,11 @@ export default function ConfirmPassword({
                 : "Afficher le mot de passe"
             }
           >
-            <Icon
-              name={showPassword ? "eye-close" : "eye"}
-              className="text-zinc-500 hover:text-zinc-700"
-              size={16}
-            />
+            {showPassword ? (
+              <EyesCloseIcon className="text-zinc-500 hover:text-zinc-700" width={16} height={16} />
+            ) : (
+              <EyesIcon className="text-zinc-500 hover:text-zinc-700" width={16} height={16} />
+            )}
           </button>
         </div>
       </div>
@@ -129,11 +129,11 @@ export default function ConfirmPassword({
                 : "Afficher le mot de passe"
             }
           >
-            <Icon
-              name={showConfirmPassword ? "eye-close" : "eye"}
-              className="text-zinc-500 hover:text-zinc-700"
-              size={16}
-            />
+            {showConfirmPassword ? (
+              <EyesCloseIcon className="text-zinc-500 hover:text-zinc-700" width={16} height={16} />
+            ) : (
+              <EyesIcon className="text-zinc-500 hover:text-zinc-700" width={16} height={16} />
+            )}
           </button>
         </div>
       </div>

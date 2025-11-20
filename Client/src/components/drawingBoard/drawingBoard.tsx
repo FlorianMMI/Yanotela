@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import Icon from "@/ui/Icon";
+import { CloseIcon } from "@/libs/Icons";
 
 export interface DrawingData {
   dataUrl: string;
@@ -24,7 +24,20 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
   const [strokeColor, setStrokeColor] = useState("#000000");
   const [customColor, setCustomColor] = useState("#000000");
-  const [lineWidth, setLineWidth] = useState(2);
+  const [lineWidth, setLineWidth] = useState(3);
+  
+  // Track last points for quadratic curve smoothing
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  
+  // Use refs for current drawing style to avoid re-initializing canvas on color/width change
+  const strokeColorRef = useRef(strokeColor);
+  const lineWidthRef = useRef(lineWidth);
+  
+  // Update refs when state changes
+  useEffect(() => {
+    strokeColorRef.current = strokeColor;
+    lineWidthRef.current = lineWidth;
+  }, [strokeColor, lineWidth]);
 
   // Sync internal state with prop
   useEffect(() => {
@@ -39,6 +52,9 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
     // Set canvas size to match container
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
@@ -47,12 +63,50 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
       const width = rect.width || canvas.offsetWidth || 800;
       const height = rect.height || canvas.offsetHeight || 600;
       
-      canvas.width = width;
-      canvas.height = height;
+      // Get device pixel ratio for high-DPI displays (Retina, etc.)
+      const dpr = window.devicePixelRatio || 1;
+      
+      // Save current canvas content before resizing (if canvas already has content)
+      let imageData: ImageData | null = null;
+      if (canvas.width > 0 && canvas.height > 0) {
+        try {
+          imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        } catch {
+          // Ignore errors from empty canvas
+        }
+      }
+      
+      // Scale canvas resolution by device pixel ratio
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      
+      // CRITICAL: Set CSS size to maintain proper display dimensions
+      // This ensures mouse coordinates align with canvas coordinates
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      
+      // CRITICAL: Reset transform matrix before scaling to prevent accumulation
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      
+      // Now apply the DPI scale
+      ctx.scale(dpr, dpr);
+      
+      // Re-enable image smoothing after canvas resize (gets reset)
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
       
       // Reset canvas background
       ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, width, height);
+      
+      // Restore previous content if it exists
+      if (imageData && imageData.width > 0 && imageData.height > 0) {
+        // Temporarily reset scale to put raw pixels back
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.putImageData(imageData, 0, 0);
+        // Re-apply DPI scale
+        ctx.scale(dpr, dpr);
+      }
       
       // Load initial image if provided
       if (initialImage) {
@@ -60,22 +114,30 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
         img.onload = () => {
           // Draw the image centered on the canvas
           const scale = Math.min(
-            canvas.width / img.width,
-            canvas.height / img.height,
+            width / img.width,
+            height / img.height,
             1 // Don't scale up, only down if needed
           );
-          const x = (canvas.width - img.width * scale) / 2;
-          const y = (canvas.height - img.height * scale) / 2;
+          const x = (width - img.width * scale) / 2;
+          const y = (height - img.height * scale) / 2;
           ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+          
+          // Re-apply drawing styles after loading image
+          ctx.strokeStyle = strokeColorRef.current;
+          ctx.lineWidth = lineWidthRef.current;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
         };
         img.src = initialImage;
       }
       
-      // Set drawing style
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = lineWidth;
+      // Set drawing style after all transformations
+      ctx.strokeStyle = strokeColorRef.current;
+      ctx.lineWidth = lineWidthRef.current;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
     };
 
     // Use requestAnimationFrame to ensure DOM is ready
@@ -85,17 +147,26 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
     
     setContext(ctx);
 
-    // Handle window resize
-    window.addEventListener("resize", resizeCanvas);
-    return () => window.removeEventListener("resize", resizeCanvas);
-  }, [open, initialImage]);
+    // Use ResizeObserver for more reliable canvas resizing
+    const resizeObserver = new ResizeObserver(() => {
+      resizeCanvas();
+    });
+    
+    resizeObserver.observe(canvas);
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [open, initialImage]);  // Removed strokeColor, lineWidth - they shouldn't resize canvas!
 
   // Update drawing style when color or line width changes (without clearing canvas)
   useEffect(() => {
     if (!context) return;
     
-    context.strokeStyle = strokeColor;
-    context.lineWidth = lineWidth;
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.strokeStyle = strokeColorRef.current;
+    context.lineWidth = lineWidthRef.current;
     context.lineCap = "round";
     context.lineJoin = "round";
   }, [context, strokeColor, lineWidth]);
@@ -104,9 +175,15 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!context) return;
     
-    // Update context with current color and line width
-    context.strokeStyle = strokeColor;
-    context.lineWidth = lineWidth;
+    // Ensure context properties are set
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.globalAlpha = 1.0;
+    context.globalCompositeOperation = "source-over";
+    context.strokeStyle = strokeColorRef.current;
+    context.lineWidth = lineWidthRef.current;
+    context.lineCap = "round";
+    context.lineJoin = "round";
     
     setIsDrawing(true);
     
@@ -114,31 +191,61 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = "touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+    const x = ("touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left) + 0.5;
+    const y = ("touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top) + 0.5;
 
+    // Store the starting point
+    lastPointRef.current = { x, y };
+    
     context.beginPath();
     context.moveTo(x, y);
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || !context) return;
+    if (!isDrawing || !context || !lastPointRef.current) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = "touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+    const x = ("touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left) + 0.5;
+    const y = ("touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top) + 0.5;
 
-    context.lineTo(x, y);
+    // Calculate the midpoint between last point and current point
+    const midX = (lastPointRef.current.x + x) / 2;
+    const midY = (lastPointRef.current.y + y) / 2;
+    
+    // Draw outer stroke first (thicker, semi-transparent for soft edge)
+    context.save();
+    context.globalAlpha = 0.3;
+    context.lineWidth = lineWidthRef.current + 2;
+    context.quadraticCurveTo(lastPointRef.current.x, lastPointRef.current.y, midX, midY);
     context.stroke();
+    context.restore();
+    
+    // Draw inner stroke (main line, full opacity) - continue from same path
+    context.save();
+    context.lineWidth = lineWidthRef.current;
+    context.globalAlpha = 1.0;
+    // Don't call beginPath - reuse the existing path position
+    context.quadraticCurveTo(lastPointRef.current.x, lastPointRef.current.y, midX, midY);
+    context.stroke();
+    context.restore();
+    
+    // Move to midpoint to continue path for next segment
+    context.beginPath();
+    context.moveTo(midX, midY);
+    
+    // Update last point to current position
+    lastPointRef.current = { x, y };
   };
 
   const stopDrawing = () => {
     if (!context) return;
     setIsDrawing(false);
-    context.closePath();
+    
+    // Reset last point when stopping
+    lastPointRef.current = null;
   };
 
   const saveDrawing = () => {
@@ -273,10 +380,10 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 md:sticky md:top-4 z-30 w-screen h-screen md:w-full md:h-auto md:max-h-[calc(100vh-100px)] md:min-h-[600px] bg-white md:rounded-lg overflow-hidden shadow-xl md:mb-4">
+    <div className="fixed inset-0 md:sticky md:top-4 z-30 w-screen h-screen md:w-full md:h-[calc(100vh-100px)] md:min-h-[600px] bg-white md:rounded-lg overflow-hidden shadow-xl md:mb-4 flex flex-col">
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
+        className="w-full h-full cursor-crosshair flex"
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
@@ -342,7 +449,7 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
         className="absolute top-5 right-5 flex items-center justify-center w-10 h-10 bg-gray-300 text-black rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-200 font-medium"
         title="Fermer l'outil de dessin"
       >
-        <Icon name="close" size={16} className="inline-block" />
+        <CloseIcon width={16} height={16} className="inline-block" />
       </button>
       
       {/* Clear button in bottom left corner */}

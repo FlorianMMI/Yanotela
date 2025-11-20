@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
@@ -28,8 +28,59 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [sortBy, setSortBy] = useState<"recent">("recent");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
+    const [tagColorFilter, setTagColorFilter] = useState("");
 
-    useEffect(() => {
+    const fetchFolderData = useCallback(async () => {
+        try {
+            setLoading(true);
+
+            // Récupérer les informations du dossier
+            const response = await GetFolderById(id);
+
+            if (response && response.folder) {
+
+                setFolder(response.folder);
+                setNotes(Array.isArray(response.notes) ? response.notes : []);
+            } else {
+                console.error("Dossier introuvable");
+                setFolder(null);
+                setNotes([]);
+            }
+        } catch (error) {
+            console.error("Error loading folder:", error);
+            setFolder(null);
+            setNotes([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [id]);
+
+    const handleUpdateFolder = useCallback(async (name: string, description: string, color: string) => {
+        const response = await UpdateFolder(id, {
+            Nom: name,
+            Description: description,
+            CouleurTag: color,
+        });
+
+        if (response.success && response.folder) {
+            setFolder(response.folder);
+            // Émettre un événement pour synchroniser avec le Breadcrumb
+            window.dispatchEvent(new CustomEvent('folderTitleUpdated', {
+                detail: { folderId: id, title: name }
+            }));
+        } else {
+            console.error("Erreur lors de la sauvegarde:", response.error);
+            throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
+        }
+    }, [id]);
+
+    const handleDeleteFolder = useCallback(() => {
+        // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
+        // Rediriger vers la liste des dossiers
+        router.push("/dossiers");
+    }, [router]);
+
+        useEffect(() => {
         fetchFolderData();
 
         // Écouter les événements de mise à jour depuis le breadcrumb
@@ -57,57 +108,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             window.removeEventListener('folderUpdateRequested', handleUpdateRequest);
             window.removeEventListener('folderDeleteRequested', handleDeleteRequest);
         };
-    }, [id]);
-
-    const fetchFolderData = async () => {
-        try {
-            setLoading(true);
-
-            // Récupérer les informations du dossier
-            const response = await GetFolderById(id);
-
-            if (response && response.folder) {
-
-                setFolder(response.folder);
-                setNotes(Array.isArray(response.notes) ? response.notes : []);
-            } else {
-                console.error("Dossier introuvable");
-                setFolder(null);
-                setNotes([]);
-            }
-        } catch (error) {
-            console.error("Error loading folder:", error);
-            setFolder(null);
-            setNotes([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleUpdateFolder = async (name: string, description: string, color: string) => {
-        const response = await UpdateFolder(id, {
-            Nom: name,
-            Description: description,
-            CouleurTag: color,
-        });
-
-        if (response.success && response.folder) {
-            setFolder(response.folder);
-            // Émettre un événement pour synchroniser avec le Breadcrumb
-            window.dispatchEvent(new CustomEvent('folderTitleUpdated', {
-                detail: { folderId: id, title: name }
-            }));
-        } else {
-            console.error("Erreur lors de la sauvegarde:", response.error);
-            throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
-        }
-    };
-
-    const handleDeleteFolder = () => {
-        // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
-        // Rediriger vers la liste des dossiers
-        router.push("/dossiers");
-    };
+    }, [id, fetchFolderData, handleUpdateFolder, handleDeleteFolder]);
 
     if (loading) {
         return (
@@ -159,7 +160,12 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                         collaborationFilter === "solo" ? (!note.collaboratorCount || note.collaboratorCount <= 1) :
                             true;
 
-            return matchesSearch && matchesCollaboration;
+            // Filtre couleur de tag
+            const matchesTagColor = !tagColorFilter
+                ? true
+                : (note.tag === tagColorFilter || (!note.tag && tagColorFilter === "var(--primary)"));
+
+            return matchesSearch && matchesCollaboration && matchesTagColor;
         })
         .sort((a, b) => {
             const da = new Date(a.ModifiedAt).getTime();
@@ -183,6 +189,8 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 setSortDir={setSortDir}
                 collaborationFilter={collaborationFilter}
                 setCollaborationFilter={setCollaborationFilter}
+                tagColorFilter={tagColorFilter}
+                setTagColorFilter={setTagColorFilter}
                 onMoreClick={() => setShowFolderMore((prev: boolean) => !prev)}
             />
 
@@ -191,7 +199,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 <div className="fixed inset-0 z-50 md:hidden">
                     <div className="absolute right-4 top-20">
                         <FolderMore
-                            folder={folder as any}
+                            folder={folder as Folder}
                             folderId={id}
                             folderName={folder?.Nom || ""}
                             folderDescription={folder?.Description || ""}

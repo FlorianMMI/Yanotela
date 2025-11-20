@@ -3,6 +3,7 @@ import React from "react";
 import DesktopLayout from "@/components/layout/DesktopLayout";
 import ThemeClientProvider from "@/components/theme/ThemeClientProvider";
 import ThemeColorMeta from "@/components/theme/ThemeColorMeta";
+import AuthWrapper from '@/components/auth/AuthWrapper';
 
 export const metadata = {
   title: "Yanotela - Notes collaboratives",
@@ -21,13 +22,15 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="fr" className="h-full">
+    <html lang="fr">
       <body className="antialiased h-dvh bg-background">
         <ThemeClientProvider>
         <ThemeColorMeta />
-        <DesktopLayout>
-          {children}
-        </DesktopLayout>
+        <AuthWrapper>
+          <DesktopLayout>
+            {children}
+          </DesktopLayout>
+        </AuthWrapper>
         </ThemeClientProvider>
       </body>
     </html>

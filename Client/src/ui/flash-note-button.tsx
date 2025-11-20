@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import Icon from './Icon';
+import { FlashIcon } from '@/libs/Icons';
 
 interface FlashNoteButtonProps {
   isOpen?: boolean;
   isActive?: boolean;
-  onClick?: () => void | Promise<any>;
+  onClick?: () => void | Promise<void>;
   className?: string;
   isLoading?: boolean;
 }
@@ -15,16 +15,16 @@ export default function FlashNoteButton({ isOpen = true, isActive = false, onCli
   const effectiveLoading = typeof isLoading === 'boolean' ? isLoading : internalLoading;
 
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    void e;
     if (!onClick) return;
     try {
       setInternalLoading(true);
       const res = onClick();
-      if (res && typeof (res as any).then === 'function') {
+      if (res instanceof Promise) {
         await res;
       }
     } catch (err) {
-      // ignore - keep UX feedback
-      // optionally could expose onError prop
+      void err;
     } finally {
       setInternalLoading(false);
     }
@@ -43,13 +43,13 @@ export default function FlashNoteButton({ isOpen = true, isActive = false, onCli
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
         ) : (
           <>
-            <Icon
-              name="flash"
+            <FlashIcon
               className={`stroke-[4] transition-colors ${isActive
                 ? 'text-white'
                 : 'text-primary group-hover:text-white'
                 }`}
-              size={30}
+              width={30}
+              height={30}
             />
             <span className={`font-medium ${isOpen ? `flex` : `hidden`}`}>Flash Note</span>
           </>

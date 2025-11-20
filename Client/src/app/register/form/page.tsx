@@ -1,10 +1,7 @@
 "use client";
 
 import React from "react";
-import { useState, useEffect } from "react";
-import Icon from "@/ui/Icon";
 import ReturnButton from "@/ui/returnButton";
-import ConfirmPassword from "@/ui/confirm-password";
 import { useRouter } from "next/navigation";
 import RegisterFormComponent from '@/components/auth/RegisterForm';
 import MobileFlashNoteButton from '@/components/flashnote/MobileFlashNoteButton';
@@ -20,7 +17,7 @@ export default function RegisterFormPage() {
   };
 
   return (
-    <div className="min-h-full flex items-center justify-center p-4">
+    <div className=" flex items-center justify-center p-4">
       <MobileFlashNoteButton />
       
       <div className="w-full max-w-lg space-y-8">
