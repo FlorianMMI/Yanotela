@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import GoogleAuthButton from './GoogleAuthButton';
-import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon } from '@/libs/Icons';
+import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon } from '@/libs/Icons';
 
 interface LoginFormProps {
   onSuccess?: () => void;
