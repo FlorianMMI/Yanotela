@@ -533,13 +533,16 @@ export default function Breadcrumb() {
                       <ConnectedUsers noteId={noteId} />
 
                       <button
-                       onClick={() => window.dispatchEvent(new Event('openCommentModal'))}
+                        onClick={() => {
+                          // Ajout d'une clé unique à chaque clic pour forcer le remount
+                          window.dispatchEvent(new CustomEvent('openCommentModal', { detail: { key: Date.now() } }));
+                        }}
                         className="ml-2"
                       >
                         <Comment 
-                        width={30}
-                        height={30}
-                        className='text-primary cursor-pointer'
+                          width={30}
+                          height={30}
+                          className='text-primary cursor-pointer'
                         />
                       </button>
 
