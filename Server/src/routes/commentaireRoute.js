@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/authMiddleware.js';
-import { CommentaireController } from '../controllers/CommentaireController.js';
+import { commentaireController } from '../controllers/commentaireController.js';
 
 const router = Router();
 
 // Créer un commentaire
-router.post('/create', requireAuth, CommentaireController.createCommentaire);
+router.post('/create', requireAuth, commentaireController.createcommentaire);
 
-// Récupérer les commentaires d'une note
-router.get('/get/:noteId', requireAuth, CommentaireController.getCommentairesByNote);
+// Récupérer les commentaire d'une note
+router.get('/get/:noteId', requireAuth, commentaireController.getcommentaireByNote);
 
 export default router;

@@ -24,7 +24,7 @@ model User {
   modifiedNotes Note[]       @relation("NoteModifier")
   permissions   Permission[]
   noteFolders   NoteFolder[]
-    commentaires Commentaire[]
+    commentaire commentaire[]
 }
 
 model Note {
@@ -42,7 +42,7 @@ model Note {
   permissions Permission[]
   noteFolder  NoteFolder?
   isPublic    Boolean      @default(false)
-    commentaires Commentaire[]
+    commentaire commentaire[]
 }
 
 model Permission {
@@ -86,7 +86,7 @@ model NoteFolder {
 }
 
 
-model Commentaire {
+model commentaire {
   id        String   @id @default(uuid())
   text      String
   date      DateTime @default(now())

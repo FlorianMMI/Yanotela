@@ -13,14 +13,14 @@ interface ParamModalProps {
 
 export default function ParamModal({ onClose }: ParamModalProps) {
     const commentsContainerRef = React.useRef<HTMLDivElement>(null);
-    interface Commentaire {
+    interface commentaire {
         id: string;
         text: string;
         author: { pseudo: string } | string;
         datetime: string;
         authorId: number;
     }
-    const [comments, setComments] = useState<Commentaire[]>([]);
+    const [comments, setComments] = useState<commentaire[]>([]);
     const [loading, setLoading] = useState(true);
     const { user } = require('@/hooks/useAuth').useAuth();
     const router = useRouter();
@@ -36,52 +36,60 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     };
     const noteId = extractNoteId();
 
-    // Charger les commentaires liés à la note
-    useEffect(() => {
-        async function fetchComments() {
-            setLoading(true);
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/commentaire/get/${noteId}`, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const data = await response.json();
-                let commentaires = Array.isArray(data.commentaires) ? data.commentaires : [];
+    // Charger les commentaire liés à la note
+    // Définir fetchComments en dehors du useEffect pour pouvoir le rappeler
+    const fetchComments = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/commentaire/get/${noteId}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            let commentaire = Array.isArray(data.commentaire) ? data.commentaire : [];
 
-                // Pour chaque commentaire, si author n'est pas un objet, fetch le pseudo
-                const commentairesWithAuthor = await Promise.all(commentaires.map(async (comment: Commentaire) => {
-                    if (comment.author && typeof comment.author === 'object' && comment.author.pseudo) {
-                        return comment;
-                    }
-                    // Si authorId existe, fetch le pseudo
-                    if (comment.authorId) {
-                        try {
-                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/info/${comment.authorId}`, {
-                                method: 'GET',
-                                credentials: 'include',
-                                headers: { 'Content-Type': 'application/json' }
-                            });
-                            const userData = await res.json();
-                            return { ...comment, author: { pseudo: userData.user?.pseudo || 'Utilisateur' } };
-                        } catch {
-                            return { ...comment, author: { pseudo: 'Utilisateur' } };
-                        }
-                    }
-                    return { ...comment, author: { pseudo: 'Utilisateur' } };
-                }));
-                setComments(commentairesWithAuthor);
-            } catch (err) {
-                setComments([]);
-            } finally {
-                setLoading(false);
-                if (commentsContainerRef.current) {
-                    commentsContainerRef.current.scrollTop = commentsContainerRef.current.scrollHeight;
+            // Pour chaque commentaire, si author n'est pas un objet, fetch le pseudo
+            const commentaireWithAuthor = await Promise.all(commentaire.map(async (comment: commentaire) => {
+                if (comment.author && typeof comment.author === 'object' && comment.author.pseudo) {
+                    return comment;
                 }
+                // Si authorId existe, fetch le pseudo
+                if (comment.authorId) {
+                    try {
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/info/${comment.authorId}`, {
+                            method: 'GET',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const userData = await res.json();
+                        return { ...comment, author: { pseudo: userData.user?.pseudo || 'Utilisateur' } };
+                    } catch {
+                        return { ...comment, author: { pseudo: 'Utilisateur' } };
+                    }
+                }
+                return { ...comment, author: { pseudo: 'Utilisateur' } };
+            }));
+            setComments(commentaireWithAuthor);
+        } catch (err) {
+            setComments([]);
+        } finally {
+            setLoading(false);
+            if (commentsContainerRef.current) {
+                commentsContainerRef.current.scrollTop = commentsContainerRef.current.scrollHeight;
             }
         }
+    };
+    useEffect(() => {
         if (noteId) fetchComments();
     }, [noteId]);
+
+    // Scroll en bas à chaque changement de commentaires
+    useEffect(() => {
+        if (commentsContainerRef.current) {
+            commentsContainerRef.current.scrollTop = commentsContainerRef.current.scrollHeight;
+        }
+    }, [comments]);
 
     const [commentText, setCommentText] = useState("");
     const [posting, setPosting] = useState(false);
@@ -92,6 +100,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         setPosting(true);
         try {
             const now = new Date().toISOString();
+            console.log('Date transmise pour le commentaire :', now);
             const payload = {
                 text: commentText,
                 authorId: user.id,
@@ -106,11 +115,8 @@ export default function ParamModal({ onClose }: ParamModalProps) {
             });
             if (response.ok) {
                 setCommentText("");
-                if (noteId) {
-                    window.setTimeout(() => {
-                        window.location.reload();
-                    }, 300);
-                }
+                // Actualiser uniquement la liste des commentaires
+                await fetchComments();
             }
         } catch (err) {
             // Optionnel : afficher une erreur
@@ -159,7 +165,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                         className='flex flex-col justify-start h-full w-fill p-2 relative mt-2 gap-2 overflow-y-auto custom-scrollbar-comment'
                     >
                         {loading ? (
-                            <div className="text-center text-element">Chargement des commentaires...</div>
+                            <div className="text-center text-element">Chargement des commentaire...</div>
                         ) : (
                             comments.length === 0 ? (
                                 <div className="text-center text-element">Aucun commentaire pour cette note.</div>
@@ -186,6 +192,16 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                             value={commentText}
                             onChange={e => setCommentText(e.target.value)}
                             disabled={posting}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (!posting && commentText.trim()) {
+                                        handleSubmit({
+                                            preventDefault: () => {},
+                                        } as React.FormEvent<HTMLFormElement>);
+                                    }
+                                }
+                            }}
                         />
                         <button
                             type="submit"

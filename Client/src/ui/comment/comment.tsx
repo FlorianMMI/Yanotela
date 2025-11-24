@@ -1,11 +1,11 @@
 interface CommentProps {
   variant?: "user" | "member";
   author: { pseudo: string } | string;
-  datetime: string;
+  date: string;
   text: string;
 }
 
-export default function Comment({ variant = "user", author, datetime, text }: CommentProps) {
+export default function Comment({ variant = "user", author, date, text }: CommentProps) {
   // Définir la classe selon le variant
   let divClass = "w-full flex";
   if (variant === "user") {
@@ -14,8 +14,11 @@ export default function Comment({ variant = "user", author, datetime, text }: Co
     divClass += " justify-end";
   }
 
+  // Log de la date reçue
+  console.log('Date reçue par la carte commentaire :', date);
+
   // Formatage date
-  const dateObj = new Date(datetime);
+  const dateObj = new Date(date);
   const dateStr = dateObj.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
 
   return (
