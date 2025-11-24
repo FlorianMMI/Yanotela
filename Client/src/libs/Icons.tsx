@@ -1077,3 +1077,6 @@ export function Send(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+// export function flashNote(props: React.SVGProps<SVGSVGElement>) {
+
