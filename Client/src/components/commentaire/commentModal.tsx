@@ -17,7 +17,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         id: string;
         text: string;
         author: { pseudo: string } | string;
-        datetime: string;
+        date: string;
         authorId: number;
     }
     const [comments, setComments] = useState<commentaire[]>([]);
@@ -100,7 +100,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         setPosting(true);
         try {
             const now = new Date().toISOString();
-            console.log('Date transmise pour le commentaire :', now);
             const payload = {
                 text: commentText,
                 authorId: user.id,
@@ -177,7 +176,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                                         {...comment}
                                         text={comment.text}
                                         author={comment.author}
-                                        datetime={comment.datetime}
+                                        date={comment.date}
                                     />
                                 ))
                             )

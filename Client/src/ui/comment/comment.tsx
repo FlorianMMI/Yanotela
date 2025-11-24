@@ -14,9 +14,6 @@ export default function Comment({ variant = "user", author, date, text }: Commen
     divClass += " justify-end";
   }
 
-  // Log de la date reçue
-  console.log('Date reçue par la carte commentaire :', date);
-
   // Formatage date
   const dateObj = new Date(date);
   const dateStr = dateObj.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
