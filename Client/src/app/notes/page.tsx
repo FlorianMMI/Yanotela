@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { Note } from "@/type/Note";
 import NoteHeader from "@/components/noteHeader/NoteHeader";
 import NoteList from "@/components/noteList/NoteList";
@@ -22,11 +22,7 @@ export default function Home() {
   const router = useRouter();
   
   // Charger les notes au montage du composant
-  useEffect(() => {
-    fetchNotes();
-  }, []);
-
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     try {
       setLoading(true);
       const response = await GetNotes();
@@ -37,7 +33,11 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
 
   // Filtrer et trier les notes
   const filteredNotes = Array.isArray(notes) ? notes

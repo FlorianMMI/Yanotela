@@ -318,7 +318,7 @@ export default function FlashNoteWidget() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-info-50 border border-info-100 rounded-lg p-3 flex items-start gap-3"
+          className="bg-info-50 border border-info-100 rounded-lg p-3 flex items-center gap-3"
         >
           <InfoIcon width={18} height={18} className="text-blue shrink-0 mt-0.5" />
           <div className="flex-1">

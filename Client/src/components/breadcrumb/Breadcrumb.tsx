@@ -539,19 +539,6 @@ export default function Breadcrumb() {
                     <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
                       <ConnectedUsers noteId={noteId} />
 
-                      <button
-                        onClick={() => {
-                          // Ajout d'une clé unique à chaque clic pour forcer le remount
-                          window.dispatchEvent(new CustomEvent('openCommentModal', { detail: { key: Date.now() } }));
-                        }}
-                        className="ml-2"
-                      >
-                        <Comment 
-                          width={30}
-                          height={30}
-                          className='text-primary cursor-pointer'
-                        />
-                      </button>
 
                       <span
                         onClick={() => setShowNoteMore((prev) => !prev)}
