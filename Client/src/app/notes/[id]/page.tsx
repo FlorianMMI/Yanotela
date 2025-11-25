@@ -804,23 +804,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
               disabled={isReadOnly}
             />
             <div className="relative flex">
-              <button
-                onClick={() => {
-                  // Ajout d'une clé unique à chaque clic pour forcer le remount
-                  window.dispatchEvent(
-                    new CustomEvent("openCommentModal", {
-                      detail: { key: Date.now() },
-                    })
-                  );
-                }}
-                className="ml-2"
-              >
-                <Comment
-                  width={30}
-                  height={30}
-                  className="text-white cursor-pointer"
-                />
-              </button>
+
               <button
                 onClick={() => setShowNoteMore((prev) => !prev)}
                 aria-label="Ouvrir les options de la note"

@@ -12,16 +12,6 @@ export default function SideBar() {
   const { isAuthenticated, loading, user } = useAuth();
   const { isOpen, toggle, setOpen } = useSidebarToggle();
 
-  // Ouvrir automatiquement la sidebar quand l'utilisateur est authentifié
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      setOpen(true);
-    }
-    else{
-      setOpen(true);
-    }
-  }, [isAuthenticated, user, setOpen]);
-
   // Loading state 
 
   if (loading) { 
