@@ -325,9 +325,9 @@ jobs:
 
             # .env.dev (inchangé)
             cat > .env.dev << 'EOF'
-            ${{secrets.PREPROD}}
-            ${{secrets.TURNSTILE_SITE_KEY}}
-            ${{secrets.TURNSTILE_SITE_SECRET_KEY}}
+            ${{ secrets.PREPROD }}
+            TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
+            TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SITE_SECRET_KEY }}
             EOF
 
             # Démarrage des services (optimisé : pull + up en une étape)

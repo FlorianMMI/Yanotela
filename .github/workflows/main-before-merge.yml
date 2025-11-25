@@ -161,9 +161,9 @@ jobs:
 
             # Créer le fichier .env
             cat > .env << 'EOF'
-            ${{secrets.ENV_PROD_FILE}}
-            ${{secrets.TURNSTILE_SITE_KEY}}
-            ${{secrets.TURNSTILE_SITE_SECRET_KEY}}
+            ${{ secrets.ENV_PROD_FILE }}
+            TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
+            TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SITE_SECRET_KEY }}
             EOF
 
             # Arrêter les anciens conteneurs
