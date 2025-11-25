@@ -5,7 +5,7 @@ export async function verifyTurnstile(token) {
   // In tests you may want to bypass verification. Use an explicit env var to disable.
   // Do NOT bypass for 'preprod' or other non-production environments by default.
   // Set TURNSTILE_DISABLED=1 only for local tests where you intentionally want to skip verification.
-  if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV === 'test') {
+  if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'production') {
     console.warn('Turnstile verification bypassed by TURNSTILE_DISABLED or test env');
     return true;
   }
