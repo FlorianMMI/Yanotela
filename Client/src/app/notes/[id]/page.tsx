@@ -717,13 +717,8 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   }, [id]);
 
 
-  const [showCommentModal, setShowCommentModal] = useState(false);
 
-  useEffect(() => {
-  const handleOpenCommentModal = () => setShowCommentModal(true);
-  window.addEventListener('openCommentModal', handleOpenCommentModal);
-  return () => window.removeEventListener('openCommentModal', handleOpenCommentModal);
-}, []);
+
 
   return (
     <div className="flex flex-col gap-4 w-full h-full">
@@ -739,9 +734,6 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         </div>
       )}
 
-      {showCommentModal && (
-  <CommentModal onClose={() => setShowCommentModal(false)} />
-)}
 
       {/* Mobile Header */}
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
