@@ -6,7 +6,6 @@ import { CloseIcon, TrashIcon} from '@/libs/Icons';
 import Comment from '@/ui/comment/comment';
 import { Send } from '@/libs/Icons';
 
-
 interface ParamModalProps {
     onClose: () => void;
 }
