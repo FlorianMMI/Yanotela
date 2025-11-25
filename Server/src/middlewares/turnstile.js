@@ -36,7 +36,7 @@ export function requireTurnstile(fieldName = 'cf-turnstile-response') {
     try {
       const token = (req.body && req.body[fieldName]) || req.headers['x-cf-turnstile-response'];
       const ok = await verifyTurnstile(token);
-      if (!ok) {
+          if (!ok) {
         // If the client expects JSON (AJAX/API), send JSON error.
         const accepts = (req.headers.accept || '').toString();
         const isAjax = req.xhr || (req.headers['x-requested-with'] === 'XMLHttpRequest');
