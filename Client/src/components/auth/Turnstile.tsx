@@ -57,7 +57,32 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
 
         if (anyWin.turnstile && typeof anyWin.turnstile.render === 'function') {
           // render expects the element (or selector) and options
-          anyWin.turnstile.render(el, { sitekey: key });
+          // Create or reuse a hidden input to store the Turnstile token so forms can read it.
+          const ensureTokenInput = () => {
+            let input = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
+            if (!input) {
+              input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'cf-turnstile-response';
+              input.value = '';
+              // attach to body so temporary forms can pick it up when they are created
+              document.body.appendChild(input);
+            }
+            return input;
+          };
+
+          const tokenInput = ensureTokenInput();
+
+          // Provide callback to populate the hidden input when Turnstile returns a token
+          const widgetId = anyWin.turnstile.render(el, {
+            sitekey: key,
+            callback: (token: string) => {
+              try { tokenInput.value = token || ''; } catch (e) {}
+            },
+            'expired-callback': () => {
+              try { tokenInput.value = ''; } catch (e) {}
+            }
+          });
 
           // mark container rendered to avoid duplicate render attempts
           try { el.dataset.turnstileRendered = '1'; } catch (e) {}
