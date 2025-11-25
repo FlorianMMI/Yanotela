@@ -772,9 +772,6 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     };
   }, [id]);
 
-
-
-
   return (
     <div className="flex flex-col gap-4 w-full h-full">
       {/* Notifications */}
@@ -788,7 +785,6 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           {error}
         </div>
       )}
-
 
       {/* Mobile Header */}
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
