@@ -76,12 +76,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./Client
+          file: ./Client/Dockerfile
           platforms: linux/amd64
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
             NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
-            NEXT_PUBLIC_TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
             ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
@@ -287,6 +287,7 @@ jobs:
                 environment:
                   - NODE_ENV=development
                   - NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
+                  - NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
                 env_file:
                   - .env.dev
                 depends_on:
