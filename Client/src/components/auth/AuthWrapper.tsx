@@ -108,7 +108,6 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
   // Vérification à chaque changement de route
   useEffect(() => {
     checkAuth();
