@@ -91,6 +91,13 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
           setTimeout(() => {
             const iframe = el.querySelector('iframe') as HTMLIFrameElement | null;
             if (iframe) {
+              iframe.style.position = 'absolute';
+              iframe.style.inset = '0';
+              iframe.style.width = '100%';
+              iframe.style.height = '100%';
+              iframe.style.maxWidth = '100%';
+              iframe.style.boxSizing = 'border-box';
+              iframe.style.border = '0';
             }
           }, 60);
         }
@@ -134,7 +141,7 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
       >
         <div
           ref={containerRef}
-          className="cf-turnstile absolute inset-0 aspect-auto w-full h-full"
+          className="cf-turnstile absolute inset-0 w-full h-full"
           data-sitekey={siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
         />
       </div>
