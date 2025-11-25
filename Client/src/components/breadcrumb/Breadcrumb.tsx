@@ -13,6 +13,10 @@ import ConnectedUsers from '../collaboration/ConnectedUsers';
 import { yjsDocuments } from '@/collaboration/providers';
 import { DocsIcon, FlashIcon, FolderIcon, MoreIcon, ProfileIcon, Comment } from '@/libs/Icons';
 
+interface BreadcrumbProps {
+  openCommentModal?: () => void;
+}
+
 interface BreadcrumbItem {
   label: string;
   href?: string;
@@ -20,7 +24,7 @@ interface BreadcrumbItem {
   isNoteTitle?: boolean;
 }
 
-export default function Breadcrumb() {
+export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
   const pathname = usePathname();
   const [noteTitle, setNoteTitle] = useState<string>('');
   const [folderName, setFolderName] = useState<string>('');
@@ -541,8 +545,7 @@ export default function Breadcrumb() {
 
                       <button
                         onClick={() => {
-                          // Ajout d'une clé unique à chaque clic pour forcer le remount
-                          window.dispatchEvent(new CustomEvent('openCommentModal', { detail: { key: Date.now() } }));
+                          if (openCommentModal) openCommentModal();
                         }}
                         className="ml-2"
                       >
