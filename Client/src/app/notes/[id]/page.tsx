@@ -357,39 +357,44 @@ function LoadInitialContentPlugin({ content, noteId }: { content: string | null,
 
     (async () => {
       try {
-        // If a Y.Doc already exists and contains state, prefer Y.Doc as source of truth
+        // Wait for CollaborationPlugin to create the Y.Doc and bootstrap structure
         const { yjsDocuments } = await import('@/collaboration/providers');
         let ydoc = yjsDocuments.get(noteId);
 
-        // If the provider hasn't been created yet, wait briefly for it (small race window)
+        // Wait up to 1 second for Y.Doc to be created by CollaborationPlugin
         if (!ydoc) {
           const start = Date.now();
-          const maxWait = 300; // ms
+          const maxWait = 1000; // ms
           while (Date.now() - start < maxWait && !cancelled) {
-            await new Promise((r) => setTimeout(r, 50));
+            await new Promise((r) => setTimeout(r, 100));
             const { yjsDocuments: yjsDocumentsRetry } = await import('@/collaboration/providers');
             ydoc = yjsDocumentsRetry.get(noteId);
             if (ydoc) break;
           }
         }
 
-        if (ydoc) {
-          const encoded = Y.encodeStateAsUpdate(ydoc);
-          if (encoded && encoded.length > 0) {
-            // Y.Doc already has content — skip applying DB content to avoid duplication
-            hasLoadedRef.current = true;
-            return;
-          }
-        }
-
         if (cancelled) return;
 
+        if (!ydoc) {
+          console.warn('⚠️ [LoadContent] Y.Doc non trouvé après 1s');
+          return;
+        }
+
+        // Check if Y.Doc already has content (from sync or previous load)
+        const encoded = Y.encodeStateAsUpdate(ydoc);
+        if (encoded && encoded.length > 2) { // More than empty doc structure
+          console.log('✅ [LoadContent] Y.Doc contient déjà des données, skip chargement DB');
+          hasLoadedRef.current = true;
+          return;
+        }
+
+        // Y.Doc is empty, load content from DB
         const parsedContent = JSON.parse(content);
 
         editor.update(() => {
           const newEditorState = editor.parseEditorState(parsedContent);
           editor.setEditorState(newEditorState);
-
+          console.log('✅ [LoadContent] Contenu chargé depuis DB');
         }, {
           tag: 'history-merge',
         });
@@ -630,17 +635,37 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
+    // Ne pas appeler setAwarenessUserInfo immédiatement
+    // Le provider sera créé par CollaborationPlugin, on attend qu'il soit prêt
+    
     // Récupérer l'userId pour la synchronisation automatique des permissions
     const userId = user ? (user as any).id : undefined;
     
-    // Petit délai pour s'assurer que le provider est créé
-    const timer = setTimeout(() => {
-      setAwarenessUserInfo(id, userProfile.name, userProfile.color, userId);
-    }, 500);
-
-    setAwarenessUserInfo(id, userProfile.name, userProfile.color, userId);
+    // Attendre que le provider soit créé (après le montage du CollaborationPlugin)
+    // On utilise un intervalle pour vérifier régulièrement
+    let attempts = 0;
+    const maxAttempts = 20; // 20 * 200ms = 4 secondes max
     
-    return () => clearTimeout(timer);
+    const intervalId = setInterval(() => {
+      attempts++;
+      
+      // Essayer de mettre à jour l'awareness
+      const success = setAwarenessUserInfo(id, userProfile.name, userProfile.color, userId);
+      
+      // Si succès, arrêter l'intervalle
+      if (success) {
+        clearInterval(intervalId);
+        return;
+      }
+      
+      // Arrêter après le max d'essais
+      if (attempts >= maxAttempts) {
+        console.warn('[Awareness] Provider non créé après 4s, abandon');
+        clearInterval(intervalId);
+      }
+    }, 200);
+    
+    return () => clearInterval(intervalId);
   }, [userProfile, id, user]);
 
   // Gestion des paramètres de recherche (assignation au dossier)

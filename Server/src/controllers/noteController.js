@@ -16,6 +16,7 @@ import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { getPermission } from "./permissionController.js";
 import { migrateContentToYjs, needsMigration, extractContentFromYjs } from "../services/yjsMigration.js";
+import { notifyNoteDeleted } from "../services/yjsNotificationService.js";
 
 const prisma = new PrismaClient();
 
@@ -811,6 +812,14 @@ export const noteController = {
         return res.status(403).json({ 
           message: "Seul le propriétaire ou un administrateur peut supprimer cette note" 
         });
+      }
+
+      // 🔔 Notifier tous les collaborateurs de la suppression AVANT la transaction
+      try {
+        await notifyNoteDeleted(id, note.Titre, userId);
+      } catch (notifError) {
+        console.error('[deleteNote] Erreur notification:', notifError);
+        // Ne pas bloquer la suppression si la notification échoue
       }
 
       // Soft delete: définir deletedAt à la date actuelle ET nettoyer les relations NoteFolder

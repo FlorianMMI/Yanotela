@@ -85,17 +85,25 @@ services:
     command: sh -c "while true; do sleep 86400 && npm run cleanup:notes; done"
     restart: unless-stopped
 
-  # Serveur YJS WebSocket pour collaboration temps réel
+  # Serveur YJS WebSocket personnalisé pour collaboration temps réel + notifications
   yjs-server:
-    image: node:18-alpine
+    build:
+      context: ./Server
+      dockerfile: Dockerfile.preprod
     container_name: yanotela-yjs-server
     working_dir: /app
     ports:
       - "1234:1234"
     environment:
+      - NODE_ENV=development
       - HOST=0.0.0.0
       - PORT=1234
-    command: sh -c "npm install -g @y/websocket-server && y-websocket-server"
+    volumes:
+      # Mount source code for hot reload
+      - ./Server/src:/app/src
+      - ./Server/package.json:/app/package.json
+      - /app/node_modules
+    command: node src/yjs-server.js
     restart: unless-stopped
 
   # Frontend Next.js

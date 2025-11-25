@@ -1,6 +1,5 @@
 import React from "react";
 import { CheckIcon, CloseIcon } from '@/libs/Icons';
-import { AcceptNotification, RefuseNotification } from "@/loader/loader";
 import { refreshNotifications } from "@/utils/notificationUtils";
 import { useRouter } from "next/navigation";
 
@@ -8,44 +7,59 @@ interface NotificationProps {
     id: string;
     title: string;
     author: string;
+    onAccept?: (notificationId: string) => Promise<void>;
+    onRefuse?: (notificationId: string) => Promise<void>;
     onNotificationUpdate?: () => void;
     variant?: 'row' | 'stack';
 }
 
-export default function Notification({ id, title, author, onNotificationUpdate, variant = 'stack' }: NotificationProps) {
+export default function Notification({ 
+    id, 
+    title, 
+    author, 
+    onAccept, 
+    onRefuse, 
+    onNotificationUpdate, 
+    variant = 'stack' 
+}: NotificationProps) {
   const router = useRouter();
   
   const handleUpdateNotification = async (event?: React.MouseEvent<HTMLButtonElement>) => {
         // prevent parent click handlers if any
         event?.stopPropagation();
-        try {
-            const result = await AcceptNotification(id);
-            if (result.success && result.noteId) {
+        
+        if (onAccept) {
+            // Utiliser la fonction passée en props (gère invitation-)
+            try {
+                await onAccept(id);
                 // Déclencher la mise à jour globale des notifications
                 refreshNotifications();
-                // Redirect to the note
-                router.push(`/notes/${result.noteId}`);
-            } else {
-                // Appeler le callback pour rafraîchir la liste même en cas d'erreur
-                onNotificationUpdate?.();
-                // Déclencher la mise à jour globale des notifications
-                refreshNotifications();
+                // Si c'est une invitation, rediriger vers la note
+                if (id.startsWith('invitation-')) {
+                    const noteId = id.replace('invitation-', '');
+                    router.push(`/notes/${noteId}`);
+                }
+            } catch (error) {
+                console.error("Erreur lors de l'acceptation de la notification:", error);
             }
-        } catch (error) {
-            console.error("Erreur lors de la mise à jour de la notification:", error);
         }
     };
+    
     const handleRefuseNotification = async (event?: React.MouseEvent<HTMLButtonElement>) => {
         // prevent parent click handlers if any
         event?.stopPropagation();
-        try {
-            await RefuseNotification(id);
-            // Appeler le callback pour rafraîchir la liste
-            onNotificationUpdate?.();
-            // Déclencher la mise à jour globale des notifications
-            refreshNotifications();
-        } catch (error) {
-            console.error("Erreur lors du refus de la notification:", error);
+        
+        if (onRefuse) {
+            // Utiliser la fonction passée en props (gère invitation-)
+            try {
+                await onRefuse(id);
+                // Appeler le callback pour rafraîchir la liste
+                onNotificationUpdate?.();
+                // Déclencher la mise à jour globale des notifications
+                refreshNotifications();
+            } catch (error) {
+                console.error("Erreur lors du refus de la notification:", error);
+            }
         }
     };
     return (
