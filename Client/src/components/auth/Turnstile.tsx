@@ -14,11 +14,11 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
     const key = siteKey || (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string | undefined);
     if (!key) return;
 
-    // inject the script only once
+    // from auto-rendering widgets so we control rendering and avoid duplicate widgets.
     if (!document.getElementById('cf-turnstile-script')) {
       const s = document.createElement('script');
       s.id = 'cf-turnstile-script';
-      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
       s.async = true;
       document.head.appendChild(s);
     }
