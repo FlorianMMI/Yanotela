@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Icon from '@/ui/Icon';
 
+import { ArrowIcon } from '@/libs/Icons';
 export const noAuth = true;
 
 export default function MentionsLegalesPage() {
@@ -16,7 +16,7 @@ export default function MentionsLegalesPage() {
             href="/" 
             className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors mb-4"
           >
-            <Icon name="arrow-ss-barre" size={20} className="rotate-90" />
+            <ArrowIcon className="w-5 h-5" />
             <span className="font-medium">Retour</span>
           </Link>
           <h1 className="text-4xl font-bold text-clrprincipal mb-2">
@@ -64,9 +64,9 @@ export default function MentionsLegalesPage() {
                 </p>
                 <p>
                   <strong>Email de contact :</strong>{' '}
-                  <a href="mailto:contact@florian-bounissou.fr" className="text-primary hover:underline">
+                  <Link href="mailto:contact@florian-bounissou.fr" className="text-primary hover:underline">
                     contact@florian-bounissou.fr
-                  </a>
+                  </Link>
                 </p>
               </div>
 
@@ -124,9 +124,9 @@ export default function MentionsLegalesPage() {
                 </p>
                 <p>
                   <strong>Site web :</strong>{' '}
-                  <a href="https://aws.amazon.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                  <Link href="https://aws.amazon.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                     https://aws.amazon.com
-                  </a>
+                  </Link>
                 </p>
               </div>
             </div>

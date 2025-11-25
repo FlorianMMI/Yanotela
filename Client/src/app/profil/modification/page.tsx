@@ -2,9 +2,9 @@
 
 import ReturnButton from "@/ui/returnButton";
 import React, { useState, useEffect } from "react";
-import Icons from "@/ui/Icon";
 import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser } from '@/loader/loader';
+import { CheckIcon, CloseIcon, KeyholeIcon } from "@/libs/Icons";
 
 export default function ModificationProfil() {
   const [userData, setUserData] = useState({
@@ -33,8 +33,8 @@ export default function ModificationProfil() {
         } else {
           setError("Impossible de charger les informations utilisateur");
         }
-      } catch (err) {
-        setError("Erreur lors du chargement des informations");
+      } catch (error) {
+        setError("Erreur lors du chargement des informations :" + error);
       } finally {
         setPageLoading(false);
       }
@@ -44,13 +44,13 @@ export default function ModificationProfil() {
   }, []);
 
   // Fonction pour sauvegarder un champ spécifique
-  const handleFieldSave = async (fieldName: string, newValue: string) => {
+    const handleFieldSave = async (fieldName: keyof typeof userData, newValue: string) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const updateData: any = {};
+      const updateData: Partial<typeof userData> = {};
       updateData[fieldName] = newValue;
 
       const result = await updateUser(updateData);
@@ -146,9 +146,7 @@ export default function ModificationProfil() {
                   >
                     <div className="flex">
                       <div className="shrink-0">
-                        <svg className="h-5 w-5 text-success-400" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
+                        <CheckIcon className="h-5 w-5 text-success-400" />
                       </div>
                       <div className="ml-3 flex-1">
                         <p className="text-sm font-medium text-success-800">
@@ -158,9 +156,7 @@ export default function ModificationProfil() {
                       <div className="ml-4 shrink-0">
                         <button className="inline-flex text-success-400 hover:text-success-600">
                           <span className="sr-only">Fermer</span>
-                          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
+                          <CloseIcon className="h-5 w-5" />
                         </button>
                       </div>
                     </div>
@@ -174,9 +170,7 @@ export default function ModificationProfil() {
                   >
                     <div className="flex">
                       <div className="shrink-0">
-                        <svg className="h-5 w-5 text-dangerous-400" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
+                        <CloseIcon className="h-5 w-5 text-dangerous-400" />
                       </div>
                       <div className="ml-3 flex-1">
                         <p className="text-sm font-medium text-dangerous-800">
@@ -239,11 +233,7 @@ export default function ModificationProfil() {
             ) : (
               <div className="flex items-center space-x-2">
                 <span>Modifier le mot de passe</span>
-                <Icons
-                  name="keyhole"
-                  size={20}
-                  className="text-white"
-                />
+                <KeyholeIcon className="text-white w-5 h-5" />
               </div>
             )}
           </button>

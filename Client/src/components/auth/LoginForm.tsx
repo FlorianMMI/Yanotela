@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { useRouter } from 'next/navigation';
-import Icon from '@/ui/Icon';
+
 import GoogleAuthButton from './GoogleAuthButton';
+import Turnstile from './Turnstile';
+import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon} from '@/libs/Icons';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -65,6 +67,19 @@ export default function LoginForm({
 
     tempForm.appendChild(identifiantInput);
     tempForm.appendChild(passwordInput);
+    // Attach Turnstile token if present
+    try {
+      const token = (typeof window !== 'undefined') ? (document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value) : undefined;
+      if (token) {
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = 'cf-turnstile-response';
+        tokenInput.value = token;
+        tempForm.appendChild(tokenInput);
+      }
+    } catch (err) {
+      // ignore
+    }
     document.body.appendChild(tempForm);
 
     // Soumettre le formulaire pour permettre la redirection serveur
@@ -74,6 +89,8 @@ export default function LoginForm({
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  const uid = useId();
 
   return (
     <div className={className}>
@@ -85,7 +102,7 @@ export default function LoginForm({
         </p>
       )}
 
-      <form role="form" onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
+      <form role="form" onSubmit={handleSubmit} id={`${uid}-login-form`} className="w-full flex flex-col justify-center items-start gap-2.5">
         {error && (
           <div className="w-full p-2.5 bg-dangerous-100 border-dangerous-600 text-dangerous-600 rounded-[10px] text-sm">
             {error}
@@ -98,12 +115,12 @@ export default function LoginForm({
           </p>
         )}
         
-        <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
-          <Icon name="at" className="text-gray-400" size={20} />
+          <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
+          <AtIcon className="text-gray-400" width={20} height={20} />
           <input 
             type="text" 
             name="identifiant"
-            id="identifiant"
+            id={`${uid}-identifiant`}
             placeholder="Votre mail ou pseudonyme"
             required
             className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
@@ -113,11 +130,11 @@ export default function LoginForm({
         <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire border-primary border-2 rounded-[10px] flex justify-between items-center">
 
           <div className="flex justify-center items-center gap-2.5">
-            <Icon name="keyhole" className="text-gray-400" size={20} />
+            <KeyholeIcon className="text-gray-400" width={20} height={20} />
             <input 
               type={showPassword ? "text" : "password"}
               name="password"
-              id="password"
+              id={`${uid}-password`}
               placeholder="Votre mot de passe"
               required
               className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
@@ -129,14 +146,13 @@ export default function LoginForm({
             className="w-4 h-4 flex items-center justify-center hover:scale-110 transition-transform"
             aria-label={showPassword ? "Cacher le mot de passe" : "Afficher le mot de passe"}
           >
-            <Icon 
-              name={showPassword ? "eye-close" : "eye"} 
-              className="text-gray-400 hover:text-gray-700" 
-              size={16} 
-            />
+            {showPassword ? (
+              <EyesCloseIcon className="text-gray-400 hover:text-gray-700" width={16} height={16} />
+            ) : (
+              <EyesIcon className="text-gray-400 hover:text-gray-700" width={16} height={16} />
+            )}
           </button>
         </div>
-        
         {showForgotLink && (
           <button 
             type="button"
@@ -148,6 +164,10 @@ export default function LoginForm({
           </button>
         )}
       
+        {/* Turnstile widget (will be a no-op in non-prod) */}
+        <div className="w-full mt-3">
+          <Turnstile />
+        </div>
         <button 
           type="submit" 
           disabled={isLoading}
@@ -156,7 +176,7 @@ export default function LoginForm({
           <p className="flex-1 text-center justify-center text-white text-xl font-bold font-gant pointer-events-none">
             {isLoading ? 'Connexion...' : 'Se connecter'}
           </p>
-          <Icon name="arrow-barre" className="text-white pointer-events-none" size={40} />
+          <ArrowBarIcon className="text-white pointer-events-none" width={40} height={40} />
         </button>
 
         {/* Séparateur et connexion Google */}

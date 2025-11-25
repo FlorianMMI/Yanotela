@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { $getRoot, EditorState, $getSelection, $isRangeSelection, $insertNodes } from "lexical";
+import { $getRoot, EditorState, LexicalEditor, $getSelection, $isRangeSelection, $insertNodes, NodeKey } from "lexical";
 import { useEffect, useState } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -12,19 +12,16 @@ import ReturnButton from "@/ui/returnButton";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
-import OnChangePlugin from "@lexical/react/LexicalOnChangePlugin";
 import { useCallback } from "react";
-import Icons from '@/ui/Icon';
+
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
-import { useAuth } from "@/hooks/useAuth";
 import DrawingBoard, { DrawingData } from "@/components/drawingBoard/drawingBoard";
-import { ImageNode, $createImageNode } from "@/components/flashnote/ImageNode";
-import { AudioNode } from "@/components/flashnote/AudioNode";
-import { VideoNode } from "@/components/flashnote/VideoNode";
+import { $createImageNode } from "@/components/flashnote/ImageNode";
 import ToolbarPlugin from '@/components/textRich/ToolbarPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import '@/components/textRich/EditorStyles.css';
+import { CheckIcon, CloseIcon, SaveIcon } from "@/libs/Icons";
 
 const theme = {
   heading: {
@@ -62,11 +59,10 @@ const FLASH_NOTE_CONTENT_KEY = "yanotela:flashnote:content";
 
 export default function FlashNoteEditor() {
   const [noteTitle, setNoteTitle] = useState("Flash:");
-  const [editorContent, setEditorContent] = useState("");
+  const [, setEditorContent] = useState("");
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [editor, setEditor] = useState<any>(null);
-  const { isAuthenticated, loading } = useAuth();
+  const [editor, setEditor] = useState<LexicalEditor | null>(null);
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
 
   // États pour les notifications
@@ -246,9 +242,23 @@ export default function FlashNoteEditor() {
     }
 
     useEffect(() => {
-      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }: any) => {
+      const unregisterListener = editor.registerUpdateListener(({
+        editorState,
+        dirtyElements,
+        dirtyLeaves,
+        tags,
+      }: {
+        editorState: EditorState;
+        dirtyElements?: Set<NodeKey> | null;
+        dirtyLeaves?: Set<NodeKey> | null;
+        tags?: Set<string> | null;
+      }) => {
         // Save on any update: dirty elements/leaves OR explicit updates (like node insertions)
-        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0 || tags?.has('history-merge') === false) {
+        const hasDirtyElements = Boolean(dirtyElements && dirtyElements.size > 0);
+        const hasDirtyLeaves = Boolean(dirtyLeaves && dirtyLeaves.size > 0);
+        const hasHistoryMergeTag = Boolean(tags && tags.has('history-merge'));
+
+        if (hasDirtyElements || hasDirtyLeaves || hasHistoryMergeTag === false) {
           setIsTyping(true);
           debouncedSave(editorState);
         }
@@ -263,7 +273,7 @@ export default function FlashNoteEditor() {
   }
 
   return (
-    <div className="flex flex-col p-2.5 h-fit min-h-full gap-2.5">
+    <div className="flex flex-col p-2.5 h-fit  gap-2.5">
       {/* Zone de notifications */}
       {(success || error) && (
         <div className="fixed top-4 right-4 z-50 max-w-md pl-4">
@@ -274,9 +284,7 @@ export default function FlashNoteEditor() {
             >
               <div className="flex">
                 <div className="shrink-0">
-                  <svg className="h-5 w-5 text-green" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <CheckIcon className="h-5 w-5 text-success-600" />
                 </div>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-success-800">
@@ -290,9 +298,7 @@ export default function FlashNoteEditor() {
                     aria-label="Fermer le message de succès"
                   >
                     <span className="sr-only">Fermer</span>
-                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
+                    <CloseIcon className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -306,9 +312,7 @@ export default function FlashNoteEditor() {
             >
               <div className="flex">
                 <div className="shrink-0">
-                  <svg className="h-5 w-5 text-dangerous-600" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
+                  <CloseIcon className="h-5 w-5 text-dangerous-600" />
                 </div>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-dangerous-800">
@@ -322,9 +326,7 @@ export default function FlashNoteEditor() {
                     aria-label="Fermer le message d'erreur"
                   >
                     <span className="sr-only">Fermer</span>
-                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
+                    <CloseIcon className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -367,7 +369,7 @@ export default function FlashNoteEditor() {
               {(isSavingContent || isTyping) ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               ) : (
-              <Icons name="save" size={20} className="h-5 w-5 text-primary" />
+              <SaveIcon className="h-5 w-5 text-primary" />
               )}
               <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-primary text-background text-xs rounded py-1 px-2 whitespace-nowrap">
                 Sauvegarder dans la mémoire de votre machine

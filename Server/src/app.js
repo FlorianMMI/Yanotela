@@ -13,6 +13,8 @@ import FolderRoutes from './routes/FolderRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import permissionRoutes from './routes/permissionRoutes.js';
 import googleAuthRoutes from './routes/googleAuthRoutes.js';
+import commentaireRoute from './routes/commentaireRoute.js';
+
 import helmet from 'helmet';
 
 const app = express();
@@ -38,28 +40,17 @@ app.use('/permission', permissionRoutes);
 app.use('/auth', googleAuthRoutes); // Routes Google OAuth
 app.use('/notification', notificationRoutes);
 app.use('/dossiers', FolderRoutes); // Routes pour les dossiers
+app.use('/commentaire', commentaireRoute);
 
 // Route de health check pour Docker
 app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+  res.status(200).send({
   });
 });
 
 // Route de base - API uniquement
 app.get('/', (req, res) => {
-  res.json({
-    message: 'Yanotela API',
-    version: '1.0.0',
-    status: 'running',
-    authenticated: !!req.session.userId,
-    user: req.session.userId ? {
-      id: req.session.userId,
-      pseudo: req.session.pseudo
-    } : null
+res.status(200).send({
   });
 });
 

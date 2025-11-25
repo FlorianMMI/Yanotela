@@ -1,13 +1,13 @@
 import React from 'react';
-import Image from 'next/image';
 import Note from '@/ui/note/Note';
 import NoteSkeleton from '@/ui/note/NoteSkeleton';
 import { Note as NoteType } from '@/type/Note';
 import { CreateNote } from '@/loader/loader';
 import { useRouter } from 'next/navigation';
-import Icons from '@/ui/Icon';
+
 import { motion } from 'motion/react';
 import { SearchMode } from '@/ui/searchbar';
+import { PlusIcon } from '@/libs/Icons';
 
 interface NoteListProps {
   notes: NoteType[];
@@ -79,10 +79,10 @@ export default function NoteList({
             className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-full md:w-65 md:h-50"
             onClick={handleCreateNote}
           >
-            <Icons
-              name="plus"
-              size={48}
-              strokeWidth={1}
+            <PlusIcon
+              width={48}
+              height={48}
+              strokeWidth={15}
               className="group-hover:scale-110 transition-transform"
             />
           </motion.div>

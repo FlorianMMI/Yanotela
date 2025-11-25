@@ -89,10 +89,6 @@ export default function ColorPalette({
         setIsOpen(true);
     };
 
-    const handleCustom = () => {
-        inputRef.current?.click();
-    };
-
     const palette = (
         <div className="inline-flex items-center">
             <div className="flex gap-1 items-center">
@@ -145,18 +141,18 @@ export default function ColorPalette({
                 className={`flex items-center justify-center rounded-md p-1 ${small ? 'w-7 h-7' : 'w-8 h-8'} border border-gray-200 bg-white`}
             >
                 {React.isValidElement(buttonIcon)
-                    ? React.cloneElement(buttonIcon as React.ReactElement<any, any>, {
+                    ? React.cloneElement(buttonIcon as React.ReactElement<React.SVGProps<SVGSVGElement>>, {
                             // keep existing styles but enforce color via inline style (dynamic)
-                            style: { ...((buttonIcon as any).props?.style ?? {}), color: value },
+                            style: { ...((buttonIcon as React.ReactElement<React.SVGProps<SVGSVGElement>>).props?.style ?? {}), color: value },
                             // use Tailwind for sizing/layout, preserve existing className
                             className: [
-                                (buttonIcon as any).props?.className ?? '',
+                                (buttonIcon as React.ReactElement<React.SVGProps<SVGSVGElement>>).props?.className ?? '',
                                 small ? 'w-5 h-5' : 'w-5 h-5',
                                 'inline-block',
                             ]
                                 .filter(Boolean)
                                 .join(' '),
-                        } as any)
+                        })
                     : buttonIcon ?? (
                             <span
                                 className={`${small ? 'w-5 h-5' : 'w-5 h-5'} rounded-sm inline-block`}
@@ -179,4 +175,3 @@ export default function ColorPalette({
         </>
     );
 }
-

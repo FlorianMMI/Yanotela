@@ -3,16 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
-import Icon from '@/ui/Icon';
+
 import { GetNoteById, GetFolderById, UpdateFolder } from '@/loader/loader';
 import NoteMore from '@/components/noteMore/NoteMore';
 import FolderMore from '@/components/folderMore/FolderMore';
-import Icons from '@/ui/Icon';
-import { useRouter } from 'next/navigation';
+
 import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 import ConnectedUsers from '../collaboration/ConnectedUsers';
 import { yjsDocuments } from '@/collaboration/providers';
+import { DocsIcon, FlashIcon, FolderIcon, MoreIcon, ProfileIcon, Comment } from '@/libs/Icons';
 
 interface BreadcrumbItem {
   label: string;
@@ -23,10 +22,20 @@ interface BreadcrumbItem {
 
 export default function Breadcrumb() {
   const pathname = usePathname();
-  const router = useRouter();
   const [noteTitle, setNoteTitle] = useState<string>('');
   const [folderName, setFolderName] = useState<string>('');
-  const [folderData, setFolderData] = useState<any>(null); // Pour stocker toutes les infos du dossier
+
+  interface FolderData {
+    Nom: string;
+    Description?: string | null;
+    CouleurTag?: string | null;
+    ModifiedAt?: string | null;
+    noteCount?: number;
+    // allow other properties returned by the API without using `any`
+    [key: string]: unknown;
+  }
+
+  const [folderData, setFolderData] = useState<FolderData | null>(null); // Pour stocker toutes les infos du dossier
   const [tempFolderName, setTempFolderName] = useState<string>('');
   const [showNoteMore, setShowNoteMore] = useState(false);
   const [showFolderMore, setShowFolderMore] = useState(false);
@@ -330,7 +339,6 @@ export default function Breadcrumb() {
     }
 
     if (pathname.startsWith('/notes/') && segments.length > 1) {
-      const noteId = segments[1];
       // Utiliser noteTitle s'il existe et n'est pas vide, sinon utiliser le fallback par défaut
       const displayTitle = noteTitle && noteTitle.trim() !== '' ? noteTitle : '';
       return [
@@ -461,16 +469,16 @@ export default function Breadcrumb() {
           {/* Icône de la page courante */}
           {(() => {
             if (pathname.includes('/notes')) {
-              return <Icon name="docs" size={20} strokeWidth={12} className="text-primary" />;
+              return <DocsIcon name="docs" width={20} height={20} strokeWidth={12} className="text-primary" />;
             }
             if (pathname.includes('/dossiers')) {
-              return <Icon name="folder" size={20} className="text-primary" />;
+              return <FolderIcon width={20} height={20} className="text-primary" />;
             }
             if (pathname.includes('/profil')) {
-              return <Icon name="profile" size={20} strokeWidth={12} className="text-primary" />;
+              return <ProfileIcon width={20} height={20} strokeWidth={12} className="text-primary" />;
             }
             if (pathname === '/flashnote') {
-              return <Icon name="flash" size={30} strokeWidth={12} className="text-primary" />;
+              return <FlashIcon width={30} height={30} strokeWidth={12} className="text-primary" />;
             }
             return null;
           })()}
@@ -535,9 +543,9 @@ export default function Breadcrumb() {
                         onClick={() => setShowNoteMore((prev) => !prev)}
                         className="ml-2"
                       >
-                        <Icons
-                          name="more"
-                          size={30}
+                        <MoreIcon
+                          width={30}
+                          height={30}
                           className="text-primary cursor-pointer"
                         />
                       </span>
@@ -555,16 +563,16 @@ export default function Breadcrumb() {
                         onClick={() => setShowFolderMore((prev) => !prev)}
                         className="ml-2"
                       >
-                        <Icons
-                          name="more"
-                          size={30}
+                        <MoreIcon
+                          width={30}
+                          height={30}
                           className="text-primary cursor-pointer"
                         />
                       </span>
                       {showFolderMore && folderData && (
                         <div className="absolute right-0 mt-10 z-100">
                           <FolderMore 
-                            folder={{ ModifiedAt: folderData.ModifiedAt }}
+                            folder={{ ModifiedAt: folderData.ModifiedAt ?? "" }}
                             folderId={folderId!} 
                             folderName={folderData.Nom || folderName}
                             folderDescription={folderData.Description || ""}

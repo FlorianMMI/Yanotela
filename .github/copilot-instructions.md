@@ -72,7 +72,7 @@ fetch(`${apiUrl}/note/get`, {
 
 **Error Responses**
 ```javascript
-// Validation errors (express-validator)
+// Validation errors (express-validator 7.0.1)
 { errors: [...], message: "..." }
 
 // General errors
@@ -169,6 +169,8 @@ src/routes/[feature]Routes.js           # Route definitions + middleware
 src/middlewares/authMiddleware.js       # Auth guards (requireAuth, requireWriteAccess)
 src/services/yjsMigration.js            # Legacy JSON → YJS migration
 src/config/sessionConfig.js             # express-session setup
+src/config/corsConfig.js                # CORS configuration
+scripts/                                # Utility scripts (cleanup, migration, test data)
 ```
 
 **ES Module Gotchas** (Server)

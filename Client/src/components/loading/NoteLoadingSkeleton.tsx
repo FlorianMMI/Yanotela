@@ -99,7 +99,7 @@ export default function NoteLoadingSkeleton() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
         >
-          Préparation de l'éditeur
+          Préparation de l&apos;éditeur
           <motion.span
             animate={{ opacity: [0, 1, 0] }}
             transition={{

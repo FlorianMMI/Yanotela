@@ -19,12 +19,17 @@ const getPrimaryColor = (): string => {
 };
 
 export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNoteProps) {
-  const [selectedColor, setSelectedColor] = useState<string>(currentTag || 'var(--primary)');
-  const [isUpdating, setIsUpdating] = useState(false);
   const [primaryColor, setPrimaryColor] = useState<string>(getPrimaryColor());
+  const [selectedColor, setSelectedColor] = useState<string>(currentTag || getPrimaryColor());
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    setSelectedColor(currentTag || 'var(--primary)');
+    // Si le tag actuel est vide, null ou undefined, on force la couleur par défaut dynamique
+    if (!currentTag || currentTag.trim() === '' || currentTag === 'var(--primary)') {
+      setSelectedColor(primaryColor);
+    } else {
+      setSelectedColor(currentTag);
+    }
   }, [currentTag]);
 
   // Écouter les changements de thème pour mettre à jour la couleur primary
@@ -54,7 +59,12 @@ export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNotePro
   const handleColorChange = async (color: string) => {
     if (color === selectedColor) return;
 
-    setSelectedColor(color);
+    // Si l'utilisateur choisit la couleur par défaut, on utilise la valeur dynamique
+    if (!color || color.trim() === '' || color === 'var(--primary)' || color === primaryColor) {
+      setSelectedColor(primaryColor);
+    } else {
+      setSelectedColor(color);
+    }
     setIsUpdating(true);
 
     try {
@@ -64,7 +74,7 @@ export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNotePro
           onTagUpdated();
         }
         // Déclencher un événement pour rafraîchir la liste des notes
-        window.dispatchEvent(new Event('auth-refresh'));
+        window.dispatchEvent(new Event('noteTagUpdated'));
       } else {
         console.error("Erreur lors de la mise à jour du tag:", result.error);
         alert(result.error || "Erreur lors de la mise à jour du tag");
@@ -91,12 +101,12 @@ export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNotePro
         <div className="grid grid-cols-3 gap-3">
           {FOLDER_COLORS.map((color) => {
             const colorValue = color.value === 'var(--primary)' ? primaryColor : color.value;
-            const isSelected = selectedColor === color.value;
+            const isSelected = selectedColor === colorValue;
             
             return (
               <button
                 key={color.id}
-                onClick={() => handleColorChange(color.value)}
+                onClick={() => handleColorChange(colorValue)}
                 disabled={isUpdating}
                 className={`
                   relative flex flex-col items-center p-3 rounded-lg border-2 transition-all
@@ -130,21 +140,6 @@ export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNotePro
               </button>
             );
           })}
-        </div>
-
-        {/* Aperçu du tag sélectionné */}
-        <div className="mt-6 p-4 border rounded-lg bg-gray-50">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Aperçu :</h4>
-          <div className="flex items-center gap-3 p-2 bg-white rounded-lg border">
-            <span className="text-sm text-gray-600">Tag de la note :</span>
-            <div 
-              className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
-              style={{ backgroundColor: selectedColor === 'var(--primary)' ? primaryColor : selectedColor }}
-            />
-            <span className="text-sm font-medium">
-              {FOLDER_COLORS.find(c => c.value === selectedColor)?.label || 'Couleur personnalisée'}
-            </span>
-          </div>
         </div>
 
         {isUpdating && (

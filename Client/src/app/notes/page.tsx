@@ -1,14 +1,14 @@
 "use client";
 import React from "react";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { Note } from "@/type/Note";
 import NoteHeader from "@/components/noteHeader/NoteHeader";
 import NoteList from "@/components/noteList/NoteList";
 import { GetNotes } from "@/loader/loader";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
-import SearchBar, { SearchMode } from "@/ui/searchbar";
+import  { SearchMode } from "@/ui/searchbar";
 import FlashNoteButton from '@/ui/flash-note-button'; 
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,15 +16,13 @@ export default function Home() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
   const [searchMode, setSearchMode] = useState<SearchMode>("all");
+  const [tagColorFilter, setTagColorFilter] = useState<string>("");
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
   
   // Charger les notes au montage du composant
-  useEffect(() => {
-    fetchNotes();
-  }, []);
-
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     try {
       setLoading(true);
       const response = await GetNotes();
@@ -35,7 +33,11 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
 
   // Filtrer et trier les notes
   const filteredNotes = Array.isArray(notes) ? notes
@@ -45,32 +47,37 @@ export default function Home() {
       if (searchTerm) {
         switch (searchMode) {
           case 'title':
-            // Rechercher uniquement dans le titre
             matchesSearch = note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
             break;
           case 'content':
-            // Rechercher uniquement dans le contenu
             matchesSearch = note.Content?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
             break;
           case 'all':
           default:
-            // Rechercher dans titre ET contenu
             matchesSearch = (note.Titre?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
                            (note.Content?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
             break;
         }
       }
-      
+
       // Filtre de collaboration
-      // Personnelles : 1 seul utilisateur (nous, collaboratorCount = 0 ou undefined ou = 1)
-      // Collaboratives : 2 utilisateurs ou plus (collaboratorCount >= 2)
       const matchesCollaboration = 
         collaborationFilter === "all" ? true :
         collaborationFilter === "collaborative" ? (note.collaboratorCount && note.collaboratorCount >= 2) :
         collaborationFilter === "solo" ? (!note.collaboratorCount || note.collaboratorCount <= 1) :
         true;
-      
-      return matchesSearch && matchesCollaboration;
+
+      // Filtre par couleur de tag
+      let matchesTagColor = true;
+      if (tagColorFilter) {
+        if (tagColorFilter === 'var(--primary)') {
+          matchesTagColor = !note.tag || note.tag === '' || note.tag === 'var(--primary)';
+        } else {
+          matchesTagColor = note.tag === tagColorFilter;
+        }
+      }
+
+      return matchesSearch && matchesCollaboration && matchesTagColor;
     })
     .sort((a, b) => {
       // Notes sorted by ModifiedAt (no CreatedAt in schema)
@@ -93,6 +100,8 @@ export default function Home() {
         setCollaborationFilter={setCollaborationFilter}
         searchMode={searchMode}
         setSearchMode={setSearchMode}
+        tagColorFilter={tagColorFilter}
+        setTagColorFilter={setTagColorFilter}
       />
 
       {/* Limiter la hauteur visible en mobile pour que seul ce conteneur soit scrollable.
@@ -116,7 +125,7 @@ export default function Home() {
           isOpen={true}
           isActive={false}
           onClick={() => {
-            window.location.href = '/flashnote';
+            router.push('/flashnote');
           }}
           className="w-full"
         />

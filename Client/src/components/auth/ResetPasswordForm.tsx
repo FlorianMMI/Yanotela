@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Turnstile from './Turnstile';
 import { useRouter } from 'next/navigation';
 import ConfirmPassword from '@/ui/confirm-password';
 import { ResetPassword, ValidateResetToken } from '@/loader/loader';
@@ -45,7 +46,7 @@ export default function ResetPasswordForm({
         }
       } catch (err) {
         setStatus('error');
-        setMessage("Erreur de connexion au serveur");
+        setMessage("Erreur de connexion au serveur :" + (err as Error).message);
       }
     };
 
@@ -170,6 +171,10 @@ export default function ResetPasswordForm({
         )}
 
         <div>
+          {/* Turnstile widget (no-op in non-prod) */}
+          <div className="mb-3">
+            <Turnstile />
+          </div>
           <button
             type="submit"
             disabled={status === 'loading' || status === 'success'}
