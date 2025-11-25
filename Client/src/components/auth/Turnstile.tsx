@@ -136,8 +136,7 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
   return (
     <div className={className}>
       <div
-        className="w-full relative overflow-hidden"
-        style={{ aspectRatio }}
+        className="w-full relative overflow-hidden aspect-auto"
       >
         <div
           ref={containerRef}

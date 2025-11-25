@@ -173,7 +173,7 @@ export default function ResetPasswordForm({
         <div>
           {/* Turnstile widget (no-op in non-prod) */}
           <div className="mb-3">
-            <Turnstile />
+              <Turnstile className='w-full' />
           </div>
           <button
             type="submit"
