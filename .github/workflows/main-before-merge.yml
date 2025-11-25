@@ -40,6 +40,8 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=https://yanotela.fr/api
             NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
+            NEXT_PUBLIC_TURNSTILE_SITE_SECRET_KEY=${{ secrets.TURNSTILE_SITE_SECRET_KEY }}
+
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:production
             ${{ env.DOCKER_FRONTEND_REPO }}:production-${{ github.sha }}
