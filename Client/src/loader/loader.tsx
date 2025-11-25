@@ -1237,3 +1237,5 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
+
+
