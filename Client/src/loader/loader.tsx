@@ -1208,3 +1208,67 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
+
+// ============== COMMENTAIRE FUNCTIONS ==============
+
+export interface Commentaire {
+    id: string;
+    text: string;
+    author: { pseudo: string } | string;
+    date: string;
+    authorId: number;
+}
+
+// Récupérer les commentaires d'une note
+export async function FetchComments(noteId: string): Promise<Commentaire[]> {
+    try {
+        const response = await fetch(`${apiUrl}/commentaire/get/${noteId}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+        let commentaires = Array.isArray(data.commentaire) ? data.commentaire : [];
+
+        // Pour chaque commentaire, si author n'est pas un objet, fetch le pseudo
+        const commentairesWithAuthor = await Promise.all(commentaires.map(async (comment: Commentaire) => {
+            if (comment.author && typeof comment.author === 'object' && (comment.author as any).pseudo) {
+                return comment;
+            }
+            // Si authorId existe, fetch le pseudo
+            if (comment.authorId) {
+                try {
+                    const res = await fetch(`${apiUrl}/user/info/${comment.authorId}`, {
+                        method: 'GET',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const userData = await res.json();
+                    return { ...comment, author: { pseudo: userData.user?.pseudo || 'Utilisateur' } };
+                } catch {
+                    return { ...comment, author: { pseudo: 'Utilisateur' } };
+                }
+            }
+            return { ...comment, author: { pseudo: 'Utilisateur' } };
+        }));
+        return commentairesWithAuthor;
+    } catch (err) {
+        return [];
+    }
+}
+
+// Créer un commentaire
+export async function CreateComment(payload: { text: string; authorId: number; date: string; idnote: string }): Promise<boolean> {
+    try {
+        const response = await fetch(`${apiUrl}/commentaire/create`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        return response.ok;
+    } catch (err) {
+        return false;
+    }
+}
+

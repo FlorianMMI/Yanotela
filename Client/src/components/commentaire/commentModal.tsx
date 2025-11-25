@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { CloseIcon, TrashIcon} from '@/libs/Icons';
 import Comment from '@/ui/comment/comment';
 import { Send } from '@/libs/Icons';
+import { FetchComments, CreateComment, Commentaire } from '@/loader/loader';
 
 
 interface ParamModalProps {
@@ -13,14 +14,7 @@ interface ParamModalProps {
 
 export default function ParamModal({ onClose }: ParamModalProps) {
     const commentsContainerRef = React.useRef<HTMLDivElement>(null);
-    interface commentaire {
-        id: string;
-        text: string;
-        author: { pseudo: string } | string;
-        date: string;
-        authorId: number;
-    }
-    const [comments, setComments] = useState<commentaire[]>([]);
+    const [comments, setComments] = useState<Commentaire[]>([]);
     const [loading, setLoading] = useState(true);
     const { user } = require('@/hooks/useAuth').useAuth();
     const router = useRouter();
@@ -37,41 +31,13 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     const noteId = extractNoteId();
 
     // Charger les commentaire liés à la note
-    // Définir fetchComments en dehors du useEffect pour pouvoir le rappeler
+    // Utilise la fonction du loader pour charger les commentaires
     const fetchComments = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/commentaire/get/${noteId}`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await response.json();
-            let commentaire = Array.isArray(data.commentaire) ? data.commentaire : [];
-
-            // Pour chaque commentaire, si author n'est pas un objet, fetch le pseudo
-            const commentaireWithAuthor = await Promise.all(commentaire.map(async (comment: commentaire) => {
-                if (comment.author && typeof comment.author === 'object' && comment.author.pseudo) {
-                    return comment;
-                }
-                // Si authorId existe, fetch le pseudo
-                if (comment.authorId) {
-                    try {
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/info/${comment.authorId}`, {
-                            method: 'GET',
-                            credentials: 'include',
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                        const userData = await res.json();
-                        return { ...comment, author: { pseudo: userData.user?.pseudo || 'Utilisateur' } };
-                    } catch {
-                        return { ...comment, author: { pseudo: 'Utilisateur' } };
-                    }
-                }
-                return { ...comment, author: { pseudo: 'Utilisateur' } };
-            }));
-            setComments(commentaireWithAuthor);
-        } catch (err) {
+            const result = await FetchComments(noteId);
+            setComments(result);
+        } catch {
             setComments([]);
         } finally {
             setLoading(false);
@@ -106,19 +72,11 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 date: now,
                 idnote: noteId
             };
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/commentaire/create`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (response.ok) {
+            const success = await CreateComment(payload);
+            if (success) {
                 setCommentText("");
-                // Actualiser uniquement la liste des commentaires
                 await fetchComments();
             }
-        } catch (err) {
-            // Optionnel : afficher une erreur
         } finally {
             setPosting(false);
         }
