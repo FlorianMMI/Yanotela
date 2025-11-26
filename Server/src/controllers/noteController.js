@@ -231,12 +231,15 @@ export const noteController = {
       // Générer un nouvel ID pour la note dupliquée
       const newUID = crypto.randomBytes(8).toString("hex");
 
-      // Créer la nouvelle note avec le contenu de l'originale
+      // Copier directement l'état YJS (binaire) et le contenu
+      // Le YJS WebSocket server créera une nouvelle room pour ce nouveau noteId
+      // et le client appliquera cet état au Y.Doc lors de la première connexion
       const duplicatedNote = await prisma.note.create({
         data: {
           id: newUID,
           Titre: `${originalNote.Titre} (copie)`,
           Content: originalNote.Content,
+          yjsState: originalNote.yjsState, // Copier le state YJS binaire
           authorId: userId, // L'utilisateur devient le propriétaire de la copie
           modifierId: userId,
           permissions: {
@@ -358,6 +361,7 @@ export const noteController = {
       res.status(200).json({
         Titre: note.Titre,
         Content: note.Content,
+        yjsState: note.yjsState ? Array.from(note.yjsState) : null, // Convertir Buffer en array pour JSON
         author: note.author ? note.author.pseudo : null,
         modifier: note.modifier ? note.modifier.pseudo : null,
         ModifiedAt: note.ModifiedAt,

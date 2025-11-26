@@ -352,28 +352,43 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         reader.onload = (e) => {
             const src = e.target?.result as string;
             if (src) {
-                editor.update(() => {
-                    if (isImage) {
-                        const imageNode = $createImageNode({
-                            src,
-                            altText: file.name,
-                            isDrawing: false, // Imported images are not drawings
+                if (isImage) {
+                    // Load image to get dimensions before inserting
+                    const img = new window.Image();
+                    img.onload = () => {
+                        editor.update(() => {
+                            const imageNode = $createImageNode({
+                                src,
+                                altText: file.name,
+                                width: img.width,
+                                height: img.height,
+                                isDrawing: false,
+                            });
+                            $insertNodes([imageNode]);
                         });
-                        $insertNodes([imageNode]);
-                    } else if (isAudio) {
-                        const audioNode = $createAudioNode({
-                            src,
-                            altText: file.name,
-                        });
-                        $insertNodes([audioNode]);
-                    } else if (isVideo) {
-                        const videoNode = $createVideoNode({
-                            src,
-                            altText: file.name,
-                        });
-                        $insertNodes([videoNode]);
-                    }
-                });
+                    };
+                    img.onerror = () => {
+                        console.error('Failed to load image');
+                        alert('Erreur lors du chargement de l\'image');
+                    };
+                    img.src = src;
+                } else {
+                    editor.update(() => {
+                        if (isAudio) {
+                            const audioNode = $createAudioNode({
+                                src,
+                                altText: file.name,
+                            });
+                            $insertNodes([audioNode]);
+                        } else if (isVideo) {
+                            const videoNode = $createVideoNode({
+                                src,
+                                altText: file.name,
+                            });
+                            $insertNodes([videoNode]);
+                        }
+                    });
+                }
             }
         };
         reader.readAsDataURL(file);
