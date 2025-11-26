@@ -1272,3 +1272,22 @@ export async function CreateComment(payload: { text: string; authorId: number; d
     }
 }
 
+// Supprimer un commentaire
+export async function DeleteComment(commentId: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/commentaire/delete/${commentId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+            return { success: true, message: data.message || 'Commentaire supprimé avec succès' };
+        } else {
+            return { success: false, error: data.error || 'Erreur lors de la suppression du commentaire' };
+        }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Erreur inconnue' };
+    }
+}
+

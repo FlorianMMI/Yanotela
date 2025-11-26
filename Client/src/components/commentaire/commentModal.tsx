@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { CloseIcon, TrashIcon} from '@/libs/Icons';
 import Comment from '@/ui/comment/comment';
 import { Send } from '@/libs/Icons';
-import { FetchComments, CreateComment, Commentaire } from '@/loader/loader';
+import { FetchComments, CreateComment, Commentaire, FetchPermission } from '@/loader/loader';
 
 
 interface ParamModalProps {
@@ -15,6 +15,7 @@ interface ParamModalProps {
 export default function ParamModal({ onClose }: ParamModalProps) {
     const commentsContainerRef = React.useRef<HTMLDivElement>(null);
     const [comments, setComments] = useState<Commentaire[]>([]);
+    const [userRole, setUserRole] = useState<number | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const { user } = require('@/hooks/useAuth').useAuth();
     const router = useRouter();
@@ -47,8 +48,36 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         }
     };
     useEffect(() => {
-        if (noteId) fetchComments();
-    }, [noteId]);
+        if (noteId) {
+            fetchComments();
+            // Récupérer le rôle de l'utilisateur pour la note
+            FetchPermission(noteId).then(res => {
+                let foundRole: number | undefined = undefined;
+                if (res.success && res.permissions) {
+                    // Cherche la permission correspondant à l'utilisateur courant
+                    const perm = res.permissions.find(p => p.id_user === user?.id);
+                    foundRole = perm?.role;
+                }
+                if (foundRole === undefined && user?.id) {
+                    import('@/loader/loader').then(loader => {
+                        loader.GetNoteById(noteId).then(note => {
+                            // Debug
+                            if (typeof window !== 'undefined') {
+                                console.log('DEBUG GetNoteById:', note);
+                            }
+                            if (note && typeof note === 'object' && 'authorId' in note && note.authorId === user.id) {
+                                setUserRole(0); // Propriétaire
+                            } else {
+                                setUserRole(foundRole);
+                            }
+                        });
+                    });
+                } else {
+                    setUserRole(foundRole);
+                }
+            });
+        }
+    }, [noteId, user?.id]);
 
     // Scroll en bas à chaque changement de commentaires
     useEffect(() => {
@@ -135,6 +164,11 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                                         text={comment.text}
                                         author={comment.author}
                                         date={comment.date}
+                                        id={comment.id}
+                                        authorId={comment.authorId}
+                                        userId={user?.id}
+                                        userRole={userRole}
+                                        onDelete={async () => { await fetchComments(); }}
                                     />
                                 ))
                             )

@@ -10,4 +10,7 @@ router.post('/create', requireAuth, commentaireController.createcommentaire);
 // Récupérer les commentaire d'une note
 router.get('/get/:noteId', requireAuth, commentaireController.getcommentaireByNote);
 
+// Supprimer un commentaire
+router.delete('/delete/:commentId', requireAuth, commentaireController.deleteCommentaire);
+
 export default router;

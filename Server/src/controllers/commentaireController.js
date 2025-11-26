@@ -45,4 +45,21 @@ export const commentaireController = {
 			return res.status(500).json({ error: 'Erreur serveur' });
 		}
 	},
+
+	// Supprimer un commentaire
+	async deleteCommentaire(req, res) {
+		try {
+			const { commentId } = req.params;
+			if (!commentId) {
+				return res.status(400).json({ error: 'commentId manquant' });
+			}
+			const deleted = await prisma.commentaire.delete({
+				where: { id: commentId }
+			});
+			return res.json({ success: true, message: 'Commentaire supprimé', commentaire: deleted });
+		} catch (err) {
+			console.error('Erreur suppression commentaire:', err);
+			return res.status(500).json({ error: 'Erreur serveur' });
+		}
+	},
 };
