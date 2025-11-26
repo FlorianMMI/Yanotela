@@ -565,52 +565,25 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         return;
       }
 
-      // Calculate proportional dimensions if exceeding max size
-      const maxDimension = 600;
-      let finalWidth = drawingData.width;
-      let finalHeight = drawingData.height;
+      editor.update(() => {
+        const selection = $getSelection();
 
-      if (finalWidth > maxDimension || finalHeight > maxDimension) {
-        const aspectRatio = finalWidth / finalHeight;
-        if (finalWidth > finalHeight) {
-          finalWidth = maxDimension;
-          finalHeight = Math.round(maxDimension / aspectRatio);
+        // Créer un nouveau nœud image avec le dessin
+        const imageNode = $createImageNode({
+          src: drawingData.dataUrl,
+          altText: "Drawing",
+          width: Math.min(drawingData.width, 600),
+          height: Math.min(drawingData.height, 600),
+        });
+
+        // Insérer le nœud image à la sélection actuelle ou à la fin
+        if ($isRangeSelection(selection)) {
+          $insertNodes([imageNode]);
         } else {
-          finalHeight = maxDimension;
-          finalWidth = Math.round(maxDimension * aspectRatio);
+          const root = $getRoot();
+          root.append(imageNode);
         }
-      }
-
-      editor.update(
-        () => {
-          const selection = $getSelection();
-
-          // Créer un nouveau nœud image avec le dessin
-          const imageNode = $createImageNode({
-            src: drawingData.dataUrl,
-            altText: "Drawing",
-            width: finalWidth,
-            height: finalHeight,
-            isDrawing: true, // Mark as drawing to show dashed border
-          });
-
-          // Insérer le nœud image à la sélection actuelle ou à la fin
-          if ($isRangeSelection(selection)) {
-            $insertNodes([imageNode]);
-          } else {
-            const root = $getRoot();
-            const lastChild = root.getLastChild();
-            if (lastChild) {
-              lastChild.insertAfter(imageNode);
-            } else {
-              root.append(imageNode);
-            }
-          }
-        },
-        {
-          tag: "collaboration",
-        }
-      );
+      });
 
       // Forcer une sauvegarde immédiate après l'insertion du dessin
       setTimeout(() => {
@@ -655,15 +628,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         const note = noteData;
         setNoteTitle(note.Titre || "Sans titre");
 
-        // ✅ Enregistrer l'état YJS initial AVANT que le CollaborationPlugin ne soit monté
-        // Il sera appliqué automatiquement lors de la création du Y.Doc
-        if (note.yjsState && Array.isArray(note.yjsState) && note.yjsState.length > 0) {
-          const { registerInitialYjsState } = await import("@/collaboration/providers");
-          registerInitialYjsState(id, note.yjsState);
-          console.log(`✅ [LoadNote] État YJS enregistré (${note.yjsState.length} bytes)`);
-        }
-
-        // ✅ Charger le contenu initial dans l'éditeur (fallback si pas de yjsState)
+        // ✅ Charger le contenu initial dans l'éditeur
         if (note.Content) {
           setInitialEditorContent(note.Content);
         } else {
