@@ -406,9 +406,13 @@ function LoadInitialContentPlugin({
         }
 
         if (ydoc) {
-          const encoded = Y.encodeStateAsUpdate(ydoc);
-          if (encoded && encoded.length > 0) {
-            // Y.Doc already has content — skip applying DB content to avoid duplication
+          // Vérifier si le Y.Doc contient réellement du contenu
+          // (pas juste un état YJS vide qui a quand même un encoded.length > 0)
+          const yXmlText = ydoc.get('root', Y.XmlText);
+          const textContent = yXmlText ? yXmlText.toString().trim() : '';
+          
+          if (textContent.length > 0) {
+            // Y.Doc contient du vrai contenu — skip applying DB content to avoid duplication
             hasLoadedRef.current = true;
             return;
           }
