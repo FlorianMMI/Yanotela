@@ -12,7 +12,6 @@ type ColorPaletteProps = {
 
 const DEFAULT_COLORS = [
     '#000000',
-    '#727272',
     '#D4AF37',
     '#FF6B6B',
     '#4CAF50',

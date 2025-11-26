@@ -81,10 +81,10 @@ export function NoteFiltersBar({
       <button
         key={filter}
         onClick={() => handleCollaborationChange(filter)}
-        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+        className={`w-full text-left px-4 py-2.5 rounded-lg transition-all active:scale-95 ${
           collaborationFilter === filter
-            ? 'bg-primary text-white font-medium'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            ? 'bg-primary text-white font-medium shadow-sm'
+            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
         }`}
       >
         {filter === 'all' ? 'Toutes' : filter === 'solo' ? 'Personnelles' : 'Collaboratives'}
@@ -185,13 +185,13 @@ export function NoteFiltersBar({
                   exit={{ height: 0, opacity: 0 }}
                   className="mt-3 overflow-hidden"
                 >
-                  <div className="bg-white rounded-lg p-3 space-y-3">
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-3 shadow-sm">
                     {/* Tri */}
                     <div>
-                      <p className="text-sm font-medium text-gray-700 mb-2">Trier par</p>
+                      <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Trier par</p>
                       <button
                         onClick={handleSortDirToggle}
-                        className="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-primary text-white"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white font-medium shadow-sm active:scale-95 transition-transform"
                       >
                         Récents {sortDir === 'desc' ? '▼' : '▲'}
                       </button>
@@ -199,15 +199,15 @@ export function NoteFiltersBar({
 
                     {/* Type de note */}
                     <div>
-                      <p className="text-sm font-medium text-gray-700 mb-2">Type de note</p>
+                      <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Type de note</p>
                       <div className="space-y-2">
                         {collaborationButtons}
                       </div>
                     </div>
 
                     {/* Filtre par couleur de tag */}
-                    <div className="mt-2 bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Couleur du tag</p>
+                    <div className="bg-white p-3 rounded-lg border border-gray-200">
+                      <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Couleur du tag</p>
                       <div className="flex flex-wrap gap-2">
                         {colorButtons}
                       </div>
@@ -222,7 +222,7 @@ export function NoteFiltersBar({
 
       {/* Barre de recherche et filtres - Desktop */}
       <div className="hidden xl:block md:hidden">
-        <div className="flex flex-wrap items-stretch justify-center gap-3 p-6 h-full">
+        <div className="flex flex-wrap items-stretch justify-center gap-3 p-4 h-full">
           <SearchBar
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
