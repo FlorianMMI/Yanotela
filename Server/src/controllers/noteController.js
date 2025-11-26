@@ -1045,6 +1045,27 @@ export const noteController = {
     const { id } = req.params;
     
     try {
+      // Vérifier les permissions de l'utilisateur (doit être propriétaire ou admin)
+      const permission = await prisma.permission.findFirst({
+        where: {
+          userId: parseInt(req.session.userId),
+          noteId: id
+        }
+      });
+
+      if (!permission) {
+        return res.status(403).json({ 
+          message: 'Vous n\'avez pas accès à cette note'
+        });
+      }
+
+      // Seuls les propriétaires (role 0) et admins (role 1) peuvent modifier le statut public
+      if (permission.role > 1) {
+        return res.status(403).json({ 
+          message: 'Seuls les propriétaires et administrateurs peuvent modifier la visibilité de la note'
+        });
+      }
+
       var note = await prisma.note.findUnique({
         where: { id },
         select: { isPublic: true },

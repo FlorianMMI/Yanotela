@@ -3,9 +3,7 @@ import axios from 'axios';
 // verifyTurnstile(token) -> boolean
 export async function verifyTurnstile(token) {
   // In tests you may want to bypass verification. Use an explicit env var to disable.
-  // Do NOT bypass for 'preprod' or other non-production environments by default.
-  // Set TURNSTILE_DISABLED=1 only for local tests where you intentionally want to skip verification.
-  if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'production') {
+  if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV === 'test') {
     console.warn('Turnstile verification bypassed by TURNSTILE_DISABLED or test env');
     return true;
   }
@@ -50,7 +48,7 @@ export function requireTurnstile(fieldName = 'cf-turnstile-response') {
         // Use 303 See Other so browsers will perform a GET to the redirect target.
         const referer = req.get('referer') || '/login';
         const sep = referer.includes('?') ? '&' : '?';
-        return res.redirect(303, `${referer}${sep}error=captcha`);
+        return;
       }
       return next();
     } catch (err) {

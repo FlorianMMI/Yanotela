@@ -76,6 +76,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./Client
+          file: ./Client/Dockerfile
           platforms: linux/amd64
           push: true
           build-args: |
@@ -286,6 +287,7 @@ jobs:
                 environment:
                   - NODE_ENV=development
                   - NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
+                  - NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
                 env_file:
                   - .env.dev
                 depends_on:
@@ -323,12 +325,14 @@ jobs:
                 driver: bridge
             EOF
 
-            # .env.dev (inchangé)
+            # .env.dev - Variables d'environnement pour les containers
             cat > .env.dev << 'EOF'
             ${{ secrets.PREPROD }}
-            ${{ secrets.TURNSTILE_SITE_KEY }}
-            ${{ secrets.TURNSTILE_SITE_SECRET_KEY }}
             EOF
+            
+            # Ajouter les variables Turnstile avec le bon format
+            echo "TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}" >> .env.dev
+            echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}" >> .env.dev
 
             # Démarrage des services (optimisé : pull + up en une étape)
             docker compose down || true
