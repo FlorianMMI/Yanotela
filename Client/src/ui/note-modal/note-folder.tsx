@@ -154,7 +154,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
 
     if (loading) {
         return (
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-3 md:p-4">
                 <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
@@ -163,7 +163,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
     }
 
     return (
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3 md:p-4">
             {/* Messages de succès/erreur */}
             {success && (
                 <div className="mb-4 p-3 bg-success-100 text-success-700 rounded-lg text-sm">
