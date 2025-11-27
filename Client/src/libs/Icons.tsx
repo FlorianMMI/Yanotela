@@ -509,10 +509,10 @@ export function XIcon(props: React.SVGProps<SVGSVGElement>) {
 export function CopyIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 5.04877L10.367 4.70563C12.7995 2.43146 16.7432 2.43146 19.1757 4.70563M16.9735 15L19.1757 12.9411C20.3438 11.849 20.951 10.4309 20.9972 9" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M14 18.9278L13.6345 19.2773C11.2123 21.5937 7.25434 21.5644 4.83209 19.248C2.43376 16.9546 2.37639 13.2153 4.74095 10.89L5.64594 10" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M6.58739 3L7.5 5.20521" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M3.50238 6.08658L9.05021 8.79453" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M10 5.04877L10.367 4.70563C12.7995 2.43146 16.7432 2.43146 19.1757 4.70563M16.9735 15L19.1757 12.9411C20.3438 11.849 20.951 10.4309 20.9972 9" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M14 18.9278L13.6345 19.2773C11.2123 21.5937 7.25434 21.5644 4.83209 19.248C2.43376 16.9546 2.37639 13.2153 4.74095 10.89L5.64594 10" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M6.58739 3L7.5 5.20521" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M3.50238 6.08658L9.05021 8.79453" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
     )
 }
@@ -520,9 +520,9 @@ export function CopyIcon(props: React.SVGProps<SVGSVGElement>) {
 export function CopyLinkIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14.1625 18.4876L13.4417 19.2084C11.053 21.5971 7.18019 21.5971 4.79151 19.2084C2.40283 16.8198 2.40283 12.9469 4.79151 10.5583L5.51236 9.8374" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M9.8374 14.1625L14.1625 9.8374" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M9.8374 5.51236L10.5583 4.79151C12.9469 2.40283 16.8198 2.40283 19.2084 4.79151M18.4876 14.1625L19.2084 13.4417C20.4324 12.2177 21.0292 10.604 20.9988 9" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M14.1625 18.4876L13.4417 19.2084C11.053 21.5971 7.18019 21.5971 4.79151 19.2084C2.40283 16.8198 2.40283 12.9469 4.79151 10.5583L5.51236 9.8374" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M9.8374 14.1625L14.1625 9.8374" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M9.8374 5.51236L10.5583 4.79151C12.9469 2.40283 16.8198 2.40283 19.2084 4.79151M18.4876 14.1625L19.2084 13.4417C20.4324 12.2177 21.0292 10.604 20.9988 9" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
     )
 }

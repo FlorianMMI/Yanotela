@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef, useCallback } from "react";
 import { useState, useEffect } from "react";
 import { Note } from "@/type/Note";
 import { GetDeletedNotes, RestoreNote } from "@/loader/loader";
@@ -22,11 +22,10 @@ export default function Corbeille() {
     return Math.max(0, daysRemaining); // Ne pas retourner de valeur négative
   };
 
-  useEffect(() => {
-    fetchDeletedNotes();
-  }, []);
+  const hasFetched = useRef(false);
 
-  const fetchDeletedNotes = async () => {
+  // Charger les notes supprimées (évite double appel en Strict Mode)
+  const fetchDeletedNotes = useCallback(async () => {
     try {
       setLoading(true);
       const response = await GetDeletedNotes();
@@ -37,7 +36,13 @@ export default function Corbeille() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetchDeletedNotes();
+  }, [fetchDeletedNotes]);
 
   const handleRestore = async (noteId: string) => {
     try {

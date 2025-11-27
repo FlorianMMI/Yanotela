@@ -27,12 +27,14 @@ export const yjsDocuments = new Map<string, Y.Doc>();
  * @param userName - Nom de l'utilisateur
  * @param userColor - Couleur du curseur
  * @param userId - ID de l'utilisateur
+ * @returns true si le provider existe et a été mis à jour, false sinon
  */
-export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string, userId?: number) {
+export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string, userId?: number): boolean {
   const provider = providerInstances.get(noteId);
   if (!provider) {
-    console.warn(`[setAwarenessUserInfo] Provider non trouvé pour note ${noteId}`);
-    return;
+    // Ne pas logger en mode warning - c'est normal que le provider n'existe pas encore
+    // pendant l'initialisation (il sera créé par CollaborationPlugin)
+    return false;
   }
 
   const awareness = provider.awareness;
@@ -48,6 +50,8 @@ export function setAwarenessUserInfo(noteId: string, userName: string, userColor
       console.warn(`[setAwarenessUserInfo] Erreur auto-accept pour note ${noteId}:`, err);
     });
   }
+  
+  return true;
 }
 
 /**
@@ -99,7 +103,7 @@ export function createWebsocketProvider(
     `yanotela-${id}`,                   // Room name (préfixe + noteId)
     doc,
     {
-      connect: false,                   // Ne pas connecter immédiatement (géré par plugin)
+      connect: true,                    // Connecter immédiatement (géré par y-websocket)
       // Paramètres de reconnexion
       resyncInterval: 10000,            // Resync toutes les 10s
       maxBackoffTime: 10000,            // Délai max entre reconnexions

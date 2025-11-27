@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import "../../globals.css";
@@ -15,6 +15,7 @@ export default function ValidatePage({ params }: ValidatePageProps) {
   const [token, setToken] = useState<string | null>(null);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const hasValidated = useRef(false);
 
   useEffect(() => {
     params.then(({ token: resolvedToken }) => {
@@ -24,6 +25,8 @@ export default function ValidatePage({ params }: ValidatePageProps) {
 
   useEffect(() => {
     if (!token) return;
+    if (hasValidated.current) return;
+    hasValidated.current = true;
 
     const validateToken = async () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api';

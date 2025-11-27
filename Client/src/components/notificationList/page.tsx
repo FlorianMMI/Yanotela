@@ -1,82 +1,30 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { usePathname } from "next/navigation";
 import Notification from "@/ui/notification";
-import { GetNotifications } from "@/loader/loader";
-import Icon from "@/ui/Icon";
 import { NotificationsIcon } from "@/libs/Icons";
+import { useYjsNotifications } from "@/hooks/useYjsNotifications";
+import { useAuth } from "@/hooks/useAuth";
 
 interface NotificationListProps {
     isOpenSideBar?: boolean;
 }
 
 export default function NotificationList({ isOpenSideBar = true }: NotificationListProps) {
-    const [notifications, setNotifications] = useState<any[]>([]);
     const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
     const notificationRef = useRef<HTMLDivElement>(null);
-    const pathname = usePathname();
-    
-    // Déterminer si on est sur la page profil
-    const isProfilePage = pathname.includes('/profil');
-    
+    const auth = useAuth();
+
+    // ✅ Utiliser YJS Awareness pour les notifications temps réel (plus de polling HTTP)
+    const { notifications, loading, markAsRead, deleteNotification } = useYjsNotifications(auth.user?.id);
+
     // Déterminer si on doit afficher l'indicateur rouge
     const shouldShowRedIndicator = notifications.length > 0;
-
-    const fetchNotifications = async () => {
-        setLoading(true);
-        try {
-            const result = await GetNotifications();
-            setNotifications(result.notes ?? []);
-        } catch (err) {
-            console.error("Error fetching notifications", err);
-            setNotifications([]);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // assure que le panneau est fermé au montage
     useEffect(() => {
         setOpen(false);
     }, []);
-
-    // Charger les notifications au montage pour permettre l'affichage de l'indicateur rouge
-    useEffect(() => {
-        fetchNotifications();
-        
-        // Polling périodique pour détecter les nouvelles notifications
-        const interval = setInterval(() => {
-            fetchNotifications();
-        }, 30000); // Vérifier toutes les 30 secondes
-        
-        // Vérifier les notifications quand la fenêtre redevient active
-        const handleFocus = () => {
-            fetchNotifications();
-        };
-
-        // Écouter l'événement personnalisé pour forcer la mise à jour des notifications
-        const handleNotificationRefresh = () => {
-            fetchNotifications();
-        };
-        
-        window.addEventListener('focus', handleFocus);
-        window.addEventListener('refreshNotifications', handleNotificationRefresh);
-        
-        return () => {
-            clearInterval(interval);
-            window.removeEventListener('focus', handleFocus);
-            window.removeEventListener('refreshNotifications', handleNotificationRefresh);
-        };
-    }, []);
-
-    useEffect(() => {
-        // preload when opening si pas déjà chargées
-        if (open && notifications.length === 0) {
-            fetchNotifications();
-        }
-    }, [open, notifications.length]);
 
     // Gérer les clics en dehors du panneau de notifications
     useEffect(() => {
@@ -94,6 +42,18 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [open]);
+
+    // Quand on ouvre le panneau, forcer un rafraîchissement des notifications
+    useEffect(() => {
+        if (open) {
+            handleRefresh();
+        }
+    }, [open]);
+
+    // Fonction de rafraîchissement pour forcer la mise à jour, utilise CustomEvent, ce qui émet un événement écouté par le hook useYjsNotifications, pour rafraîchir la liste des notifications
+    const handleRefresh = () => {
+        window.dispatchEvent(new CustomEvent('refreshNotifications'));
+    };
 
     return (
         <>
@@ -135,13 +95,15 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                                         <p className="text-gray-600">Chargement...</p>
                                     </div>
                                 ) : notifications.length > 0 ? (
-                                    notifications.map((n: any) => (
+                                    notifications.map((n) => (
                                         <Notification
                                             key={n.id}
                                             id={n.id}
-                                            title={n.Titre}
-                                            author={n.author}
-                                            onNotificationUpdate={fetchNotifications}
+                                            title={n.noteTitle || ''}
+                                            author={n.author || n.actorPseudo || ''}
+                                            onAccept={markAsRead}
+                                            onRefuse={deleteNotification}
+                                            onNotificationUpdate={handleRefresh}
                                         />
                                     ))
                                 ) : (
@@ -155,7 +117,7 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                             <div className="px-4 py-3 border-t border-gray-100 flex justify-end bg-gray-50">
                                 <button
                                     className="px-4 py-2 bg-primary text-white rounded-lg transition-colors shadow-sm"
-                                    onClick={fetchNotifications}
+                                    onClick={handleRefresh}
                                     aria-label="Rafraîchir les notifications"
                                 >
                                     Rafraîchir

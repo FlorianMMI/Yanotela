@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
@@ -29,8 +29,36 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
     const [tagColorFilter, setTagColorFilter] = useState("");
+    const hasFetched = useRef(false);
+
+    const fetchFolderData = useCallback(async () => {
+        try {
+            setLoading(true);
+
+            // Récupérer les informations du dossier
+            const response = await GetFolderById(id);
+
+            if (response && response.folder) {
+
+                setFolder(response.folder);
+                setNotes(Array.isArray(response.notes) ? response.notes : []);
+            } else {
+                console.error("Dossier introuvable");
+                setFolder(null);
+                setNotes([]);
+            }
+        } catch (error) {
+            console.error("Error loading folder:", error);
+            setFolder(null);
+            setNotes([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [id]);
 
     useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
         fetchFolderData();
 
         // Écouter les événements de mise à jour depuis le breadcrumb
@@ -58,32 +86,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             window.removeEventListener('folderUpdateRequested', handleUpdateRequest);
             window.removeEventListener('folderDeleteRequested', handleDeleteRequest);
         };
-    }, [id]);
-
-    const fetchFolderData = async () => {
-        try {
-            setLoading(true);
-
-            // Récupérer les informations du dossier
-            const response = await GetFolderById(id);
-
-            if (response && response.folder) {
-
-                setFolder(response.folder);
-                setNotes(Array.isArray(response.notes) ? response.notes : []);
-            } else {
-                console.error("Dossier introuvable");
-                setFolder(null);
-                setNotes([]);
-            }
-        } catch (error) {
-            console.error("Error loading folder:", error);
-            setFolder(null);
-            setNotes([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [id, fetchFolderData]);
 
     const handleUpdateFolder = async (name: string, description: string, color: string) => {
         const response = await UpdateFolder(id, {

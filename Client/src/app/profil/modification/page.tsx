@@ -1,7 +1,7 @@
 "use client";
 
 import ReturnButton from "@/ui/returnButton";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Icons from "@/ui/Icon";
 import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser } from '@/loader/loader';
@@ -18,31 +18,34 @@ export default function ModificationProfil() {
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const hasFetched = useRef(false);
+
+  const loadUserInfo = useCallback(async () => {
+    try {
+      const result = await InfoUser();
+      if (result.success && result.user) {
+        setUserData({
+          pseudo: result.user.pseudo || "",
+          prenom: result.user.prenom || "",
+          nom: result.user.nom || "",
+          email: result.user.email || ""
+        });
+      } else {
+        setError("Impossible de charger les informations utilisateur");
+      }
+    } catch (err) {
+      setError("Erreur lors du chargement des informations");
+    } finally {
+      setPageLoading(false);
+    }
+  }, []);
 
   // Charger les informations utilisateur au montage du composant
   useEffect(() => {
-    const loadUserInfo = async () => {
-      try {
-        const result = await InfoUser();
-        if (result.success && result.user) {
-          setUserData({
-            pseudo: result.user.pseudo || "",
-            prenom: result.user.prenom || "",
-            nom: result.user.nom || "",
-            email: result.user.email || ""
-          });
-        } else {
-          setError("Impossible de charger les informations utilisateur");
-        }
-      } catch (err) {
-        setError("Erreur lors du chargement des informations");
-      } finally {
-        setPageLoading(false);
-      }
-    };
-
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     loadUserInfo();
-  }, []);
+  }, [loadUserInfo]);
 
   // Fonction pour sauvegarder un champ spécifique
   const handleFieldSave = async (fieldName: string, newValue: string) => {
