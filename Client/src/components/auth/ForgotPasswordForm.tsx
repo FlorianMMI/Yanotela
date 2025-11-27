@@ -48,7 +48,7 @@ export default function ForgotPasswordForm({
     try {
       // Envoi de la demande de réinitialisation
       const result = await ForgotPassword(email);
-      
+
       if (result.success) {
         setSuccess('Si votre adresse email est valide, vous recevrez un email de réinitialisation');
         setEmail(''); // Vider le champ
@@ -137,7 +137,8 @@ export default function ForgotPasswordForm({
         <div>
           {/* Turnstile widget (no-op in non-prod) */}
           <div className="mb-3">
-  <Turnstile />          </div>
+            <Turnstile />
+          </div>
           <button
             type="submit"
             disabled={loading}

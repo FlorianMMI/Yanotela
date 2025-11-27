@@ -50,7 +50,7 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
             existing.style.maxWidth = '100%';
             existing.style.boxSizing = 'border-box';
             existing.style.border = '0';
-            try { el.dataset.turnstileRendered = '1'; } catch (e) {}
+            try { el.dataset.turnstileRendered = '1'; } catch (e) { }
           }
           return;
         }
@@ -77,15 +77,15 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
           const widgetId = anyWin.turnstile.render(el, {
             sitekey: key,
             callback: (token: string) => {
-              try { tokenInput.value = token || ''; } catch (e) {}
+              try { tokenInput.value = token || ''; } catch (e) { }
             },
             'expired-callback': () => {
-              try { tokenInput.value = ''; } catch (e) {}
+              try { tokenInput.value = ''; } catch (e) { }
             }
           });
 
           // mark container rendered to avoid duplicate render attempts
-          try { el.dataset.turnstileRendered = '1'; } catch (e) {}
+          try { el.dataset.turnstileRendered = '1'; } catch (e) { }
 
           // small delay to allow widget to mount, then ensure iframe fills the wrapper
           setTimeout(() => {
@@ -136,7 +136,8 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
   return (
     <div className={className}>
       <div
-        className="w-full relative overflow-hidden aspect-auto"
+        className="w-full relative overflow-hidden"
+        style={{ aspectRatio }}
       >
         <div
           ref={containerRef}
