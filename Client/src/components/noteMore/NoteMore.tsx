@@ -3,7 +3,6 @@ import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/n
 import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
-import Folder from "@/ui/folder/Folder";
 import { ArrowBarIcon, DuplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
 
 interface NoteMoreProps {

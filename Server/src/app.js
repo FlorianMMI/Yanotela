@@ -23,34 +23,11 @@ const __dirname = dirname(__filename);
 
 // Middleware
 app.set('trust proxy', 1);
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'",
-        "'unsafe-inline'", // Pour Next.js et les scripts inline
-        "https://challenges.cloudflare.com", // Cloudflare Turnstile
-        "https://cdnjs.cloudflare.com" // Si utilisé
-      ],
-      frameSrc: [
-        "'self'",
-        "https://challenges.cloudflare.com" // Iframe Turnstile
-      ],
-      connectSrc: [
-        "'self'",
-        "https://challenges.cloudflare.com" // API Turnstile
-      ],
-      imgSrc: ["'self'", "data:", "https:"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
-      fontSrc: ["'self'", "https:", "data:"]
-    }
-  }
-}));
+app.use(helmet());
 app.use(sessionMiddleware);
 app.use(corsConfig);
 app.use(express.static(join(__dirname, '../public')));
-// 🔥 Augmentation de la limite pour supporter les images base64 dans yjsState
+
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
 app.disable('x-powered-by');
