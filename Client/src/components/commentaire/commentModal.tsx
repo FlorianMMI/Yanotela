@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { CloseIcon, TrashIcon} from '@/libs/Icons';
 import Comment from '@/ui/comment/comment';
 import { Send } from '@/libs/Icons';
+import { checkAuthResponse } from '@/utils/authFetch';
 
 
 interface ParamModalProps {
@@ -46,6 +47,14 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' }
             });
+
+            // Vérifier si session expirée (401)
+            if (!checkAuthResponse(response)) {
+                setComments([]);
+                setLoading(false);
+                return;
+            }
+
             const data = await response.json();
             let commentaire = Array.isArray(data.commentaire) ? data.commentaire : [];
 
@@ -112,6 +121,12 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+
+            // Vérifier si session expirée (401)
+            if (!checkAuthResponse(response)) {
+                return;
+            }
+
             if (response.ok) {
                 setCommentText("");
                 // Actualiser uniquement la liste des commentaires

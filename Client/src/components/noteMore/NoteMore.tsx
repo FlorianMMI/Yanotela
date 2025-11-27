@@ -164,7 +164,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                 return null; // Le modal sera rendu en dehors du contenu
             default:
                 return (
-                    <div className="flex overflow-y-auto p-3 md:p-4 max-h-[30vh] ">
+                    <div className="flex overflow-y-auto p-3  md:p-4 max-h-[30vh] ">
                         <div className="flex flex-col gap-1 py-2">
                             <button
                                 className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium transition-colors"

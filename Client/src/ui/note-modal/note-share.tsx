@@ -56,7 +56,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     };
 
     return (
-        <div className="flex-1 overflow-y-auto p-3 md:p-4">
+        <div className="flex-1 overflow-y-auto scrollbar-custom  p-3 md:p-4">
             { 
                 <>
                 <section className= "flex justify-between items-center mb-4">
