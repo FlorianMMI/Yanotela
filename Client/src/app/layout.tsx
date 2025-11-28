@@ -3,6 +3,7 @@ import React from "react";
 import DesktopLayout from "@/components/layout/DesktopLayout";
 import ThemeClientProvider from "@/components/theme/ThemeClientProvider";
 import ThemeColorMeta from "@/components/theme/ThemeColorMeta";
+// import { CommentModalProvider } from '@/context/CommentModalContext';
 import AuthWrapper from '@/components/auth/AuthWrapper';
 
 export const metadata = {
@@ -25,12 +26,12 @@ export default function RootLayout({
     <html lang="fr">
       <body className="antialiased h-dvh bg-background">
         <ThemeClientProvider>
-        <ThemeColorMeta />
-        <AuthWrapper>
-          <DesktopLayout>
-            {children}
-          </DesktopLayout>
-        </AuthWrapper>
+          <ThemeColorMeta />
+          <AuthWrapper>
+            <DesktopLayout>
+              {children}
+            </DesktopLayout>
+          </AuthWrapper>
         </ThemeClientProvider>
       </body>
     </html>

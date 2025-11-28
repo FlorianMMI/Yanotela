@@ -1,11 +1,12 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useRouter } from 'next/navigation';
-import { CloseIcon, TrashIcon} from '@/libs/Icons';
+import { CloseIcon } from '@/libs/Icons';
 import Comment from '@/ui/comment/comment';
 import { Send } from '@/libs/Icons';
 import { checkAuthResponse } from '@/utils/authFetch';
+import { FetchPermission } from '@/loader/loader';
+import { useYjsComments } from '@/hooks/useYjsComments';
 
 
 interface ParamModalProps {
@@ -14,17 +15,8 @@ interface ParamModalProps {
 
 export default function ParamModal({ onClose }: ParamModalProps) {
     const commentsContainerRef = React.useRef<HTMLDivElement>(null);
-    interface commentaire {
-        id: string;
-        text: string;
-        author: { pseudo: string } | string;
-        date: string;
-        authorId: number;
-    }
-    const [comments, setComments] = useState<commentaire[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [userRole, setUserRole] = useState<number | undefined>(undefined);
     const { user } = require('@/hooks/useAuth').useAuth();
-    const router = useRouter();
     const pathname = require('next/navigation').usePathname();
 
     // Extraire l'id de la note depuis l'URL
@@ -37,61 +29,14 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     };
     const noteId = extractNoteId();
 
-    // Charger les commentaire liés à la note
-    // Définir fetchComments en dehors du useEffect pour pouvoir le rappeler
-    const fetchComments = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/commentaire/get/${noteId}`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' }
-            });
+    // Hook YJS pour les commentaires (synchronisation temps réel)
+    const { comments, addComment, deleteComment, isConnected } = useYjsComments(
+        noteId,
+        user?.id,
+        user?.pseudo
+    );
 
-            // Vérifier si session expirée (401)
-            if (!checkAuthResponse(response)) {
-                setComments([]);
-                setLoading(false);
-                return;
-            }
-
-            const data = await response.json();
-            let commentaire = Array.isArray(data.commentaire) ? data.commentaire : [];
-
-            // Pour chaque commentaire, si author n'est pas un objet, fetch le pseudo
-            const commentaireWithAuthor = await Promise.all(commentaire.map(async (comment: commentaire) => {
-                if (comment.author && typeof comment.author === 'object' && comment.author.pseudo) {
-                    return comment;
-                }
-                // Si authorId existe, fetch le pseudo
-                if (comment.authorId) {
-                    try {
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/info/${comment.authorId}`, {
-                            method: 'GET',
-                            credentials: 'include',
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                        const userData = await res.json();
-                        return { ...comment, author: { pseudo: userData.user?.pseudo || 'Utilisateur' } };
-                    } catch {
-                        return { ...comment, author: { pseudo: 'Utilisateur' } };
-                    }
-                }
-                return { ...comment, author: { pseudo: 'Utilisateur' } };
-            }));
-            setComments(commentaireWithAuthor);
-        } catch (err) {
-            setComments([]);
-        } finally {
-            setLoading(false);
-            if (commentsContainerRef.current) {
-                commentsContainerRef.current.scrollTop = commentsContainerRef.current.scrollHeight;
-            }
-        }
-    };
-    useEffect(() => {
-        if (noteId) fetchComments();
-    }, [noteId]);
+    
 
     // Scroll en bas à chaque changement de commentaires
     useEffect(() => {
@@ -108,32 +53,10 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         if (!commentText.trim() || !user || !noteId) return;
         setPosting(true);
         try {
-            const now = new Date().toISOString();
-            const payload = {
-                text: commentText,
-                authorId: user.id,
-                date: now,
-                idnote: noteId
-            };
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/commentaire/create`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            // Vérifier si session expirée (401)
-            if (!checkAuthResponse(response)) {
-                return;
-            }
-
-            if (response.ok) {
+            const success = addComment(commentText);
+            if (success) {
                 setCommentText("");
-                // Actualiser uniquement la liste des commentaires
-                await fetchComments();
             }
-        } catch (err) {
-            // Optionnel : afficher une erreur
         } finally {
             setPosting(false);
         }
@@ -178,8 +101,8 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                         ref={commentsContainerRef}
                         className='flex flex-col justify-start h-full w-fill p-2 relative mt-2 gap-2 overflow-y-auto custom-scrollbar-comment'
                     >
-                        {loading ? (
-                            <div className="text-center text-element">Chargement des commentaire...</div>
+                        {!isConnected ? (
+                            <div className="text-center text-element">Connexion en cours...</div>
                         ) : (
                             comments.length === 0 ? (
                                 <div className="text-center text-element">Aucun commentaire pour cette note.</div>
@@ -188,10 +111,14 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                                     <Comment
                                         key={comment.id}
                                         variant={user && comment.authorId === user.id ? 'user' : 'member'}
-                                        {...comment}
                                         text={comment.text}
-                                        author={comment.author}
+                                        author={{ pseudo: comment.authorPseudo }}
                                         date={comment.date}
+                                        id={comment.id}
+                                        authorId={comment.authorId}
+                                        userId={user?.id}
+                                        userRole={userRole}
+                                        onDelete={() => deleteComment(comment.id, userRole)}
                                     />
                                 ))
                             )

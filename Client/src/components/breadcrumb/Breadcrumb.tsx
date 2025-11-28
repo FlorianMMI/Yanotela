@@ -13,6 +13,10 @@ import ConnectedUsers from '../collaboration/ConnectedUsers';
 import { yjsDocuments } from '@/collaboration/providers';
 import { DocsIcon, FlashIcon, FolderIcon, MoreIcon, ProfileIcon, Comment } from '@/libs/Icons';
 
+interface BreadcrumbProps {
+  openCommentModal?: () => void;
+}
+
 interface BreadcrumbItem {
   label: string;
   href?: string;
@@ -20,7 +24,7 @@ interface BreadcrumbItem {
   isNoteTitle?: boolean;
 }
 
-export default function Breadcrumb() {
+export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
   const pathname = usePathname();
   const [noteTitle, setNoteTitle] = useState<string>('');
   const [folderName, setFolderName] = useState<string>('');
@@ -539,6 +543,18 @@ export default function Breadcrumb() {
                     <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
                       <ConnectedUsers noteId={noteId} />
 
+                      <button
+                        onClick={() => {
+                          if (openCommentModal) openCommentModal();
+                        }}
+                        className="ml-2"
+                      >
+                        <Comment 
+                          width={30}
+                          height={30}
+                          className='text-primary cursor-pointer'
+                        />
+                      </button>
 
                       <span
                         onClick={() => setShowNoteMore((prev) => !prev)}
