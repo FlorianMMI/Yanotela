@@ -1,6 +1,4 @@
 import { TrashIcon } from "@/libs/Icons";
-import { DeleteComment } from "@/loader/loader";
-import { useState } from "react";
 
 interface CommentProps {
   variant?: "user" | "member";
@@ -27,20 +25,10 @@ export default function Comment({ variant = "user", author, date, text, id, auth
   const dateObj = new Date(date);
   const dateStr = dateObj.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
 
-  const [deleting, setDeleting] = useState(false);
-
-  const handleDelete = async () => {
-    if (!id) return;
-    setDeleting(true);
-    const result = await DeleteComment(id);
-    setDeleting(false);
-    if (result.success && onDelete) {
-      onDelete(id);
-    } else if (!result.success) {
-      alert(result.error || "Erreur lors de la suppression du commentaire.");
-    }
+  const handleDelete = () => {
+    if (!id || !onDelete) return;
+    onDelete(id);
   };
-  console.log(userId, authorId, userRole)
 
   return (
     <section className={divClass}>
@@ -57,8 +45,8 @@ export default function Comment({ variant = "user", author, date, text, id, auth
               || userId === authorId // auteur du commentaire
               || userRole === 1 // admin
             ) && (
-              <button onClick={handleDelete} disabled={deleting} title="Supprimer le commentaire">
-                <TrashIcon className={`w-3 h-3 text-red-500 hover:text-red-700 cursor-pointer mt-2 ${deleting ? 'opacity-50' : ''}`} />
+              <button onClick={handleDelete} title="Supprimer le commentaire">
+                <TrashIcon className="w-3 h-3 text-red-500 hover:text-red-700 cursor-pointer mt-2" />
               </button>
             )
             }

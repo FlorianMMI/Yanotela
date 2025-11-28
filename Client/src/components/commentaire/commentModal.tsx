@@ -1,11 +1,11 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useRouter } from 'next/navigation';
-import { CloseIcon, TrashIcon} from '@/libs/Icons';
+import { CloseIcon } from '@/libs/Icons';
 import Comment from '@/ui/comment/comment';
 import { Send } from '@/libs/Icons';
-import { FetchComments, CreateComment, Commentaire, FetchPermission } from '@/loader/loader';
+import { FetchPermission } from '@/loader/loader';
+import { useYjsComments } from '@/hooks/useYjsComments';
 
 
 interface ParamModalProps {
@@ -14,11 +14,8 @@ interface ParamModalProps {
 
 export default function ParamModal({ onClose }: ParamModalProps) {
     const commentsContainerRef = React.useRef<HTMLDivElement>(null);
-    const [comments, setComments] = useState<Commentaire[]>([]);
     const [userRole, setUserRole] = useState<number | undefined>(undefined);
-    const [loading, setLoading] = useState(true);
     const { user } = require('@/hooks/useAuth').useAuth();
-    const router = useRouter();
     const pathname = require('next/navigation').usePathname();
 
     // Extraire l'id de la note depuis l'URL
@@ -31,53 +28,14 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     };
     const noteId = extractNoteId();
 
-    // Charger les commentaire liés à la note
-    // Utilise la fonction du loader pour charger les commentaires
-    const fetchComments = async () => {
-        setLoading(true);
-        try {
-            const result = await FetchComments(noteId);
-            setComments(result);
-        } catch {
-            setComments([]);
-        } finally {
-            setLoading(false);
-            if (commentsContainerRef.current) {
-                commentsContainerRef.current.scrollTop = commentsContainerRef.current.scrollHeight;
-            }
-        }
-    };
-    useEffect(() => {
-        if (noteId) {
-            fetchComments();
-            // Récupérer le rôle de l'utilisateur pour la note
-            FetchPermission(noteId).then(res => {
-                let foundRole: number | undefined = undefined;
-                if (res.success && res.permissions) {
-                    // Cherche la permission correspondant à l'utilisateur courant
-                    const perm = res.permissions.find(p => p.id_user === user?.id);
-                    foundRole = perm?.role;
-                }
-                if (foundRole === undefined && user?.id) {
-                    import('@/loader/loader').then(loader => {
-                        loader.GetNoteById(noteId).then(note => {
-                            // Debug
-                            if (typeof window !== 'undefined') {
-                                console.log('DEBUG GetNoteById:', note);
-                            }
-                            if (note && typeof note === 'object' && 'authorId' in note && note.authorId === user.id) {
-                                setUserRole(0); // Propriétaire
-                            } else {
-                                setUserRole(foundRole);
-                            }
-                        });
-                    });
-                } else {
-                    setUserRole(foundRole);
-                }
-            });
-        }
-    }, [noteId, user?.id]);
+    // Hook YJS pour les commentaires (synchronisation temps réel)
+    const { comments, addComment, deleteComment, isConnected } = useYjsComments(
+        noteId,
+        user?.id,
+        user?.pseudo
+    );
+
+    
 
     // Scroll en bas à chaque changement de commentaires
     useEffect(() => {
@@ -94,17 +52,9 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         if (!commentText.trim() || !user || !noteId) return;
         setPosting(true);
         try {
-            const now = new Date().toISOString();
-            const payload = {
-                text: commentText,
-                authorId: user.id,
-                date: now,
-                idnote: noteId
-            };
-            const success = await CreateComment(payload);
+            const success = addComment(commentText);
             if (success) {
                 setCommentText("");
-                await fetchComments();
             }
         } finally {
             setPosting(false);
@@ -150,8 +100,8 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                         ref={commentsContainerRef}
                         className='flex flex-col justify-start h-full w-fill p-2 relative mt-2 gap-2 overflow-y-auto custom-scrollbar-comment'
                     >
-                        {loading ? (
-                            <div className="text-center text-element">Chargement des commentaire...</div>
+                        {!isConnected ? (
+                            <div className="text-center text-element">Connexion en cours...</div>
                         ) : (
                             comments.length === 0 ? (
                                 <div className="text-center text-element">Aucun commentaire pour cette note.</div>
@@ -160,15 +110,14 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                                     <Comment
                                         key={comment.id}
                                         variant={user && comment.authorId === user.id ? 'user' : 'member'}
-                                        {...comment}
                                         text={comment.text}
-                                        author={comment.author}
+                                        author={{ pseudo: comment.authorPseudo }}
                                         date={comment.date}
                                         id={comment.id}
                                         authorId={comment.authorId}
                                         userId={user?.id}
                                         userRole={userRole}
-                                        onDelete={async () => { await fetchComments(); }}
+                                        onDelete={() => deleteComment(comment.id, userRole)}
                                     />
                                 ))
                             )

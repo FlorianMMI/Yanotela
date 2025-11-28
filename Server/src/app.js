@@ -13,7 +13,7 @@ import FolderRoutes from './routes/FolderRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import permissionRoutes from './routes/permissionRoutes.js';
 import googleAuthRoutes from './routes/googleAuthRoutes.js';
-import commentaireRoute from './routes/commentaireRoute.js';
+// Note: commentaireRoute supprimé - commentaires gérés via YJS temps réel
 
 import helmet from 'helmet';
 
@@ -40,7 +40,7 @@ app.use('/permission', permissionRoutes);
 app.use('/auth', googleAuthRoutes); // Routes Google OAuth
 app.use('/notification', notificationRoutes);
 app.use('/dossiers', FolderRoutes); // Routes pour les dossiers
-app.use('/commentaire', commentaireRoute);
+// Note: /commentaire route supprimée - voir useYjsComments hook côté client
 
 // Route de health check pour Docker
 app.get('/health', (req, res) => {

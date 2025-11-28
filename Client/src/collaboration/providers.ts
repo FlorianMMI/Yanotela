@@ -29,7 +29,7 @@ export const yjsDocuments = new Map<string, Y.Doc>();
 export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string) {
   const provider = providerInstances.get(noteId);
   if (!provider) {
-    console.warn(`[setAwarenessUserInfo] Provider non trouvé pour note ${noteId}`);
+    
     return;
   }
 
