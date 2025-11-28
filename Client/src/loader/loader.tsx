@@ -1,8 +1,29 @@
 import { Note } from '@/type/Note';
 import { Folder } from '@/type/Folder';
 import { Permission } from '@/type/Permission';
+import { checkAuthResponse } from '@/utils/authFetch';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+function getApiUrl() {
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
+    return '';
+}
+
+function getTurnstileToken() {
+    if (typeof window === 'undefined') return undefined;
+    const el = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
+    return el?.value;
+}
+
+/**
+ * Vérifie si la réponse est un 401 et déclenche la redirection si nécessaire
+ * @returns true si la réponse est OK ou non-401, false si 401 (redirection déclenchée)
+ */
+function handleAuthError(response: Response): boolean {
+    return checkAuthResponse(response);
+}
+
+const apiUrl = getApiUrl();
 
 export async function CreateNote(): Promise<{ note: Note | null; redirectUrl?: string }> {
     try {
@@ -17,6 +38,11 @@ export async function CreateNote(): Promise<{ note: Note | null; redirectUrl?: s
                 Content: "",
             })
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { note: null };
+        }
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -39,6 +65,11 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
             },
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { notes: [], totalNotes: 0 };
+        }
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -131,6 +162,12 @@ export async function GetNoteById(id: string): Promise<Note | { error: string } 
             },
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { error: 'Session expirée' };
+        }
+
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
             // Return backend error message if present
@@ -154,6 +191,12 @@ export async function SaveNote(id: string, noteData: Partial<Note>): Promise<boo
             body: JSON.stringify(noteData),
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return false;
+        }
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -174,6 +217,11 @@ export async function DeleteNote(id: string): Promise<{ success: boolean; messag
             },
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -206,6 +254,11 @@ export async function DuplicateNote(id: string): Promise<{ success: boolean; not
             },
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -241,6 +294,11 @@ export async function LeaveNote(id: string): Promise<{ success: boolean; message
             credentials: 'include'
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (!response.ok) {
             const errorData = await response.json();
             return {
@@ -272,6 +330,11 @@ export async function GetDeletedNotes(): Promise<{ notes: Note[]; totalNotes: nu
             },
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { notes: [], totalNotes: 0 };
+        }
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -328,6 +391,11 @@ export async function RestoreNote(id: string): Promise<{ success: boolean; messa
             credentials: 'include'
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (!response.ok) {
             const errorData = await response.json();
             return {
@@ -361,6 +429,12 @@ export async function setPublic(noteId: string, isPublic: boolean): Promise<{ su
             credentials: 'include',
             body: JSON.stringify({ isPublic })
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (!response.ok) {
             const errorData = await response.json();
             return {
@@ -392,6 +466,12 @@ export async function IsPublic(noteId: string): Promise<{ success: boolean; isPu
             },
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (!response.ok) {
             const errorData = await response.json();
             return {
@@ -442,13 +522,18 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
 
     try {
         
+        const apiUrl = getApiUrl();
+        const token = getTurnstileToken();
+        const body = { ...credentials } as any;
+        if (token) body['cf-turnstile-response'] = token;
+
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include', 
-            body: JSON.stringify(credentials)
+            body: JSON.stringify(body)
         });
 
         if (response.ok) {
@@ -488,13 +573,18 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
 export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
         
+        const apiUrl = getApiUrl();
+        const token = getTurnstileToken();
+        const payload = { ...userData } as any;
+        if (token) payload['cf-turnstile-response'] = token;
+
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             credentials: "include",
-            body: JSON.stringify(userData),
+            body: JSON.stringify(payload),
         });
 
         // Vérifier si la réponse est du JSON
@@ -532,13 +622,18 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
 export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
         
+        const apiUrl = getApiUrl();
+        const token = getTurnstileToken();
+        const payload: any = { email };
+        if (token) payload['cf-turnstile-response'] = token;
+
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({ email }),
+            body: JSON.stringify(payload),
         });
 
         const data = await response.json();
@@ -557,13 +652,18 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
 export async function ResetPassword(token: string, password: string): Promise<AuthResponse> {
     try {
         
+        const apiUrl = getApiUrl();
+        const tokenVal = getTurnstileToken();
+        const payload: any = { password, token };
+        if (tokenVal) payload['cf-turnstile-response'] = tokenVal;
+
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({ password, token }),
+            body: JSON.stringify(payload),
         });
 
         const data = await response.json();
@@ -642,6 +742,11 @@ export async function InfoUser(): Promise<InfoUserResponse> {
             credentials: 'include',
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (response.ok) {
             const userData = await response.json();
             return { success: true, user: userData };
@@ -677,6 +782,11 @@ export async function DeleteAccount(reason?: string): Promise<DeleteAccountRespo
             body: JSON.stringify({ reason })
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         const data = await response.json();
 
         if (response.ok) {
@@ -706,6 +816,11 @@ export async function CancelAccountDeletion(): Promise<AuthResponse> {
             credentials: 'include'
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         const data = await response.json();
 
         if (response.ok) {
@@ -730,6 +845,11 @@ export async function updateUser(data: { prenom?: string; nom?: string; pseudo?:
             credentials: 'include',
             body: JSON.stringify(data)
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
         
         if (response.ok) {
             const responseData = await response.json();
@@ -753,6 +873,11 @@ export async function FetchPermission(noteId: string): Promise<{ success: boolea
             },
             credentials: 'include',
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
 
         if (response.ok) {
             const data = await response.json();
@@ -778,6 +903,11 @@ export async function UpdatePermission(noteId: string, userId: number, newRole: 
             body: JSON.stringify({ newRole })
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (response.ok) {
             const data = await response.json();
             return { success: true, message: data.message };
@@ -802,6 +932,11 @@ export async function AddPermission(noteId: string, identifier: string, role: nu
             body: JSON.stringify({ identifier, role })
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (response.ok) {
             const data = await response.json();
             return { success: true, message: data.message, user: data.user };
@@ -824,6 +959,11 @@ export async function RemovePermission(noteId: string, userId: number): Promise<
             },
             credentials: 'include',
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
 
         if (response.ok) {
             const data = await response.json();
@@ -860,6 +1000,11 @@ export async function GetNotifications(): Promise<{ success: boolean; notes?: No
             credentials: 'include',
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (response.ok) {
             const data = await response.json().catch(() => ({}));
             return { success: true, notes: data.notes || [] };
@@ -883,6 +1028,11 @@ export async function AcceptNotification(invitationId: string): Promise<{ succes
             credentials: 'include',
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (response.ok) {
             const data = await response.json().catch(() => ({}));
             return { success: true, message: data.message, noteId: data.noteId };
@@ -905,6 +1055,11 @@ export async function RefuseNotification(invitationId: string): Promise<{ succes
             },
             credentials: 'include',
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
 
         if (response.ok) {
             const data = await response.json().catch(() => ({}));
@@ -931,6 +1086,11 @@ export async function GetFolders(): Promise<{ folders: Folder[]; totalFolders: n
             credentials: 'include'
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { folders: [], totalFolders: 0 };
+        }
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -955,6 +1115,11 @@ export async function GetFolderById(id: string): Promise<{ folder: Folder | null
             },
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { folder: null, error: 'Session expirée' };
+        }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -1024,6 +1189,11 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
             })
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { folder: null };
+        }
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             console.error("Error creating folder:", errorData);
@@ -1052,6 +1222,11 @@ export async function UpdateFolder(id: string, folderData: { Nom?: string; Descr
             body: JSON.stringify(folderData)
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             return { success: false, error: errorData.error || 'Erreur lors de la mise à jour du dossier' };
@@ -1074,6 +1249,11 @@ export async function DeleteFolder(id: string): Promise<{ success: boolean; mess
             },
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -1101,6 +1281,11 @@ export async function AddNoteToFolder(noteId: string, folderId: string): Promise
             body: JSON.stringify({ noteId, dossierId: folderId })
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             return { success: false, error: errorData.error || 'Erreur lors de l\'ajout de la note au dossier' };
@@ -1125,6 +1310,11 @@ export async function AssignNoteToFolder(noteId: string, folderId: string): Prom
             body: JSON.stringify({ folderId })
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             return { success: false, error: errorData.message || 'Erreur lors de l\'assignation de la note au dossier' };
@@ -1148,6 +1338,11 @@ export async function RemoveNoteFromFolder(noteId: string): Promise<{ success: b
             credentials: 'include'
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             return { success: false, error: errorData.message || 'Erreur lors du retrait de la note du dossier' };
@@ -1170,6 +1365,11 @@ export async function GetNoteFolder(noteId: string): Promise<{ success: boolean;
             },
             credentials: 'include'
         });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -1196,6 +1396,11 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
             body: JSON.stringify({ tag })
         });
 
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             return { success: false, error: errorData.message || 'Erreur lors de la mise à jour du tag' };
@@ -1209,7 +1414,4 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
     }
 }
 
-// ============== COMMENTAIRE FUNCTIONS ==============
-// Note: Les commentaires sont maintenant gérés via YJS (useYjsComments hook)
-// La synchronisation se fait en temps réel via Y.Array partagé entre les clients
-// Voir: Client/src/hooks/useYjsComments.ts
+

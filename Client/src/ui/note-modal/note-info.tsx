@@ -31,7 +31,7 @@ export default function NoteInfoUI({ noteId }: NoteInfoUIProps) {
     }
 
     return (
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3 md:p-4">
             {loading ? (
                 <div className="py-8 text-center text-element">Chargement...</div>
             ) : error ? (

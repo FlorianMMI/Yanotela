@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CloseIcon } from '@/libs/Icons';
 import Comment from '@/ui/comment/comment';
 import { Send } from '@/libs/Icons';
+import { checkAuthResponse } from '@/utils/authFetch';
 import { FetchPermission } from '@/loader/loader';
 import { useYjsComments } from '@/hooks/useYjsComments';
 

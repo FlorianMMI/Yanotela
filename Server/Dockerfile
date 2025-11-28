@@ -6,18 +6,16 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies and rebuild native modules
-RUN npm ci --only=production && \
-
-# Generate Prisma client
-RUN npx prisma generate
+# Install dependencies and generate Prisma client
+RUN npm ci --only=production && npx prisma generate
 
 ENV NODE_ENV=production
 
 # Réduit les permissions du dossier de l'application pour des raisons de sécurité
-COPY --chown=nodejs:nodejs . .
+# Use the official `node` user available in the base image
+COPY --chown=node:node . .
 
-USER nodejs
+USER node
 
 EXPOSE 3001
 

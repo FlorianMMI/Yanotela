@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { useRouter } from 'next/navigation';
 
 import GoogleAuthButton from './GoogleAuthButton';
-import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon } from '@/libs/Icons';
+import Turnstile from './Turnstile';
+import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon} from '@/libs/Icons';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -66,6 +67,19 @@ export default function LoginForm({
 
     tempForm.appendChild(identifiantInput);
     tempForm.appendChild(passwordInput);
+    // Attach Turnstile token if present
+    try {
+      const token = (typeof window !== 'undefined') ? (document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value) : undefined;
+      if (token) {
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = 'cf-turnstile-response';
+        tokenInput.value = token;
+        tempForm.appendChild(tokenInput);
+      }
+    } catch (err) {
+      // ignore
+    }
     document.body.appendChild(tempForm);
 
     // Soumettre le formulaire pour permettre la redirection serveur
@@ -75,6 +89,8 @@ export default function LoginForm({
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  const uid = useId();
 
   return (
     <div className={className}>
@@ -86,7 +102,7 @@ export default function LoginForm({
         </p>
       )}
 
-      <form role="form" onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
+      <form role="form" onSubmit={handleSubmit} id={`${uid}-login-form`} className="w-full flex flex-col justify-center items-start gap-2.5">
         {error && (
           <div className="w-full p-2.5 bg-dangerous-100 border-dangerous-600 text-dangerous-600 rounded-[10px] text-sm">
             {error}
@@ -99,12 +115,12 @@ export default function LoginForm({
           </p>
         )}
         
-        <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
+          <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
           <AtIcon className="text-gray-400" width={20} height={20} />
           <input 
             type="text" 
             name="identifiant"
-            id="identifiant"
+            id={`${uid}-identifiant`}
             placeholder="Votre mail ou pseudonyme"
             required
             className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
@@ -118,7 +134,7 @@ export default function LoginForm({
             <input 
               type={showPassword ? "text" : "password"}
               name="password"
-              id="password"
+              id={`${uid}-password`}
               placeholder="Votre mot de passe"
               required
               className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
@@ -148,6 +164,10 @@ export default function LoginForm({
           </button>
         )}
       
+        {/* Turnstile widget (will be a no-op in non-prod) */}
+        <div className="w-full mt-3">
+          <Turnstile />
+        </div>
         <button 
           type="submit" 
           disabled={isLoading}
@@ -158,6 +178,7 @@ export default function LoginForm({
           </p>
           <ArrowBarIcon className="text-white pointer-events-none" width={40} height={40} />
         </button>
+
 
         {/* Séparateur et connexion Google */}
         <div className="flex flex-col items-center gap-4 w-full">

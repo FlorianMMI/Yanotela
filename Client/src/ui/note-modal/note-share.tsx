@@ -56,7 +56,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     };
 
     return (
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto scrollbar-custom  p-3 md:p-4">
             { 
                 <>
                 <section className= "flex justify-between items-center mb-4">
@@ -64,7 +64,10 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                     {(() => {
                         const label = (typeof currentUserRole === 'number' && ROLE_LABELS[currentUserRole]) ? ROLE_LABELS[currentUserRole] : null;
                         return (
-                            <span>Vous êtes {label ? label.toLowerCase() : 'utilisateur'}</span>
+                            <>
+                                <span className="hidden md:inline">Vous êtes </span>
+                                <span>{label ? label.toLowerCase() : 'utilisateur'}</span>
+                            </>
                         );
                     })()}
                 </div>
@@ -82,14 +85,28 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                 className="sr-only peer"
                                 aria-label="Basculer public/privé"
                                 checked={isTogglePublic}
+                                disabled={currentUserRole !== null && currentUserRole > 1}
                                 onChange={(e) => {
-                                    handleTogglePublic(e.target.checked);
+                                    if (currentUserRole !== null && currentUserRole <= 1) {
+                                        handleTogglePublic(e.target.checked);
+                                    }
                                 }}
                             />
-                            <div className="w-11 h-6 rounded-full bg-deskbackground peer-checked:bg-primary transition-colors" />
-                            <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform peer-checked:translate-x-5" />
+                            <div className={`w-11 h-6 rounded-full transition-colors ${
+                                currentUserRole !== null && currentUserRole > 1 
+                                    ? 'bg-gray-300 cursor-not-allowed' 
+                                    : 'bg-deskbackground peer-checked:bg-primary cursor-pointer'
+                            }`} />
+                            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform peer-checked:translate-x-5 ${
+                                currentUserRole !== null && currentUserRole > 1 ? 'cursor-not-allowed' : ''
+                            }`} />
                         </div>
                     </label>
+                    {currentUserRole !== null && currentUserRole > 1 && (
+                        <p className="text-xs text-gray-500 mt-1 text-right">
+                            Seuls les admins peuvent modifier ce paramètre
+                        </p>
+                    )}
                 </div>
                 </section>
                 </>
@@ -113,12 +130,17 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                 <div className="space-y-2">
                                     {users.map((item) => (
                                         <div key={item.user.id} className="flex items-center justify-between bg-white rounded p-2">
-                                            <div>
-                                                <div className="font-medium text-sm text-foreground">
-                                                    {item.user.pseudo.length > 16 ? `${item.user.pseudo.substring(0, 16)}...` : item.user.pseudo}
+                                            <div className="min-w-0 shrink overflow-hidden">
+                                                <div className="font-medium text-sm text-foreground truncate">
+                                                    {item.user.pseudo}
                                                 </div>
-                                                <div className="text-xs text-element">
-                                                    {item.user.email.length > 25 ? `${item.user.email.substring(0, 25)}...` : item.user.email}
+                                                <div className="text-xs text-element truncate">
+                                                    <span className="hidden sm:inline">
+                                                        {item.user.email.length > 25 ? `${item.user.email.substring(0, 25)}...` : item.user.email}
+                                                    </span>
+                                                    <span className="inline sm:hidden">
+                                                        {item.user.email.length > 15 ? `${item.user.email.substring(0, 15)}...` : item.user.email}
+                                                    </span>
                                                 </div>
                                             </div>
                                             {role === 0 && (

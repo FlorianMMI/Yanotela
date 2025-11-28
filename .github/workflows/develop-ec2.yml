@@ -62,6 +62,7 @@ jobs:
     name: Build and Push Frontend
     runs-on: ubuntu-latest
     needs: setup
+    environment: preprod
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
@@ -75,10 +76,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./Client
+          file: ./Client/Dockerfile
           platforms: linux/amd64
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
             ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
@@ -284,6 +287,7 @@ jobs:
                 environment:
                   - NODE_ENV=development
                   - NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
+                  - NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}
                 env_file:
                   - .env.dev
                 depends_on:
@@ -321,10 +325,14 @@ jobs:
                 driver: bridge
             EOF
 
-            # .env.dev (inchangé)
+            # .env.dev - Variables d'environnement pour les containers
             cat > .env.dev << 'EOF'
-            ${{secrets.PREPROD}}
+            ${{ secrets.PREPROD }}
             EOF
+            
+            # Ajouter les variables Turnstile avec le bon format
+            echo "TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}" >> .env.dev
+            echo "TURNSTILE_SECRET_KEY=${{ secrets.DEV_TURNSTILE_SECRET_KEY }}" >> .env.dev
 
             # Démarrage des services (optimisé : pull + up en une étape)
             docker compose down || true

@@ -43,6 +43,7 @@ import * as Y from "yjs";
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
+import { checkAuthResponse } from "@/utils/authFetch";
 
 import ErrorFetch from "@/ui/note/errorFetch";
 import ToolbarPlugin from "@/components/textRich/ToolbarPlugin";
@@ -207,6 +208,12 @@ function YjsSyncPlugin({
           }),
         });
 
+        // Vérifier si session expirée (401)
+        if (!checkAuthResponse(response)) {
+          setSyncStatus("error");
+          return;
+        }
+
         if (response.ok) {
           lastSyncRef.current = now;
           hasChangesRef.current = false;
@@ -257,6 +264,12 @@ function YjsSyncPlugin({
             Content: Content,
           }),
         });
+
+        // Vérifier si session expirée (401)
+        if (!checkAuthResponse(response)) {
+          setSyncStatus("error");
+          return;
+        }
 
         if (response.ok) {
           lastSyncRef.current = Date.now();
@@ -406,9 +419,13 @@ function LoadInitialContentPlugin({
         }
 
         if (ydoc) {
-          const encoded = Y.encodeStateAsUpdate(ydoc);
-          if (encoded && encoded.length > 0) {
-            // Y.Doc already has content — skip applying DB content to avoid duplication
+          // Vérifier si le Y.Doc contient réellement du contenu
+          // (pas juste un état YJS vide qui a quand même un encoded.length > 0)
+          const yXmlText = ydoc.get('root', Y.XmlText);
+          const textContent = yXmlText ? yXmlText.toString().trim() : '';
+          
+          if (textContent.length > 0) {
+            // Y.Doc contient du vrai contenu — skip applying DB content to avoid duplication
             hasLoadedRef.current = true;
             return;
           }
@@ -677,7 +694,28 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         : "Anonyme";
     })();
 
-    const colors = ["#FF5733", "#33FF57", "#3357FF", "#F333FF", "#FF33A1"];
+    const colors = [
+      "#FF5733", // orange
+      "#33FF57", // green
+      "#3357FF", // blue
+      "#F333FF", // magenta
+      "#FF33A1", // pink
+      "#D4AF37", // gold 
+      "#882626", // rouge foncé
+      "#2ECC71", // emerald
+      "#3498DB", // sky blue
+      "#9B59B6", // purple
+      "#E67E22", // carrot
+      "#1ABC9C", // turquoise
+      "#E74C3C", // alizarin
+      "#34495E", // wet asphalt
+      "#7F8C8D", // concrete
+      "#F1C40F", // sun
+      "#16A085", // green sea
+      "#2980B9", // belize hole
+      "#C0392B", // pomegranate
+      "#8E44AD", // wisteria
+    ];
     const color = colors[Math.floor(Math.random() * colors.length)];
     setUserProfile({ name: pseudo, color });
   }, [user]);
@@ -772,14 +810,8 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     };
   }, [id]);
 
-  const [showCommentModal, setShowCommentModal] = useState(false);
 
-  useEffect(() => {
-    const handleOpenCommentModal = () => setShowCommentModal(true);
-    window.addEventListener("openCommentModal", handleOpenCommentModal);
-    return () =>
-      window.removeEventListener("openCommentModal", handleOpenCommentModal);
-  }, []);
+
 
   return (
     <div className="flex flex-col gap-4 w-full h-full">
@@ -795,9 +827,6 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         </div>
       )}
 
-      {showCommentModal && (
-        <CommentModal onClose={() => setShowCommentModal(false)} />
-      )}
 
       {/* Mobile Header */}
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
@@ -817,23 +846,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
               disabled={isReadOnly}
             />
             <div className="relative flex">
-              <button
-                onClick={() => {
-                  // Ajout d'une clé unique à chaque clic pour forcer le remount
-                  window.dispatchEvent(
-                    new CustomEvent("openCommentModal", {
-                      detail: { key: Date.now() },
-                    })
-                  );
-                }}
-                className="ml-2"
-              >
-                <Comment
-                  width={30}
-                  height={30}
-                  className="text-white cursor-pointer"
-                />
-              </button>
+
               <button
                 onClick={() => setShowNoteMore((prev) => !prev)}
                 aria-label="Ouvrir les options de la note"
