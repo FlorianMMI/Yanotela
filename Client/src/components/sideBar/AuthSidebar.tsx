@@ -7,7 +7,6 @@ import RegisterForm from '@/components/auth/RegisterForm';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import ResetPasswordForm from '../auth/ResetPasswordForm';
 
-
 export default function AuthSidebar() {
   const pathname = usePathname();
   const router = useRouter();

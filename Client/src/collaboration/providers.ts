@@ -38,7 +38,7 @@ export function registerInitialYjsState(noteId: string, yjsStateArray: number[])
   }
   const uint8Array = new Uint8Array(yjsStateArray);
   pendingYjsStates.set(noteId, uint8Array);
-  console.log(`📝 [registerInitialYjsState] État enregistré pour note ${noteId} (${yjsStateArray.length} bytes)`);
+  
 }
 
 /**
@@ -99,9 +99,9 @@ export function createWebsocketProvider(
   // ✅ Si on a appliqué un état initial, connecter après un court délai
   // pour laisser le temps au document d'être prêt
   if (hadInitialState) {
-    console.log(`📡 [createWebsocketProvider] État initial détecté, connexion différée pour note ${id}`);
+    
     setTimeout(() => {
-      console.log(`📡 [createWebsocketProvider] Connexion au serveur YJS pour note ${id}`);
+      
       provider.connect();
     }, 100);
   }
@@ -134,7 +134,7 @@ function getDocFromMap(id: string, yjsDocMap: Map<string, Y.Doc>): { doc: Y.Doc;
     // ✅ Appliquer l'état YJS initial s'il a été enregistré
     const pendingState = pendingYjsStates.get(id);
     if (pendingState) {
-      console.log(`✅ [getDocFromMap] Application de l'état YJS initial pour note ${id}`);
+      
       Y.applyUpdate(doc, pendingState);
       pendingYjsStates.delete(id); // Nettoyer après utilisation
       hadInitialState = true;

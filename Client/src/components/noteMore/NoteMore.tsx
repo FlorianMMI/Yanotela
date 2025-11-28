@@ -49,7 +49,6 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
         };
     }, [onClose]);
 
-
     const handleDeleteNote = async () => {
         setIsDeleting(true);
         try {

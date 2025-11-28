@@ -8,7 +8,6 @@ import { checkAuthResponse } from '@/utils/authFetch';
 import { FetchPermission } from '@/loader/loader';
 import { useYjsComments } from '@/hooks/useYjsComments';
 
-
 interface ParamModalProps {
     onClose: () => void;
 }

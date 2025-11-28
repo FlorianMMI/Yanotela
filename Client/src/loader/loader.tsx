@@ -418,7 +418,6 @@ export async function RestoreNote(id: string): Promise<{ success: boolean; messa
     }
 }
 
-
 export async function setPublic(noteId: string, isPublic: boolean): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/set-public/${noteId}`, {
@@ -456,7 +455,6 @@ export async function setPublic(noteId: string, isPublic: boolean): Promise<{ su
     }
 }
 
-
 export async function IsPublic(noteId: string): Promise<{ success: boolean; isPublic?: boolean; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/is-public/${noteId}`, {
@@ -492,7 +490,6 @@ export async function IsPublic(noteId: string): Promise<{ success: boolean; isPu
         };
     }
 }
-
 
 // ============== AUTHENTIFICATION FUNCTIONS ==============
 
@@ -1413,5 +1410,4 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
-
 
