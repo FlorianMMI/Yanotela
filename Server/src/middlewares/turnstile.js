@@ -4,7 +4,7 @@ import axios from 'axios';
 export async function verifyTurnstile(token) {
   // In tests you may want to bypass verification. Use an explicit env var to disable.
   if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV === 'test') {
-    console.warn('Turnstile verification bypassed by TURNSTILE_DISABLED or test env');
+    
     return true;
   }
 

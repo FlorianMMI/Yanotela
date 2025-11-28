@@ -182,7 +182,7 @@ function YjsSyncPlugin({
         const ydoc = yjsDocuments.get(noteId);
 
         if (!ydoc) {
-          console.warn("⚠️ [YjsSync] Y.Doc non trouvé pour", noteId);
+          
           setSyncStatus("error");
           return;
         }
@@ -553,9 +553,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) {
-      console.warn(
-        "🔒 [Permissions] Modification titre bloquée (lecture seule)"
-      );
+      
       return;
     }
 
@@ -645,7 +643,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         if (note.Content) {
           setInitialEditorContent(note.Content);
         } else {
-          console.warn("⚠️ [LoadNote] Pas de contenu dans la note");
+          
           setInitialEditorContent(null);
         }
 
@@ -659,9 +657,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           } else {
           }
         } else {
-          console.warn(
-            "⚠️ [Permissions] userRole non reçu du serveur, défaut = édition"
-          );
+          
           setIsReadOnly(false);
         }
       } catch (error) {

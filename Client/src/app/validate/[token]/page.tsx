@@ -16,7 +16,6 @@ export default function ValidatePage({ params }: ValidatePageProps) {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-
   useEffect(() => {
     const validateToken = async () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api';

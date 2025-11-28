@@ -369,7 +369,7 @@ export async function GetDeletedNotes(): Promise<{ notes: Note[]; totalNotes: nu
                     }
                 }
             } catch {
-                console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
+                
                 note.Content = String(note.Content);
             }
         }
@@ -1158,7 +1158,7 @@ export async function GetFolderById(id: string): Promise<{ folder: Folder | null
                     }
                 } catch {
                     // Si le parsing échoue, garder le contenu tel quel
-                    console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
+                    
                     note.Content = String(note.Content);
                 }
             }

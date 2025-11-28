@@ -56,7 +56,7 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
       // Timeout après 5s
       const timeout = setTimeout(() => {
         clearInterval(checkInterval);
-        console.warn('[useYjsComments] Timeout en attendant le document YJS');
+        
       }, 5000);
 
       return () => {
