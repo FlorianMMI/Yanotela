@@ -59,16 +59,7 @@ export default function NoteList({
   };
 
   return (
-    <main className="p-4 relative">
-      {/* Message si aucune note et pas en chargement - Centré sur la page */}
-      {!isLoading && notes.length === 0 && (
-       
-          <p className="absolute inset-0 flex items-center justify-center pointer-events-none text-element text-lg font-gant mx-4 text-center">
-            Aucune note trouvée. Créez votre première note !
-          </p>
-        
-      )}
-
+    <main className="p-4">
       <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-4 md:gap-6 justify-items-start">
 
         {/* Add Note Button - Only shown if allowCreateNote is true */}
@@ -108,6 +99,18 @@ export default function NoteList({
           />
         ))}
       </div>
+
+      {/* Message si aucune note */}
+      {!isLoading && notes.length === 0 && (
+        <div className="text-center py-16 px-4 pointer-events-none select-none">
+          <p className="text-element font-geo text-xl italic">
+            Aucune note pour le moment
+          </p>
+          <p className="text-element/70 font-gant text-sm mt-2">
+            Appuyez sur + pour créer votre première note
+          </p>
+        </div>
+      )}
     </main>
   );
 }
