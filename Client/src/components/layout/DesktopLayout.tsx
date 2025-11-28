@@ -8,12 +8,16 @@ import ItemBar from '@/components/itemBar/ItemBar';
 import { SwipeNavigationWrapper } from '@/components/navigation/SwipeNavigationWrapper';
 import { usePathname } from 'next/navigation';
 import FlashNoteWidget from '@/components/flashnote/FlashNoteWidget';
+import ParamModal from '@/components/commentaire/commentModal';
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
 }
 
 export default function DesktopLayout({ children }: DesktopLayoutProps) {
+  const [isCommentModalOpen, setCommentModalOpen] = React.useState(false);
+  const openCommentModal = () => setCommentModalOpen(true);
+  const closeCommentModal = () => setCommentModalOpen(false);
   const { isAuthenticated, loading } = useAuth();
   const pathname = usePathname();
   
@@ -43,13 +47,15 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
 
       {/* Desktop: nouvelle architecture */}
       <div className="hidden md:flex h-screen">
+        {/* Modal commentaire globale */}
+        {isCommentModalOpen && <ParamModal onClose={closeCommentModal} />}
         {/* Sidebar - toujours visible */}
         <SideBar />
 
         {/* Contenu principal */}
         <div className={`flex-1 flex flex-col w-full`}>
           {/* Breadcrumb et ItemBar - toujours visibles */}
-          <Breadcrumb />
+          <Breadcrumb openCommentModal={openCommentModal} />
           <ItemBar />
 
           {/* Zone de contenu */}

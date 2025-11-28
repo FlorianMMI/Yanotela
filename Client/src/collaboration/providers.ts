@@ -51,7 +51,7 @@ export function registerInitialYjsState(noteId: string, yjsStateArray: number[])
 export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string) {
   const provider = providerInstances.get(noteId);
   if (!provider) {
-    console.warn(`[setAwarenessUserInfo] Provider non trouvé pour note ${noteId}`);
+    
     return;
   }
 

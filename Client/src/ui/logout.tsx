@@ -16,7 +16,7 @@ export default function Logout(){
 
     const handleConfirmLogout = async () => {
         try {
-            router.push('/');
+            router.push('/login');
             const response = await LogoutAPI();
             
             if (response.success) {

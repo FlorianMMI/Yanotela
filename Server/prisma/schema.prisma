@@ -24,7 +24,6 @@ model User {
   modifiedNotes Note[]       @relation("NoteModifier")
   permissions   Permission[]
   noteFolders   NoteFolder[]
-    commentaire commentaire[]
 }
 
 model Note {
@@ -42,7 +41,6 @@ model Note {
   permissions Permission[]
   noteFolder  NoteFolder?
   isPublic    Boolean      @default(false)
-    commentaire commentaire[]
 }
 
 model Permission {
@@ -85,13 +83,5 @@ model NoteFolder {
   @@map("note_folder")
 }
 
-
-model commentaire {
-  id        String   @id @default(uuid())
-  text      String
-  date      DateTime @default(now())
-  authorId  Int
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  idnote    String   @map("id_note")
-  note      Note     @relation(fields: [idnote], references: [id], onDelete: Cascade)
-}
+// Note: Les commentaires sont maintenant gérés via YJS (Y.Array partagé)
+// Voir: Client/src/hooks/useYjsComments.ts

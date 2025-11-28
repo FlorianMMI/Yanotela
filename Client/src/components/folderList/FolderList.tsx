@@ -32,17 +32,8 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
   };
 
   return (
-
-    <main className="p-4 relative">
-
-       {/* Message si aucune note et pas en chargement - Centré sur la page */}
-      {!isLoading && folders.length === 0 && (
-        <p className="absolute top-1/2 left-1/2 pointer-events-none transform  -translate-x-1/2 -translate-y-1/2 text-element text-lg font-gant w-[calc(100%-5rem)] text-center">
-          Aucun dossier trouvé. Créez votre premier dossier !
-        </p>
-      )}
-
-  <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-4 max-w-full justify-items-start">
+    <main className="p-4">
+      <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-4 max-w-full justify-items-start">
 
         {/* Add Folder Button - Toujours visible */}
         <div className="relative group  w-full rounded-xl flex items-center justify-center transition-colors cursor-pointer text-primary h-[110px] md:w-65 md:h-50">
@@ -90,6 +81,18 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
           <Folder key={folder.id} folder={folder} onFolderUpdated={onFolderCreated} />
         ))}
       </div>
+
+      {/* Message si aucun dossier */}
+      {!isLoading && folders.length === 0 && (
+        <div className="text-center py-16 px-4 pointer-events-none select-none">
+          <p className="text-element font-geo text-xl italic">
+            Aucun dossier pour le moment
+          </p>
+          <p className="text-element/70 font-gant text-sm mt-2">
+            Appuyez sur + pour créer votre premier dossier
+          </p>
+        </div>
+      )}
     </main>
   );
 }

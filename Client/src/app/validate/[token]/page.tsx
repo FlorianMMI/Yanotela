@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import "../../globals.css";
@@ -12,19 +12,12 @@ interface ValidatePageProps {
 
 export default function ValidatePage({ params }: ValidatePageProps) {
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
+  const { token } = use(params);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  useEffect(() => {
-    params.then(({ token: resolvedToken }) => {
-      setToken(resolvedToken);
-    });
-  }, [params]);
 
   useEffect(() => {
-    if (!token) return;
-
     const validateToken = async () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api';
       
@@ -60,7 +53,7 @@ export default function ValidatePage({ params }: ValidatePageProps) {
   }, [token, router]);
 
   // Loading state
-  if (!token || status === 'loading') {
+  if (status === 'loading') {
     return (
       <div className="min-h-full flex items-center justify-center">
         <MobileFlashNoteButton />
