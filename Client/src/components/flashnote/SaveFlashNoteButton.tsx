@@ -157,7 +157,7 @@ export default function SaveFlashNoteButton({
           setSaveTitle('');
           
           // Rediriger vers la nouvelle note
-          router.push(`/notes/${result.note.id}`);
+          router.push(`/notes`);
         } else {
           setError('Erreur lors de la sauvegarde du contenu');
           setTimeout(() => setError(null), 5000);

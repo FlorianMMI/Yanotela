@@ -39,7 +39,7 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=https://yanotela.fr/api
-            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.PROD_TURNSTILE_SITE_KEY }}
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:production
             ${{ env.DOCKER_FRONTEND_REPO }}:production-${{ github.sha }}
@@ -161,9 +161,9 @@ jobs:
 
             # Créer le fichier .env
             cat > .env << 'EOF'
-            ${{secrets.ENV_PROD_FILE}}
-            ${{secrets.TURNSTILE_SITE_KEY}}
-            ${{secrets.TURNSTILE_SITE_SECRET_KEY}}
+            ${{ secrets.ENV_PROD_FILE }}
+            ${{ secrets.PROD_TURNSTILE_SITE_KEY }}
+            ${{ secrets.PROD_TURNSTILE_SECRET_KEY }}
             EOF
 
             # Arrêter les anciens conteneurs

@@ -406,9 +406,13 @@ function LoadInitialContentPlugin({
         }
 
         if (ydoc) {
-          const encoded = Y.encodeStateAsUpdate(ydoc);
-          if (encoded && encoded.length > 0) {
-            // Y.Doc already has content — skip applying DB content to avoid duplication
+          // Vérifier si le Y.Doc contient réellement du contenu
+          // (pas juste un état YJS vide qui a quand même un encoded.length > 0)
+          const yXmlText = ydoc.get('root', Y.XmlText);
+          const textContent = yXmlText ? yXmlText.toString().trim() : '';
+          
+          if (textContent.length > 0) {
+            // Y.Doc contient du vrai contenu — skip applying DB content to avoid duplication
             hasLoadedRef.current = true;
             return;
           }
@@ -804,23 +808,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
               disabled={isReadOnly}
             />
             <div className="relative flex">
-              <button
-                onClick={() => {
-                  // Ajout d'une clé unique à chaque clic pour forcer le remount
-                  window.dispatchEvent(
-                    new CustomEvent("openCommentModal", {
-                      detail: { key: Date.now() },
-                    })
-                  );
-                }}
-                className="ml-2"
-              >
-                <Comment
-                  width={30}
-                  height={30}
-                  className="text-white cursor-pointer"
-                />
-              </button>
+
               <button
                 onClick={() => setShowNoteMore((prev) => !prev)}
                 aria-label="Ouvrir les options de la note"

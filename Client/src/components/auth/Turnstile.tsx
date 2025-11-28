@@ -14,11 +14,11 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
     const key = siteKey || (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY as string | undefined);
     if (!key) return;
 
-    // inject the script only once
+    // from auto-rendering widgets so we control rendering and avoid duplicate widgets.
     if (!document.getElementById('cf-turnstile-script')) {
       const s = document.createElement('script');
       s.id = 'cf-turnstile-script';
-      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
       s.async = true;
       document.head.appendChild(s);
     }
@@ -50,22 +50,54 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
             existing.style.maxWidth = '100%';
             existing.style.boxSizing = 'border-box';
             existing.style.border = '0';
-            try { el.dataset.turnstileRendered = '1'; } catch (e) {}
+            try { el.dataset.turnstileRendered = '1'; } catch (e) { }
           }
           return;
         }
 
         if (anyWin.turnstile && typeof anyWin.turnstile.render === 'function') {
           // render expects the element (or selector) and options
-          anyWin.turnstile.render(el, { sitekey: key });
+          // Create or reuse a hidden input to store the Turnstile token so forms can read it.
+          const ensureTokenInput = () => {
+            let input = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
+            if (!input) {
+              input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'cf-turnstile-response';
+              input.value = '';
+              // attach to body so temporary forms can pick it up when they are created
+              document.body.appendChild(input);
+            }
+            return input;
+          };
+
+          const tokenInput = ensureTokenInput();
+
+          // Provide callback to populate the hidden input when Turnstile returns a token
+          const widgetId = anyWin.turnstile.render(el, {
+            sitekey: key,
+            callback: (token: string) => {
+              try { tokenInput.value = token || ''; } catch (e) { }
+            },
+            'expired-callback': () => {
+              try { tokenInput.value = ''; } catch (e) { }
+            }
+          });
 
           // mark container rendered to avoid duplicate render attempts
-          try { el.dataset.turnstileRendered = '1'; } catch (e) {}
+          try { el.dataset.turnstileRendered = '1'; } catch (e) { }
 
           // small delay to allow widget to mount, then ensure iframe fills the wrapper
           setTimeout(() => {
             const iframe = el.querySelector('iframe') as HTMLIFrameElement | null;
             if (iframe) {
+              iframe.style.position = 'absolute';
+              iframe.style.inset = '0';
+              iframe.style.width = '100%';
+              iframe.style.height = '100%';
+              iframe.style.maxWidth = '100%';
+              iframe.style.boxSizing = 'border-box';
+              iframe.style.border = '0';
             }
           }, 60);
         }
@@ -109,7 +141,7 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
       >
         <div
           ref={containerRef}
-          className="cf-turnstile absolute inset-0 aspect-auto w-full h-full"
+          className="cf-turnstile absolute inset-0 w-full h-full"
           data-sitekey={siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
         />
       </div>

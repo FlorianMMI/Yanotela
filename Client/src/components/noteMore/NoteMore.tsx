@@ -3,7 +3,6 @@ import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/n
 import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
-import Folder from "@/ui/folder/Folder";
 import { ArrowBarIcon, DuplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
 
 interface NoteMoreProps {
@@ -164,7 +163,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                 return null; // Le modal sera rendu en dehors du contenu
             default:
                 return (
-                    <div className="flex-1 overflow-y-auto p-3 md:p-4 max-h-[30vh]">
+                    <div className="flex overflow-y-auto p-3 md:p-4 max-h-[30vh] ">
                         <div className="flex flex-col gap-1 py-2">
                             <button
                                 className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium transition-colors"
@@ -247,7 +246,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
             ) : (
                 <div 
                     ref={modalRef}
-                    className="bg-white rounded-xl w-60 md:w-sm shadow-lg overflow-hidden relative h-auto flex flex-col"
+                    className="bg-white rounded-xl w-52 md:w-64 shadow-lg overflow-hidden relative h-auto flex flex-col"
                 >
                     
                     <div className="p-3 md:p-4 pb-2 border-b border-element flex items-center">

@@ -102,15 +102,18 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     }
   }, [pathname, router, protectedRoutes, publicRoutes]);
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
+  // Check initial au montage
   useEffect(() => {
     checkAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, []);
 
+  // Vérification à chaque changement de route
+  useEffect(() => {
+    checkAuth();
+  }, [pathname, checkAuth]);
+
+  // Écoute des événements de rafraîchissement d'auth
   useEffect(() => {
     const handleAuthRefresh = () => {
       checkAuth();

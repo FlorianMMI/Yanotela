@@ -23,11 +23,11 @@ const __dirname = dirname(__filename);
 
 // Middleware
 app.set('trust proxy', 1);
-app.use(helmet()); // Sécurité de base
+app.use(helmet());
 app.use(sessionMiddleware);
 app.use(corsConfig);
 app.use(express.static(join(__dirname, '../public')));
-// 🔥 Augmentation de la limite pour supporter les images base64 dans yjsState
+
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
 app.disable('x-powered-by');

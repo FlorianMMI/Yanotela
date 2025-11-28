@@ -276,7 +276,7 @@ export default function RegisterForm({
 
         {/* Turnstile widget (no-op in non-prod) */}
         <div className="mb-3 w-full">
-          <Turnstile />
+            <Turnstile />
         </div>
 
         <button
