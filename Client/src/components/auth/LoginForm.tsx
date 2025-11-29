@@ -48,42 +48,44 @@ export default function LoginForm({
       setIsLoading(false);
       return;
     }
-    
-    // Créer un formulaire HTML temporaire pour la soumission, comme avec Google Auth
-    const tempForm = document.createElement('form');
-    tempForm.method = 'POST';
-    tempForm.action = `${process.env.NEXT_PUBLIC_API_URL}/login`;
 
-    // Créer les champs cachés
-    const identifiantInput = document.createElement('input');
-    identifiantInput.type = 'hidden';
-    identifiantInput.name = 'identifiant';
-    identifiantInput.value = identifiant;
-
-    const passwordInput = document.createElement('input');
-    passwordInput.type = 'hidden';
-    passwordInput.name = 'password';
-    passwordInput.value = password;
-
-    tempForm.appendChild(identifiantInput);
-    tempForm.appendChild(passwordInput);
-    // Attach Turnstile token if present
     try {
-      const token = (typeof window !== 'undefined') ? (document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value) : undefined;
-      if (token) {
-        const tokenInput = document.createElement('input');
-        tokenInput.type = 'hidden';
-        tokenInput.name = 'cf-turnstile-response';
-        tokenInput.value = token;
-        tempForm.appendChild(tokenInput);
+      // Récupérer le token Turnstile
+      const turnstileToken = (typeof window !== 'undefined') 
+        ? document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value 
+        : undefined;
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          identifiant,
+          password,
+          'cf-turnstile-response': turnstileToken || '',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.error || 'Identifiants incorrects');
+        setIsLoading(false);
+        return;
+      }
+
+      // Succès - rediriger ou appeler onSuccess
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push('/notes');
       }
     } catch (err) {
-      // ignore
+      setError('Erreur de connexion au serveur');
+      setIsLoading(false);
     }
-    document.body.appendChild(tempForm);
-
-    // Soumettre le formulaire pour permettre la redirection serveur
-    tempForm.submit();
   };
 
   const togglePasswordVisibility = () => {

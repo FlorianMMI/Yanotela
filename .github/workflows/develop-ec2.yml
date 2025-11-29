@@ -6,7 +6,6 @@ env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend-dev
   DOCKER_BACKEND_REPO: jefee/yanotela-backend-dev
-  EC2_HOST: preprod.yanotela.fr # a retirer si on utilise secrets.EC2_HOST_IP
   EC2_USER: ubuntu
   DEPLOY_PATH: /var/www/yanotela
 permissions:
@@ -80,7 +79,6 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
             NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
@@ -121,10 +119,7 @@ jobs:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          # Utiliser l'IP directe pour éviter le proxy Cloudflare qui bloque SSH
-          # TODO: Remplacer par ${{ secrets.EC2_HOST_IP }} quand le secret sera créé
-          host: "13.39.48.72"
-          username: ${{ env.EC2_USER }}
+          username: ${{ env.EC2_USER_IP }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             echo "🚀 Starting deployment to DEVELOPMENT environment"
@@ -157,7 +152,6 @@ jobs:
             cat > ./nginx/conf.d/default.conf << 'EOF'
             server {
                 listen 80;
-                server_name preprod.yanotela.fr www.preprod.yanotela.fr;
                 client_max_body_size 100M;
 
                 # Cloudflare Turnstile: gérer les requêtes /cdn-cgi/
@@ -288,7 +282,6 @@ jobs:
                 container_name: yanotela-frontend-dev
                 environment:
                   - NODE_ENV=development
-                  - NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
                   - NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}
                 env_file:
                   - .env.dev
@@ -333,9 +326,6 @@ jobs:
             # Ajouter les variables Turnstile avec le bon format
             echo "TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}" >> .env.dev
             echo "TURNSTILE_SECRET_KEY=${{ secrets.DEV_TURNSTILE_SECRET_KEY }}" >> .env.dev
-            # TEMPORAIRE: Désactiver Turnstile en préprod pour débloquer la connexion
-            # Supprimer cette ligne une fois le problème Turnstile résolu
-            echo "TURNSTILE_DISABLED=1" >> .env.dev
 
             # Démarrage des services (optimisé : pull + up en une étape)
             docker compose down || true
@@ -348,7 +338,6 @@ jobs:
             if docker compose ps | grep -q "Up"; then
               echo "✅ Services démarrés avec succès"
               echo "🎉 Déploiement terminé !"
-              echo "🌐 Accédez à votre application : https://preprod.yanotela.fr"
             else
               echo "❌ Échec du démarrage des services"
               docker compose logs
