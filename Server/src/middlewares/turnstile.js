@@ -21,6 +21,9 @@ export async function verifyTurnstile(token) {
       timeout: 5000,
     });
 
+    // Debug log - à supprimer après résolution
+    console.log('Turnstile verification response:', JSON.stringify(resp?.data));
+
     return !!(resp?.data?.success);
   } catch (err) {
     console.error('Turnstile verify error:', err?.response?.data || err.message || err);
