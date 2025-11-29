@@ -65,7 +65,8 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
 
       widgetIdRef.current = window.turnstile.render(el, {
         sitekey: key,
-        size: 'invisible', // Mode invisible pour éviter les problèmes d'affichage
+        size: 'flexible', // S'adapte à la largeur du conteneur
+        appearance: 'interaction-only', // Ne s'affiche que si interaction nécessaire (mode "invisible-like")
         callback: (token: string) => {
           if (tokenInput) tokenInput.value = token || '';
         },
@@ -185,7 +186,7 @@ export default function Turnstile({ siteKey, className = '', aspectRatio = '5/1'
   }
 
   return (
-    <div className={className}>
+    <div className={`${className} mb-3`}>
       <div
         className="w-full relative overflow-hidden"
         style={{ aspectRatio }}
