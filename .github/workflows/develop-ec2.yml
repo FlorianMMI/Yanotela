@@ -6,7 +6,7 @@ env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend-dev
   DOCKER_BACKEND_REPO: jefee/yanotela-backend-dev
-  EC2_HOST: preprod.yanotela.fr
+  EC2_HOST: preprod.yanotela.fr # a retirer si on utilise secrets.EC2_HOST_IP
   EC2_USER: ubuntu
   DEPLOY_PATH: /var/www/yanotela
 permissions:
@@ -121,7 +121,8 @@ jobs:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ env.EC2_HOST }}
+          # host: ${{ secrets.EC2_HOST_IP }}
+          host: ${{ secrets.EC2_HOST }}
           username: ${{ env.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
@@ -156,26 +157,17 @@ jobs:
             server {
                 listen 80;
                 server_name preprod.yanotela.fr www.preprod.yanotela.fr;
+                client_max_body_size 100M;
+
+                # Cloudflare Turnstile: gérer les requêtes /cdn-cgi/
+                location ^~ /cdn-cgi/ {
+                    return 204;
+                }
+
+                # Let's Encrypt (si besoin de renouvellement manuel)
                 location ^~ /.well-known/acme-challenge/ {
                     root /var/www/yanotela;
                     try_files $uri =404;
-                }
-                location / {
-                    return 301 https://$server_name$request_uri;
-                }
-            }
-            server {
-                listen 443 ssl http2;
-                server_name preprod.yanotela.fr www.preprod.yanotela.fr;
-                client_max_body_size 100M;
-                ssl_certificate /etc/letsencrypt/live/yanotela.fr/fullchain.pem;
-                ssl_certificate_key /etc/letsencrypt/live/yanotela.fr/privkey.pem;
-                ssl_protocols TLSv1.2 TLSv1.3;
-                ssl_ciphers HIGH:!aNULL:!MD5;
-                ssl_prefer_server_ciphers on;
-
-                location ^~ /cdn-cgi/ {
-                    return 204;
                 }
 
                 location / {
@@ -186,8 +178,10 @@ jobs:
                     proxy_set_header Host $host;
                     proxy_set_header X-Real-IP $remote_addr;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto $scheme;
-              }
+                    proxy_set_header X-Forwarded-Proto https;
+                    proxy_cache_bypass $http_upgrade;
+                }
+
                 location /api/ {
                     rewrite ^/api/(.*) /$1 break;
                     proxy_pass http://backend-dev:3001;
@@ -195,11 +189,12 @@ jobs:
                     proxy_set_header Host $host;
                     proxy_set_header X-Real-IP $remote_addr;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_set_header X-Forwarded-Proto https;
                     proxy_cache_bypass $http_upgrade;
                     proxy_read_timeout 300s;
                     proxy_connect_timeout 75s;
                 }
+
                 location /yjs/ {
                     proxy_pass http://yjs-server:1234/;
                     proxy_http_version 1.1;
@@ -208,9 +203,10 @@ jobs:
                     proxy_set_header Host $host;
                     proxy_set_header X-Real-IP $remote_addr;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_set_header X-Forwarded-Proto https;
                     proxy_read_timeout 86400;
                 }
+
                 location /health {
                     proxy_pass http://backend-dev:3001/health;
                     proxy_set_header Host $host;
