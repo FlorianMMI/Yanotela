@@ -46,29 +46,34 @@ export default function LoginForm({
       setIsLoading(false);
       return;
     }
-    
-    // Créer un formulaire HTML temporaire pour la soumission, comme avec Google Auth
-    const tempForm = document.createElement('form');
-    tempForm.method = 'POST';
-    tempForm.action = `${process.env.NEXT_PUBLIC_API_URL}/login`;
 
-    // Créer les champs cachés
-    const identifiantInput = document.createElement('input');
-    identifiantInput.type = 'hidden';
-    identifiantInput.name = 'identifiant';
-    identifiantInput.value = identifiant;
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          identifiant,
+          password,
+        }),
+      });
 
-    const passwordInput = document.createElement('input');
-    passwordInput.type = 'hidden';
-    passwordInput.name = 'password';
-    passwordInput.value = password;
+      const data = await response.json();
 
-    tempForm.appendChild(identifiantInput);
-    tempForm.appendChild(passwordInput);
-    document.body.appendChild(tempForm);
+      if (!response.ok || !data.success) {
+        setError(data.error || 'Identifiants incorrects');
+        setIsLoading(false);
+        return;
+      }
 
-    // Soumettre le formulaire pour permettre la redirection serveur
-    tempForm.submit();
+      // Succès - forcer le rechargement complet de la page pour réinitialiser l'état
+      window.location.href = '/notes';
+    } catch (err) {
+      setError('Erreur de connexion au serveur');
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
