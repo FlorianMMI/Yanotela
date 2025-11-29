@@ -333,6 +333,9 @@ jobs:
             # Ajouter les variables Turnstile avec le bon format
             echo "TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}" >> .env.dev
             echo "TURNSTILE_SECRET_KEY=${{ secrets.DEV_TURNSTILE_SECRET_KEY }}" >> .env.dev
+            # TEMPORAIRE: Désactiver Turnstile en préprod pour débloquer la connexion
+            # Supprimer cette ligne une fois le problème Turnstile résolu
+            echo "TURNSTILE_DISABLED=1" >> .env.dev
 
             # Démarrage des services (optimisé : pull + up en une étape)
             docker compose down || true
