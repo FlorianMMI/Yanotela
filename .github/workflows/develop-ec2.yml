@@ -115,6 +115,7 @@ jobs:
     name: Deploy to Development EC2
     runs-on: ubuntu-latest
     needs: [install-dependencies, build-frontend, build-backend]
+    environment: preprod
     steps:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
