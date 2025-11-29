@@ -20,7 +20,6 @@ interface LexicalNode {
   children?: LexicalNode[];
 }
 
-
 export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode = "all" }: NoteProps) {
   const router = useRouter();
   const pathname = usePathname();
