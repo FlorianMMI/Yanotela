@@ -22,7 +22,6 @@ export async function verifyTurnstile(token) {
     });
 
     // Debug log - à supprimer après résolution
-    console.log('Turnstile verification response:', JSON.stringify(resp?.data));
 
     return !!(resp?.data?.success);
   } catch (err) {
