@@ -165,9 +165,7 @@ export default function LoginForm({
         )}
       
         {/* Turnstile widget (will be a no-op in non-prod) */}
-        <div className="w-full mt-3">
           <Turnstile />
-        </div>
         <button 
           type="submit" 
           disabled={isLoading}
