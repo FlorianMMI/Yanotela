@@ -26,15 +26,15 @@ const nextConfig: NextConfig = {
           {
             key: 'Content-Security-Policy',
             value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.cloudflare.com",
+              "default-src 'self' https://*.cloudflare.com https://challenges.cloudflare.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cloudflare.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "frame-src 'self' https://challenges.cloudflare.com https://*.cloudflare.com",
-              "connect-src 'self' https://challenges.cloudflare.com https://*.cloudflare.com wss://*.yanotela.fr wss://localhost:* https://preprod.yanotela.fr https://yanotela.fr https://accounts.google.com",
+              "frame-src 'self' https://*.cloudflare.com https://challenges.cloudflare.com",
+              "connect-src 'self' https://*.cloudflare.com https://challenges.cloudflare.com wss://*.yanotela.fr wss://localhost:* https://preprod.yanotela.fr https://yanotela.fr https://accounts.google.com",
               "worker-src 'self' blob:",
-              "child-src 'self' blob: https://challenges.cloudflare.com",
+              "child-src 'self' blob: https://*.cloudflare.com https://challenges.cloudflare.com",
             ].join('; '),
           },
           {
