@@ -330,9 +330,9 @@ jobs:
                 driver: bridge
             EOF
 
-            # .env.prod - Variables d'environnement pour les containers
+            # .env.prod - Variables d'environnement depuis le secret GitHub
             cat > .env.prod << 'EOF'
-            ${{ secrets.ENV_PROD }}
+            ${{ secrets.ENV_PROD_FILE }}
             EOF
             
             # Ajouter les variables Turnstile
