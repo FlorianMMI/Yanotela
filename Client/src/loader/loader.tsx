@@ -8,17 +8,6 @@ function getApiUrl() {
     if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
     return '';
 }
-<<<<<<< HEAD
-=======
-
-function getTurnstileToken() {
-    // if (typeof window === 'undefined') return undefined;
-    // const el = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
-    // return el?.value;
-    return undefined; // Turnstile désactivé
-}
-
->>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
 /**
  * Vérifie si la réponse est un 401 et déclenche la redirection si nécessaire
  * @returns true si la réponse est OK ou non-401, false si 401 (redirection déclenchée)
@@ -524,13 +513,7 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
     try {
         
         const apiUrl = getApiUrl();
-<<<<<<< HEAD
         const body = { ...credentials } as any;
-=======
-        // const token = getTurnstileToken();
-        const body = { ...credentials } as any;
-        // if (token) body['cf-turnstile-response'] = token;
->>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
 
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
@@ -579,13 +562,7 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
-<<<<<<< HEAD
         const payload = { ...userData } as any;
-=======
-        // const token = getTurnstileToken();
-        const payload = { ...userData } as any;
-        // if (token) payload['cf-turnstile-response'] = token;
->>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
 
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
@@ -632,13 +609,7 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
-<<<<<<< HEAD
         const payload: any = { email };
-=======
-        // const token = getTurnstileToken();
-        const payload: any = { email };
-        // if (token) payload['cf-turnstile-response'] = token;
->>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
 
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
@@ -666,14 +637,7 @@ export async function ResetPassword(token: string, password: string): Promise<Au
     try {
         
         const apiUrl = getApiUrl();
-<<<<<<< HEAD
         const payload: any = { password, token };
-=======
-        // const tokenVal = getTurnstileToken();
-        const payload: any = { password, token };
-        // if (tokenVal) payload['cf-turnstile-response'] = tokenVal;
->>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
-
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
             headers: {
