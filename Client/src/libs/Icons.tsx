@@ -299,7 +299,7 @@ export function FlashIcon(props: React.SVGProps<SVGSVGElement>) {
       <path
         d="M44.4652 5L5.39515 96.28C5.07373 97.0449 4.94531 97.8771 5.02123 98.7033C5.09714 99.5295 5.37504 100.324 5.83047 101.018C6.28589 101.711 6.90485 102.282 7.63284 102.68C8.36084 103.078 9.17552 103.291 10.0052 103.3L33.4497 102.843C34.1594 102.849 34.8599 103.004 35.5052 103.3C36.1505 103.596 36.7261 104.024 37.1944 104.557C37.6626 105.091 38.0129 105.717 38.2224 106.395C38.4318 107.073 38.4956 107.788 38.4097 108.493L10.0052 181.46C9.89519 182.48 11.1852 183.01 11.8052 182.18L113.985 81C116.475 77.66 114.125 72.87 110.005 72.87H81.2851C80.4631 72.8606 79.6557 72.6511 78.9328 72.2595C78.2099 71.868 77.5933 71.3062 77.1364 70.6227C76.6794 69.9393 76.3959 69.1548 76.3103 68.3371C76.2247 67.5195 76.3396 66.6932 76.6451 65.93L97.5052 12.3782C98.7952 9.03818 96.5352 5 93.0052 5H71.1552L35.9411 85.8701H68.4411L57.5052 112.37"
         stroke="currentColor"
-        strokeWidth="20"
+        strokeWidth="8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -1035,10 +1035,10 @@ export function Comment(props: React.SVGProps<SVGSVGElement>) {
 export function CopyIcon(props: React.SVGProps<SVGSVGElement>) {
     return(
         <svg {...props} width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 5.04877L10.367 4.70563C12.7995 2.43146 16.7432 2.43146 19.1757 4.70563M16.9735 15L19.1757 12.9411C20.3438 11.849 20.951 10.4309 20.9972 9" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M14 18.9278L13.6345 19.2773C11.2123 21.5937 7.25434 21.5644 4.83209 19.248C2.43376 16.9546 2.37639 13.2153 4.74095 10.89L5.64594 10" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M6.58739 3L7.5 5.20521" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M3.50238 6.08658L9.05021 8.79453" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M10 5.04877L10.367 4.70563C12.7995 2.43146 16.7432 2.43146 19.1757 4.70563M16.9735 15L19.1757 12.9411C20.3438 11.849 20.951 10.4309 20.9972 9" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M14 18.9278L13.6345 19.2773C11.2123 21.5937 7.25434 21.5644 4.83209 19.248C2.43376 16.9546 2.37639 13.2153 4.74095 10.89L5.64594 10" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M6.58739 3L7.5 5.20521" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M3.50238 6.08658L9.05021 8.79453" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
     )
 }
@@ -1046,9 +1046,9 @@ export function CopyIcon(props: React.SVGProps<SVGSVGElement>) {
 export function CopyLinkIcon(props: React.SVGProps<SVGSVGElement>) {
     return(
         <svg {...props} width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14.1625 18.4876L13.4417 19.2084C11.053 21.5971 7.18019 21.5971 4.79151 19.2084C2.40283 16.8198 2.40283 12.9469 4.79151 10.5583L5.51236 9.8374" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M9.8374 14.1625L14.1625 9.8374" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M9.8374 5.51236L10.5583 4.79151C12.9469 2.40283 16.8198 2.40283 19.2084 4.79151M18.4876 14.1625L19.2084 13.4417C20.4324 12.2177 21.0292 10.604 20.9988 9" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M14.1625 18.4876L13.4417 19.2084C11.053 21.5971 7.18019 21.5971 4.79151 19.2084C2.40283 16.8198 2.40283 12.9469 4.79151 10.5583L5.51236 9.8374" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M9.8374 14.1625L14.1625 9.8374" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M9.8374 5.51236L10.5583 4.79151C12.9469 2.40283 16.8198 2.40283 19.2084 4.79151M18.4876 14.1625L19.2084 13.4417C20.4324 12.2177 21.0292 10.604 20.9988 9" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
     )
 }
@@ -1070,9 +1070,9 @@ export function Send(props: React.SVGProps<SVGSVGElement>) {
       <path
         d="M11.5003 12H5.41872M5.24634 12.7972L4.24158 15.7986C3.69128 17.4424 3.41613 18.2643 3.61359 18.7704C3.78506 19.21 4.15335 19.5432 4.6078 19.6701C5.13111 19.8161 5.92151 19.4604 7.50231 18.7491L17.6367 14.1886C19.1797 13.4942 19.9512 13.1471 20.1896 12.6648C20.3968 12.2458 20.3968 11.7541 20.1896 11.3351C19.9512 10.8529 19.1797 10.5057 17.6367 9.81135L7.48483 5.24303C5.90879 4.53382 5.12078 4.17921 4.59799 4.32468C4.14397 4.45101 3.77572 4.78336 3.60365 5.22209C3.40551 5.72728 3.67772 6.54741 4.22215 8.18767L5.24829 11.2793C5.34179 11.561 5.38855 11.7019 5.407 11.8459C5.42338 11.9738 5.42321 12.1032 5.40651 12.231C5.38768 12.375 5.34057 12.5157 5.24634 12.7972Z"
         stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

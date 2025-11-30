@@ -250,7 +250,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
           metadata.set('title', finalTitle);
           
         } else {
-          console.warn('⚠️ [Breadcrumb] Y.Doc non trouvé pour', noteId);
+          
         }
 
         // Émettre un événement pour synchroniser avec la page de note

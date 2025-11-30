@@ -66,8 +66,7 @@ export function migrateContentToYjs(lexicalJSON) {
     const plainText = extractTextFromLexicalNode(parsedContent);
     
     if (!plainText || plainText.trim() === '') {
-      console.warn('⚠️ [YJS Migration] Contenu vide après extraction - création d\'un document YJS vide');
-      
+
       // Créer un document YJS vide valide pour éviter les boucles de migration
       const ydoc = new Y.Doc();
       const yXmlText = ydoc.get('root', Y.XmlText);
@@ -123,7 +122,7 @@ export function needsMigration(note) {
 export function extractContentFromYjs(yjsState) {
   try {
     if (!yjsState) {
-      console.warn('⚠️ [YJS Extract] yjsState vide');
+      
       return null;
     }
 
@@ -141,7 +140,7 @@ export function extractContentFromYjs(yjsState) {
     const plainText = yXmlText.toString();
     
     if (!plainText || plainText.trim() === '') {
-      console.warn('⚠️ [YJS Extract] Contenu vide');
+      
       // Retourner un document Lexical vide valide
       return JSON.stringify({
         root: {

@@ -24,7 +24,7 @@ export function useAuth(): AuthState {
   } catch (e) {
     // Not mounted: return conservative defaults (loading=true so callers
     // don't immediately redirect) and a no-op refetch.
-    console.warn('useAuth used outside AuthWrapper, returning fallback auth state.');
+    
     void e;
     return {
       isAuthenticated: null,

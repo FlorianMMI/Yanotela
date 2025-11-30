@@ -25,7 +25,6 @@ export default function ConfirmPassword({
   const [passwordInvalid, setPasswordInvalid] = useState(false);
   const [passwordMismatch, setPasswordMismatch] = useState(false);
 
-
   // Fonctions pour gérer la visibilité des mots de passe
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);

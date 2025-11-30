@@ -59,7 +59,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       // If primary failed and API_URL was set, try a relative fallback
       if (!response && API_URL) {
         response = await doFetch('/auth/check');
-        console.warn('[AuthWrapper] primary auth check failed, attempted relative fallback');
+        
       }
 
       if (!response) {
@@ -75,7 +75,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         setUser(null);
       }
     } catch (err) {
-      console.warn('Auth check failed:', err instanceof Error ? err.message : err);
+      
       setIsAuthenticated(false);
       setUser(null);
     } finally {

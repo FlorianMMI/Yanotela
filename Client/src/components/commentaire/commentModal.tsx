@@ -8,7 +8,6 @@ import { checkAuthResponse } from '@/utils/authFetch';
 import { FetchPermission } from '@/loader/loader';
 import { useYjsComments } from '@/hooks/useYjsComments';
 
-
 interface ParamModalProps {
     onClose: () => void;
 }
@@ -35,8 +34,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         user?.id,
         user?.pseudo
     );
-
-    
 
     // Scroll en bas à chaque changement de commentaires
     useEffect(() => {
@@ -105,7 +102,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                             <div className="text-center text-element">Connexion en cours...</div>
                         ) : (
                             comments.length === 0 ? (
-                                <div className="text-center text-element">Aucun commentaire pour cette note.</div>
+                                <div className="text-center text-background">Aucun commentaire pour cette note.</div>
                             ) : (
                                 comments.map((comment) => (
                                     <Comment
@@ -124,7 +121,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                             )
                         )}
                     </div>
-                    <form className='w-full mt-4  border-t border-gray-300 pt-2 flex gap-2' onSubmit={handleSubmit}>
+                    <form className='w-full mt-4  border-t border-gray-300 pt-2 flex  gap-2' onSubmit={handleSubmit}>
                         <textarea
                             name="comment"
                             placeholder='Écris ici ...'

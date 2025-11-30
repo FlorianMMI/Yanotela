@@ -8,6 +8,17 @@ function getApiUrl() {
     if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
     return '';
 }
+<<<<<<< HEAD
+=======
+
+function getTurnstileToken() {
+    // if (typeof window === 'undefined') return undefined;
+    // const el = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
+    // return el?.value;
+    return undefined; // Turnstile désactivé
+}
+
+>>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
 /**
  * Vérifie si la réponse est un 401 et déclenche la redirection si nécessaire
  * @returns true si la réponse est OK ou non-401, false si 401 (redirection déclenchée)
@@ -362,7 +373,7 @@ export async function GetDeletedNotes(): Promise<{ notes: Note[]; totalNotes: nu
                     }
                 }
             } catch {
-                console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
+                
                 note.Content = String(note.Content);
             }
         }
@@ -411,7 +422,6 @@ export async function RestoreNote(id: string): Promise<{ success: boolean; messa
     }
 }
 
-
 export async function setPublic(noteId: string, isPublic: boolean): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/set-public/${noteId}`, {
@@ -449,7 +459,6 @@ export async function setPublic(noteId: string, isPublic: boolean): Promise<{ su
     }
 }
 
-
 export async function IsPublic(noteId: string): Promise<{ success: boolean; isPublic?: boolean; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/is-public/${noteId}`, {
@@ -486,7 +495,6 @@ export async function IsPublic(noteId: string): Promise<{ success: boolean; isPu
     }
 }
 
-
 // ============== AUTHENTIFICATION FUNCTIONS ==============
 
 interface LoginCredentials {
@@ -516,7 +524,13 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
     try {
         
         const apiUrl = getApiUrl();
+<<<<<<< HEAD
         const body = { ...credentials } as any;
+=======
+        // const token = getTurnstileToken();
+        const body = { ...credentials } as any;
+        // if (token) body['cf-turnstile-response'] = token;
+>>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
 
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
@@ -565,7 +579,13 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
+<<<<<<< HEAD
         const payload = { ...userData } as any;
+=======
+        // const token = getTurnstileToken();
+        const payload = { ...userData } as any;
+        // if (token) payload['cf-turnstile-response'] = token;
+>>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
 
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
@@ -612,7 +632,13 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
+<<<<<<< HEAD
         const payload: any = { email };
+=======
+        // const token = getTurnstileToken();
+        const payload: any = { email };
+        // if (token) payload['cf-turnstile-response'] = token;
+>>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
 
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
@@ -640,7 +666,13 @@ export async function ResetPassword(token: string, password: string): Promise<Au
     try {
         
         const apiUrl = getApiUrl();
+<<<<<<< HEAD
         const payload: any = { password, token };
+=======
+        // const tokenVal = getTurnstileToken();
+        const payload: any = { password, token };
+        // if (tokenVal) payload['cf-turnstile-response'] = tokenVal;
+>>>>>>> e407d7d7a4bd527fbdadc8a8807a7ca8df0fb6b2
 
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
@@ -1146,7 +1178,7 @@ export async function GetFolderById(id: string): Promise<{ folder: Folder | null
                     }
                 } catch {
                     // Si le parsing échoue, garder le contenu tel quel
-                    console.warn(`Invalid JSON content for note ID ${note.id}, keeping original content.`);
+                    
                     note.Content = String(note.Content);
                 }
             }
@@ -1398,5 +1430,4 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
-
 

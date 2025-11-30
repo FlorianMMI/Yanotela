@@ -182,7 +182,7 @@ function YjsSyncPlugin({
         const ydoc = yjsDocuments.get(noteId);
 
         if (!ydoc) {
-          console.warn("⚠️ [YjsSync] Y.Doc non trouvé pour", noteId);
+          
           setSyncStatus("error");
           return;
         }
@@ -553,9 +553,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) {
-      console.warn(
-        "🔒 [Permissions] Modification titre bloquée (lecture seule)"
-      );
+      
       return;
     }
 
@@ -645,7 +643,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         if (note.Content) {
           setInitialEditorContent(note.Content);
         } else {
-          console.warn("⚠️ [LoadNote] Pas de contenu dans la note");
+          
           setInitialEditorContent(null);
         }
 
@@ -659,9 +657,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           } else {
           }
         } else {
-          console.warn(
-            "⚠️ [Permissions] userRole non reçu du serveur, défaut = édition"
-          );
+          
           setIsReadOnly(false);
         }
       } catch (error) {
@@ -810,9 +806,6 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     };
   }, [id]);
 
-
-
-
   return (
     <div className="flex flex-col gap-4 w-full h-full">
       {/* Notifications */}
@@ -826,7 +819,6 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           {error}
         </div>
       )}
-
 
       {/* Mobile Header */}
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">

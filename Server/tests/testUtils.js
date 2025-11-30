@@ -38,7 +38,7 @@ export async function cleanupTestData(prismaInstance, emails = [], pseudos = [])
       }
     });
   } catch (error) {
-    console.warn('Erreur lors du nettoyage des données de test:', error.message);
+    
   }
 }
 
@@ -76,6 +76,6 @@ export async function cleanupUser(prismaInstance, userId) {
     await prismaInstance.note.deleteMany({ where: { authorId: userId } });
     await prismaInstance.user.delete({ where: { id: userId } });
   } catch (error) {
-    console.warn('Erreur lors du nettoyage de l\'utilisateur:', error.message);
+    
   }
 }
