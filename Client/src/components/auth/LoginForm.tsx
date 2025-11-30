@@ -55,6 +55,14 @@ export default function LoginForm({
         ? document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value 
         : undefined;
 
+      // Vérifier si le CAPTCHA est prêt (seulement si Turnstile est activé)
+      const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+      if (turnstileEnabled && !turnstileToken) {
+        setError('Veuillez patienter quelques secondes, vérification de sécurité en cours...');
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
         method: 'POST',
         headers: {
