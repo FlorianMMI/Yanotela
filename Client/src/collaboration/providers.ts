@@ -51,7 +51,7 @@ export function registerInitialYjsState(noteId: string, yjsStateArray: number[])
 export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string) {
   const provider = providerInstances.get(noteId);
   if (!provider) {
-    console.warn(`[setAwarenessUserInfo] Provider non trouvé pour note ${noteId}`);
+    
     return;
   }
 
@@ -76,11 +76,11 @@ export function createWebsocketProvider(
 ): Provider {
   const { doc, hadInitialState } = getDocFromMap(id, yjsDocMap);
 
-  // Détection auto: prod = wss://domaine/yjs, dev = ws://localhost:1234
+  // Détection auto: prod = wss://domaine/yjs/, dev = ws://localhost:1234
   const isProd = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
   const wsProtocol = isProd && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsHost = isProd ? window.location.host : 'localhost:1234';
-  const wsPath = isProd ? '/yjs' : '';
+  const wsPath = isProd ? '/yjs/' : ''; // Slash final requis pour éviter 301 redirect
   const wsUrl = `${wsProtocol}//${wsHost}${wsPath}`;
 
   const provider = new WebsocketProvider(

@@ -10,6 +10,7 @@
 import { useEffect, useRef } from 'react';
 import * as Y from 'yjs';
 import { yjsDocuments } from '@/collaboration/providers';
+import { checkAuthResponse } from '@/utils/authFetch';
 
 interface TitleSyncPluginProps {
   noteId: string;
@@ -37,7 +38,7 @@ export function TitleSyncPlugin({
   useEffect(() => {
     const ydoc = yjsDocuments.get(noteId);
     if (!ydoc) {
-      console.warn('⚠️ [TitleSync] Y.Doc non trouvé pour', noteId);
+      
       return;
     }
 
@@ -128,6 +129,11 @@ export function TitleSyncPlugin({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ Titre: currentTitle })
         });
+
+        // Vérifier si session expirée (401)
+        if (!checkAuthResponse(response)) {
+          return;
+        }
 
         if (response.ok) {
           

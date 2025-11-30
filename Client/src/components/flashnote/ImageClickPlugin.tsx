@@ -19,10 +19,14 @@ export default function ImageClickPlugin({ onClick }: ImageClickPluginProps) {
       let target: HTMLElement;
       
       // Get the correct target based on event type
-      if (event instanceof TouchEvent) {
+      // Check if TouchEvent exists (browser only) and if event is a touch event
+      const isTouchEvent = typeof TouchEvent !== 'undefined' && event instanceof TouchEvent;
+      
+      if (isTouchEvent) {
         // For touch events, get the element at the touch point
-        if (event.changedTouches && event.changedTouches.length > 0) {
-          const touch = event.changedTouches[0];
+        const touchEvent = event as TouchEvent;
+        if (touchEvent.changedTouches && touchEvent.changedTouches.length > 0) {
+          const touch = touchEvent.changedTouches[0];
           target = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
         } else {
           return;

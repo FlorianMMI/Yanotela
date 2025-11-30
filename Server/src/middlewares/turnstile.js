@@ -4,7 +4,7 @@ import axios from 'axios';
 export async function verifyTurnstile(token) {
   // In tests you may want to bypass verification. Use an explicit env var to disable.
   if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV === 'test') {
-    console.warn('Turnstile verification bypassed by TURNSTILE_DISABLED or test env');
+    
     return true;
   }
 
@@ -21,6 +21,8 @@ export async function verifyTurnstile(token) {
       timeout: 5000,
     });
 
+    // Debug log - à supprimer après résolution
+
     return !!(resp?.data?.success);
   } catch (err) {
     console.error('Turnstile verify error:', err?.response?.data || err.message || err);
@@ -34,26 +36,23 @@ export function requireTurnstile(fieldName = 'cf-turnstile-response') {
     try {
       const token = (req.body && req.body[fieldName]) || req.headers['x-cf-turnstile-response'];
       const ok = await verifyTurnstile(token);
-          if (!ok) {
+      if (!ok) {
         // If the client expects JSON (AJAX/API), send JSON error.
         const accepts = (req.headers.accept || '').toString();
         const isAjax = req.xhr || (req.headers['x-requested-with'] === 'XMLHttpRequest');
         const wantsJson = isAjax || accepts.indexOf('application/json') !== -1 || (req.headers['content-type'] || '').indexOf('application/json') !== -1;
-
         if (wantsJson) {
-          return res.status(403).json({ error: 'CAPTCHA requis' });
+          return res.status(403).json({ error: 'Veuillez patienter quelques secondes, vérification de sécurité en cours...' });
         }
-
-        // For normal form submissions (browser POST), redirect back to the referer (or to /login)
-        // Use 303 See Other so browsers will perform a GET to the redirect target.
+        // For non-JSON requests, redirect back with error
         const referer = req.get('referer') || '/login';
         const sep = referer.includes('?') ? '&' : '?';
-        return;
+        return res.redirect(303, `${referer}${sep}error=captcha_required`);
       }
       return next();
     } catch (err) {
       console.error('Turnstile middleware error:', err);
-      return res.status(500).json({ error: 'CAPTCHA verification failed' });
+      return res.status(500).json({ error: 'Veuillez patienter quelques secondes, vérification de sécurité en cours...' });
     }
   };
 }

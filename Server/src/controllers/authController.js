@@ -100,15 +100,18 @@ const login = async (req, res) => {
     req.headers["accept"]?.includes("application/json") ||
     req.headers["content-type"]?.includes("application/json");
 
+  // Message d'erreur générique pour la sécurité
+  const genericError = "Utilisateur, mot de passe incorrect ou compte non activé";
+
   // Vérifier que les données sont présentes
   if (!identifiant || !password) {
     if (isJsonRequest) {
         return res.status(401).json({
-          error: "Utilisateur, mot de passe incorrect ou compte non activé",
+          error: genericError,
           success: false,
         });
     }
-    return;
+    return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(genericError)}`);
   }
 
   try {
@@ -123,11 +126,11 @@ const login = async (req, res) => {
     if (!user || !ok) {
       if (isJsonRequest) {
         return res.status(401).json({
-          error: "Utilisateur, mot de passe incorrect ou compte non activé",
+          error: genericError,
           success: false,
         });
       }
-      return;
+      return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(genericError)}`);
     }
 
     if (!user.is_verified) {
@@ -145,21 +148,22 @@ const login = async (req, res) => {
         // Envoyer l'email de validation
         await sendValidationEmail(user.email, validationToken);
 
-        if (isJsonRequest) {
-        return res.status(401).json({
-          error: "Utilisateur, mot de passe incorrect ou compte non activé",
-          success: false,
-        });
-        }
-        return;
-      } catch (emailError) {
+        const verifyError = "Compte non activé. Un email de validation vous a été envoyé.";
         if (isJsonRequest) {
           return res.status(401).json({
-            error: "Utilisateur, mot de passe incorrect ou compte non activé",
+            error: verifyError,
             success: false,
           });
         }
-        return;
+        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(verifyError)}`);
+      } catch (emailError) {
+        if (isJsonRequest) {
+          return res.status(401).json({
+            error: genericError,
+            success: false,
+          });
+        }
+        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(genericError)}`);
       }
     }
 
@@ -169,28 +173,27 @@ const login = async (req, res) => {
       const now = new Date();
 
       if (now > expirationDate) {
+        const expiredError = "Votre compte a expiré et est supprimé définitivement.";
         if (isJsonRequest) {
           return res.status(403).json({
-            error:
-              "Votre compte a expiré et est supprimé définitivement. Vous ne pouvez plus vous y connecter.",
+            error: expiredError,
             success: false,
           });
         }
-        return;
+        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(expiredError)}`);
       } else {
         // Le compte est en attente de suppression, calculer le temps restant
         const timeRemaining = expirationDate - now;
         const secondsRemaining = Math.ceil(timeRemaining / 1000);
+        const pendingError = `Votre compte sera supprimé dans ${secondsRemaining} seconde${secondsRemaining > 1 ? "s" : ""}. Contactez le support pour annuler.`;
 
         if (isJsonRequest) {
           return res.status(403).json({
-            error: `Votre compte sera supprimé dans ${secondsRemaining} seconde${
-              secondsRemaining > 1 ? "s" : ""
-            }. Contactez le support pour annuler.`,
+            error: pendingError,
             success: false,
           });
         }
-        return;
+        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(pendingError)}`);
       }
     }
 
@@ -217,15 +220,14 @@ const login = async (req, res) => {
     return res.redirect(`${clientUrl}/notes`);
   } catch (err) {
     console.error("Erreur connexion", err);
+    const serverError = "Erreur serveur lors de la connexion";
     if (isJsonRequest) {
         return res.status(401).json({
-          error: "Utilisateur, mot de passe incorrect ou compte non activé",
+          error: serverError,
           success: false,
         });
     }
-    return `${clientUrl}/login?error=${encodeURIComponent(
-      "Erreur serveur lors de la connexion"
-    )}`;
+    return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(serverError)}`);
   }
 };
 

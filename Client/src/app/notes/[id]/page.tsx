@@ -43,6 +43,7 @@ import * as Y from "yjs";
 
 import { GetNoteById, AddNoteToFolder } from "@/loader/loader";
 import { SaveNote } from "@/loader/loader";
+import { checkAuthResponse } from "@/utils/authFetch";
 
 import ErrorFetch from "@/ui/note/errorFetch";
 import ToolbarPlugin from "@/components/textRich/ToolbarPlugin";
@@ -181,7 +182,7 @@ function YjsSyncPlugin({
         const ydoc = yjsDocuments.get(noteId);
 
         if (!ydoc) {
-          console.warn("⚠️ [YjsSync] Y.Doc non trouvé pour", noteId);
+          
           setSyncStatus("error");
           return;
         }
@@ -206,6 +207,12 @@ function YjsSyncPlugin({
             Content: Content,
           }),
         });
+
+        // Vérifier si session expirée (401)
+        if (!checkAuthResponse(response)) {
+          setSyncStatus("error");
+          return;
+        }
 
         if (response.ok) {
           lastSyncRef.current = now;
@@ -257,6 +264,12 @@ function YjsSyncPlugin({
             Content: Content,
           }),
         });
+
+        // Vérifier si session expirée (401)
+        if (!checkAuthResponse(response)) {
+          setSyncStatus("error");
+          return;
+        }
 
         if (response.ok) {
           lastSyncRef.current = Date.now();
@@ -540,9 +553,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) {
-      console.warn(
-        "🔒 [Permissions] Modification titre bloquée (lecture seule)"
-      );
+      
       return;
     }
 
@@ -632,7 +643,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         if (note.Content) {
           setInitialEditorContent(note.Content);
         } else {
-          console.warn("⚠️ [LoadNote] Pas de contenu dans la note");
+          
           setInitialEditorContent(null);
         }
 
@@ -646,9 +657,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           } else {
           }
         } else {
-          console.warn(
-            "⚠️ [Permissions] userRole non reçu du serveur, défaut = édition"
-          );
+          
           setIsReadOnly(false);
         }
       } catch (error) {
@@ -681,7 +690,28 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         : "Anonyme";
     })();
 
-    const colors = ["#FF5733", "#33FF57", "#3357FF", "#F333FF", "#FF33A1"];
+    const colors = [
+      "#FF5733", // orange
+      "#33FF57", // green
+      "#3357FF", // blue
+      "#F333FF", // magenta
+      "#FF33A1", // pink
+      "#D4AF37", // gold 
+      "#882626", // rouge foncé
+      "#2ECC71", // emerald
+      "#3498DB", // sky blue
+      "#9B59B6", // purple
+      "#E67E22", // carrot
+      "#1ABC9C", // turquoise
+      "#E74C3C", // alizarin
+      "#34495E", // wet asphalt
+      "#7F8C8D", // concrete
+      "#F1C40F", // sun
+      "#16A085", // green sea
+      "#2980B9", // belize hole
+      "#C0392B", // pomegranate
+      "#8E44AD", // wisteria
+    ];
     const color = colors[Math.floor(Math.random() * colors.length)];
     setUserProfile({ name: pseudo, color });
   }, [user]);
