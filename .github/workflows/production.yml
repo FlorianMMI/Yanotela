@@ -224,7 +224,7 @@ jobs:
                 container_name: yanotela-db
                 environment:
                   POSTGRES_USER: yanotela
-                  POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+                  POSTGRES_PASSWORD: yanotela_prod_db_2024
                   POSTGRES_DB: yanotela
                 volumes:
                   - postgres_data:/var/lib/postgresql/data
@@ -240,20 +240,20 @@ jobs:
               redis:
                 image: redis:7-alpine
                 container_name: yanotela-redis
-                command: redis-server --requirepass ${{ secrets.REDIS_PASSWORD }}
+                command: redis-server --requirepass yanotela_prod_redis_2024
                 volumes:
                   - redis_data:/data
                 networks:
                   - yanotela
                 healthcheck:
-                  test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+                  test: ["CMD", "redis-cli", "-a", "yanotela_prod_redis_2024", "--raw", "incr", "ping"]
                   interval: 30s
                   timeout: 10s
                   retries: 3
                 restart: unless-stopped
 
               backend:
-                image: ${{ env.DOCKER_BACKEND_REPO }}:latest
+                image: jefee/yanotela-backend:latest
                 container_name: yanotela-backend
                 env_file:
                   - .env.prod
@@ -288,11 +288,10 @@ jobs:
                   retries: 3
 
               frontend:
-                image: ${{ env.DOCKER_FRONTEND_REPO }}:latest
+                image: jefee/yanotela-frontend:latest
                 container_name: yanotela-frontend
                 environment:
                   - NODE_ENV=production
-                  - NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.PROD_TURNSTILE_SITE_KEY }}
                 env_file:
                   - .env.prod
                 depends_on:
