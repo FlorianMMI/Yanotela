@@ -133,10 +133,8 @@ jobs:
 
             # Nettoyage ciblé
             echo "🧹 Cleaning up disk space..."
-            docker system prune -a -f --volumes || true
             docker container prune -f || true
             docker image prune -a -f || true
-            docker volume prune -f || true
             docker network prune -f || true
             sudo apt-get clean || true
             sudo apt-get autoremove -y || true
