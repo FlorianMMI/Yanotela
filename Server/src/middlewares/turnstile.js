@@ -42,7 +42,7 @@ export function requireTurnstile(fieldName = 'cf-turnstile-response') {
         const isAjax = req.xhr || (req.headers['x-requested-with'] === 'XMLHttpRequest');
         const wantsJson = isAjax || accepts.indexOf('application/json') !== -1 || (req.headers['content-type'] || '').indexOf('application/json') !== -1;
         if (wantsJson) {
-          return res.status(403).json({ error: 'CAPTCHA requis' });
+          return res.status(403).json({ error: 'Veuillez patienter quelques secondes, vérification de sécurité en cours...' });
         }
         // For non-JSON requests, redirect back with error
         const referer = req.get('referer') || '/login';
@@ -52,7 +52,7 @@ export function requireTurnstile(fieldName = 'cf-turnstile-response') {
       return next();
     } catch (err) {
       console.error('Turnstile middleware error:', err);
-      return res.status(500).json({ error: 'CAPTCHA verification failed' });
+      return res.status(500).json({ error: 'Veuillez patienter quelques secondes, vérification de sécurité en cours...' });
     }
   };
 }
