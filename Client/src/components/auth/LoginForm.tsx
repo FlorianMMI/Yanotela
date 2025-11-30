@@ -84,12 +84,9 @@ export default function LoginForm({
         return;
       }
 
-      // Succès - rediriger ou appeler onSuccess
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push('/notes');
-      }
+      // Succès - rediriger vers /notes
+      // Utiliser window.location pour forcer un rechargement complet et mettre à jour l'état d'auth
+      window.location.href = '/notes';
     } catch (err) {
       setError('Erreur de connexion au serveur');
       setIsLoading(false);
