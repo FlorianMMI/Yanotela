@@ -8,7 +8,6 @@ import ConfirmPassword from '@/ui/confirm-password';
 import { Register } from '@/loader/loader';
 import FormMessage from '@/ui/form/FormMessage';
 import GoogleAuthButton from './GoogleAuthButton';
-import Turnstile from './Turnstile';
 import { ArrowBarIcon } from '@/libs/Icons';
 
 interface RegisterFormProps {
@@ -273,11 +272,6 @@ export default function RegisterForm({
             </Link>
           </span>
         </label>
-
-        {/* Turnstile widget (no-op in non-prod) */}
-        <div className="mb-3 w-full">
-            <Turnstile />
-        </div>
 
         <button
           type="submit"
