@@ -10,9 +10,10 @@ function getApiUrl() {
 }
 
 function getTurnstileToken() {
-    if (typeof window === 'undefined') return undefined;
-    const el = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
-    return el?.value;
+    // if (typeof window === 'undefined') return undefined;
+    // const el = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
+    // return el?.value;
+    return undefined; // Turnstile désactivé
 }
 
 /**
@@ -520,9 +521,9 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
     try {
         
         const apiUrl = getApiUrl();
-        const token = getTurnstileToken();
+        // const token = getTurnstileToken();
         const body = { ...credentials } as any;
-        if (token) body['cf-turnstile-response'] = token;
+        // if (token) body['cf-turnstile-response'] = token;
 
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
@@ -571,9 +572,9 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
-        const token = getTurnstileToken();
+        // const token = getTurnstileToken();
         const payload = { ...userData } as any;
-        if (token) payload['cf-turnstile-response'] = token;
+        // if (token) payload['cf-turnstile-response'] = token;
 
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
@@ -620,9 +621,9 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
-        const token = getTurnstileToken();
+        // const token = getTurnstileToken();
         const payload: any = { email };
-        if (token) payload['cf-turnstile-response'] = token;
+        // if (token) payload['cf-turnstile-response'] = token;
 
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
@@ -650,9 +651,9 @@ export async function ResetPassword(token: string, password: string): Promise<Au
     try {
         
         const apiUrl = getApiUrl();
-        const tokenVal = getTurnstileToken();
+        // const tokenVal = getTurnstileToken();
         const payload: any = { password, token };
-        if (tokenVal) payload['cf-turnstile-response'] = tokenVal;
+        // if (tokenVal) payload['cf-turnstile-response'] = tokenVal;
 
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
