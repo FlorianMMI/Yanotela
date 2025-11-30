@@ -32,7 +32,7 @@ const register = async (req, res) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(500).json({
+    return res.status(400).json({
       error: "Erreur création compte. Vérifiez vos informations.",
     });
   }
@@ -45,7 +45,7 @@ const register = async (req, res) => {
 
     if (
       existingMail || existingPseudo || !checkedCGU || !firstName || !lastName || !pseudo || !email || !password ) {
-      return res.status(500).json({
+      return res.status(400).json({
         error: "Erreur création compte. Vérifiez vos informations.",
       });
     }
@@ -84,9 +84,9 @@ const register = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Erreur création compte:", err);
+    console.error("Erreur server:", err);
       return res.status(500).json({
-        error: "Erreur création compte. Vérifiez vos informations.",
+        error: "Erreur serveur. Réessayez plus tard.",
       });
   }
 };
