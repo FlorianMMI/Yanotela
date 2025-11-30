@@ -1,0 +1,270 @@
+name: Deploy App to EC2 (production)
+on:
+  push:
+    branches: ["main"]
+env:
+  DOCKER_USERNAME: jefee
+  DOCKER_FRONTEND_REPO: jefee/yanotela-frontend
+  DOCKER_BACKEND_REPO: jefee/yanotela-backend
+  EC2_HOST: yanotela.fr
+  EC2_USER: ubuntu
+  DEPLOY_PATH: /var/www/yanotela
+permissions:
+  contents: read
+
+jobs:
+  # Job 1: Build Frontend en parallèle
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Client
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://yanotela.fr/api
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.PROD_TURNSTILE_SITE_KEY }}
+          tags: |
+            ${{ env.DOCKER_FRONTEND_REPO }}:production
+            ${{ env.DOCKER_FRONTEND_REPO }}:production-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job 2: Build Backend en parallèle
+  build-backend:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Server
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.DOCKER_BACKEND_REPO }}:production
+            ${{ env.DOCKER_BACKEND_REPO }}:production-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job 3: Déploiement (attend les 2 builds)
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [build-frontend, build-backend]
+    steps:
+      - name: Deploy to Production EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ${{ env.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "🚀 Starting deployment to PRODUCTION environment"
+            cd ${{ env.DEPLOY_PATH }}
+
+            # Enable error handling
+            set -e
+
+            # Check what's using port 80
+            echo "🔍 Checking what's using port 80:"
+            sudo netstat -tlnp | grep :80 || echo "No process found on port 80"
+            sudo lsof -i :80 || echo "No files open on port 80"
+
+            # Stop any nginx or apache processes that might be using port 80
+            echo "🛑 Stopping any existing web servers..."
+            sudo systemctl stop nginx 2>/dev/null || true
+            sudo systemctl stop apache2 2>/dev/null || true
+            sudo killall nginx 2>/dev/null || true
+            sudo killall apache2 2>/dev/null || true
+
+            # Check available disk space
+            echo "📊 Initial disk space:"
+            df -h
+
+            # Aggressive cleanup to free up space
+            echo "🧹 Cleaning up disk space..."
+
+            # Clean Docker system (remove all unused containers, networks, images, cache)
+            docker system prune -a -f --volumes || true
+
+            # Remove all stopped containers
+            docker container prune -f || true
+
+            # Remove all unused images
+            docker image prune -a -f || true
+
+            # Remove all unused volumes
+            docker volume prune -f || true
+
+            # Remove all unused networks
+            docker network prune -f || true
+
+            # Clean package cache
+            sudo apt-get clean || true
+            sudo apt-get autoremove -y || true
+
+            # Remove old logs
+            sudo journalctl --vacuum-time=3d || true
+
+            # Clear temporary files
+            sudo rm -rf /tmp/* || true
+            sudo rm -rf /var/tmp/* || true
+
+            # Remove old kernels (keep current and one backup)
+            sudo apt-get autoremove --purge -y || true
+
+            echo "📊 Disk space after cleanup:"
+            df -h
+
+            # Log in to Docker Hub to pull images
+            echo "🔑 Logging in to Docker Hub..."
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ env.DOCKER_USERNAME }} --password-stdin
+
+            # Clone ou mise à jour du dépôt
+            if [ ! -d ".git" ]; then
+              git clone -b main https://github.com/FlorianMMI/Yanotela.git .
+            else
+              git fetch origin
+              git reset --hard origin/main
+            fi
+
+            # Créer le fichier .env
+            cat > .env << 'EOF'
+            ${{ secrets.ENV_PROD_FILE }}
+            ${{ secrets.PROD_TURNSTILE_SITE_KEY }}
+            ${{ secrets.PROD_TURNSTILE_SECRET_KEY }}
+            EOF
+
+            # Arrêter les anciens conteneurs
+            echo "🛑 Stopping existing containers..."
+            docker compose down || true
+
+            # More aggressive cleanup
+            echo "🧹 Aggressive cleanup of Docker resources..."
+            docker system prune -a -f --volumes || true
+
+            # Remove any dangling images specifically
+            docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null || true
+
+            # Check disk space before proceeding
+            echo "📊 Disk space before pulling images:"
+            df -h
+
+            # Ensure we have enough space (at least 2GB free)
+            AVAILABLE_SPACE=$(df / | tail -1 | awk '{print $4}')
+            if [ "$AVAILABLE_SPACE" -lt 2000000 ]; then
+              echo "❌ Insufficient disk space: ${AVAILABLE_SPACE}KB available"
+              echo "🆘 Emergency cleanup..."
+              
+              # Emergency cleanup - remove everything
+              docker system prune -a -f --volumes
+              docker container prune -f
+              docker image prune -a -f
+              docker volume prune -f
+              
+              # Check if we freed enough space
+              AVAILABLE_SPACE=$(df / | tail -1 | awk '{print $4}')
+              if [ "$AVAILABLE_SPACE" -lt 1000000 ]; then
+                echo "❌ Still insufficient disk space after cleanup: ${AVAILABLE_SPACE}KB"
+                echo "📋 Please manually clean up the EC2 instance"
+                exit 1
+              fi
+            fi
+
+            # Tirer les nouvelles images une par une pour économiser l'espace
+            echo "📥 Pulling images one by one..."
+            docker pull ${{ env.DOCKER_BACKEND_REPO }}:production
+            docker pull ${{ env.DOCKER_FRONTEND_REPO }}:production
+            docker pull postgres:15-alpine
+            docker pull redis:7-alpine
+            docker pull nginx:latest
+
+            # Démarrer les services
+            echo "🚀 Starting services..."
+            docker compose up -d --force-recreate
+
+            # Attendre que les services démarrent
+            echo "⏳ Waiting for services to start..."
+            sleep 60
+
+            # Vérifier que les services sont démarrés
+            echo "🔍 Checking service status..."
+            docker compose ps
+
+            if docker compose ps | grep -E "(Up|running)"; then
+              echo "✅ Services démarrés avec succès"
+              
+            # Test de connectivité
+            echo "🧪 Testing connectivity..."
+            if curl -f -s -m 10 http://localhost > /dev/null; then
+              echo "✅ Nginx is responding"
+            else
+              echo "⚠️ Nginx not responding yet"
+            fi
+
+            if curl -f -s -m 10 http://localhost:3001/health > /dev/null; then
+              echo "✅ Backend is responding"
+            else
+              echo "⚠️ Backend not responding yet"
+            fi
+
+            # Final deployment status report
+            echo ""
+            echo "🎉 DEPLOYMENT COMPLETE! 🎉"
+            echo "========================================="
+            if [ "$NGINX_PORT" = "80" ]; then
+              echo "✅ Application: https://yanotela.fr"
+              echo "🔗 API Endpoint: https://yanotela.fr/api"
+            else
+              echo "✅ Application: https://yanotela.fr:8080"
+              echo "🔗 API Endpoint: https://yanotela.fr:8080/api"
+              echo "⚠️  Note: Using port 8080 due to port conflict"
+            fi
+            echo "🖥️  Direct Frontend: https://yanotela.fr:3000"
+            echo "🔧 Direct Backend: https://yanotela.fr:3001"
+            echo "========================================="              # Final cleanup to free up space
+              echo "🧹 Final cleanup..."
+              docker system prune -f || true
+              
+              echo "📊 Final disk space:"
+              df -h
+            else
+              echo "❌ Échec du démarrage des services"
+              echo "📋 Container logs:"
+              docker compose logs --tail=50
+              echo "📊 System resources:"
+              df -h
+              free -h
+              exit 1
+            fi
