@@ -17,37 +17,6 @@ const nextConfig: NextConfig = {
   // Enable standalone output for Docker optimization
   output: 'standalone',
   
-  // ✅ Headers de sécurité pour Cloudflare Turnstile
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self' https://*.cloudflare.com https://challenges.cloudflare.com",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cloudflare.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https:",
-              "frame-src 'self' https://*.cloudflare.com https://challenges.cloudflare.com",
-              "connect-src 'self' https://*.cloudflare.com https://challenges.cloudflare.com wss://*.yanotela.fr wss://localhost:* https://preprod.yanotela.fr https://yanotela.fr https://accounts.google.com",
-              "worker-src 'self' blob:",
-              "child-src 'self' blob: https://*.cloudflare.com https://challenges.cloudflare.com",
-            ].join('; '),
-          },
-          {
-            key: 'Permissions-Policy',
-            // Politique explicite pour éviter les avertissements browsing-topics/interest-cohort
-            value: 'browsing-topics=(), interest-cohort=()',
-          },
-        ],
-      },
-    ];
-  },
-  
-  // ✅ CORRECTION : Résoudre le problème de double import Yjs
   webpack: (config, { isServer }) => {
     // Éviter les imports dupliqués de Yjs
     if (!isServer) {

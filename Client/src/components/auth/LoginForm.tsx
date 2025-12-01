@@ -4,7 +4,7 @@ import React, { useState, useId } from 'react';
 import { useRouter } from 'next/navigation';
 
 import GoogleAuthButton from './GoogleAuthButton';
-import Turnstile from './Turnstile';
+// import Turnstile from './Turnstile';
 import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon} from '@/libs/Icons';
 
 interface LoginFormProps {
@@ -51,32 +51,30 @@ export default function LoginForm({
 
     try {
       // Récupérer le token Turnstile
-      const turnstileToken = (typeof window !== 'undefined') 
-        ? document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value 
-        : undefined;
+      // const turnstileToken = (typeof window !== 'undefined') 
+      //   ? document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value 
+      //   : undefined;
 
       // Vérifier si le CAPTCHA est prêt (seulement si Turnstile est activé)
-      const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-      if (turnstileEnabled && !turnstileToken) {
-        setError('Veuillez patienter quelques secondes, vérification de sécurité en cours...');
-        setIsLoading(false);
-        return;
-      }
+      // const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+      // if (turnstileEnabled && !turnstileToken) {
+      //   setError('Veuillez patienter quelques secondes, vérification de sécurité en cours...');
+      //   setIsLoading(false);
+      //   return;
+      // }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
+        credentials: 'include', 
         body: JSON.stringify({
           identifiant,
           password,
-          'cf-turnstile-response': turnstileToken || '',
+          // 'cf-turnstile-response': turnstileToken || '',
         }),
-      });
-
-      const data = await response.json();
+      });      const data = await response.json();
 
       if (!response.ok || !data.success) {
         setError(data.error || 'Identifiants incorrects');
@@ -172,7 +170,7 @@ export default function LoginForm({
         )}
       
         {/* Turnstile widget (will be a no-op in non-prod) */}
-          <Turnstile />
+        {/* <Turnstile /> */}
         <button 
           type="submit" 
           disabled={isLoading}

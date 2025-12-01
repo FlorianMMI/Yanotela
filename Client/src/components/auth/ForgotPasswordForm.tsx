@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import Turnstile from './Turnstile';
+// import Turnstile from './Turnstile';
 import Link from 'next/link';
 import { ForgotPassword } from '@/loader/loader';
 
@@ -135,8 +135,7 @@ export default function ForgotPasswordForm({
         )}
 
         <div>
-          {/* Turnstile widget (no-op in non-prod) */}
-            <Turnstile />
+            {/* <Turnstile /> */}
           <button
             type="submit"
             disabled={loading}
