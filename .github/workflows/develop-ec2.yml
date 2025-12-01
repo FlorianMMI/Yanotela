@@ -300,6 +300,8 @@ jobs:
                   - "80:80"
                 volumes:
                   - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+                  - /etc/letsencrypt:/etc/letsencrypt:ro
+
                 depends_on:
                   - frontend-dev
                   - backend-dev
