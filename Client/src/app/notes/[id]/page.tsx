@@ -934,7 +934,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 <CollaborationPlugin
                   id={id}
                   providerFactory={providerFactory}
-                  shouldBootstrap={true}
+                  shouldBootstrap={false}
                   username={
                     isReadOnly ? `${userProfile.name} 👁️` : userProfile.name
                   }
