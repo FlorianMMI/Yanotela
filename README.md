@@ -15,7 +15,7 @@ Un projet full‑stack léger et moderne pour prendre des notes, collaborer en t
 - Stack frontend : Next.js 15 (App Router), TypeScript, TailwindCSS v4, éditeur Lexical
 - Backend : Node.js + Express (ESM), Prisma ORM, PostgreSQL
 - Auth : session-based (express-session). Tous les appels protégés utilisent `credentials: 'include'`.
-- Collaboration : socket.io + yjs (fonctionnalités partielles / expérimentales)
+- Collaboration : socket.io + yjs
 
 ---
 
