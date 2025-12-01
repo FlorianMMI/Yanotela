@@ -7,6 +7,7 @@ export default function ItemBar() {
     const [onNotePage, setOnNotePage] = useState(false);
     const [onFolderPage, setOnFolderPage] = useState(false);
     const [itemColor, setItemColor] = useState<string>('var(--primary)'); // Couleur du tag/dossier
+
     const pathname = usePathname();
 
     useEffect(() => {
@@ -44,8 +45,10 @@ export default function ItemBar() {
             (async () => {
                 const folderData = await GetFolderById(pathname.split('/').pop()!);
                 if (folderData && folderData.folder && !folderData.error) {
-                    // Récupérer la couleur du dossier
-                    const folderColor = folderData.folder.CouleurTag || 'var(--primary)';
+                    // Récupérer la couleur du dossier, forcer la valeur par défaut si CouleurTag est vide/null/undefined
+                    const folderColor = (folderData.folder.CouleurTag && folderData.folder.CouleurTag.trim() !== '')
+                        ? folderData.folder.CouleurTag
+                        : 'var(--primary)';
                     setItemColor(folderColor);
                 } else {
                     setItemColor('var(--primary)'); // Couleur par défaut en cas d'erreur

@@ -1,66 +1,36 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useAuthContext } from '@/components/auth/AuthWrapper';
 
 export interface AuthState {
   isAuthenticated: boolean | null;
   loading: boolean;
-  user?: {
-    id: number;
-    pseudo: string;
-    email: string;
-  };
+  user?: { id: number; pseudo: string; email: string } | null;
   refetch: () => Promise<void>;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export function useAuth(): AuthState {
-  const [authState, setAuthState] = useState<Omit<AuthState, 'refetch'>>({
-    isAuthenticated: null,
-    loading: true,
-  });
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch(`${API_URL}/auth/check`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAuthState({
-          isAuthenticated: data.authenticated,
-          loading: false,
-          user: data.user,
-        });
-        
-        // Déclencher un événement pour notifier les autres hooks
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('auth-refresh', Date.now().toString());
-          window.dispatchEvent(new CustomEvent('auth-refresh'));
-        }
-      } else {
-        setAuthState({
-          isAuthenticated: false,
-          loading: false,
-        });
-      }
-    } catch (error) {
-      console.error('Erreur lors de la vérification d\'authentification:', error);
-      setAuthState({
-        isAuthenticated: false,
-        loading: false,
-      });
-    }
-  };
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  return {
-    ...authState,
-    refetch: checkAuth,
-  };
+  // Delegates to the central AuthWrapper context. If the hook is used
+  // outside of the provider (e.g. during server render or before the
+  // provider is mounted), return safe defaults instead of throwing.
+  try {
+    const ctx = useAuthContext();
+    return {
+      isAuthenticated: ctx.isAuthenticated,
+      loading: ctx.loading,
+      user: ctx.user,
+      refetch: ctx.refetch,
+    };
+  } catch (e) {
+    // Not mounted: return conservative defaults (loading=true so callers
+    // don't immediately redirect) and a no-op refetch.
+    
+    void e;
+    return {
+      isAuthenticated: null,
+      loading: true,
+      user: null,
+      refetch: async () => {},
+    };
+  }
 }

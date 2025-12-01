@@ -1,13 +1,13 @@
 import React from 'react';
-import Image from 'next/image';
 import Note from '@/ui/note/Note';
 import NoteSkeleton from '@/ui/note/NoteSkeleton';
 import { Note as NoteType } from '@/type/Note';
 import { CreateNote } from '@/loader/loader';
 import { useRouter } from 'next/navigation';
-import Icons from '@/ui/Icon';
+
 import { motion } from 'motion/react';
 import { SearchMode } from '@/ui/searchbar';
+import { PlusIcon } from '@/libs/Icons';
 
 interface NoteListProps {
   notes: NoteType[];
@@ -59,16 +59,7 @@ export default function NoteList({
   };
 
   return (
-    <main className="p-4 relative">
-      {/* Message si aucune note et pas en chargement - Centré sur la page */}
-      {!isLoading && notes.length === 0 && (
-       
-          <p className="absolute inset-0 flex items-center justify-center pointer-events-none text-element text-lg font-gant mx-4 text-center">
-            Aucune note trouvée. Créez votre première note !
-          </p>
-        
-      )}
-
+    <main className="p-4">
       <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-4 md:gap-6 justify-items-start">
 
         {/* Add Note Button - Only shown if allowCreateNote is true */}
@@ -79,10 +70,10 @@ export default function NoteList({
             className="border-2 border-primary border-opacity-75 rounded-xl p-8 flex items-center justify-center hover:bg-[#ffffff5a] active:bg-primary transition-colors cursor-pointer group text-primary w-full h-full md:w-65 md:h-50"
             onClick={handleCreateNote}
           >
-            <Icons
-              name="plus"
-              size={48}
-              strokeWidth={1}
+            <PlusIcon
+              width={48}
+              height={48}
+              strokeWidth={15}
               className="group-hover:scale-110 transition-transform"
             />
           </motion.div>
@@ -108,6 +99,18 @@ export default function NoteList({
           />
         ))}
       </div>
+
+      {/* Message si aucune note */}
+      {!isLoading && notes.length === 0 && (
+        <div className="text-center py-16 px-4 pointer-events-none select-none">
+          <p className="text-element font-geo text-xl italic">
+            Aucune note pour le moment
+          </p>
+          <p className="text-element/70 font-gant text-sm mt-2">
+            Appuyez sur + pour créer votre première note
+          </p>
+        </div>
+      )}
     </main>
   );
 }

@@ -1,105 +1,127 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, createContext, useContext, useMemo } from "react";
 
-export default function AuthWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+type User = { id: number; pseudo: string; email: string } | null;
+
+export type AuthContextType = {
+  isAuthenticated: boolean | null;
+  loading: boolean;
+  user: User;
+  refetch: () => Promise<void>;
+};
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Pages qui ne nécessitent pas d'authentification (pages publiques)
-  const publicRoutes = [
-    '/login',
-    '/register', 
-    '/forgot-password',
-    '/'
-  ];
-  
-  // Pages qui nécessitent l'authentification (pages protégées)
-  const protectedRoutes = [
-    '/notes',
-    '/corbeille',
-    '/dossiers',
-    '/profil'
-  ];
-  
-  // Vérifier si la route actuelle est publique
-  const isPublicRoute = publicRoutes.some(route => pathname === route) || 
-                       pathname.startsWith('/validate/'); // Pour les routes de validation avec token
-  
-  // Vérifier si la route actuelle est protégée
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  const [user, setUser] = useState<User>(null);
 
-  const checkAuth = async () => {
+  const publicRoutes = useMemo<string[]>(
+    () => ['/login', '/register', '/forgot-password', '/'],
+    []
+  );
+  const protectedRoutes = useMemo<string[]>(
+    () => ['/corbeille', '/dossiers', '/profil'],
+    []
+  );
+
+  // Séparé : vérification auth pure (sans redirection)
+  const checkAuth = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+    const doFetch = async (url: string) => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const resp = await fetch(url, { method: 'GET', credentials: 'include', signal: controller.signal });
+        clearTimeout(timeout);
+        return resp;
+      } catch (e) {
+        return null;
+      }
+    };
+
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${API_URL}/auth/check`, {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const primaryBase = API_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+      let response = null;
+
+      if (primaryBase) {
+        response = await doFetch(`${primaryBase}/auth/check`);
+      }
+
+      // If primary failed and API_URL was set, try a relative fallback
+      if (!response && API_URL) {
+        response = await doFetch('/auth/check');
+        
+      }
+
+      if (!response) {
+        throw new Error('No response from auth endpoint');
+      }
 
       if (response.ok) {
         const data = await response.json();
-        setIsAuthenticated(data.authenticated);
-        
-        // Si utilisateur connecté et sur une page publique (login/register), rediriger vers /notes
-        if (data.authenticated && isPublicRoute && pathname !== '/') {
-          router.replace('/notes');
-          return;
-        }
+        setIsAuthenticated(!!data.authenticated);
+        setUser(data.user ?? null);
       } else {
         setIsAuthenticated(false);
-        
-        // Si utilisateur non connecté et sur une page protégée, rediriger vers /login
-        if (isProtectedRoute) {
-          router.replace('/login');
-          return;
-        }
+        setUser(null);
       }
-    } catch (error) {
-      console.error('Erreur lors de la vérification d\'authentification:', error);
-      setIsAuthenticated(false);
+    } catch (err) {
       
-      // En cas d'erreur sur page protégée, rediriger vers login
-      if (isProtectedRoute) {
-        router.replace('/login');
-        return;
-      }
+      setIsAuthenticated(false);
+      setUser(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Plus de dépendance sur pathname/router
 
+  // Check auth uniquement au montage (une seule fois)
   useEffect(() => {
     checkAuth();
-  }, [pathname]);
+  }, [checkAuth]);
 
-  // Écouter les événements de changement d'authentification
+  // Redirection basée sur l'état d'authentification et le pathname
+  useEffect(() => {
+    if (loading || isAuthenticated === null) return;
+
+    const isPublic = publicRoutes.some(route => pathname === route) || pathname.startsWith('/validate/');
+    const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
+    const isNotesList = pathname === '/notes';
+
+    if (isAuthenticated && isPublic && pathname !== '/') {
+      router.replace('/notes');
+    } else if (!isAuthenticated && (isProtected || isNotesList)) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, loading, pathname, router, publicRoutes, protectedRoutes]);
+
+  // Écoute des événements de rafraîchissement d'auth
   useEffect(() => {
     const handleAuthRefresh = () => {
       checkAuth();
     };
-    
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'auth-refresh') checkAuth();
+    };
+
     window.addEventListener('auth-refresh', handleAuthRefresh);
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'auth-refresh') {
-        checkAuth();
-      }
-    });
+    window.addEventListener('storage', handleStorage);
 
     return () => {
       window.removeEventListener('auth-refresh', handleAuthRefresh);
-      window.removeEventListener('storage', handleAuthRefresh);
+      window.removeEventListener('storage', handleStorage);
     };
-  }, []);
+  }, [checkAuth]);
 
-  // Afficher un loader pendant la vérification
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -108,5 +130,20 @@ export default function AuthWrapper({
     );
   }
 
-  return <>{children}</>;
+  const contextValue: AuthContextType = {
+    isAuthenticated,
+    loading,
+    user,
+    refetch: checkAuth,
+  };
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
+}
+
+export function useAuthContext() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error('useAuthContext must be used within AuthWrapper');
+  }
+  return ctx;
 }

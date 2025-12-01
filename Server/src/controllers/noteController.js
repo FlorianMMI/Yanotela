@@ -70,6 +70,7 @@ export const noteController = {
             ModifiedAt: note.ModifiedAt,
             userRole: perm.role,
             collaboratorCount: collaboratorCount,
+            isPublic: note.isPublic
           };
         })
       );
@@ -230,12 +231,15 @@ export const noteController = {
       // Générer un nouvel ID pour la note dupliquée
       const newUID = crypto.randomBytes(8).toString("hex");
 
-      // Créer la nouvelle note avec le contenu de l'originale
+      // Copier directement l'état YJS (binaire) et le contenu
+      // Le YJS WebSocket server créera une nouvelle room pour ce nouveau noteId
+      // et le client appliquera cet état au Y.Doc lors de la première connexion
       const duplicatedNote = await prisma.note.create({
         data: {
           id: newUID,
           Titre: `${originalNote.Titre} (copie)`,
           Content: originalNote.Content,
+          yjsState: originalNote.yjsState, // Copier le state YJS binaire
           authorId: userId, // L'utilisateur devient le propriétaire de la copie
           modifierId: userId,
           permissions: {
@@ -268,10 +272,6 @@ export const noteController = {
     const { id } = req.params;
     const { userId } = req.session;
 
-    if (!userId) {
-      return res.status(401).json({ message: "Utilisateur non authentifié" });
-    }
-
     try {
       const note = await prisma.note.findUnique({
         where: { id: id },
@@ -290,16 +290,60 @@ export const noteController = {
         return res.status(404).json({ message: "Cette note a été supprimée" });
       }
 
-      // Récupérer le rôle de l'utilisateur sur cette note
-      const userPermission = await getPermission(userId, id);
+      let userPermission = null;
+      let userRole = 3; // Par défaut : lecteur (pour les utilisateurs non authentifiés sur notes publiques)
 
-      if (!userPermission) {
-        return res
-          .status(403)
-          .json({ message: "Vous n'avez pas accès à cette note" });
+      // Si l'utilisateur est authentifié, vérifier ses permissions
+      if (userId) {
+        userPermission = await getPermission(userId, id);
+        
+        if (userPermission) {
+          // L'utilisateur a une permission spécifique
+          userRole = userPermission.role;
+        } else if (!note.isPublic) {
+          // Note privée et pas de permission : refuser l'accès
+          return res
+            .status(403)
+            .json({ message: "Vous n'avez pas accès à cette note" });
+        } else {
+          
+          try {
+            await prisma.permission.create({
+              data: {
+                noteId: id,
+                userId: userId,
+                role: 3, // Lecteur
+                isAccepted: true, // Auto-acceptée car c'est une note publique
+              },
+            });
+            userRole = 3;
+        
+          } catch (permError) {
+            // Gérer le cas où la permission existe déjà (contrainte unique)
+            if (permError.code === 'P2002') {
+              // Re-fetch la permission qui existe déjà
+              userPermission = await getPermission(userId, id);
+              if (userPermission) {
+                userRole = userPermission.role;
+              }
+            } else {
+              console.error("❌ Erreur lors de la création de la permission:", permError);
+              // Continuer quand même avec le rôle par défaut (3)
+            }
+          }
+        }
+      } else {
+        // Utilisateur non authentifié
+        if (!note.isPublic) {
+          // Note privée : refuser l'accès
+          return res.status(401).json({ 
+            message: "Authentification requise pour accéder à cette note",
+            authenticated: false 
+          });
+        }
+        // Note publique : autoriser l'accès en lecture seule (rôle 3)
       }
 
-      // 🔄 MIGRATION À LA VOLÉE: Migrer vers YJS si nécessaire
       if (needsMigration(note)) {
         
         const yjsState = migrateContentToYjs(note.Content);
@@ -317,11 +361,13 @@ export const noteController = {
       res.status(200).json({
         Titre: note.Titre,
         Content: note.Content,
+        yjsState: note.yjsState ? Array.from(note.yjsState) : null, // Convertir Buffer en array pour JSON
         author: note.author ? note.author.pseudo : null,
         modifier: note.modifier ? note.modifier.pseudo : null,
         ModifiedAt: note.ModifiedAt,
-        userRole: userPermission.role, // Ajouter le rôle pour le front
+        userRole: userRole, // Rôle de l'utilisateur (3 par défaut pour accès public)
         tag: note.tag, // Couleur du tag de la note
+        isPublic: note.isPublic, // Indiquer si la note est publique
       });
     } catch (error) {
       console.error("[getNoteById] Error:", error);
@@ -994,6 +1040,80 @@ export const noteController = {
     }
   },
 
+  setPublicNote: async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+      // Vérifier les permissions de l'utilisateur (doit être propriétaire ou admin)
+      const permission = await prisma.permission.findFirst({
+        where: {
+          userId: parseInt(req.session.userId),
+          noteId: id
+        }
+      });
+
+      if (!permission) {
+        return res.status(403).json({ 
+          message: 'Vous n\'avez pas accès à cette note'
+        });
+      }
+
+      // Seuls les propriétaires (role 0) et admins (role 1) peuvent modifier le statut public
+      if (permission.role > 1) {
+        return res.status(403).json({ 
+          message: 'Seuls les propriétaires et administrateurs peuvent modifier la visibilité de la note'
+        });
+      }
+
+      var note = await prisma.note.findUnique({
+        where: { id },
+        select: { isPublic: true },
+      });
+
+      if (note) {
+        const updated = await prisma.note.update({
+          where: { id },
+          data: { isPublic: !note.isPublic },
+          select: { isPublic: true },
+        });
+        note = updated;
+      }
+    } catch (error) {
+      console.error("Erreur lors de la vérification de la note publique:", error);
+      return res.status(500).json({
+        message: "Erreur lors de la vérification de la note publique",
+        error: error.message,
+      });
+    }
+
+    if (!note) {
+      return res.status(404).json({ message: "Note non trouvée" });
+    }
+
+    res.status(200).json({ isPublic: note.isPublic });
+  },
+
+  isPublicNote: async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+      const note = await prisma.note.findUnique({
+        where: { id },
+        select: { isPublic: true },
+      });
+      
+      if (!note) {
+        return res.status(404).json({ message: "Note non trouvée" });
+      }
+      res.status(200).json({ isPublic: note.isPublic });
+    } catch (error) {
+      console.error("Erreur lors de la vérification de la note publique:", error);
+      return res.status(500).json({
+        message: "Erreur lors de la vérification de la note publique",
+        error: error.message,
+      });
+    }
+  },
   /**
    * Mettre à jour le tag d'une note
    * 

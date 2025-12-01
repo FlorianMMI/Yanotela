@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import Icon from "@/ui/Icon";
 import { useRouter } from "next/navigation";
+import { CheckIcon } from "@/libs/Icons";
 
 export default function AccountSupprSuccess() {
     const [countdown, setCountdown] = useState(10);
@@ -13,8 +13,7 @@ export default function AccountSupprSuccess() {
             setCountdown((prev) => {
                 if (prev <= 1) {
                     // Rediriger quand le countdown atteint 0
-                    router.push('/');
-                    window.location.reload(); // Forcer le rechargement de la page
+                    router.push('/login');
                     return 0;
                 }
                 return prev - 1;
@@ -36,9 +35,9 @@ export default function AccountSupprSuccess() {
             <div className="bg-clrsecondaire p-8 rounded-lg shadow-md text-center max-w-md w-full">
                 <div className="mb-4">
                     <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-                        <Icon
-                            name="check"
-                            size={32}
+                        <CheckIcon
+                            width={32}
+                            height={32}
                             className="text-white bg-primary rounded-full p-4"
                         />
                     </div>

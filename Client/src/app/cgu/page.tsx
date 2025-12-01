@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import Icon from '@/ui/Icon';
+
+import { ArrowIcon } from '@/libs/Icons';
 
 export const noAuth = true;
 
@@ -14,11 +15,11 @@ export default function CGUPage() {
             href="/" 
             className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors mb-4"
           >
-            <Icon name="arrow-ss-barre" size={20} className="rotate-90" />
+            <ArrowIcon className="w-5 h-5" />
             <span className="font-medium">Retour</span>
           </Link>
           <h1 className="text-4xl font-bold text-clrprincipal mb-2">
-            Conditions Générales d'Utilisation (CGU)
+            Conditions Générales d&apos;Utilisation (CGU)
           </h1>
           <p className="text-sm text-element">
             Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}
@@ -35,10 +36,10 @@ export default function CGUPage() {
             </h2>
             <div className="space-y-3 text-element">
               <p>
-                <strong>Yanotela</strong> est une application web collaborative de prise de notes, accessible à l'adresse{' '}
-                <a href="https://yanotela.fr" className="text-primary hover:underline">
+                <strong>Yanotela</strong> est une application web collaborative de prise de notes, accessible à l&apos;adresse{' '}
+                <Link href="https://yanotela.fr" className="text-primary hover:underline">
                   https://yanotela.fr
-                </a>
+                </Link>
               </p>
               <p>
                 Le service permet aux utilisateurs de :
@@ -47,7 +48,7 @@ export default function CGUPage() {
                 <li>Créer, modifier et organiser des notes textuelles</li>
                 <li>Organiser les notes en dossiers</li>
                 <li>Créer des Flash Notes pour une prise de note rapide</li>
-                <li>Accéder à leurs notes depuis n'importe quel appareil connecté</li>
+                <li>Accéder à leurs notes depuis n&apos;importe quel appareil connecté</li>
                 <li>Gérer leur profil utilisateur</li>
               </ul>
             </div>
@@ -60,11 +61,11 @@ export default function CGUPage() {
             </h2>
             <div className="space-y-3 text-element">
               <p>
-                L'utilisation de Yanotela implique l'acceptation pleine et entière des présentes Conditions Générales d'Utilisation.
+                L&apos;utilisation de Yanotela implique l&apos;acceptation pleine et entière des présentes Conditions Générales d&apos;Utilisation.
               </p>
               <p>
                 En créant un compte et en utilisant nos services, vous acceptez sans réserve les présentes CGU.
-                Si vous n'acceptez pas ces conditions, nous vous invitons à ne pas utiliser le service.
+                Si vous n&apos;acceptez pas ces conditions, nous vous invitons à ne pas utiliser le service.
               </p>
             </div>
           </section>
@@ -119,7 +120,7 @@ export default function CGUPage() {
                 4.1. Bon usage
               </h3>
               <p>
-                Vous vous engagez à utiliser Yanotela conformément à sa destination, c'est-à-dire pour la prise et l'organisation de notes personnelles.
+                Vous vous engagez à utiliser Yanotela conformément à sa destination, c&apos;est-à-dire pour la prise et l&apos;organisation de notes personnelles.
               </p>
 
               <h3 className="text-lg font-medium text-clrprincipal mt-4 mb-2">
@@ -130,10 +131,10 @@ export default function CGUPage() {
               </p>
               <ul className="list-disc list-inside ml-4 space-y-2">
                 <li>Tenter de nuire au bon fonctionnement du service</li>
-                <li>Tenter d'accéder aux données d'autres utilisateurs</li>
+                <li>Tenter d&apos;accéder aux données d&apos;autres utilisateurs</li>
                 <li>Utiliser le service pour stocker du contenu illégal, diffamatoire, offensant ou contraire aux bonnes mœurs</li>
                 <li>Utiliser le service pour des activités de spam ou de phishing</li>
-                <li>Procéder à du reverse engineering, décompiler ou tenter d'extraire le code source</li>
+                <li>Procéder à du reverse engineering, décompiler ou tenter d&apos;extraire le code source</li>
                 <li>Surcharger intentionnellement les serveurs ou tenter des attaques par déni de service</li>
                 <li>Contourner les mesures de sécurité mises en place</li>
               </ul>
@@ -166,14 +167,14 @@ export default function CGUPage() {
                 5.2. Propriété de vos contenus
               </h3>
               <p>
-                Vous conservez l'intégralité des droits de propriété intellectuelle sur les notes et contenus que vous créez sur Yanotela.
+                Vous conservez l&apos;intégralité des droits de propriété intellectuelle sur les notes et contenus que vous créez sur Yanotela.
               </p>
               <p>
                 En utilisant notre service, vous nous accordez une licence limitée, non-exclusive et révocable 
                 pour héberger, stocker et afficher vos contenus, uniquement dans le but de vous fournir le service.
               </p>
               <p>
-                Nous ne revendiquons aucun droit sur vos contenus et ne les utilisons pas à d'autres fins que la fourniture du service.
+                Nous ne revendiquons aucun droit sur vos contenus et ne les utilisons pas à d&apos;autres fins que la fourniture du service.
               </p>
             </div>
           </section>
@@ -188,7 +189,7 @@ export default function CGUPage() {
                 6.1. Disponibilité du service
               </h3>
               <p>
-                Nous mettons tout en œuvre pour assurer l'accès et le bon fonctionnement de Yanotela 24h/24 et 7j/7.
+                Nous mettons tout en œuvre pour assurer l&apos;accès et le bon fonctionnement de Yanotela 24h/24 et 7j/7.
               </p>
               <p>
                 Toutefois, le service peut être temporairement interrompu pour des raisons de maintenance, 
@@ -205,7 +206,7 @@ export default function CGUPage() {
                 de sauvegarde de vos notes importantes.
               </p>
               <p>
-                Yanotela ne saurait être tenu responsable de la perte de données, quelle qu'en soit la cause.
+                Yanotela ne saurait être tenu responsable de la perte de données, quelle qu&apos;en soit la cause.
               </p>
 
               <h3 className="text-lg font-medium text-clrprincipal mt-4 mb-2">
@@ -213,7 +214,7 @@ export default function CGUPage() {
               </h3>
               <p>
                 Vous êtes seul responsable du contenu que vous créez et stockez sur Yanotela. 
-                Nous déclinons toute responsabilité quant à la légalité, l'exactitude ou la qualité de vos contenus.
+                Nous déclinons toute responsabilité quant à la légalité, l&apos;exactitude ou la qualité de vos contenus.
               </p>
             </div>
           </section>
@@ -229,7 +230,7 @@ export default function CGUPage() {
                 Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés.
               </p>
               <p>
-                Pour plus d'informations sur la gestion de vos données personnelles, veuillez consulter notre{' '}
+                Pour plus d&apos;informations sur la gestion de vos données personnelles, veuillez consulter notre{' '}
                 <Link href="/mentions-legales" className="text-primary hover:underline">
                   page Mentions Légales
                 </Link>
@@ -238,9 +239,9 @@ export default function CGUPage() {
               <p>
                 Vous disposez d&apos;un droit d&apos;accès, de rectification, de suppression et de portabilité de vos données. 
                 Pour exercer ces droits, contactez-nous à l&apos;adresse : <strong>
-                  <a href="mailto:contact@florian-bounissou.fr" className="text-primary hover:underline">
+                  <Link href="mailto:contact@florian-bounissou.fr" className="text-primary hover:underline">
                     contact@florian-bounissou.fr
-                  </a>
+                  </Link>
                 </strong>
               </p>
               <p className="text-sm italic text-gray-600 mt-2">
@@ -267,7 +268,7 @@ export default function CGUPage() {
                 de consentement préalable conformément à la réglementation en vigueur.
               </p>
               <p>
-                Aucun cookie publicitaire ou de tracking tiers n'est utilisé sur Yanotela.
+                Aucun cookie publicitaire ou de tracking tiers n&apos;est utilisé sur Yanotela.
               </p>
             </div>
           </section>
@@ -298,7 +299,7 @@ export default function CGUPage() {
             </h2>
             <div className="space-y-3 text-element">
               <h3 className="text-lg font-medium text-clrprincipal mt-4 mb-2">
-                10.1. Résiliation par l'utilisateur
+                10.1. Résiliation par l&apos;utilisateur
               </h3>
               <p>
                 Vous pouvez supprimer votre compte à tout moment depuis les paramètres de votre profil.
@@ -335,7 +336,7 @@ export default function CGUPage() {
                 Les présentes CGU sont régies par le droit français.
               </p>
               <p>
-                En cas de litige relatif à l'interprétation ou à l'exécution des présentes, 
+                En cas de litige relatif à l&apos;interprétation ou à l&apos;exécution des présentes, 
                 une solution amiable sera recherchée avant toute action judiciaire.
               </p>
               <p>

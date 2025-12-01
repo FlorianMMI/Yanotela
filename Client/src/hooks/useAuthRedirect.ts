@@ -1,76 +1,102 @@
 "use client";
 
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useAuth } from './useAuth';
 
 export function useAuthRedirect(options?: { skipRedirect?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [checkTrigger, setCheckTrigger] = useState(0);
+  const { isAuthenticated, loading } = useAuth();
 
   // Pages publiques qui ne nécessitent pas d'authentification
-  const publicPages = ['/cgu', '/mentions-legales', '/login', '/register', '/forgot-password'];
+  const publicPages = ['/cgu', '/mentions-legales', '/login', '/register', '/forgot-password', '/validate'];
   const isPublicPage = publicPages.some(page => pathname?.startsWith(page));
 
-  const checkAuth = async () => {
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://yanotela.fr';
-      const response = await fetch(`${API_URL}/auth/check`, {
-        method: 'GET',
-        credentials: 'include',
-      });
+  // Local fallback state when useAuth returns the conservative defaults
+  const [localLoading, setLocalLoading] = useState(() => (isAuthenticated === null ? true : false));
+  const [localAuth, setLocalAuth] = useState<boolean | null>(null);
 
-      if (response.ok) {
-        const data = await response.json();
-        setIsAuthenticated(data.authenticated);
-      } else {
-        setIsAuthenticated(false);
-        // Ne pas rediriger si on est sur une page publique ou si skipRedirect est activé
-        if (!isPublicPage && !options?.skipRedirect) {
-          router.push('/login');
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors de la vérification d\'authentification:', error);
-      setIsAuthenticated(false);
-      // Ne pas rediriger si on est sur une page publique ou si skipRedirect est activé
-      if (!isPublicPage && !options?.skipRedirect) {
-        router.push('/login');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    checkAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkTrigger, pathname]);
-
-  // Écouter les changements d'authentification via storage events
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'auth-refresh') {
-        setCheckTrigger(prev => prev + 1);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Écouter les événements custom pour le même onglet
-    const handleCustomEvent = () => {
-      setCheckTrigger(prev => prev + 1);
-    };
-    
-    window.addEventListener('auth-refresh', handleCustomEvent);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('auth-refresh', handleCustomEvent);
-    };
+  const getAuthUrl = useCallback(() => {
+    const base = process.env.NEXT_PUBLIC_API_URL ?? '';
+    return base ? `${base.replace(/\/$/, '')}/auth/check` : '/auth/check';
   }, []);
 
-  return { isAuthenticated, loading };
+  const runAuthCheck = useCallback(async () => {
+    setLocalLoading(true);
+    try {
+      const url = getAuthUrl();
+      const res = await fetch(url, { method: 'GET', credentials: 'include' });
+      if (res.ok) {
+        try {
+          const data = await res.json();
+          setLocalAuth(Boolean(data?.authenticated));
+        } catch (_) {
+          // If no JSON, consider authenticated by virtue of ok
+          setLocalAuth(true);
+        }
+      } else {
+        setLocalAuth(false);
+        if (!isPublicPage && !options?.skipRedirect) router.push('/login');
+      }
+    } catch (e) {
+      // Network or other errors
+      // eslint-disable-next-line no-console
+      console.error(e);
+      setLocalAuth(false);
+      if (!isPublicPage && !options?.skipRedirect) router.push('/login');
+    } finally {
+      setLocalLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getAuthUrl, isPublicPage, options?.skipRedirect]);
+
+  // If the central auth hook isn't mounted (it returns null for isAuthenticated),
+  // perform our own auth check so hooks used outside the provider still behave.
+  useEffect(() => {
+    if (isAuthenticated === null && loading) {
+      void runAuthCheck();
+    }
+  }, [isAuthenticated, loading, runAuthCheck]);
+
+  // Listen to storage and custom auth-refresh events to re-run the check
+  useEffect(() => {
+    const onStorage = () => {
+      // Re-run auth check when storage changes
+      if (isAuthenticated === null) void runAuthCheck();
+    };
+    const onAuthRefresh = () => {
+      if (isAuthenticated === null) void runAuthCheck();
+    };
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('auth-refresh', onAuthRefresh);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('auth-refresh', onAuthRefresh);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runAuthCheck]);
+
+  // Determine the effective state: prefer central auth, fallback to local
+  const effectiveLoading = isAuthenticated === null ? localLoading : loading;
+  const effectiveAuth = isAuthenticated === null ? localAuth : isAuthenticated;
+
+  // Redirection based on effective state
+  useEffect(() => {
+    if (effectiveLoading) return;
+
+    if (effectiveAuth) {
+      if (isPublicPage && pathname && pathname !== '/') router.push('/notes');
+      return;
+    }
+
+    if (!isPublicPage && !options?.skipRedirect) {
+      router.push('/login');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveAuth, effectiveLoading, pathname, options?.skipRedirect]);
+
+  return { isAuthenticated: effectiveAuth, loading: effectiveLoading };
 }

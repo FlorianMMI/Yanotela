@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { $getRoot, EditorState, $getSelection, $isRangeSelection, $getNodeByKey } from "lexical";
+import { $getRoot, EditorState, $getSelection, $isRangeSelection, $getNodeByKey, LexicalEditor } from "lexical";
 import { useEffect, useState, useCallback } from "react";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -13,7 +13,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import { useDebouncedCallback } from "use-debounce";
 import { motion } from "motion/react";
 import { useAuth } from '@/hooks/useAuth';
-import Icons from '@/ui/Icon';
+
 import SaveFlashNoteButton from "@/components/flashnote/SaveFlashNoteButton";
 import DrawingBoard, { DrawingData } from "../drawingBoard/drawingBoard";
 import { $createImageNode } from "./ImageNode";
@@ -23,6 +23,7 @@ import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { editorNodes } from "@/components/textRich/editorNodes";
 import ImageClickPlugin from "./ImageClickPlugin";
 import '@/components/textRich/EditorStyles.css';
+import { CheckIcon, FlashIcon, InfoIcon } from "@/libs/Icons";
 
 const theme = {
   heading: {
@@ -55,14 +56,13 @@ function onError(error: string | Error) {
 }
 
 // Clés localStorage pour Flash Note
-const FLASH_NOTE_TITLE_KEY = "yanotela:flashnote:title";
 const FLASH_NOTE_CONTENT_KEY = "yanotela:flashnote:content";
 
 export default function FlashNoteWidget() {
-  const [editorContent, setEditorContent] = useState("");
+  const [, setEditorContent] = useState("");
   const [initialEditorState, setInitialEditorState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [editor, setEditor] = useState<any>(null);
+  const [editor, setEditor] = useState<LexicalEditor | null>(null);
   const [isSavingContent, setIsSavingContent] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isDrawingBoardOpen, setIsDrawingBoardOpen] = useState(false);
@@ -86,7 +86,7 @@ export default function FlashNoteWidget() {
             try {
               window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: savedContent }));
             } catch (err) {
-              // ignore
+              void err;
             }
           }
         } catch {
@@ -121,7 +121,7 @@ export default function FlashNoteWidget() {
             try {
               window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: JSON.stringify(simpleState) }));
             } catch (err) {
-              // ignore
+              void err;
             }
           }
         }
@@ -199,7 +199,7 @@ export default function FlashNoteWidget() {
           try {
             window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: contentString }));
           } catch (err) {
-            // ignore
+            void err;
           }
         }
 
@@ -264,7 +264,7 @@ export default function FlashNoteWidget() {
           try {
             window.dispatchEvent(new CustomEvent('yanotela:flashnote:updated', { detail: contentString }));
           } catch (err) {
-            // ignore
+            void err;
           }
         }
 
@@ -278,9 +278,17 @@ export default function FlashNoteWidget() {
     }
 
     useEffect(() => {
-      const unregisterListener = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }: any) => {
+      type UpdatePayload = {
+        editorState: EditorState;
+        dirtyElements?: Set<string>;
+        dirtyLeaves?: Set<string>;
+        tags?: Set<string | symbol>;
+      };
+
+      const unregisterListener = editor.registerUpdateListener((update: UpdatePayload) => {
+        const { editorState, dirtyElements, dirtyLeaves, tags } = update;
         // Save on any update: dirty elements/leaves OR explicit updates (like node insertions)
-        if (dirtyElements?.size > 0 || dirtyLeaves?.size > 0 || tags?.has('history-merge') === false) {
+        if ((dirtyElements?.size ?? 0) > 0 || (dirtyLeaves?.size ?? 0) > 0 || (tags && !tags.has('history-merge'))) {
           setIsTyping(true);
           debouncedSave(editorState);
         }
@@ -299,7 +307,7 @@ export default function FlashNoteWidget() {
       {/* En-tête avec titre et bouton de sauvegarde */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icons name="flash" size={24} strokeWidth={12} className="text-primary" />
+          <FlashIcon width={24} height={24} strokeWidth={12} className="text-primary" />
           <h2 className="text-xl font-semibold text-clrprincipal">Flash Note</h2>
         </div>
         <SaveFlashNoteButton variant="default" />
@@ -310,9 +318,9 @@ export default function FlashNoteWidget() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-info-50 border border-info-100 rounded-lg p-3 flex items-start gap-3"
+          className="bg-info-50 border border-info-100 rounded-lg p-3 flex items-center gap-3"
         >
-          <Icons name="info" size={18} className="text-blue shrink-0 mt-0.5" />
+          <InfoIcon width={18} height={18} className="text-blue shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-xs text-info-800">
               Les flashnotes sont temporaires. Pour les conserver de façon permanente,{' '}
@@ -346,7 +354,7 @@ export default function FlashNoteWidget() {
               {(isSavingContent || isTyping) ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               ) : (
-                <Icons name="Checkk" size={20} className="h-5 w-5 text-primary" />
+                <CheckIcon width={20} height={20} className="h-5 w-5 text-primary" />
               )}
               <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-primary text-background text-xs rounded py-1 px-2 whitespace-nowrap">
                 Enregistrement automatique de votre note temporaire
@@ -373,7 +381,7 @@ export default function FlashNoteWidget() {
                       Votre Flash Note...
                     </p>
                   }
-                  className="editor-root md:mt-2 h-full focus:outline-none min-h-[200px]"
+                  className="editor-root md:mt-2 focus:outline-none min-h-[200px]"
                 />
               }
               ErrorBoundary={LexicalErrorBoundary}

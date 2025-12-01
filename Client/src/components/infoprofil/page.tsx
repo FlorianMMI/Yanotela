@@ -1,6 +1,6 @@
 import React from "react";
-import Icons from "@/ui/Icon";
 import { useRouter } from "next/navigation";
+import { ModifIcon } from "@/libs/Icons";
 
 interface Props {
   name: string;
@@ -44,9 +44,9 @@ export default function Infoprofil(Props: Props) {
           onClick={handleModifyProfile}
           aria-label="Modifier le profil"
         >
-          <Icons
-            name="modif"
-            size={34}
+          <ModifIcon
+            width={34}
+            height={34}
             className="cursor-pointer rounded-full p-2 bg-primary text-white hover:shadow-md transition-all duration-300"
           />
         </button>

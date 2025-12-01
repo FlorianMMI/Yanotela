@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import Icon from "@/ui/Icon";
+import { TrashIcon } from '@/libs/Icons';
 
 interface FolderDeleteConfirmProps {
     folderName: string;
@@ -40,12 +40,12 @@ export default function FolderDeleteConfirm({
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
                 <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Icon name="trash" size={32} className="text-red-600" />
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <TrashIcon width={32} height={32} className="text-red-600"  />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Supprimer le dossier</h2>
                     <p className="text-gray-600 mb-3">
-                        Êtes-vous sûr de vouloir supprimer définitivement le dossier <span className="font-semibold">"{folderName}"</span> ?
+                        Êtes-vous sûr de vouloir supprimer définitivement le dossier <span className="font-semibold">&quot;{folderName}&quot;</span> ?
                     </p>
                     {noteCount > 0 && (
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
@@ -81,8 +81,8 @@ export default function FolderDeleteConfirm({
                                 Suppression...
                             </>
                         ) : (
-                            <>
-                                <Icon name="trash" size={20} className="text-white" />
+                                <>
+                                <TrashIcon width={20} height={20} className="text-white" />
                                 Supprimer définitivement
                             </>
                         )}

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GetFolders, AssignNoteToFolder, RemoveNoteFromFolder, GetNoteFolder } from "@/loader/loader";
 import { Folder } from "@/type/Folder";
-import Icon from "@/ui/Icon";
+import { FolderIcon, TrashIcon, ChevronIcon, SearchIcon, XIcon, CheckIcon } from '@/libs/Icons';
 
 interface NoteFolderUIProps {
     noteId: string;
@@ -154,7 +154,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
 
     if (loading) {
         return (
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-3 md:p-4">
                 <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
@@ -163,7 +163,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
     }
 
     return (
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3 md:p-4">
             {/* Messages de succès/erreur */}
             {success && (
                 <div className="mb-4 p-3 bg-success-100 text-success-700 rounded-lg text-sm">
@@ -182,14 +182,11 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                     <p className="text-sm text-gray-600 mb-3">Dossier actuel :</p>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border-2 border-primary">
                         <div className="flex items-center gap-3">
-                            <div 
+                                <div 
                                 className="shrink-0"
                                 style={{ color: currentFolder.CouleurTag || '#882626' }}
                             >
-                                <Icon 
-                                    name="folder" 
-                                    size={24}
-                                />
+                                <FolderIcon width={24} height={24} />
                             </div>
                             <div>
                                 <p className="font-medium text-gray-800">{currentFolder.Nom}</p>
@@ -200,13 +197,13 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                 )}
                             </div>
                         </div>
-                        <button
-                            onClick={handleRemoveFromFolder}
-                            disabled={saving}
-                            className="text-dangerous-600 hover:text-dangerous-700 disabled:opacity-50"
-                            title="Retirer du dossier"
-                        >
-                            <Icon name="trash" size={20} />
+                            <button
+                                onClick={handleRemoveFromFolder}
+                                disabled={saving}
+                                className="text-dangerous-600 hover:text-dangerous-700 disabled:opacity-50"
+                                title="Retirer du dossier"
+                            >
+                            <TrashIcon width={20} height={20} />
                         </button>
                     </div>
                 </div>
@@ -220,7 +217,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
 
                 {folders.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
-                        <Icon name="folder" size={48} className="mx-auto mb-3 opacity-30" />
+                        <FolderIcon width={48} height={48} className="mx-auto mb-3 opacity-30" />
                         <p className="text-sm">Aucun dossier disponible</p>
                         <p className="text-xs mt-1">Créez un dossier depuis la page Dossiers</p>
                     </div>
@@ -237,11 +234,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                             <span className="text-gray-700">
                                 {currentFolder ? "Sélectionner un autre dossier..." : "Sélectionner un dossier..."}
                             </span>
-                            <Icon 
-                                name={isDropdownOpen ? "chevron-up" : "chevron-down"} 
-                                size={20} 
-                                className="text-gray-500"
-                            />
+                            {isDropdownOpen ? <ChevronIcon width={20} height={20} className="text-gray-500 rotate-180"  /> : <ChevronIcon width={20} height={20} className="text-gray-500" />}
                         </button>
 
                         {/* Menu déroulant avec position fixed */}
@@ -258,11 +251,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                 {/* Barre de recherche */}
                                 <div className="p-3 border-b border-gray-200 sticky top-0 bg-white">
                                     <div className="relative">
-                                        <Icon 
-                                            name="search" 
-                                            size={18} 
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                                        />
+                                                        <SearchIcon width={20} height={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                         <input
                                             type="text"
                                             value={searchQuery}
@@ -276,7 +265,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                                 onClick={() => setSearchQuery("")}
                                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                             >
-                                                <Icon name="x" size={16} />
+                                                <XIcon width={20} height={20} />
                                             </button>
                                         )}
                                     </div>
@@ -307,10 +296,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                                         className="shrink-0"
                                                         style={{ color: folder.CouleurTag || '#882626' }}
                                                     >
-                                                        <Icon 
-                                                            name="folder" 
-                                                            size={24}
-                                                        />
+                                                        <FolderIcon width={24} height={24} />
                                                     </div>
                                                     <div className="flex-1 text-left">
                                                         <p className="font-medium text-gray-800">{folder.Nom}</p>
@@ -321,7 +307,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                                         )}
                                                     </div>
                                                     {isCurrentFolder && (
-                                                        <Icon name="check" size={20} className="text-primary" />
+                                                        <CheckIcon width={24} height={24} className="text-primary" />
                                                     )}
                                                 </button>
                                             );

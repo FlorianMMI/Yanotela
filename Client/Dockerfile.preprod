@@ -1,5 +1,5 @@
 # Dockerfile pour environnement de préproduction (développement)
-FROM node:20-alpine
+FROM node:20
 
 # Définir le répertoire de travail
 WORKDIR /app

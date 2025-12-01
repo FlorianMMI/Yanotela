@@ -19,10 +19,14 @@ export default function ImageClickPlugin({ onClick }: ImageClickPluginProps) {
       let target: HTMLElement;
       
       // Get the correct target based on event type
-      if (event instanceof TouchEvent) {
+      // Check if TouchEvent exists (browser only) and if event is a touch event
+      const isTouchEvent = typeof TouchEvent !== 'undefined' && event instanceof TouchEvent;
+      
+      if (isTouchEvent) {
         // For touch events, get the element at the touch point
-        if (event.changedTouches && event.changedTouches.length > 0) {
-          const touch = event.changedTouches[0];
+        const touchEvent = event as TouchEvent;
+        if (touchEvent.changedTouches && touchEvent.changedTouches.length > 0) {
+          const touch = touchEvent.changedTouches[0];
           target = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
         } else {
           return;
@@ -46,16 +50,20 @@ export default function ImageClickPlugin({ onClick }: ImageClickPluginProps) {
           
           // Try to find the node key from the parent span element
           let nodeKey: string | undefined;
-          let parent = imgElement.parentElement;
+          let parent: HTMLElement | null = imgElement.parentElement;
           
           // Walk up the DOM to find the decorator node
           while (parent && !nodeKey) {
-            const key = (parent as any).__lexicalKey;
-            if (key) {
+            // Define a local typed interface to access the internal Lexical key without using `any`
+            interface LexicalKeyElement {
+              __lexicalKey?: string;
+            }
+            const key = (parent as unknown as LexicalKeyElement).__lexicalKey;
+            if (typeof key === "string" && key.length > 0) {
               nodeKey = key;
               break;
             }
-            parent = parent.parentElement;
+            parent = parent.parentElement as HTMLElement | null;
           }
           
           onClick(src, nodeKey);

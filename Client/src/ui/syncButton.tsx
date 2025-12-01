@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import Icons from '@/ui/Icon';
+import { CheckIcon, SaveIcon, AlertIcon } from '@/libs/Icons';
 
 export type SyncStatus = 'synced' | 'syncing' | 'pending' | 'error';
 
@@ -24,8 +24,7 @@ export default function SyncButton({ status, onSync }: SyncButtonProps) {
     switch (status) {
       case 'synced':
         return {
-          
-          icon: <Icons name="check" size={18} className="text-primary" />,
+          icon: <CheckIcon width={18} height={18} className="text-primary" />,
           tooltip: 'Tout est bien synchronisé',
           disabled: true,
           pulse: false
@@ -44,8 +43,7 @@ export default function SyncButton({ status, onSync }: SyncButtonProps) {
         };
       case 'pending':
         return {
-          
-          icon: <Icons name="save" size={18} className="text-primary" />,
+          icon: <SaveIcon width={18} height={18} className="text-primary" />,
           tooltip: 'Cliquez pour sauvegarder',
           disabled: false,
           pulse: true
@@ -53,7 +51,7 @@ export default function SyncButton({ status, onSync }: SyncButtonProps) {
       case 'error':
         return {
           bgColor: 'bg-red-500',
-          icon: <Icons name="alert" size={18} className="text-red" />,
+          icon: <AlertIcon width={18} height={18} className="text-red" />,
           tooltip: 'Erreur - Réessayer',
           disabled: false,
           pulse: true

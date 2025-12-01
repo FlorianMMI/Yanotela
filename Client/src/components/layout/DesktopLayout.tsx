@@ -8,12 +8,16 @@ import ItemBar from '@/components/itemBar/ItemBar';
 import { SwipeNavigationWrapper } from '@/components/navigation/SwipeNavigationWrapper';
 import { usePathname } from 'next/navigation';
 import FlashNoteWidget from '@/components/flashnote/FlashNoteWidget';
+import ParamModal from '@/components/commentaire/commentModal';
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
 }
 
 export default function DesktopLayout({ children }: DesktopLayoutProps) {
+  const [isCommentModalOpen, setCommentModalOpen] = React.useState(false);
+  const openCommentModal = () => setCommentModalOpen(true);
+  const closeCommentModal = () => setCommentModalOpen(false);
   const { isAuthenticated, loading } = useAuth();
   const pathname = usePathname();
   
@@ -21,9 +25,8 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
   const contentPages = ['/cgu', '/mentions-legales'];
   const isContentPage = contentPages.some(page => pathname.startsWith(page));
   
-  // Pages d'authentification où on affiche UNIQUEMENT la FlashNote (pas le formulaire)
-  const authPages = ['/login', '/register', '/forgot-password'];
-  const isAuthPage = authPages.some(page => pathname.startsWith(page));
+  // Notes publiques individuelles : afficher le contenu (login à gauche) SANS FlashNote
+  const isPublicNote = pathname?.startsWith('/notes/') && pathname !== '/notes';
 
   return (
     <>
@@ -44,22 +47,24 @@ export default function DesktopLayout({ children }: DesktopLayoutProps) {
 
       {/* Desktop: nouvelle architecture */}
       <div className="hidden md:flex h-screen">
+        {/* Modal commentaire globale */}
+        {isCommentModalOpen && <ParamModal onClose={closeCommentModal} />}
         {/* Sidebar - toujours visible */}
         <SideBar />
 
         {/* Contenu principal */}
         <div className={`flex-1 flex flex-col w-full`}>
           {/* Breadcrumb et ItemBar - toujours visibles */}
-          <Breadcrumb />
+          <Breadcrumb openCommentModal={openCommentModal} />
           <ItemBar />
 
           {/* Zone de contenu */}
           <main className="flex-1 overflow-auto bg-background md:bg-deskbackground">
-            {!loading && !isAuthenticated && !isContentPage ? (
-              // Si non connecté ET pas sur une page de contenu (/cgu, /mentions-legales), afficher FlashNote
+            {!loading && !isAuthenticated && !isContentPage && !isPublicNote ? (
+              // Si non connecté ET pas sur une page de contenu (/cgu, /mentions-legales) ET pas sur une note publique, afficher FlashNote
               <FlashNoteWidget />
             ) : (
-              // Sinon (connecté OU page de contenu), afficher le contenu de la page
+              // Sinon (connecté OU page de contenu OU note publique), afficher le contenu de la page
               <div className="h-full">
                 {children}
               </div>

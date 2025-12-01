@@ -10,7 +10,7 @@ import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, 
 import { $patchStyleText } from '@lexical/selection';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list';
 import { mergeRegister } from '@lexical/utils';
-import Icons from '@/ui/Icon';
+import {BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, FontColorIcon, BackgroundColorIcon, ListUlIcon, ListOlIcon, TextLeftIcon, TextCenterIcon, TextRightIcon, TextJustifyIcon, MediaIcon, ModifIcon, } from '@/libs/Icons';
 import { $createImageNode } from '@/components/flashnote/ImageNode';
 import { $createAudioNode } from '@/components/flashnote/AudioNode';
 import { $createVideoNode } from '@/components/flashnote/VideoNode';
@@ -341,20 +341,9 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         }
 
         // Check file size (max 50MB for video, 10MB for audio, 5MB for images)
-        let maxSize: number;
-        let maxSizeLabel: string;
-        if (isVideo) {
-            maxSize = 50 * 1024 * 1024;
-            maxSizeLabel = '50MB';
-        } else if (isAudio) {
-            maxSize = 10 * 1024 * 1024;
-            maxSizeLabel = '10MB';
-        } else {
-            maxSize = 5 * 1024 * 1024;
-            maxSizeLabel = '5MB';
-        }
-
-        if (file.size > maxSize) {
+        const maxSize= 10 * 1024 * 1024;
+        const maxSizeLabel= '10MB';
+       if (file.size > maxSize) {
             alert(`Le fichier est trop volumineux (max ${maxSizeLabel})`);
             return;
         }
@@ -408,7 +397,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isBold ? 'bg-background' : 'hover:bg-gray-100'}`}
                     aria-label="Gras"
                     title="Gras (Ctrl+B)">
-                    <Icons name="bold" />
+                    <BoldIcon width={20} height={20} />
 
                 </button>
                 <button
@@ -416,14 +405,14 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isItalic ? 'bg-background' : 'hover:bg-gray-100'}`}
                     aria-label="Italique"
                     title="Italique (Ctrl+I)">
-                    <Icons name="italic" />
+                    <ItalicIcon width={20} height={20} />
                 </button>
                 <button
                     onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isUnderline ? 'bg-background' : 'hover:bg-gray-100'}`}
                     aria-label="Souligner"
                     title="Souligner (Ctrl+U)">
-                    <Icons name="underline" />
+                    <UnderlineIcon width={20} height={20} />
 
                 </button>
                 <button
@@ -431,7 +420,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isStrikethrough ? 'bg-background' : 'hover:bg-gray-100'}`}
                     aria-label="Barré"
                     title="Barré">
-                    <Icons name="strikethrough" />
+                    <StrikethroughIcon width={20} height={20} />
 
                 </button>
 
@@ -474,11 +463,11 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                 </select>
 
                 <div className="relative flex items-center gap-2">
-                    <ColorPalette value={fontColor} onChange={handleFontColorChange} asButton small buttonIcon={<Icons name="fontColor" />} />
+                    <ColorPalette  value={fontColor} onChange={handleFontColorChange} asButton small buttonIcon={<FontColorIcon />} />
                 </div>
 
                 <div className="relative flex items-center gap-2">
-                    <ColorPalette value={backgroundColor} onChange={handleBackgroundColorChange} asButton small buttonIcon={<Icons name="backgroundColor" />} />
+                    <ColorPalette value={backgroundColor} onChange={handleBackgroundColorChange} asButton small buttonIcon={<BackgroundColorIcon />} />
                 </div>
 
                 <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
@@ -488,13 +477,13 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     onClick={() => formatList('bullet')}
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isInBulletList ? 'bg-background' : 'hover:bg-gray-100'}`}
                     title="Liste à puces">
-                    <Icons name="list-ul" />
+                    <ListUlIcon width={20} height={20} />
                 </button>
                 <button
                     onClick={() => formatList('number')}
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isInNumberedList ? 'bg-background' : 'hover:bg-gray-100'}`}
                     title="Liste numérotée">
-                    <Icons name="list-ol" />
+                    <ListOlIcon width={20} height={20} />
                 </button>
 
                 <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
@@ -504,25 +493,25 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left')}
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'left' ? 'bg-background' : 'hover:bg-gray-100'}`}
                     title="Aligner à gauche">
-                    <Icons name="text-left" />
+                    <TextLeftIcon width={20} height={20} />
                 </button>
                 <button
                     onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center')}
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'center' ? 'bg-background' : 'hover:bg-gray-100'}`}
                     title="Centrer">
-                    <Icons name="text-center" />
+                    <TextCenterIcon width={20} height={20} />
                 </button>
                 <button
                     onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right')}
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'right' ? 'bg-background' : 'hover:bg-gray-100'}`}
                     title="Aligner à droite">
-                    <Icons name="text-right" />
+                    <TextRightIcon width={20} height={20} />
                 </button>
                 <button
                     onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify')}
                     className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'justify' ? 'bg-background' : 'hover:bg-gray-100'}`}
                     title="Justifier">
-                    <Icons name="text-justify" />
+                    <TextJustifyIcon width={20} height={20} />
                 </button>
 
                 <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
@@ -533,7 +522,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
                     aria-label="Importer un média"
                     title="Importer un média (image, audio ou vidéo)">
-                    <Icons name="media" />
+                    <MediaIcon width={20} height={20} />
                 </button>
                 <input
                     ref={fileInputRef}
@@ -552,7 +541,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
                             aria-label="Ouvrir le tableau de dessin"
                             title="Tableau de dessin">
-                            <Icons name="modif" />
+                            <ModifIcon width={20} height={20} />
                         </button>
                     </>
                 )}
@@ -587,8 +576,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             }}
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showFormatMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Formatage">
-                            <Icons name="bold" />
-                            <span className="text-xs">Format</span>
+                            <BoldIcon width={26} height={26} />
                         </button>
 
                         {showFormatMenu && (
@@ -604,7 +592,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowFormatMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${isBold ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="bold" />
+                                        <BoldIcon width={20} height={20} />
                                         <span>Gras</span>
                                     </button>
                                     <button
@@ -613,7 +601,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowFormatMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${isItalic ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="italic" />
+                                        <ItalicIcon width={20} height={20} />
                                         <span>Italique</span>
                                     </button>
                                     <button
@@ -622,7 +610,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowFormatMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${isUnderline ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="underline" />
+                                        <UnderlineIcon width={20} height={20} />
                                         <span>Souligner</span>
                                     </button>
                                     <button
@@ -631,7 +619,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowFormatMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${isStrikethrough ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="strikethrough" />
+                                        <StrikethroughIcon width={20} height={20} />
                                         <span>Barré</span>
                                     </button>
                                 </div>
@@ -650,8 +638,8 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             }}
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showSizeMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Options">
-                            <Icons name="fontColor" />
-                            <span className="text-xs">Options</span>
+                            <FontColorIcon width={26} height={26} />
+                            
                         </button>
 
                         {showSizeMenu && (
@@ -741,8 +729,8 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             }}
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showListMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Listes">
-                            <Icons name="list-ul" />
-                            <span className="text-xs">Listes</span>
+                            <ListUlIcon width={26} height={26} />
+                            
                         </button>
 
                         {showListMenu && (
@@ -758,7 +746,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowListMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${isInBulletList ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="list-ul" />
+                                        <ListUlIcon width={20} height={20}/>
                                         <span>Liste à puces</span>
                                     </button>
                                     <button
@@ -767,7 +755,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowListMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${isInNumberedList ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="list-ol" />
+                                        <ListOlIcon width={20} height={20} />
                                         <span>Liste numérotée</span>
                                     </button>
                                 </div>
@@ -786,8 +774,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             }}
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showAlignMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Alignement">
-                            <Icons name="text-left" />
-                            <span className="text-xs">Aligner</span>
+                            <TextLeftIcon width={26} height={26} />
                         </button>
 
                         {showAlignMenu && (
@@ -803,7 +790,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowAlignMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${alignment === 'left' ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="text-left" />
+                                        <TextLeftIcon width={20} height={20} />
                                         <span>Gauche</span>
                                     </button>
                                     <button
@@ -812,7 +799,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowAlignMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${alignment === 'center' ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="text-center" />
+                                        <TextCenterIcon width={20} height={20} />
                                         <span>Centre</span>
                                     </button>
                                     <button
@@ -821,7 +808,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowAlignMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${alignment === 'right' ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="text-right" />
+                                        <TextRightIcon width={20} height={20} />
                                         <span>Droite</span>
                                     </button>
                                     <button
@@ -830,7 +817,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                             setShowAlignMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${alignment === 'justify' ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <Icons name="text-justify" />
+                                        <TextJustifyIcon width={20} height={20} />
                                         <span>Justifier</span>
                                     </button>
                                 </div>
@@ -843,8 +830,8 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                         onClick={handleImageImport}
                         className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
                         aria-label="Importer un média">
-                        <Icons name="media" />
-                        <span className="text-xs">Média</span>
+                        <MediaIcon width={26} height={26} />
+                        
                     </button>
 
                     {/* Drawing Board button for mobile */}
@@ -853,8 +840,8 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             onClick={onOpenDrawingBoard}
                             className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
                             aria-label="Ouvrir le tableau de dessin">
-                            <Icons name="modif" />
-                            <span className="text-xs">Dessin</span>
+                            <ModifIcon width={26} height={26} />
+                            
                         </button>
                     )}
                 </div>

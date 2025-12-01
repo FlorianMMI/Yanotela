@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Icon from '@/ui/Icon';
+
 import { CreateNote, SaveNote } from '@/loader/loader';
 import { useAuth } from '@/hooks/useAuth';
+import { InfoIcon, SaveIcon } from '@/libs/Icons';
 
 interface SaveFlashNoteButtonProps {
   className?: string;
@@ -15,19 +16,17 @@ interface SaveFlashNoteButtonProps {
 
 export default function SaveFlashNoteButton({ 
   className = '', 
-  variant = 'default',
-  currentTitle,
-  disabled
+  variant = 'default'
 }: SaveFlashNoteButtonProps) {
   const router = useRouter();
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [showSavePopup, setShowSavePopup] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [saveTitle, setSaveTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [flashContent, setFlashContent] = useState<string>('');
+  const [, setFlashContent] = useState<string>('');
   const [flashEmpty, setFlashEmpty] = useState<boolean>(true);
 
   // Note: flash emptiness is tracked in state `flashEmpty` to avoid reading localStorage during render
@@ -35,19 +34,31 @@ export default function SaveFlashNoteButton({
   // Compute if flash content is empty
   const computeIsEmpty = (flashContentValue: string) => {
     if (!flashContentValue) return true;
+
+    type LexicalNode = {
+      children?: LexicalNode[];
+      text?: string;
+      [key: string]: unknown;
+    };
+
+    const hasNonEmptyText = (node: unknown): boolean => {
+      if (!node || typeof node !== 'object') return false;
+      const n = node as LexicalNode;
+      if (typeof n.text === 'string' && n.text.trim().length > 0) return true;
+      if (Array.isArray(n.children)) {
+        return n.children.some((c) => hasNonEmptyText(c));
+      }
+      return false;
+    };
+
     try {
       const content = JSON.parse(flashContentValue);
-      if (!content.root || !content.root.children || content.root.children.length === 0) {
+      if (!content || typeof content !== 'object') return true;
+      const root = (content as { root?: { children?: unknown[] } }).root;
+      if (!root || !Array.isArray(root.children) || root.children.length === 0) {
         return true;
       }
-      const hasContent = content.root.children.some((child: any) => {
-        if (child.children && child.children.length > 0) {
-          return child.children.some((textNode: any) => {
-            return textNode.text && textNode.text.trim().length > 0;
-          });
-        }
-        return false;
-      });
+      const hasContent = root.children.some((child) => hasNonEmptyText(child));
       return !hasContent;
     } catch {
       return flashContentValue.trim().length === 0;
@@ -69,6 +80,7 @@ export default function SaveFlashNoteButton({
       } catch (e) {
         setFlashContent('');
         setFlashEmpty(true);
+        void e;
       }
     };
 
@@ -95,6 +107,7 @@ export default function SaveFlashNoteButton({
         const newVal = localStorage.getItem(FLASH_NOTE_CONTENT_KEY) || '';
         setFlashContent(newVal);
         setFlashEmpty(computeIsEmpty(newVal));
+        void err;
       }
     };
 
@@ -144,7 +157,7 @@ export default function SaveFlashNoteButton({
           setSaveTitle('');
           
           // Rediriger vers la nouvelle note
-          router.push(`/notes/${result.note.id}`);
+          router.push(`/notes`);
         } else {
           setError('Erreur lors de la sauvegarde du contenu');
           setTimeout(() => setError(null), 5000);
@@ -180,9 +193,9 @@ export default function SaveFlashNoteButton({
 
   const buttonContent = (
     <>
-      <Icon 
-        name="save" 
-        size={variant === 'mobile' ? 20 : 16} 
+      <SaveIcon 
+        width={variant === 'mobile' ? 20 : 16} 
+        height={variant === 'mobile' ? 20 : 16} 
         className={variant === 'mobile' ? "text-primary" : "text-white"} 
       />
       <span className={`${variant === 'mobile' ? 'text-base text-primary' : 'text-sm text-white'} font-medium`}>
@@ -263,7 +276,7 @@ export default function SaveFlashNoteButton({
         <div className="fixed inset-0 bg-[#00000050] flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-full">
-              <Icon name="alert" size={24} className="text-primary" />
+              <InfoIcon width={24} height={24} className="text-primary" />
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
               Connexion requise

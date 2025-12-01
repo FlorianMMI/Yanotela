@@ -8,6 +8,12 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 /**
+ * Map globale pour stocker les états YJS initiaux à appliquer
+ * Key: noteId, Value: Uint8Array de l'état YJS
+ */
+const pendingYjsStates = new Map<string, Uint8Array>();
+
+/**
  * Map globale des providers pour accès depuis les composants UI
  * Key: noteId, Value: WebsocketProvider instance
  */
@@ -20,6 +26,22 @@ export const providerInstances = new Map<string, WebsocketProvider>();
 export const yjsDocuments = new Map<string, Y.Doc>();
 
 /**
+ * Enregistrer un état YJS initial à appliquer lors de la création du provider
+ * DOIT être appelé AVANT que le CollaborationPlugin ne crée le provider
+ * 
+ * @param noteId - ID de la note
+ * @param yjsStateArray - État YJS sous forme de tableau d'octets
+ */
+export function registerInitialYjsState(noteId: string, yjsStateArray: number[]) {
+  if (!yjsStateArray || yjsStateArray.length === 0) {
+    return;
+  }
+  const uint8Array = new Uint8Array(yjsStateArray);
+  pendingYjsStates.set(noteId, uint8Array);
+  
+}
+
+/**
  * Définir les informations utilisateur dans l'awareness d'un provider
  * 
  * @param noteId - ID de la note
@@ -29,7 +51,7 @@ export const yjsDocuments = new Map<string, Y.Doc>();
 export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string) {
   const provider = providerInstances.get(noteId);
   if (!provider) {
-    console.warn(`[setAwarenessUserInfo] Provider non trouvé pour note ${noteId}`);
+    
     return;
   }
 
@@ -52,7 +74,7 @@ export function createWebsocketProvider(
   id: string,
   yjsDocMap: Map<string, Y.Doc>,
 ): Provider {
-  const doc = getDocFromMap(id, yjsDocMap);
+  const { doc, hadInitialState } = getDocFromMap(id, yjsDocMap);
 
   // Détection auto: prod = wss://domaine/yjs/, dev = ws://localhost:1234
   const isProd = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
@@ -66,7 +88,7 @@ export function createWebsocketProvider(
     `yanotela-${id}`,                   // Room name (préfixe + noteId)
     doc,
     {
-      connect: false,                   // Ne pas connecter immédiatement (géré par plugin)
+      connect: !hadInitialState,        // Si état initial, ne pas connecter immédiatement
       // Paramètres de reconnexion
       resyncInterval: 10000,            // Resync toutes les 10s
       maxBackoffTime: 10000,            // Délai max entre reconnexions
@@ -74,14 +96,15 @@ export function createWebsocketProvider(
     },
   );
 
-  // Logs pour debugging
-  provider.on('status', ({ status }: { status: string }) => {
+  // ✅ Si on a appliqué un état initial, connecter après un court délai
+  // pour laisser le temps au document d'être prêt
+  if (hadInitialState) {
     
-  });
-
-  provider.on('sync', (isSynced: boolean) => {
-    
-  });
+    setTimeout(() => {
+      
+      provider.connect();
+    }, 100);
+  }
 
   // Stocker le provider pour accès depuis les composants UI
   providerInstances.set(id, provider);
@@ -97,20 +120,30 @@ export function createWebsocketProvider(
  * 
  * @param id - Identifiant du document
  * @param yjsDocMap - Map des documents YJS
- * @returns Y.Doc pour ce document
+ * @returns Y.Doc pour ce document et un booléen indiquant si un état initial a été appliqué
  */
-function getDocFromMap(id: string, yjsDocMap: Map<string, Y.Doc>): Y.Doc {
+function getDocFromMap(id: string, yjsDocMap: Map<string, Y.Doc>): { doc: Y.Doc; hadInitialState: boolean } {
   let doc = yjsDocMap.get(id);
+  let hadInitialState = false;
 
   if (doc === undefined) {
     
     doc = new Y.Doc();
     yjsDocMap.set(id, doc);
+    
+    // ✅ Appliquer l'état YJS initial s'il a été enregistré
+    const pendingState = pendingYjsStates.get(id);
+    if (pendingState) {
+      
+      Y.applyUpdate(doc, pendingState);
+      pendingYjsStates.delete(id); // Nettoyer après utilisation
+      hadInitialState = true;
+    }
   } else {
     
     // Charger depuis IndexedDB si persisté localement
     doc.load();
   }
 
-  return doc;
+  return { doc, hadInitialState };
 }

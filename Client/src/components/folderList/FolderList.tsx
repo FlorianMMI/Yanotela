@@ -4,8 +4,9 @@ import FolderSkeleton from '@/ui/folder/FolderSkeleton';
 import { Folder as FolderType } from '@/type/Folder';
 import { CreateFolder } from '@/loader/loader';
 import { useRouter } from 'next/navigation';
-import Icon from '@/ui/Icon';
+
 import { motion } from "motion/react";
+import { PlusIcon } from '@/libs/Icons';
 
 interface FolderListProps {
   folders: FolderType[];
@@ -31,17 +32,8 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
   };
 
   return (
-
-    <main className="p-4 relative min-h-[calc(100vh-200px)]">
-
-       {/* Message si aucune note et pas en chargement - Centré sur la page */}
-      {!isLoading && folders.length === 0 && (
-        <p className="absolute top-1/2 left-1/2 pointer-events-none transform  -translate-x-1/2 -translate-y-1/2 text-element text-lg font-gant w-[calc(100%-5rem)] text-center">
-          Aucun dossier trouvé. Créez votre premier dossier !
-        </p>
-      )}
-
-  <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-4 max-w-full justify-items-start">
+    <main className="p-4">
+      <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-4 max-w-full justify-items-start">
 
         {/* Add Folder Button - Toujours visible */}
         <div className="relative group  w-full rounded-xl flex items-center justify-center transition-colors cursor-pointer text-primary h-[110px] md:w-65 md:h-50">
@@ -66,9 +58,9 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
             <path d="M3.1752 82.8919C5.2884 84.9965 7.83 86.0488 10.8 86.0488H97.2C100.174 86.0524 102.717 85.0001 104.83 82.8919C106.943 80.7837 108 78.2506 108 75.2927V21C108 15 103 11 98 11H54L43.2 0H10.8C7.8336 0.00358537 5.292 1.05768 3.1752 3.16229C1.0584 5.2669 0 7.79817 0 10.7561V75.2927C0.0036 78.2542 1.062 80.7873 3.1752 82.8919Z" fill="none"/>
           </motion.svg>
 
-          <Icon
-            name="plus"
-            size={48}
+          <PlusIcon
+            width={48}
+            height={48}
             strokeWidth={1}
             className="absolute z-10 group-hover:scale-110 transition-transform pointer-events-none"
             aria-hidden={true}
@@ -89,6 +81,18 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
           <Folder key={folder.id} folder={folder} onFolderUpdated={onFolderCreated} />
         ))}
       </div>
+
+      {/* Message si aucun dossier */}
+      {!isLoading && folders.length === 0 && (
+        <div className="text-center py-16 px-4 pointer-events-none select-none">
+          <p className="text-element font-geo text-xl italic">
+            Aucun dossier pour le moment
+          </p>
+          <p className="text-element/70 font-gant text-sm mt-2">
+            Appuyez sur + pour créer votre premier dossier
+          </p>
+        </div>
+      )}
     </main>
   );
 }

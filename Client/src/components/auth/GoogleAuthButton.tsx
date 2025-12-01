@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import Icon from '@/ui/Icon';
+import { GoogleIcon } from '@/libs/Icons';
+import { useRouter } from 'next/navigation';
 
 interface GoogleAuthButtonProps {
   mode: 'login' | 'register';
@@ -16,11 +17,11 @@ interface GoogleAuthButtonProps {
  */
 export default function GoogleAuthButton({
   mode,
-  onSuccess,
   className = "",
   isFullWidth = true
 }: GoogleAuthButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
@@ -31,7 +32,7 @@ export default function GoogleAuthButton({
       const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       
       // Redirection directe vers la route Google OAuth du serveur
-      window.location.href = `${baseUrl}/auth/google`;
+      router.push(`${baseUrl}/auth/google`);
     } catch (error) {
       console.error('Erreur lors de la connexion Google:', error);
       setIsLoading(false);
@@ -59,12 +60,12 @@ export default function GoogleAuthButton({
         ${className}
       `}
     >
-      <Icon 
-        name="google" 
-        className={isLoading ? "text-gray-100" : "text-primary"} 
-        size={20} 
+      <GoogleIcon
+        className={isLoading ? "text-gray-100" : "text-primary"}
+        width={20}
+        height={20}
       />
-      <span className={`text-sm font-medium font-['Gantari'] ${
+      <span className={`text-sm font-medium ${
         isLoading ? 'text-gray-100' : mode === 'login' ? 'text-black' : 'text-gray-700'
       }`}>
         {isLoading ? 'Connexion en cours...' : buttonText}

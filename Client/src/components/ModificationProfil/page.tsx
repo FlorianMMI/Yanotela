@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Icons from "@/ui/Icon";
 import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser, GetNotes, GetFolders } from '@/loader/loader';
 import TotalNotes from "@/ui/note/totalNotes";
 import TotalFolders from "@/ui/folder/totalFolders";
+import { KeyholeIcon, ProfileIcon } from "@/libs/Icons";
 
 export default function ModificationProfil() {
   const [userData, setUserData] = useState({
@@ -38,6 +38,7 @@ export default function ModificationProfil() {
         }
       } catch (err) {
         setError("Erreur lors du chargement des informations");
+        void err;
       } finally {
         setPageLoading(false);
       }
@@ -47,13 +48,13 @@ export default function ModificationProfil() {
   }, []);
 
   // Fonction pour sauvegarder un champ spécifique
-  const handleFieldSave = async (fieldName: string, newValue: string) => {
+  const handleFieldSave = async (fieldName: keyof typeof userData, newValue: string) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const updateData: any = {};
+      const updateData: Partial<Record<keyof typeof userData, string>> = {};
       updateData[fieldName] = newValue;
 
       const result = await updateUser(updateData);
@@ -150,7 +151,7 @@ export default function ModificationProfil() {
   return (
     <>
       {pageLoading ? (
-        <div className="p-4 flex justify-center items-center min-h-full md:min-h-full">
+        <div className="p-4 flex justify-center items-center min-md:min-h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
@@ -217,11 +218,11 @@ export default function ModificationProfil() {
               </div>
           )}
 
-          <div className="flex flex-col w-full h-full justify-end items-center">
+          <div className="flex flex-col w-full justify-end items-center">
             <div className="flex items-end justify-center rounded-full h-[100px] w-[100px] border-8 border-primary overflow-hidden">
-              <Icons 
-                name="profile"
-                size={80}
+              <ProfileIcon
+                width={80}
+                height={80}
                 className="text-primary"
               />
             </div>
@@ -229,7 +230,7 @@ export default function ModificationProfil() {
             <p className="text-sm text-gray-500">{userData.email}</p>
           </div>
 
-          <div className="flex flex-col gap-3 items-center justify-center w-full h-full max-w-[400px]">
+          <div className="flex flex-col gap-3 items-center justify-center w-full max-w-[400px]">
             <InputModified
               name="Pseudonyme"
               placeholder="pseudo"
@@ -269,9 +270,9 @@ export default function ModificationProfil() {
                 ) : (
                   <div className="flex items-center space-x-2">
                     <p className="flex flex-row flex-nowrap gap-1">Modifier <span className="hidden md:block">le mot de passe</span></p>
-                    <Icons
-                      name="keyhole"
-                      size={20}
+                    <KeyholeIcon  
+                      width={20}
+                      height={20}
                       className="text-white"
                     />
                   </div>

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import Icons from "@/ui/Icon";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
 import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
+import { ArrowBarIcon, DuplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
 
 interface NoteMoreProps {
     noteId: string;
@@ -48,22 +48,6 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [onClose]);
-
-    const loadFolders = async () => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
-
-    const loadCurrentFolder = async () => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
-
-    const assignNoteToFolder = async (folderId: string) => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
-
-    const removeNoteFromFolder = async () => {
-        // Cette fonction n'est plus nécessaire car NoteFolderUI gère ses propres données
-    };
 
     const handleDeleteNote = async () => {
         setIsDeleting(true);
@@ -179,41 +163,41 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                 return null; // Le modal sera rendu en dehors du contenu
             default:
                 return (
-                    <div className="flex-1 overflow-y-auto p-3 md:p-4 max-h-[30vh]">
+                    <div className="flex overflow-y-auto p-3  md:p-4 max-h-[30vh] ">
                         <div className="flex flex-col gap-1 py-2">
                             <button
                                 className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium transition-colors"
                                 onClick={() => setCurrentView("folder")}
                             >
-                                <Icons name="folder" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                <FolderIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
                                 Dossiers
                             </button>
                             <button
                                 className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
                                 onClick={() => setCurrentView("tag")}
                             >
-                                <Icons name="palette" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                <PaletteIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
                                 Tag couleur
                             </button>
                             <button
                                 className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
                                 onClick={() => setCurrentView("share")}
                             >
-                                <Icons name="partage" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                <PartageIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
                                 Partager la note
                             </button>
                             <button
                                 className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
                                 onClick={() => setCurrentView("info")}
                             >
-                                <Icons name="info" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                <InfoIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
                                 Infos de la note
                             </button>
                             <button
                                 className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
                                 onClick={handleDuplicateNote}
                             >
-                                <Icons name="duplicate" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                <DuplicateIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
                                 Dupliquer la note
                             </button>
 
@@ -223,7 +207,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                                     className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-dangerous-800 hover:bg-red-50 cursor-pointer w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
                                     onClick={() => setCurrentView("leave")}
                                 >
-                                    <Icons name="exit" size={18} className="text-dangerous-800 rotate-180 md:w-[22px] md:h-[22px]" />
+                                    <ExitIcon width={18} height={18} className="text-dangerous-800 rotate-180 md:w-[22px] md:h-[22px]" />
                                     Quitter la note
                                 </button>
                             ) : (
@@ -231,7 +215,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                                     className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-dangerous-800 hover:bg-red-50 cursor-pointer w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
                                     onClick={() => setCurrentView("delete")}
                                 >
-                                    <Icons name="trash" size={18} className="text-dangerous-800 md:w-[22px] md:h-[22px]" />
+                                    <TrashIcon width={18} height={18} className="text-dangerous-800 md:w-[22px] md:h-[22px]" />
                                     Supprimer la note
                                 </button>
                             )}
@@ -262,7 +246,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
             ) : (
                 <div 
                     ref={modalRef}
-                    className="bg-white rounded-xl w-[240px] md:w-sm shadow-lg overflow-hidden relative h-auto flex flex-col"
+                    className="bg-white rounded-xl w-52 md:w-64 shadow-lg overflow-hidden relative h-auto flex flex-col"
                 >
                     
                     <div className="p-3 md:p-4 pb-2 border-b border-element flex items-center">
@@ -272,7 +256,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                                 onClick={() => setCurrentView("menu")}
                                 aria-label="Retour"
                             >
-                                <Icons name="arrow-ss-barre" size={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                <ArrowBarIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
                             </button>
                         )}
                         <h3 className="text-base md:text-lg font-semibold text-foreground">{getModalTitle()}</h3>

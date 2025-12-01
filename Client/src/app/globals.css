@@ -4,13 +4,27 @@
   scrollbar-width: thin;
 }
 
-/* Pour Chrome, Edge, Safari */
+.custom-scrollbar-comment {
+  scrollbar-color: var(--deskbackground ) var(--primary);
+  scrollbar-width: thin;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
   background: var(--deskbackground);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--primary);
+  border-radius: 8px;
+}
+
+/* Pour Chrome, Edge, Safari */
+.custom-scrollbar-comment::-webkit-scrollbar {
+  width: 8px;
+  background: var(--primary);
+}
+.custom-scrollbar-comment::-webkit-scrollbar-thumb {
+  background: var(--deskbackground);
   border-radius: 8px;
 }
 @import url('https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&family=Geologica:wght@100..900&display=swap');
