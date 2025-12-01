@@ -157,10 +157,6 @@ jobs:
                 listen 80;
                 client_max_body_size 100M;
 
-                # Cloudflare Turnstile: gérer les requêtes /cdn-cgi/
-                location ^~ /cdn-cgi/ {
-                    return 204;
-                }
 
                 # Let's Encrypt (si besoin de renouvellement manuel)
                 location ^~ /.well-known/acme-challenge/ {
