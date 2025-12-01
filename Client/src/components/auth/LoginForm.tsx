@@ -57,7 +57,6 @@ export default function LoginForm({
         body: JSON.stringify({
           identifiant,
           password,
-          // 'cf-turnstile-response': turnstileToken || '',
         }),
       });      const data = await response.json();
 
