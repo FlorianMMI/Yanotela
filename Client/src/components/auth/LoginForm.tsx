@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AtIcon, KeyholeIcon, ArrowBarIcon, EyeIcon, EyeCloseIcon } from '@/libs/Icons';
+import { AtIcon, KeyholeIcon, ArrowBarIcon, EyesIcon, EyesCloseIcon } from '@/libs/Icons';
 import GoogleAuthButton from './GoogleAuthButton';
 
 interface LoginFormProps {
@@ -135,9 +135,9 @@ export default function LoginForm({
             aria-label={showPassword ? "Cacher le mot de passe" : "Afficher le mot de passe"}
           >
             {showPassword ? (
-              <EyeCloseIcon className="text-gray-400 hover:text-gray-700" width={16} height={16} />
+              <EyesCloseIcon className="text-gray-400 hover:text-gray-700" width={16} height={16} />
             ) : (
-              <EyeIcon className="text-gray-400 hover:text-gray-700" width={16} height={16} />
+              <EyesIcon className="text-gray-400 hover:text-gray-700" width={16} height={16} />
             )}
           </button>
         </div>
