@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Icon from '@/ui/Icon';
+import { AtIcon, KeyholeIcon, ArrowBarIcon, EyeIcon, EyeCloseIcon } from '@/libs/Icons';
 import GoogleAuthButton from './GoogleAuthButton';
 
 interface LoginFormProps {
@@ -104,7 +104,7 @@ export default function LoginForm({
         )}
         
         <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
-          <Icon name="at" className="text-gray-400" size={20} />
+          <AtIcon className="text-gray-400" width={20} height={20} />
           <input 
             type="text" 
             name="identifiant"
@@ -118,7 +118,7 @@ export default function LoginForm({
         <div data-property-1="MDP" className="w-full p-2.5 bg-clrsecondaire border-primary border-2 rounded-[10px] flex justify-between items-center">
 
           <div className="flex justify-center items-center gap-2.5">
-            <Icon name="keyhole" className="text-gray-400" size={20} />
+            <KeyholeIcon className="text-gray-400" width={20} height={20} />
             <input 
               type={showPassword ? "text" : "password"}
               name="password"
@@ -134,11 +134,11 @@ export default function LoginForm({
             className="w-4 h-4 flex items-center justify-center hover:scale-110 transition-transform"
             aria-label={showPassword ? "Cacher le mot de passe" : "Afficher le mot de passe"}
           >
-            <Icon 
-              name={showPassword ? "eye-close" : "eye"} 
-              className="text-gray-400 hover:text-gray-700" 
-              size={16} 
-            />
+            {showPassword ? (
+              <EyeCloseIcon className="text-gray-400 hover:text-gray-700" width={16} height={16} />
+            ) : (
+              <EyeIcon className="text-gray-400 hover:text-gray-700" width={16} height={16} />
+            )}
           </button>
         </div>
         
@@ -161,7 +161,7 @@ export default function LoginForm({
           <p className="flex-1 text-center justify-center text-white text-xl font-bold font-gant pointer-events-none">
             {isLoading ? 'Connexion...' : 'Se connecter'}
           </p>
-          <Icon name="arrow-barre" className="text-white pointer-events-none" size={40} />
+          <ArrowBarIcon className="text-white pointer-events-none" width={40} height={40} />
         </button>
 
         {/* Séparateur et connexion Google */}
