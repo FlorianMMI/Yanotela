@@ -9,36 +9,39 @@ datasource db {
 }
 
 model User {
-  id            Int          @id @default(autoincrement())
-  pseudo        String       @unique
+  id            Int           @id @default(autoincrement())
+  pseudo        String        @unique
   prenom        String
   password      String
   nom           String
-  email         String       @unique
-  token         String       @unique
-  is_verified   Boolean      @default(false)
+  email         String        @unique
+  token         String        @unique
+  is_verified   Boolean       @default(false)
   deleted_at    DateTime?
-  theme         String       @default("light")
+  theme         String        @default("light")
   folders       Folder[]
   notes         Note[]
-  modifiedNotes Note[]       @relation("NoteModifier")
+  modifiedNotes Note[]        @relation("NoteModifier")
   permissions   Permission[]
+  commentaire   commentaire[]
   noteFolders   NoteFolder[]
 }
 
 model Note {
-  id          String       @id
+  id          String        @id
   Titre       String
   Content     String
-  yjsState    Bytes?
-  tag         String?      // Couleur du tag de la note (optionnel)
   authorId    Int
-  ModifiedAt  DateTime     @default(now())
+  ModifiedAt  DateTime      @default(now())
   modifierId  Int?
   deletedAt   DateTime?
-  author      User         @relation(fields: [authorId], references: [id])
-  modifier    User?        @relation("NoteModifier", fields: [modifierId], references: [id])
+  yjsState    Bytes?
+  tag         String?
+  isPublic    Boolean       @default(false)
+  author      User          @relation(fields: [authorId], references: [id])
+  modifier    User?         @relation("NoteModifier", fields: [modifierId], references: [id])
   permissions Permission[]
+  commentaire commentaire[]
   noteFolder  NoteFolder?
 }
 
@@ -81,3 +84,16 @@ model NoteFolder {
   @@index([userId])
   @@map("note_folder")
 }
+
+model commentaire {
+  id       String   @id
+  text     String
+  date     DateTime @default(now())
+  authorId Int
+  id_note  String
+  User     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  Note     Note     @relation(fields: [id_note], references: [id], onDelete: Cascade)
+}
+
+// Note: Les commentaires sont maintenant gérés via YJS (Y.Array partagé)
+// Voir: Client/src/hooks/useYjsComments.ts
