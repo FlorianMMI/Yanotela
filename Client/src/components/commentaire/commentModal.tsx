@@ -35,8 +35,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         user?.pseudo
     );
 
-    
-
     // Scroll en bas à chaque changement de commentaires
     useEffect(() => {
         if (commentsContainerRef.current) {

@@ -182,7 +182,7 @@ function YjsSyncPlugin({
         const ydoc = yjsDocuments.get(noteId);
 
         if (!ydoc) {
-          console.warn("⚠️ [YjsSync] Y.Doc non trouvé pour", noteId);
+          
           setSyncStatus("error");
           return;
         }
@@ -556,9 +556,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) {
-      console.warn(
-        "🔒 [Permissions] Modification titre bloquée (lecture seule)"
-      );
+      
       return;
     }
 

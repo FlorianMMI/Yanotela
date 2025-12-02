@@ -1,59 +1,61 @@
-import axios from 'axios';
+// import axios from 'axios';
 
-// verifyTurnstile(token) -> boolean
-export async function verifyTurnstile(token) {
-  // In tests you may want to bypass verification. Use an explicit env var to disable.
-  if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV === 'test') {
-    console.warn('Turnstile verification bypassed by TURNSTILE_DISABLED or test env');
-    return true;
-  }
+// // Middleware Turnstile pour vérifier les CAPTCHA Cloudflare
+// // Utilisé pour protéger les routes d'authentification contre les bots
+// // verifyTurnstile(token) -> boolean
+// export async function verifyTurnstile(token) {
+//   // In tests you may want to bypass verification. Use an explicit env var to disable.
+//   if (process.env.TURNSTILE_DISABLED === '1' || process.env.NODE_ENV === 'test') {
 
-  if (!token) return false;
+//     return true;
+//   }
 
-  try {
-    // Cloudflare expects form-encoded POST with 'secret' and 'response'
-    const params = new URLSearchParams();
-    params.append('secret', process.env.TURNSTILE_SECRET_KEY || '');
-    params.append('response', token);
+//   if (!token) return false;
 
-    const resp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', params.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      timeout: 5000,
-    });
+//   try {
+//     // Cloudflare expects form-encoded POST with 'secret' and 'response'
+//     const params = new URLSearchParams();
+//     params.append('secret', process.env.TURNSTILE_SECRET_KEY || '');
+//     params.append('response', token);
 
-    return !!(resp?.data?.success);
-  } catch (err) {
-    console.error('Turnstile verify error:', err?.response?.data || err.message || err);
-    return false;
-  }
-}
+//     const resp = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', params.toString(), {
+//       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+//       timeout: 5000,
+//     });
 
-// Express middleware factory: reads token from `req.body[field]` or header `x-cf-turnstile-response`
-export function requireTurnstile(fieldName = 'cf-turnstile-response') {
-  return async function (req, res, next) {
-    try {
-      const token = (req.body && req.body[fieldName]) || req.headers['x-cf-turnstile-response'];
-      const ok = await verifyTurnstile(token);
-          if (!ok) {
-        // If the client expects JSON (AJAX/API), send JSON error.
-        const accepts = (req.headers.accept || '').toString();
-        const isAjax = req.xhr || (req.headers['x-requested-with'] === 'XMLHttpRequest');
-        const wantsJson = isAjax || accepts.indexOf('application/json') !== -1 || (req.headers['content-type'] || '').indexOf('application/json') !== -1;
+//     // Debug log - à supprimer après résolution
 
-        if (wantsJson) {
-          return res.status(403).json({ error: 'CAPTCHA requis' });
-        }
+//     return !!(resp?.data?.success);
+//   } catch (err) {
+//     console.error('Turnstile verify error:', err?.response?.data || err.message || err);
+//     return false;
+//   }
+// }
 
-        // For normal form submissions (browser POST), redirect back to the referer (or to /login)
-        // Use 303 See Other so browsers will perform a GET to the redirect target.
-        const referer = req.get('referer') || '/login';
-        const sep = referer.includes('?') ? '&' : '?';
-        return;
-      }
-      return next();
-    } catch (err) {
-      console.error('Turnstile middleware error:', err);
-      return res.status(500).json({ error: 'CAPTCHA verification failed' });
-    }
-  };
-}
+// // Express middleware factory: reads token from `req.body[field]` or header `x-cf-turnstile-response`
+// // Utilisé dans les routes d'authentification pour valider le CAPTCHA avant traitement
+// export function requireTurnstile(fieldName = 'cf-turnstile-response') {
+//   return async function (req, res, next) {
+//     try {
+//       const token = (req.body && req.body[fieldName]) || req.headers['x-cf-turnstile-response'];
+//       const ok = await verifyTurnstile(token);
+//       if (!ok) {
+//         // If the client expects JSON (AJAX/API), send JSON error.
+//         const accepts = (req.headers.accept || '').toString();
+//         const isAjax = req.xhr || (req.headers['x-requested-with'] === 'XMLHttpRequest');
+//         const wantsJson = isAjax || accepts.indexOf('application/json') !== -1 || (req.headers['content-type'] || '').indexOf('application/json') !== -1;
+//         if (wantsJson) {
+//           return res.status(403).json({ error: 'Veuillez patienter quelques secondes, vérification de sécurité en cours...' });
+//         }
+//         // For non-JSON requests, redirect back with error
+//         const referer = req.get('referer') || '/login';
+//         const sep = referer.includes('?') ? '&' : '?';
+//         return res.redirect(303, `${referer}${sep}error=captcha_required`);
+//       }
+//       return next();
+//     } catch (err) {
+//       console.error('Turnstile middleware error:', err);
+//       return res.status(500).json({ error: 'Veuillez patienter quelques secondes, vérification de sécurité en cours...' });
+//     }
+//   };
+// }

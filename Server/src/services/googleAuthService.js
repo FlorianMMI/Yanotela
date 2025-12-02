@@ -76,7 +76,7 @@ class GoogleAuthService {
     }
     
     if (!process.env.GOOGLE_REDIRECT_URI) {
-      console.warn('GOOGLE_REDIRECT_URI non défini, utilisation de l\'URL par défaut');
+      
     }
 
     if (errors.length > 0) {

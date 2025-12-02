@@ -41,7 +41,7 @@ async function testTransporter() {
 // Test SMTP en arrière-plan (non bloquant pour le démarrage du serveur)
 setTimeout(() => {
   testTransporter().catch(error => {
-    console.warn('⚠️  SMTP test failed, but server continues:', error.message);
+    
   });
 }, 1000);
 

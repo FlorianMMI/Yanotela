@@ -17,10 +17,11 @@ export default function RegisterFormPage() {
   };
 
   return (
-    <div className=" flex items-center justify-center p-4">
-      <MobileFlashNoteButton />
-      
-      <div className="w-full max-w-lg space-y-8">
+    <div className="min-h-screen py-8 px-4 overflow-y-auto">
+      <div className="flex items-center justify-center">
+        <MobileFlashNoteButton />
+        
+        <div className="w-full max-w-lg space-y-6">
         {/* Header */}
         <div className="text-center">
           <div className="w-full flex items-center justify-center relative">
@@ -38,7 +39,7 @@ export default function RegisterFormPage() {
         </div>
 
         {/* Register Form */}
-        <div className="bg-clrsecondaire p-8 rounded-xl shadow-lg">
+        <div className="bg-clrsecondaire p-6 md:p-8 rounded-xl shadow-lg">
           <RegisterFormComponent
             onSuccess={handleRegisterSuccess}
             showTitle={false}
@@ -47,6 +48,7 @@ export default function RegisterFormPage() {
           />
         </div>
 
+        </div>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ import ConfirmPassword from '@/ui/confirm-password';
 import { Register } from '@/loader/loader';
 import FormMessage from '@/ui/form/FormMessage';
 import GoogleAuthButton from './GoogleAuthButton';
-import Turnstile from './Turnstile';
+// import Turnstile from './Turnstile';
 import { ArrowBarIcon } from '@/libs/Icons';
 
 interface RegisterFormProps {
@@ -155,11 +155,11 @@ export default function RegisterForm({
 
   // Version complète pour les pages dédiées
   return (
-    <div className={`${className} ${!isInSidebar ? 'h-full p-2.5 pb-5 flex flex-col items-center font-geo gap-8 relative text-clrprincipal' : 'space-y-4'}`}>
+    <div className={`${className} ${!isInSidebar ? 'flex flex-col items-center font-geo gap-4 relative text-clrprincipal' : 'space-y-4'}`}>
       
       {showTitle && (
-        <p className={`${isInSidebar ? 'text-2xl' : 'text-3xl'} font-bold text-primary mb-6 ${
-          !isInSidebar ? 'text-center after:content-[\'\'] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-8' : ''
+        <p className={`${isInSidebar ? 'text-2xl' : 'text-3xl'} font-bold text-primary mb-4 ${
+          !isInSidebar ? 'text-center after:content-[\'\'] after:block after:w-full after:h-1 after:bg-primary after:rounded after:mt-6' : ''
         }`}>
           {isInSidebar ? 'Créer un compte' : 'Bienvenue à bord'}
         </p>
@@ -167,13 +167,13 @@ export default function RegisterForm({
 
       <form
         onSubmit={handleSubmit}
-        className={`${isInSidebar ? 'space-y-4' : 'flex flex-col justify-start w-full items-center gap-5'}`}
+        className={`${isInSidebar ? 'space-y-4' : 'flex flex-col justify-start w-full items-center gap-4'}`}
       >
         <FormMessage type="error" message={error} />
         <FormMessage type="success" message={success} />
 
         {/* Champs du formulaire */}
-        <div className={`w-full flex flex-col justify-start items-start ${isInSidebar ? 'space-y-4' : 'gap-5'}`}>
+        <div className={`w-full flex flex-col justify-start items-start ${isInSidebar ? 'space-y-4' : 'gap-3'}`}>
 
           {/* Pseudo */}
           <div className={`${isInSidebar ? 'w-full' : 'flex w-full justify-between items-center gap-5'}`}>
@@ -275,9 +275,7 @@ export default function RegisterForm({
         </label>
 
         {/* Turnstile widget (no-op in non-prod) */}
-        <div className="mb-3 w-full">
-            <Turnstile />
-        </div>
+            {/* <Turnstile /> */}
 
         <button
           type="submit"

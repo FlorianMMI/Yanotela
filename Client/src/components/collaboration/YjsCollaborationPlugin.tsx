@@ -53,7 +53,7 @@ export function YjsCollaborationPlugin({
    */
   useEffect(() => {
     if (!editor || !ytext) {
-      console.warn('[YjsCollaborationPlugin] Editor ou ytext manquant');
+      
       return;
     }
 
@@ -74,7 +74,7 @@ export function YjsCollaborationPlugin({
         
         // Vérifier que c'est un EditorState valide
         if (!parsedState.root || parsedState.root.type !== 'root') {
-          console.warn('[YjsCollaborationPlugin] ⚠️ État Yjs invalide, ignoré');
+          
           return;
         }
 
@@ -132,7 +132,7 @@ export function YjsCollaborationPlugin({
                   
                 }
               } catch (err) {
-                console.warn('[YjsCollaborationPlugin] ⚠️ Impossible de restaurer la sélection exacte:', err);
+                
                 // Fallback: juste restaurer le focus sans position précise
               }
             }, {
@@ -142,7 +142,7 @@ export function YjsCollaborationPlugin({
           });
         }
       } catch (err) {
-        console.warn('[YjsCollaborationPlugin] Erreur parsing Yjs content:', err);
+        
       }
     };
 
@@ -164,7 +164,7 @@ export function YjsCollaborationPlugin({
           });
         }
       } catch (err) {
-        console.warn('[YjsCollaborationPlugin] Erreur parsing état initial:', err);
+        
       }
     }
 
