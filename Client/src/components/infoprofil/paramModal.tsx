@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { CloseIcon, TrashIcon} from '@/libs/Icons';
+import { CloseIcon, TrashIcon, NotificationsIcon} from '@/libs/Icons';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
 import ThemeSelector from '../theme/ThemeSelector';
 import PWAInstallButton from '@/ui/PWAInstallbutton';
+import NotificationPage from '../notification/notification';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -79,6 +80,11 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 }}
                 className="fixed top-0 left-0 w-full md:w-[35%] h-full bg-background shadow-lg z-100"
             >
+
+
+
+
+                
                 <div className='flex flex-col h-full w-full p-2 relative'>
 
                     {/* Close button */}
@@ -89,8 +95,12 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                         <CloseIcon width={35} height={35} className="absolute top-4 right-4 cursor-pointer text-clrprincipal hover:text-color-primary-hover transition-all duration-300" />
                     </div>
                     {/* Contenu du modal */}
-                    <div className='flex flex-col justify-end h-full w-fill p-2 relative mt-10'>
+                    <div className='flex flex-col h-full w-fill p-2 relative mt-10 justify-between'>
+
+                    <NotificationPage />
+
                     {/* Selectionner un theme  */}
+                    <div>
                     <ThemeSelector />
 
                     <section className="flex flex-col gap-4">
@@ -99,6 +109,8 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                         <div className="">
                             <PWAInstallButton />
                         </div>
+
+                        
 
                         <hr className="border-t border-primary w-full" />
 
@@ -123,6 +135,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                     </section>
                     {/* Autres paramètres peuvent être ajoutés ici */}
                     </div>
+                </div>
 
                 </div>
             </motion.div>
