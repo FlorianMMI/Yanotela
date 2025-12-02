@@ -3,12 +3,13 @@ import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/n
 import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
-import { ArrowBarIcon, DuplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
+import { ArrowBarIcon, ExitIcon, DuplicateIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
+import NoteButton from '@/ui/note-modal/note-button';
 
 interface NoteMoreProps {
     noteId: string;
     onClose: () => void;
-    onNoteUpdated?: () => void; // Callback pour rafraîchir la liste
+    onNoteUpdated?: (updatedNote?: any) => void; // Callback pour rafraîchir la liste (peut recevoir la note mise à jour)
 }
 
 type ModalView = "menu" | "share" | "info" | "folder" | "tag" | "delete" | "leave";
@@ -111,15 +112,6 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
         try {
             const result = await DuplicateNote(noteId);
             if (result.success) {
-                // Appeler le callback pour rafraîchir la liste
-                if (onNoteUpdated) {
-                    onNoteUpdated();
-                }
-                // Fermer le modal
-                onClose();
-                // Déclencher un événement pour rafraîchir l'authentification/liste
-                window.dispatchEvent(new Event('auth-refresh'));
-                // Rediriger vers la nouvelle note si une URL est fournie
                 if (result.redirectUrl) {
                     router.push(result.redirectUrl);
                 }
@@ -154,8 +146,24 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                 return <NoteShareUI noteId={noteId} onShareSuccess={onNoteUpdated} />;
             case "info":
                 return <NoteInfoUI noteId={noteId} />;
-            case "folder":
-                return <NoteFolderUI noteId={noteId} onFolderChange={onNoteUpdated} />;
+                case "folder":
+                    return (
+                        <NoteFolderUI
+                            noteId={noteId}
+                            onFolderChange={async () => {
+                                // After folder change, fetch the updated note and pass it to parent
+                                try {
+                                    if (onNoteUpdated) {
+                                        const updated = await GetNoteById(noteId);
+                                        onNoteUpdated(updated);
+                                    }
+                                } catch (err) {
+                                    // If fetching fails, still notify parent with no payload
+                                    if (onNoteUpdated) onNoteUpdated();
+                                }
+                            }}
+                        />
+                    );
             case "tag":
                 return <TagNote noteId={noteId} currentTag={noteTag} onTagUpdated={onNoteUpdated} />;
             case "delete":
@@ -163,61 +171,18 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                 return null; // Le modal sera rendu en dehors du contenu
             default:
                 return (
-                    <div className="flex overflow-y-auto p-3  md:p-4 max-h-[30vh] ">
-                        <div className="flex flex-col gap-1 py-2">
-                            <button
-                                className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium transition-colors"
-                                onClick={() => setCurrentView("folder")}
-                            >
-                                <FolderIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
-                                Dossiers
-                            </button>
-                            <button
-                                className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
-                                onClick={() => setCurrentView("tag")}
-                            >
-                                <PaletteIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
-                                Tag couleur
-                            </button>
-                            <button
-                                className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
-                                onClick={() => setCurrentView("share")}
-                            >
-                                <PartageIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
-                                Partager la note
-                            </button>
-                            <button
-                                className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
-                                onClick={() => setCurrentView("info")}
-                            >
-                                <InfoIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
-                                Infos de la note
-                            </button>
-                            <button
-                                className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-primary hover:bg-deskbackground cursor-pointer hover:text-primary-hover w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors"
-                                onClick={handleDuplicateNote}
-                            >
-                                <DuplicateIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
-                                Dupliquer la note
-                            </button>
-
-                            {/* Afficher "Quitter la note" pour les éditeurs (2) et lecteurs (3), "Supprimer" pour Owner (0) et Admin (1) */}
-                            {userRole === 2 || userRole === 3 ? (
-                                <button
-                                    className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-dangerous-800 hover:bg-red-50 cursor-pointer w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
-                                    onClick={() => setCurrentView("leave")}
-                                >
-                                    <ExitIcon width={18} height={18} className="text-dangerous-800 rotate-180 md:w-[22px] md:h-[22px]" />
-                                    Quitter la note
-                                </button>
+                    <div className="w-52 md:w-64">
+                        <div className="flex flex-col gap-1 p-2">
+                            <NoteButton Icon={FolderIcon} Title="Dossiers" modal="folder" setCurrentView={setCurrentView} borderTop={false} />
+                            <NoteButton Icon={PaletteIcon} Title="Tag couleur" modal="tag" setCurrentView={setCurrentView} />
+                            <NoteButton Icon={PartageIcon} Title="Partager la note" modal="share" setCurrentView={setCurrentView} />
+                            <NoteButton Icon={InfoIcon} Title="Infos de la note" modal="info" setCurrentView={setCurrentView} />
+                            <NoteButton Icon={DuplicateIcon} Title="Dupliquer la note" onClick={handleDuplicateNote} />
+                            {/*  "Supprimer" pour Owner uniquement (0) / Quitter pour les autres */}
+                            {userRole !== 0 ? (
+                            <NoteButton Icon={ExitIcon} delete Title="Quitter la note" modal="leave" setCurrentView={setCurrentView} />
                             ) : (
-                                <button
-                                    className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3 text-dangerous-800 hover:bg-red-50 cursor-pointer w-full text-left text-sm md:text-base font-medium border-t border-gray-100 transition-colors rounded-lg mt-2"
-                                    onClick={() => setCurrentView("delete")}
-                                >
-                                    <TrashIcon width={18} height={18} className="text-dangerous-800 md:w-[22px] md:h-[22px]" />
-                                    Supprimer la note
-                                </button>
+                            <NoteButton Icon={TrashIcon} delete Title="Supprimer la note" modal="delete" setCurrentView={setCurrentView} />
                             )}
 
                         </div>
@@ -249,14 +214,14 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     className="bg-white rounded-xl w-52 md:w-64 shadow-lg overflow-hidden relative h-auto flex flex-col"
                 >
                     
-                    <div className="p-3 md:p-4 pb-2 border-b border-element flex items-center">
+                    <div className="p-2 gap-2 border-b border-element flex items-center">
                         {currentView !== "menu" && (
                             <button
-                                className="mr-2 p-1 rounded hover:bg-deskbackground transition-colors"
+                                className="rounded hover:bg-deskbackground transition-colors"
                                 onClick={() => setCurrentView("menu")}
                                 aria-label="Retour"
                             >
-                                <ArrowBarIcon width={18} height={18} className="text-primary md:w-[22px] md:h-[22px]" />
+                                <ArrowBarIcon width={18} height={18} className="text-primary rotate-180" />
                             </button>
                         )}
                         <h3 className="text-base md:text-lg font-semibold text-foreground">{getModalTitle()}</h3>
