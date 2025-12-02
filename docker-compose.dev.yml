@@ -46,8 +46,8 @@ services:
       - CLIENT_URL=http://localhost:3000
       - SESSION_SECRET=local_session_secret_dev_only
       - MAIL_SERVICE=gmail
-      - GMAIL_USER={mail}
-      - GMAIL_APP_PASSWORD={mdp}
+      - GMAIL_USER=noreply.yanotela@gmail.com
+      - GMAIL_APP_PASSWORD=mlmx lguv vdbm eyac
     volumes:
       # Mount source code for hot reload
       - ./Server/src:/app/src
@@ -109,6 +109,7 @@ services:
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - INTERNAL_API_URL=http://backend:3001
     volumes:
       # Mount source code for hot reload
       - ./Client/src:/app/src
