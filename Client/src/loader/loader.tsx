@@ -12,8 +12,6 @@ function getApiUrl() {
     return apiUrl;
 }
 
-
-
 /**
  * Vérifie si la réponse est un 401 et déclenche la redirection si nécessaire
  * @returns true si la réponse est OK ou non-401, false si 401 (redirection déclenchée)
@@ -618,7 +616,6 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
 
         const payload: any = { email };
 
-
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
             headers: {
@@ -646,7 +643,6 @@ export async function ResetPassword(token: string, password: string): Promise<Au
         
         const apiUrl = getApiUrl();
         const payload: any = { password, token };
-
 
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',

@@ -274,7 +274,6 @@ export default function RegisterForm({
           </span>
         </label>
 
-
         <button
           type="submit"
           className={`w-full p-2.5 rounded-[10px] flex justify-between items-center overflow-hidden transition-all duration-300 ${

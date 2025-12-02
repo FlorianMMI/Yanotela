@@ -305,9 +305,9 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
     }, [applyStyleText]);
 
     const handleBackgroundColorChange = useCallback((color: string) => {
-        console.log("Selected background color:", color);
+        
         if (color == '#ffffff' || color == '#FFFFFF') {
-            console.log("Resetting background color to none for white");
+            
             setBackgroundColor('#727272');
             applyStyleText({ 'background-color': color });
         }
