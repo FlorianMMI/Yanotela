@@ -11,9 +11,11 @@ export default function Register() {
   const router = useRouter();
 
   return (
-    <div className="p-2.5 flex flex-col justify-between items-center font-geo gap-8 text-clrprincipal md:">
+    <div className="min-h-screen py-8 px-4 flex flex-col justify-center items-center font-geo gap-8 text-clrprincipal">
       <MobileFlashNoteButton />
-      <ReturnButton />
+      <div className="absolute top-4 left-4">
+        <ReturnButton />
+      </div>
 
       <div className="flex flex-col justify-center items-center gap-6 mt-4">
         <p

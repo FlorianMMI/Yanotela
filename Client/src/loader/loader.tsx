@@ -4,17 +4,15 @@ import { Permission } from '@/type/Permission';
 import { checkAuthResponse } from '@/utils/authFetch';
 
 function getApiUrl() {
-    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-    if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
-    return '';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+        console.error('❌ NEXT_PUBLIC_API_URL is not configured');
+        return '';
+    }
+    return apiUrl;
 }
 
-function getTurnstileToken() {
-    // if (typeof window === 'undefined') return undefined;
-    // const el = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
-    // return el?.value;
-    return undefined; // Turnstile désactivé
-}
+
 
 /**
  * Vérifie si la réponse est un 401 et déclenche la redirection si nécessaire
@@ -521,9 +519,8 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
     try {
         
         const apiUrl = getApiUrl();
-        // const token = getTurnstileToken();
+
         const body = { ...credentials } as any;
-        // if (token) body['cf-turnstile-response'] = token;
 
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
@@ -572,10 +569,7 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
-        // const token = getTurnstileToken();
         const payload = { ...userData } as any;
-        // if (token) payload['cf-turnstile-response'] = token;
-
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
             headers: {
@@ -621,9 +615,9 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
-        // const token = getTurnstileToken();
+
         const payload: any = { email };
-        // if (token) payload['cf-turnstile-response'] = token;
+
 
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
@@ -651,9 +645,8 @@ export async function ResetPassword(token: string, password: string): Promise<Au
     try {
         
         const apiUrl = getApiUrl();
-        // const tokenVal = getTurnstileToken();
         const payload: any = { password, token };
-        // if (tokenVal) payload['cf-turnstile-response'] = tokenVal;
+
 
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
@@ -1201,7 +1194,6 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
         const data = await response.json();
         return { 
             folder: data.folder, 
-            redirectUrl: `/dossiers/${data.folder.id}` 
         };
     } catch (error) {
         console.error("Error creating folder:", error);
@@ -1411,4 +1403,3 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
-

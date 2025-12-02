@@ -9,7 +9,7 @@ import { KebabIcon, ShareIcon, PublicIcon } from '@/libs/Icons';
 
 interface NoteProps {
   note: NoteType;
-  onNoteUpdated?: () => void; // Callback pour rafraîchir la liste après modification/suppression
+  onNoteUpdated?: (updatedNote?: NoteType) => void; // Callback pour rafraîchir la liste (peut recevoir la note mise à jour)
   searchTerm?: string; // Terme de recherche pour surlignage
   searchMode?: SearchMode; // Mode de recherche
 }
@@ -83,7 +83,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
           x = window.innerWidth - modalWidth - 16;
         }
         if (y + modalHeight > window.innerHeight) {
-          y = rect.bottom - 200;
+          y = rect.bottom - 400;
         }
       }
 
@@ -251,7 +251,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
       style={{ backgroundColor: note.tag || 'var(--primary)' }}>
 
         {/* Note Title */}
-        <h3
+          <h3
           className="font-geologica text-xs md:text-base text-white pl-2 h-fit w-full align-middle truncate flex-1"
           title={note.Titre}
         >
@@ -341,13 +341,10 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
             <NoteMore 
               noteId={note.id} 
               onClose={handleCloseModal}
-              onNoteUpdated={() => {
-                // Appeler le callback parent pour rafraîchir la liste
+              onNoteUpdated={(updatedNote) => {
                 if (onNoteUpdated) {
-                  onNoteUpdated();
+                  onNoteUpdated(updatedNote);
                 }
-                // Déclencher un événement pour rafraîchir la liste des notes
-                window.dispatchEvent(new Event('auth-refresh'));
               }}
             />
           </div>
