@@ -4,9 +4,12 @@ import { Permission } from '@/type/Permission';
 import { checkAuthResponse } from '@/utils/authFetch';
 
 function getApiUrl() {
-    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-    if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
-    return '';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+        console.error('❌ NEXT_PUBLIC_API_URL is not configured');
+        return '';
+    }
+    return apiUrl;
 }
 
 function getTurnstileToken() {
@@ -1411,4 +1414,3 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
-
