@@ -19,7 +19,7 @@ export default function TotalNotes({ totalNotes }: TotalNotesProps) {
 
     return (
         <button 
-            className='flex flex-col items-center justify-center p-6 m-1 bg-clrsecondaire rounded-xl shadow-md w-fit h-fit border border-clrsecondaire hover:bg-dangerous-100 hover:border-dangerous-500 transition-all cursor-pointer group focus:outline-none focus:ring-2 focus:ring-dangerous-500' 
+            className='flex flex-col items-center justify-center p-6 m-1 bg-clrsecondaire rounded-xl shadow-md w-[180px] h-fit border border-clrsecondaire hover:bg-amber-100 hover:border-amber-500 transition-all cursor-pointer group focus:outline-none focus:ring-2 focus:ring-amber-500' 
             onClick={redirectToNotes} 
             title='Voir toutes mes notes'
             aria-label='Voir toutes mes notes'
