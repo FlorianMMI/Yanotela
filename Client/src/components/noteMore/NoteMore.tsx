@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import Icons from "@/libs/Icons";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
 import TagNote from "@/ui/note-modal/note-tag";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";

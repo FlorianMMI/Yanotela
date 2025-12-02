@@ -65,15 +65,15 @@ export default function Notification({
     return (
         <>
             <div className={
-                `relative after:content-[''] after:block after:absolute after:left-0 after:bottom-0 after:w-full after:border-b after:border-b-gray-300 hover:after:border-b-[#882626] transition-all duration-200 ease-in-out rounded-md hover:bg-white/5 hover:shadow-md hover:scale-[1.01] cursor-pointer ` +
-                (variant === 'row' ? 'flex flex-row items-center gap-3 p-2' : 'flex flex-col p-2')
+                `relative w-full after:content-[''] after:block after:absolute after:left-0 after:bottom-0 after:w-full after:border-b after:border-b-gray-300 hover:after:border-b-[#882626] transition-all duration-200 ease-in-out rounded-md hover:bg-white/5 hover:shadow-md hover:scale-[1.01] cursor-pointer p-3 ` +
+                (variant === 'row' ? 'flex flex-row items-start gap-3' : 'flex flex-col gap-3')
             }>
-                <div className={variant === 'row' ? 'flex-1 min-w-0' : ''}>
-                    <h3 className={`font-bold text-primary ${variant === 'row' ? 'truncate' : ''}`}>{title}</h3>
-                    <p className={`text-gray-500 text-sm ${variant === 'row' ? 'truncate' : ''}`}><span className="font-bold">{author}</span> vous a invité à rejoindre cette note</p>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                    <h3 className="font-bold text-primary break-words line-clamp-2">{title}</h3>
+                    <p className="text-gray-500 text-sm break-words"><span className="font-bold">{author}</span> vous a invité à rejoindre cette note</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <button onClick={handleUpdateNotification} className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-success-500" aria-label="Accepter la notification"><CheckIcon width={20} height={20} className=" text-success-500"/></button>
                     <button onClick={handleRefuseNotification} className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-dangerous-500" aria-label="Refuser la notification"><CloseIcon width={20} height={20} className=" text-dangerous-500"/></button>
                 </div>

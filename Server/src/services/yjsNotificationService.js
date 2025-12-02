@@ -6,8 +6,11 @@
  * 
  * Architecture :
  * - Stockage en mémoire : Map<userId, notifications[]>
- * - Diffusion via YJS Awareness (WebSocket)
+ * - Diffusion via YJS Awareness (WebSocket) - LE BACKEND ENVOIE AU SERVEUR YJS
  * - Auto-nettoyage après 24h
+ * 
+ * IMPORTANT: Le backend et le serveur YJS sont dans des conteneurs Docker séparés.
+ * Le backend utilise yjsBroadcastClient.js pour envoyer les notifications au serveur YJS.
  * 
  * Types de notifications supportés :
  * - REMOVED : Exclusion d'une note partagée
@@ -24,18 +27,34 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { sendNotificationToUser, broadcastNotificationToUsers } from "./yjsBroadcastClient.js";
 
 const prisma = new PrismaClient();
 
 /**
  * Types de notifications disponibles
+ * 
+ * NOTE_DELETED_ADMIN : Votre note a été supprimée (vous êtes admin/propriétaire)
+ * NOTE_DELETED_MEMBER : La note a été supprimée (vous êtes simple membre)
+ * REMOVED : Vous avez été exclu d'une note
+ * SOMEONE_INVITED : Quelqu'un a invité un utilisateur sur votre note
+ * ROLE_CHANGED : Votre rôle a été modifié
+ * COLLABORATOR_REMOVED : Un collaborateur a été exclu (pour les admins)
+ * USER_LEFT : Un utilisateur a quitté votre note (pour les admins)
+ * COMMENT_ADDED : Un commentaire a été ajouté (désactivé sur notes publiques)
  */
 export const NotificationType = {
   INVITATION: 'INVITATION',
   REMOVED: 'REMOVED',
-  NOTE_DELETED: 'NOTE_DELETED',
+  NOTE_DELETED: 'NOTE_DELETED', // Legacy, gardé pour compatibilité
+  NOTE_DELETED_ADMIN: 'NOTE_DELETED_ADMIN',
+  NOTE_DELETED_MEMBER: 'NOTE_DELETED_MEMBER',
   USER_ADDED: 'USER_ADDED',
   ROLE_CHANGED: 'ROLE_CHANGED',
+  SOMEONE_INVITED: 'SOMEONE_INVITED',
+  COLLABORATOR_REMOVED: 'COLLABORATOR_REMOVED',
+  USER_LEFT: 'USER_LEFT',
+  COMMENT_ADDED: 'COMMENT_ADDED',
 };
 
 /**
@@ -116,10 +135,11 @@ export function unregisterNotificationRoom(userId) {
 }
 
 /**
- * Crée une notification et la diffuse via YJS Awareness
+ * Crée une notification et la diffuse via le serveur YJS WebSocket
+ * Utilise le client WebSocket pour communiquer avec le serveur YJS séparé
  * @private
  */
-function createNotification(type, userId, data) {
+async function createAndBroadcastNotification(type, userId, data) {
   const notification = {
     id: `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     type,
@@ -129,7 +149,7 @@ function createNotification(type, userId, data) {
     ...data,
   };
 
-  // Stocker en mémoire
+  // Stocker en mémoire (pour référence/debug)
   if (!pendingNotifications.has(userId)) {
     pendingNotifications.set(userId, []);
   }
@@ -140,67 +160,27 @@ function createNotification(type, userId, data) {
     deleteNotification(userId, notification.id);
   }, 24 * 60 * 60 * 1000);
 
-  // Diffuser via YJS Awareness sur tous les providers actifs
-  broadcastNotificationViaAwareness(notification);
-
-  console.log(`✅ [YJS NOTIF] ${type} créée pour user=${userId}`);
+  // ✅ ENVOYER AU SERVEUR YJS VIA WEBSOCKET
+  const sent = await sendNotificationToUser(userId, notification);
+  
+  console.log(`✅ [YJS NOTIF] ${type} créée pour user=${userId}, envoyée au serveur YJS=${sent}`);
   return notification;
 }
 
 /**
- * Diffuse une notification via YJS Awareness
+ * Crée une notification et la diffuse via YJS Awareness
+ * @deprecated Utiliser createAndBroadcastNotification à la place
  * @private
  */
-function broadcastNotificationViaAwareness(notification) {
-  // Parcourir tous les providers actifs et diffuser la notification
-  yjsProviders.forEach((provider) => {
-    const awareness = provider.awareness;
-    
-    // Récupérer l'état local actuel
-    const localState = awareness.getLocalState() || {};
-    
-    // Ajouter/mettre à jour les notifications dans l'awareness
-    const notifications = localState.notifications || [];
-    notifications.push(notification);
-    
-    // Mettre à jour l'awareness (broadcast automatique)
-    awareness.setLocalStateField('notifications', notifications);
-  });
-
-  console.log(`📡 [YJS NOTIF] Broadcast via Awareness pour ${yjsProviders.size} providers`);
+function createNotification(type, userId, data) {
+  // Rediriger vers la nouvelle fonction (async)
+  return createAndBroadcastNotification(type, userId, data);
 }
 
-/**
- * Diffuse une notification directement à un utilisateur via sa room de notifications
- * C'est la méthode PRINCIPALE pour envoyer des notifications temps réel
- * 
- * @param {number} userId - ID de l'utilisateur cible
- * @param {object} notification - Notification à envoyer
- * @returns {boolean} true si envoyé, false si l'utilisateur n'est pas connecté
- */
-function broadcastNotificationToUser(userId, notification) {
-  const room = notificationRooms.get(userId);
-  
-  if (!room) {
-    console.log(`⚠️ [YJS NOTIF] Utilisateur ${userId} non connecté, notification stockée en mémoire`);
-    return false;
-  }
-
-  const { awareness } = room;
-  
-  // Récupérer l'état local actuel du serveur dans cette room
-  const localState = awareness.getLocalState() || {};
-  const notifications = localState.notifications || [];
-  
-  // Ajouter la notification
-  notifications.push(notification);
-  
-  // Mettre à jour l'awareness (broadcast automatique à tous les clients de cette room)
-  awareness.setLocalStateField('notifications', notifications);
-  
-  console.log(`📡 [YJS NOTIF] Notification envoyée à userId=${userId} via room de notifications`);
-  return true;
-}
+// NOTE: Les fonctions broadcastNotificationViaAwareness et broadcastNotificationToUser
+// ont été supprimées car elles ne fonctionnent pas quand le backend et le serveur YJS
+// sont dans des conteneurs Docker séparés. On utilise maintenant yjsBroadcastClient.js
+// qui envoie les notifications au serveur YJS via WebSocket.
 
 /**
  * 🔔 Notifie un utilisateur qu'il a été exclu d'une note
@@ -269,48 +249,52 @@ export async function notifyInvitation(userId, noteId, noteTitle, role, actorPse
     deleteNotification(userId, notification.id);
   }, 7 * 24 * 60 * 60 * 1000);
 
-  // Envoyer en temps réel via la room de notifications de l'utilisateur
-  const sent = broadcastNotificationToUser(userId, notification);
+  // ✅ ENVOYER AU SERVEUR YJS VIA WEBSOCKET (même pattern que les autres notifications)
+  const sent = await sendNotificationToUser(userId, notification);
   
-  // Si l'utilisateur n'est pas connecté, aussi broadcaster via les providers de notes
-  // (au cas où il serait sur une autre note)
-  if (!sent) {
-    broadcastNotificationViaAwareness(notification);
-  }
-
+  console.log(`✅ [YJS NOTIF] INVITATION envoyée au serveur YJS pour user=${userId}, sent=${sent}`);
   return notification;
 }
 
 /**
  * 🔔 Notifie tous les collaborateurs qu'une note a été supprimée
+ * Distingue les admins (NOTE_DELETED_ADMIN) des simples membres (NOTE_DELETED_MEMBER)
  * 
  * @param {string} noteId - ID de la note supprimée
  * @param {string} noteTitle - Titre de la note
  * @param {number} actorUserId - ID de l'utilisateur qui a supprimé (à exclure des notifications)
+ * @param {string} actorPseudo - Pseudo de l'utilisateur qui a supprimé
  * 
  * @example
  * // Dans noteController.js (deleteNote)
- * await notifyNoteDeleted(noteId, note.Titre, req.session.userId);
+ * const actor = await prisma.user.findUnique({ where: { id: userId }, select: { pseudo: true } });
+ * await notifyNoteDeleted(noteId, note.Titre, userId, actor?.pseudo || "Un utilisateur");
  */
-export async function notifyNoteDeleted(noteId, noteTitle, actorUserId) {
-  console.log(`🔔 [NOTIF] Note supprimée: "${noteTitle}"`);
+export async function notifyNoteDeleted(noteId, noteTitle, actorUserId, actorPseudo = 'Un utilisateur') {
+  console.log(`🔔 [NOTIF] Note supprimée: "${noteTitle}" par ${actorPseudo}`);
 
   try {
-    // Récupérer tous les collaborateurs (sauf celui qui a supprimé)
+    // Récupérer tous les collaborateurs avec leur rôle (sauf celui qui a supprimé)
     const permissions = await prisma.permission.findMany({
       where: { 
         noteId,
         userId: { not: actorUserId }
       },
-      select: { userId: true },
+      select: { userId: true, role: true },
     });
 
     // Créer une notification pour chaque collaborateur
     const notifications = [];
     for (const perm of permissions) {
-      const notif = createNotification(NotificationType.NOTE_DELETED, perm.userId, {
+      // Admins (rôle 0-1) reçoivent NOTE_DELETED_ADMIN, les autres NOTE_DELETED_MEMBER
+      const notifType = perm.role <= 1 
+        ? NotificationType.NOTE_DELETED_ADMIN 
+        : NotificationType.NOTE_DELETED_MEMBER;
+      
+      const notif = createNotification(notifType, perm.userId, {
         noteId,
         noteTitle,
+        actorPseudo,
       });
       notifications.push(notif);
     }
@@ -386,6 +370,216 @@ export async function notifyRoleChanged(userId, noteId, noteTitle, oldRole, newR
     roleLabel,
     isPromotion,
   });
+}
+
+/**
+ * 🔔 Notifie les admins/propriétaires qu'un utilisateur a été invité sur leur note
+ * (Seulement pour les invitations "directes", pas via lien public)
+ * 
+ * @param {string} noteId - ID de la note
+ * @param {string} noteTitle - Titre de la note
+ * @param {string} invitedUserPseudo - Pseudo de l'utilisateur invité
+ * @param {number} invitedRole - Rôle attribué à l'invité (0-3)
+ * @param {number} actorUserId - ID de celui qui invite (pour ne pas le notifier)
+ * @param {string} actorPseudo - Pseudo de celui qui invite
+ * 
+ * @example
+ * // Dans permissionController.js (AddPermission)
+ * await notifySomeoneInvited(noteId, note.Titre, targetUser.pseudo, targetRole, req.session.userId, inviter.pseudo);
+ */
+export async function notifySomeoneInvited(noteId, noteTitle, invitedUserPseudo, invitedRole, actorUserId, actorPseudo) {
+  console.log(`🔔 [NOTIF] Quelqu'un invité: ${invitedUserPseudo} sur "${noteTitle}" par ${actorPseudo}`);
+
+  try {
+    // Récupérer les admins/propriétaires de la note (rôle 0-1) sauf celui qui invite
+    const admins = await prisma.permission.findMany({
+      where: {
+        noteId,
+        role: { in: [0, 1] },
+        userId: { not: actorUserId },
+      },
+      select: { userId: true },
+    });
+
+    const roleLabel = ROLE_LABELS[invitedRole] || 'Collaborateur';
+    const notifications = [];
+
+    for (const admin of admins) {
+      const notif = createNotification(NotificationType.SOMEONE_INVITED, admin.userId, {
+        noteId,
+        noteTitle,
+        invitedUserPseudo,
+        roleLabel,
+        actorPseudo,
+      });
+      notifications.push(notif);
+    }
+
+    console.log(`✅ [NOTIF] ${notifications.length} notifications SOMEONE_INVITED diffusées`);
+    return notifications;
+
+  } catch (error) {
+    console.error('[notifySomeoneInvited] Erreur:', error);
+    return [];
+  }
+}
+
+/**
+ * 🔔 Notifie les admins/propriétaires qu'un collaborateur a été exclu de leur note
+ * 
+ * @param {string} noteId - ID de la note
+ * @param {string} noteTitle - Titre de la note
+ * @param {string} removedUserPseudo - Pseudo de l'utilisateur exclu
+ * @param {number} actorUserId - ID de celui qui exclut (pour ne pas le notifier)
+ * @param {string} actorPseudo - Pseudo de celui qui exclut
+ * 
+ * @example
+ * // Dans permissionController.js (RemovePermission)
+ * await notifyCollaboratorRemoved(noteId, note.Titre, removedUser.pseudo, req.session.userId, actor.pseudo);
+ */
+export async function notifyCollaboratorRemoved(noteId, noteTitle, removedUserPseudo, actorUserId, actorPseudo) {
+  console.log(`🔔 [NOTIF] Collaborateur exclu: ${removedUserPseudo} de "${noteTitle}" par ${actorPseudo}`);
+
+  try {
+    // Récupérer les admins/propriétaires de la note (rôle 0-1) sauf celui qui exclut
+    const admins = await prisma.permission.findMany({
+      where: {
+        noteId,
+        role: { in: [0, 1] },
+        userId: { not: actorUserId },
+      },
+      select: { userId: true },
+    });
+
+    const notifications = [];
+
+    for (const admin of admins) {
+      const notif = createNotification(NotificationType.COLLABORATOR_REMOVED, admin.userId, {
+        noteId,
+        noteTitle,
+        removedUserPseudo,
+        actorPseudo,
+      });
+      notifications.push(notif);
+    }
+
+    console.log(`✅ [NOTIF] ${notifications.length} notifications COLLABORATOR_REMOVED diffusées`);
+    return notifications;
+
+  } catch (error) {
+    console.error('[notifyCollaboratorRemoved] Erreur:', error);
+    return [];
+  }
+}
+
+/**
+ * 🔔 Notifie les admins/propriétaires qu'un utilisateur a quitté leur note
+ * ⚠️ Désactivé sur les notes publiques
+ * 
+ * @param {string} noteId - ID de la note
+ * @param {string} noteTitle - Titre de la note
+ * @param {string} leavingUserPseudo - Pseudo de l'utilisateur qui quitte
+ * @param {number} leavingUserId - ID de l'utilisateur qui quitte (pour ne pas le notifier)
+ * @param {boolean} isPublic - Si true, ne pas envoyer de notification
+ * 
+ * @example
+ * // Dans noteController.js (leaveNote)
+ * const note = await prisma.note.findUnique({ where: { id }, select: { Titre: true, isPublic: true } });
+ * await notifyUserLeft(id, note.Titre, user.pseudo, userId, note.isPublic);
+ */
+export async function notifyUserLeft(noteId, noteTitle, leavingUserPseudo, leavingUserId, isPublic = false) {
+  // Ne pas notifier sur les notes publiques
+  if (isPublic) {
+    console.log(`⏭️ [NOTIF] USER_LEFT ignoré: note "${noteTitle}" est publique`);
+    return [];
+  }
+
+  console.log(`🔔 [NOTIF] Utilisateur parti: ${leavingUserPseudo} a quitté "${noteTitle}"`);
+
+  try {
+    // Récupérer les admins/propriétaires de la note (rôle 0-1)
+    const admins = await prisma.permission.findMany({
+      where: {
+        noteId,
+        role: { in: [0, 1] },
+        userId: { not: leavingUserId },
+      },
+      select: { userId: true },
+    });
+
+    const notifications = [];
+
+    for (const admin of admins) {
+      const notif = createNotification(NotificationType.USER_LEFT, admin.userId, {
+        noteId,
+        noteTitle,
+        leavingUserPseudo,
+      });
+      notifications.push(notif);
+    }
+
+    console.log(`✅ [NOTIF] ${notifications.length} notifications USER_LEFT diffusées`);
+    return notifications;
+
+  } catch (error) {
+    console.error('[notifyUserLeft] Erreur:', error);
+    return [];
+  }
+}
+
+/**
+ * 🔔 Notifie les collaborateurs qu'un commentaire a été ajouté
+ * ⚠️ Désactivé sur les notes publiques
+ * 
+ * @param {string} noteId - ID de la note
+ * @param {string} noteTitle - Titre de la note
+ * @param {string} commentAuthorPseudo - Pseudo de l'auteur du commentaire
+ * @param {number} commentAuthorId - ID de l'auteur (pour ne pas le notifier)
+ * @param {string} commentPreview - Aperçu du commentaire (premiers caractères)
+ * @param {boolean} isPublic - Si true, ne pas envoyer de notification
+ * 
+ * @example
+ * // Dans commentController.js (addComment) - à implémenter
+ * await notifyCommentAdded(noteId, note.Titre, user.pseudo, userId, comment.text.slice(0, 50), note.isPublic);
+ */
+export async function notifyCommentAdded(noteId, noteTitle, commentAuthorPseudo, commentAuthorId, commentPreview, isPublic = false) {
+  // Ne pas notifier sur les notes publiques
+  if (isPublic) {
+    console.log(`⏭️ [NOTIF] COMMENT_ADDED ignoré: note "${noteTitle}" est publique`);
+    return [];
+  }
+
+  console.log(`🔔 [NOTIF] Commentaire ajouté sur "${noteTitle}" par ${commentAuthorPseudo}`);
+
+  try {
+    // Récupérer tous les collaborateurs sauf l'auteur du commentaire
+    const collaborators = await prisma.permission.findMany({
+      where: {
+        noteId,
+        userId: { not: commentAuthorId },
+      },
+      select: { userId: true },
+    });
+
+    const notifications = [];
+
+    for (const collab of collaborators) {
+      const notif = createNotification(NotificationType.COMMENT_ADDED, collab.userId, {
+        noteId,
+        noteTitle,
+        commentAuthorPseudo,
+        commentPreview,
+      });
+      notifications.push(notif);
+    }
+
+    console.log(`✅ [NOTIF] ${notifications.length} notifications COMMENT_ADDED diffusées`);
+    return notifications;
+
+  } catch (error) {
+    console.error('[notifyCommentAdded] Erreur:', error);
+    return [];
+  }
 }
 
 /**

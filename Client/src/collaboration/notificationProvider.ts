@@ -22,9 +22,22 @@ let currentUserId: number | null = null;
 type NotificationListener = (notifications: NotificationData[]) => void;
 const notificationListeners = new Set<NotificationListener>();
 
+export type NotificationType = 
+  | 'INVITATION' 
+  | 'REMOVED' 
+  | 'NOTE_DELETED' 
+  | 'NOTE_DELETED_ADMIN' 
+  | 'NOTE_DELETED_MEMBER' 
+  | 'USER_ADDED' 
+  | 'ROLE_CHANGED'
+  | 'SOMEONE_INVITED'
+  | 'COLLABORATOR_REMOVED'
+  | 'USER_LEFT'
+  | 'COMMENT_ADDED';
+
 export interface NotificationData {
   id: string;
-  type: 'INVITATION' | 'REMOVED' | 'NOTE_DELETED' | 'USER_ADDED' | 'ROLE_CHANGED';
+  type: NotificationType;
   noteId?: string;
   noteTitle?: string;
   author?: string;
@@ -34,6 +47,12 @@ export interface NotificationData {
   timestamp: number;
   read: boolean;
   targetUserId?: number;
+  // Nouveaux champs pour les notifications spécifiques
+  invitedUserPseudo?: string;
+  removedUserPseudo?: string;
+  leavingUserPseudo?: string;
+  commentAuthorPseudo?: string;
+  commentPreview?: string;
 }
 
 /**

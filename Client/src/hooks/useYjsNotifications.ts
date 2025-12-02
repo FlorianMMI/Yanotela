@@ -18,10 +18,59 @@ import {
   disconnectNotificationProvider, 
   addNotificationListener,
 } from '@/collaboration/notificationProvider';
+import { cleanupOldDismissedNotifications } from '@/utils/notificationStorageUtils';
+
+// Clé localStorage pour les notifications supprimées
+const DISMISSED_NOTIFICATIONS_KEY = 'yanotela_dismissed_notifications';
+
+/**
+ * Charge les IDs des notifications supprimées depuis localStorage
+ */
+function loadDismissedNotifications(userId: number): Set<string> {
+  try {
+    const stored = localStorage.getItem(`${DISMISSED_NOTIFICATIONS_KEY}_${userId}`);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return new Set(parsed);
+    }
+  } catch (error) {
+    console.error('[localStorage] Erreur lecture notifications supprimées:', error);
+  }
+  return new Set();
+}
+
+/**
+ * Sauvegarde un ID de notification supprimée dans localStorage
+ */
+function saveDismissedNotification(userId: number, notificationId: string): void {
+  try {
+    const dismissed = loadDismissedNotifications(userId);
+    dismissed.add(notificationId);
+    localStorage.setItem(
+      `${DISMISSED_NOTIFICATIONS_KEY}_${userId}`,
+      JSON.stringify(Array.from(dismissed))
+    );
+  } catch (error) {
+    console.error('[localStorage] Erreur sauvegarde notification supprimée:', error);
+  }
+}
+
+export type NotificationType = 
+  | 'INVITATION' 
+  | 'REMOVED' 
+  | 'NOTE_DELETED' 
+  | 'NOTE_DELETED_ADMIN' 
+  | 'NOTE_DELETED_MEMBER' 
+  | 'USER_ADDED' 
+  | 'ROLE_CHANGED'
+  | 'SOMEONE_INVITED'
+  | 'COLLABORATOR_REMOVED'
+  | 'USER_LEFT'
+  | 'COMMENT_ADDED';
 
 export interface YjsNotification {
   id: string;
-  type: 'INVITATION' | 'REMOVED' | 'NOTE_DELETED' | 'USER_ADDED' | 'ROLE_CHANGED';
+  type: NotificationType;
   noteId?: string;
   noteTitle?: string;
   author?: string;
@@ -31,6 +80,12 @@ export interface YjsNotification {
   timestamp: number;
   read: boolean;
   targetUserId?: number;
+  // Nouveaux champs pour les notifications spécifiques
+  invitedUserPseudo?: string;
+  removedUserPseudo?: string;
+  leavingUserPseudo?: string;
+  commentAuthorPseudo?: string;
+  commentPreview?: string;
 }
 
 /**
@@ -46,6 +101,7 @@ export function useYjsNotifications(userId?: number) {
   const [notifications, setNotifications] = useState<YjsNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const hasInitialized = useRef(false);
+  const dismissedNotificationsRef = useRef<Set<string>>(new Set());
 
   // Connecter au provider de notifications et charger les invitations initiales
   useEffect(() => {
@@ -58,16 +114,25 @@ export function useYjsNotifications(userId?: number) {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
 
+    // Charger les notifications supprimées depuis localStorage
+    dismissedNotificationsRef.current = loadDismissedNotifications(userId);
+
+    // Nettoyer les anciennes notifications supprimées (> 30 jours ou > 500 entrées)
+    cleanupOldDismissedNotifications(userId);
+
     // 1. Connecter au WebSocket de notifications
     connectNotificationProvider(userId);
 
     // 2. Écouter les notifications temps réel
     const removeListener = addNotificationListener((realTimeNotifs) => {
       setNotifications((prev) => {
+        // Filtrer les notifications supprimées
+        const filtered = realTimeNotifs.filter((n) => !dismissedNotificationsRef.current.has(n.id));
+        
         // Fusionner les notifications temps réel avec les existantes
         // en évitant les doublons (par ID)
         const existingIds = new Set(prev.map((n) => n.id));
-        const newNotifs = realTimeNotifs.filter((n) => !existingIds.has(n.id));
+        const newNotifs = filtered.filter((n) => !existingIds.has(n.id));
         
         if (newNotifs.length === 0) return prev;
         
@@ -97,10 +162,12 @@ export function useYjsNotifications(userId?: number) {
             read: false,
           }));
           
-          // Ajouter les invitations existantes (éviter doublons)
+          // Filtrer les invitations supprimées + éviter doublons
           setNotifications((prev) => {
             const existingIds = new Set(prev.map((n) => n.id));
-            const newInvitations = invitations.filter((n) => !existingIds.has(n.id));
+            const newInvitations = invitations.filter(
+              (n) => !existingIds.has(n.id) && !dismissedNotificationsRef.current.has(n.id)
+            );
             if (newInvitations.length === 0) return prev;
             return [...prev, ...newInvitations].sort((a, b) => b.timestamp - a.timestamp);
           });
@@ -145,10 +212,13 @@ export function useYjsNotifications(userId?: number) {
             read: false,
           }));
           
-          // Remplacer les invitations actuelles
+          // Filtrer les invitations supprimées + remplacer les invitations actuelles
           setNotifications((prev) => {
             const nonInvitations = prev.filter((n) => n.type !== 'INVITATION');
-            return [...nonInvitations, ...invitations].sort((a, b) => b.timestamp - a.timestamp);
+            const filteredInvitations = invitations.filter(
+              (n) => !dismissedNotificationsRef.current.has(n.id)
+            );
+            return [...nonInvitations, ...filteredInvitations].sort((a, b) => b.timestamp - a.timestamp);
           });
         }
       } catch (error) {
@@ -161,12 +231,9 @@ export function useYjsNotifications(userId?: number) {
   }, [userId]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
-    // Marquer comme lue localement
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
-    );
+    if (!userId) return;
 
-    // Si c'est une invitation classique, appeler l'API
+    // Si c'est une invitation classique, appeler l'API et supprimer
     if (notificationId.startsWith('invitation-')) {
       const noteId = notificationId.replace('invitation-', '');
       try {
@@ -177,16 +244,31 @@ export function useYjsNotifications(userId?: number) {
         });
         
         if (response.ok) {
+          // Sauvegarder dans localStorage pour éviter réapparition
+          saveDismissedNotification(userId, notificationId);
+          dismissedNotificationsRef.current.add(notificationId);
+          
           // Supprimer la notification de la liste après acceptation
           setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
         }
       } catch (error) {
         console.error('[markAsRead] Erreur:', error);
       }
+    } else {
+      // Pour les autres types de notifications, juste marquer comme lue
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+      );
     }
-  }, []);
+  }, [userId]);
 
   const deleteNotification = useCallback(async (notificationId: string) => {
+    if (!userId) return;
+
+    // Sauvegarder dans localStorage
+    saveDismissedNotification(userId, notificationId);
+    dismissedNotificationsRef.current.add(notificationId);
+
     // Supprimer localement
     setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
 
@@ -203,7 +285,7 @@ export function useYjsNotifications(userId?: number) {
         console.error('[deleteNotification] Erreur:', error);
       }
     }
-  }, []);
+  }, [userId]);
 
   return {
     notifications,

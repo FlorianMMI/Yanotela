@@ -28,6 +28,7 @@ const HOST = process.env.HOST || '0.0.0.0';
 // Message types du protocole YJS
 const messageSync = 0;
 const messageAwareness = 1;
+const messageNotification = 99; // Message personnalisé pour les notifications du backend
 
 /**
  * Map des documents YJS + Awareness par room
@@ -209,11 +210,34 @@ function setupWSConnection(ws, req) {
   // ===== ÉTAPE 3 : MESSAGES ENTRANTS =====
   ws.on('message', (data) => {
     try {
-      const decoder = decoding.createDecoder(new Uint8Array(data));
-      const encoder = encoding.createEncoder();
-      const messageType = decoding.readVarUint(decoder);
+      const dataArray = new Uint8Array(data);
+      const messageType = dataArray[0];
 
-      switch (messageType) {
+      // ===== NOTIFICATION DU BACKEND (type=99) =====
+      if (messageType === messageNotification) {
+        // Décoder le JSON de notification
+        const jsonBytes = dataArray.slice(1);
+        const decoder = new TextDecoder();
+        const notification = JSON.parse(decoder.decode(jsonBytes));
+        
+        console.log(`📥 [YJS] Notification reçue du backend:`, notification.type, `pour user=${notification.targetUserId}`);
+        
+        // Broadcaster la notification via awareness à tous les clients de cette room
+        const localState = awareness.getLocalState() || {};
+        const notifications = localState.notifications || [];
+        notifications.push(notification);
+        awareness.setLocalStateField('notifications', notifications);
+        
+        console.log(`📡 [YJS] Notification broadcastée à ${conns.size} clients dans room ${roomName}`);
+        return;
+      }
+
+      // ===== MESSAGES YJS STANDARD =====
+      const decoder = decoding.createDecoder(dataArray);
+      const encoder = encoding.createEncoder();
+      const yjsMessageType = decoding.readVarUint(decoder);
+
+      switch (yjsMessageType) {
         case messageSync: {
           // Message de synchronisation YJS
           encoding.writeVarUint(encoder, messageSync);
@@ -236,7 +260,7 @@ function setupWSConnection(ws, req) {
         }
         
         default:
-          console.warn(`⚠️ [YJS] Type de message inconnu: ${messageType}`);
+          console.warn(`⚠️ [YJS] Type de message inconnu: ${yjsMessageType}`);
       }
     } catch (error) {
       console.error('❌ [YJS] Erreur traitement message:', error);

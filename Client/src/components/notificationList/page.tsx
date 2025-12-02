@@ -1,10 +1,19 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import Notification from "@/ui/notification";
 import { NotificationsIcon } from "@/libs/Icons";
-import { useYjsNotifications } from "@/hooks/useYjsNotifications";
+import { useYjsNotifications, YjsNotification } from "@/hooks/useYjsNotifications";
 import { useAuth } from "@/hooks/useAuth";
+import {
+    NotificationInvit,
+    NotificationNoteDeleted,
+    NotificationRemoved,
+    NotificationSomeoneInvited,
+    NotificationRoleChanged,
+    NotificationCollaboratorRemoved,
+    NotificationUserLeft,
+    NotificationCommentAdded,
+} from "@/ui/notifications";
 
 interface NotificationListProps {
     isOpenSideBar?: boolean;
@@ -18,8 +27,11 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
     // ✅ Utiliser YJS Awareness pour les notifications temps réel (plus de polling HTTP)
     const { notifications, loading, markAsRead, deleteNotification } = useYjsNotifications(auth.user?.id);
 
-    // Déterminer si on doit afficher l'indicateur rouge
-    const shouldShowRedIndicator = notifications.length > 0;
+    // Déterminer si on doit afficher l'indicateur rouge (seulement pour les notifications non lues)
+    const shouldShowRedIndicator = notifications.some(n => !n.read);
+    
+    // Compter les notifications non lues
+    const unreadCount = notifications.filter(n => !n.read).length;
 
     // assure que le panneau est fermé au montage
     useEffect(() => {
@@ -55,12 +67,155 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
         window.dispatchEvent(new CustomEvent('refreshNotifications'));
     };
 
+    /**
+     * Rendu d'une notification selon son type
+     */
+    const renderNotification = (n: YjsNotification) => {
+        switch (n.type) {
+            case 'INVITATION':
+                return (
+                    <NotificationInvit
+                        key={n.id}
+                        id={n.id}
+                        title={n.noteTitle || ''}
+                        author={n.author || n.actorPseudo || ''}
+                        onAccept={markAsRead}
+                        onRefuse={deleteNotification}
+                        onNotificationUpdate={handleRefresh}
+                    />
+                );
+            
+            case 'NOTE_DELETED':
+            case 'NOTE_DELETED_ADMIN':
+                return (
+                    <NotificationNoteDeleted
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        actorPseudo={n.actorPseudo}
+                        isAdmin={true}
+                        onDismiss={deleteNotification}
+                    />
+                );
+            
+            case 'NOTE_DELETED_MEMBER':
+                return (
+                    <NotificationNoteDeleted
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        actorPseudo={n.actorPseudo}
+                        isAdmin={false}
+                        onDismiss={deleteNotification}
+                    />
+                );
+            
+            case 'REMOVED':
+                return (
+                    <NotificationRemoved
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        actorPseudo={n.actorPseudo}
+                        onDismiss={deleteNotification}
+                    />
+                );
+            
+            case 'SOMEONE_INVITED':
+                return (
+                    <NotificationSomeoneInvited
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        invitedUserPseudo={n.invitedUserPseudo || ''}
+                        actorPseudo={n.actorPseudo}
+                        roleLabel={n.roleLabel}
+                        onDismiss={deleteNotification}
+                    />
+                );
+            
+            case 'ROLE_CHANGED':
+                return (
+                    <NotificationRoleChanged
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        roleLabel={n.roleLabel || ''}
+                        isPromotion={n.isPromotion}
+                        actorPseudo={n.actorPseudo}
+                        onDismiss={deleteNotification}
+                    />
+                );
+            
+            case 'COLLABORATOR_REMOVED':
+                return (
+                    <NotificationCollaboratorRemoved
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        removedUserPseudo={n.removedUserPseudo || ''}
+                        actorPseudo={n.actorPseudo}
+                        onDismiss={deleteNotification}
+                    />
+                );
+            
+            case 'USER_LEFT':
+                return (
+                    <NotificationUserLeft
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        leavingUserPseudo={n.leavingUserPseudo || ''}
+                        onDismiss={deleteNotification}
+                    />
+                );
+            
+            case 'COMMENT_ADDED':
+                return (
+                    <NotificationCommentAdded
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        commentAuthorPseudo={n.commentAuthorPseudo || ''}
+                        commentPreview={n.commentPreview}
+                        onDismiss={deleteNotification}
+                    />
+                );
+            
+            case 'USER_ADDED':
+                // Fallback pour USER_ADDED (rarement utilisé)
+                return (
+                    <NotificationSomeoneInvited
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        invitedUserPseudo="Vous"
+                        actorPseudo={n.actorPseudo}
+                        roleLabel={n.roleLabel}
+                        onDismiss={deleteNotification}
+                    />
+                );
+            
+            default:
+                // Fallback générique pour les types inconnus
+                return null;
+        }
+    };
+
     return (
         <>
-            {/* Indicateur rouge quand une notification est présente */}
+            {/* Badge avec le nombre de notifications non lues */}
             {shouldShowRedIndicator && (
-                <div className={`absolute right-4 z-30 pointer-events-none ${isOpenSideBar ? 'top-7' : 'top-4'}`}>
-                    <div className={` w-3 h-3 bg-dangerous-500 rounded-full animate-pulse`}></div>
+                <div className={`absolute right-3 z-30 pointer-events-none ${isOpenSideBar ? 'top-6' : 'top-3'}`}>
+                    {unreadCount <= 9 ? (
+                        <div className="min-w-[18px] h-[18px] bg-dangerous-500 rounded-full animate-pulse flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">{unreadCount}</span>
+                        </div>
+                    ) : (
+                        <div className="min-w-[20px] h-[18px] bg-dangerous-500 rounded-full animate-pulse flex items-center justify-center px-1">
+                            <span className="text-white text-xs font-bold">9+</span>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -85,27 +240,26 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                         <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[calc(100vh-10rem)]">
                             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                                 <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
-                                <span className="text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded-full">{notifications.length}</span>
+                                <div className="flex items-center gap-2">
+                                    {unreadCount > 0 && (
+                                        <span className="text-xs font-semibold text-white bg-dangerous-500 px-2 py-1 rounded-full">
+                                            {unreadCount} non {unreadCount > 1 ? 'lues' : 'lue'}
+                                        </span>
+                                    )}
+                                    <span className="text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded-full">{notifications.length}</span>
+                                </div>
                             </div>
 
-                            <div className="p-4 space-y-3 overflow-y-auto flex-1 min-h-0">
+                            <div className="p-4 space-y-3 overflow-y-auto overflow-x-hidden flex-1 min-h-0">
                                 {loading ? (
                                     <div className="flex flex-col items-center justify-center py-6">
                                         <NotificationsIcon width={36} height={36} className="text-gray-400 mb-3 animate-spin" />
                                         <p className="text-gray-600">Chargement...</p>
                                     </div>
                                 ) : notifications.length > 0 ? (
-                                    notifications.map((n) => (
-                                        <Notification
-                                            key={n.id}
-                                            id={n.id}
-                                            title={n.noteTitle || ''}
-                                            author={n.author || n.actorPseudo || ''}
-                                            onAccept={markAsRead}
-                                            onRefuse={deleteNotification}
-                                            onNotificationUpdate={handleRefresh}
-                                        />
-                                    ))
+                                    <div className="space-y-2 w-full">
+                                        {notifications.map((n) => renderNotification(n))}
+                                    </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-6 gap-3">
                                         <NotificationsIcon width={36} height={36} className="text-gray-400" />

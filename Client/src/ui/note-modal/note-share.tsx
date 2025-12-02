@@ -21,17 +21,15 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     const [isTogglePublic, setIsTogglePublic] = useState(false); // false = privé par défaut
     const [copied, setCopied] = useState(false);
     const [currentUserRole, setCurrentUserRole] = useState<number | null>(null); // Rôle de l'utilisateur connecté
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
 
     useEffect(() => {
         setLoading(true);
         // Récupérer les permissions
-        FetchPermission(noteId).then((data: any) => {
+        FetchPermission(noteId).then((data) => {
             const perms = data && data.success && Array.isArray(data.permissions) ? data.permissions : [];
             setPermissions(perms);
             // Trouver le rôle de l'utilisateur connecté
-            const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
+            const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
             setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
             setLoading(false);
         });
@@ -140,7 +138,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                                                     const perms = data.permissions || [];
                                                                     setPermissions(perms);
                                                                     // Mettre à jour le rôle courant si nécessaire
-                                                                    const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
+                                                                    const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
                                                                     setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
                                                                 }
                                                                 // Appeler le callback pour rafraîchir la liste des notes
@@ -175,7 +173,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                                                         const perms = data.permissions || [];
                                                                         setPermissions(perms);
                                                                         // Mettre à jour le rôle courant si nécessaire
-                                                                        const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
+                                                                        const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
                                                                         setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
                                                                     }
                                                                     // Appeler le callback pour rafraîchir la liste des notes
@@ -244,7 +242,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                         const perms = data.permissions || [];
                                         setPermissions(perms);
                                         // Mettre à jour le rôle courant si nécessaire
-                                        const currentUserPerm = perms.find((perm: any) => perm.user.id === connectedUserId);
+                                        const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
                                         setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
                                     }
                                     // Appeler le callback pour rafraîchir la liste des notes

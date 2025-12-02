@@ -48,6 +48,7 @@ services:
       - MAIL_SERVICE=gmail
       - GMAIL_USER={mail}
       - GMAIL_APP_PASSWORD={mdp}
+      - YJS_SERVER_URL=ws://yjs-server:1234
     volumes:
       # Mount source code for hot reload
       - ./Server/src:/app/src
@@ -63,6 +64,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      yjs-server:
+        condition: service_started
     command: sh -c "npx prisma migrate deploy && npx nodemon index.js"
 
   # Service de nettoyage automatique des notes supprimées (exécute tous les jours à 3h)

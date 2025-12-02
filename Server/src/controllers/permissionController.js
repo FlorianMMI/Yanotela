@@ -4,6 +4,8 @@ import {
   notifyRoleChanged,
   notifyUserRemoved,
   notifyInvitation,
+  notifySomeoneInvited,
+  notifyCollaboratorRemoved,
 } from "../services/yjsNotificationService.js";
 const prisma = new PrismaClient();
 
@@ -259,6 +261,21 @@ async function AddPermission(req, res) {
       // On continue quand même car la permission est créée
     }
 
+    // 🔔 Notifier les autres admins qu'un utilisateur a été invité
+    try {
+      await notifySomeoneInvited(
+        noteId,
+        note?.Titre || "Sans titre",
+        targetUser.pseudo,
+        targetRole,
+        connected,
+        inviter?.pseudo || "Un utilisateur"
+      );
+    } catch (notifError) {
+      console.error("Erreur lors de l'envoi de la notification SOMEONE_INVITED:", notifError);
+      // On continue quand même
+    }
+
     res.json({
       success: true,
       message: `${targetUser.pseudo} ajouté avec succès`,
@@ -313,16 +330,22 @@ async function RemovePermission(req, res) {
       });
     }
 
-    // Notifier l'utilisateur de son exclusion
+    // Récupérer les infos nécessaires pour les notifications
+    const note = await prisma.note.findUnique({
+      where: { id: noteId },
+      select: { Titre: true },
+    });
+    const actor = await prisma.user.findUnique({
+      where: { id: connected },
+      select: { pseudo: true },
+    });
+    const removedUser = await prisma.user.findUnique({
+      where: { id: parseInt(userId) },
+      select: { pseudo: true },
+    });
+
+    // 🔔 Notifier l'utilisateur de son exclusion
     try {
-      const note = await prisma.note.findUnique({
-        where: { id: noteId },
-        select: { Titre: true },
-      });
-      const actor = await prisma.user.findUnique({
-        where: { id: connected },
-        select: { pseudo: true },
-      });
       await notifyUserRemoved(
         parseInt(userId),
         noteId,
@@ -330,9 +353,24 @@ async function RemovePermission(req, res) {
         actor?.pseudo || "Un administrateur"
       );
     } catch (notifError) {
-      console.error("[RemovePermission] Erreur notification:", notifError);
+      console.error("[RemovePermission] Erreur notification REMOVED:", notifError);
       // Ne pas bloquer la suppression si la notification échoue
     }
+
+    // 🔔 Notifier les autres admins qu'un collaborateur a été exclu
+    try {
+      await notifyCollaboratorRemoved(
+        noteId,
+        note?.Titre || "Sans titre",
+        removedUser?.pseudo || "Un utilisateur",
+        connected,
+        actor?.pseudo || "Un administrateur"
+      );
+    } catch (notifError) {
+      console.error("[RemovePermission] Erreur notification COLLABORATOR_REMOVED:", notifError);
+      // Ne pas bloquer si la notification échoue
+    }
+
     if (!userPermission) {
       return res
         .status(404)
