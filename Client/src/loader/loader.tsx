@@ -1,4 +1,5 @@
 import { Note } from '@/type/Note';
+import { Tag, GetTagsResponse, CreateTagData, UpdateTagData } from '@/type/Tag';
 import { create } from 'domain';
 import { ID } from 'yjs';
 
@@ -1119,6 +1120,105 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: true, message: data.message || 'Tag mis à jour avec succès' };
     } catch (error) {
         console.error("Error updating note tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// ============= TAGS PERSONNALISÉS =============
+
+// Récupérer tous les tags de l'utilisateur (défaut + personnalisés)
+export async function GetUserTags(): Promise<GetTagsResponse | { error: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { error: errorData.message || 'Erreur lors de la récupération des tags' };
+        }
+
+        const data = await response.json();
+        return data as GetTagsResponse;
+    } catch (error) {
+        console.error("Error fetching user tags:", error);
+        return { error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Créer un nouveau tag personnalisé
+export async function CreateTag(tagData: CreateTagData): Promise<{ success: boolean; tag?: Tag; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify(tagData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la création du tag' };
+        }
+
+        const data = await response.json();
+        return { success: true, tag: data.tag };
+    } catch (error) {
+        console.error("Error creating tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Mettre à jour un tag personnalisé
+export async function UpdateTag(tagId: string, tagData: UpdateTagData): Promise<{ success: boolean; tag?: Tag; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/${tagId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify(tagData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la mise à jour du tag' };
+        }
+
+        const data = await response.json();
+        return { success: true, tag: data.tag };
+    } catch (error) {
+        console.error("Error updating tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Supprimer un tag personnalisé
+export async function DeleteTag(tagId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/${tagId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.message || 'Erreur lors de la suppression du tag' };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting tag:", error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }

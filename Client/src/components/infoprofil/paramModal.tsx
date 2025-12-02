@@ -8,6 +8,7 @@ import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
 import ThemeSelector from '../theme/ThemeSelector';
 import PWAInstallButton from '@/ui/PWAInstallbutton';
+import TagManager from '../tagManager/TagManager';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -17,6 +18,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showTagManager, setShowTagManager] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [isWebappInstalled, setIsWebappInstalled] = useState<boolean>(() => {
         try {
@@ -114,6 +116,16 @@ export default function ParamModal({ onClose }: ParamModalProps) {
 
                         <hr className="border-t border-primary w-full" />
 
+                        {/* Bouton gérer les tags */}
+                        <button
+                            className="px-4 py-2 bg-zinc-100 text-clrprincipal font-bold rounded hover:bg-zinc-200 hover:shadow-lg transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+                            onClick={() => setShowTagManager(true)}
+                            title='Gérer mes tags personnalisés'
+                        >
+                            <Icon name="palette" size={20} />
+                            Gérer mes tags
+                        </button>
+
                         {/* Boutton corbeille */}
                         <button
                             className=" px-4 py-2 bg-zinc-100 text-clrprincipal font-bold rounded hover:bg-zinc-200 hover:shadow-lg transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
@@ -151,6 +163,11 @@ export default function ParamModal({ onClose }: ParamModalProps) {
             {/* Modal de succès */}
             {showSuccessModal && (
                 <AccountSupprSuccess />
+            )}
+
+            {/* Modal de gestion des tags */}
+            {showTagManager && (
+                <TagManager onClose={() => setShowTagManager(false)} />
             )}
         </>
     );

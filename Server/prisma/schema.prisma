@@ -24,6 +24,7 @@ model User {
   modifiedNotes Note[]       @relation("NoteModifier")
   permissions   Permission[]
   noteFolders   NoteFolder[]
+  tags          Tag[]        // Tags personnalisés de l'utilisateur
 }
 
 model Note {
@@ -80,4 +81,16 @@ model NoteFolder {
   @@index([folderId])
   @@index([userId])
   @@map("note_folder")
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  label     String   // Nom personnalisé du tag
+  color     String   // Couleur hexadécimale (#RRGGBB)
+  userId    Int      // Propriétaire du tag
+  isDefault Boolean  @default(false) // true pour les tags par défaut (non modifiables)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
