@@ -7,7 +7,7 @@ import FolderList from "@/components/folderList/FolderList";
 import { GetFolders } from "@/loader/loader";
 import { SearchMode } from "@/ui/searchbar";
 
-// Métadonnées SEO gérées côté serveur dans layout.tsx
+
 
 export default function FoldersPage() {
   const [searchTerm, setSearchTerm] = useState("");

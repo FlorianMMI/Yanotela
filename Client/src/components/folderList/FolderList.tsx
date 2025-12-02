@@ -15,19 +15,17 @@ interface FolderListProps {
 }
 
 export default function FolderList({ folders, onFolderCreated, isLoading = false }: FolderListProps) {
-  const router = useRouter();
 
   const handleCreateFolder = async () => {
-    const { folder, redirectUrl } = await CreateFolder();
+    const { folder } = await CreateFolder();
     
-    if (folder && redirectUrl) {
+    if (folder) {
       if (onFolderCreated) {
         onFolderCreated(); // Déclencher le refresh des dossiers
       }
-      router.push(redirectUrl);
     } else {
       console.error("Erreur : Impossible de créer le dossier.");
-      alert("Erreur lors de la création du dossier. Veuillez réessayer.");
+      
     }
   };
 
