@@ -135,7 +135,7 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
    * @param userRole - Rôle de l'utilisateur (0=owner, 1=admin, etc.)
    */
   const deleteComment = useCallback((commentId: string, userRole?: number) => {
-    if (!yArrayRef.current || !userId) return false;
+    if (!yArrayRef.current) return false;
 
     const arr = yArrayRef.current.toArray();
     const index = arr.findIndex(c => c.id === commentId);
@@ -146,11 +146,19 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
     
     // Vérifier les permissions
     const canDelete = 
-      comment.authorId === userId || // Auteur du commentaire
-      userRole === 0 ||              // Propriétaire de la note
-      userRole === 1;                // Admin de la note
+      (userId && comment.authorId === userId) || // Auteur du commentaire (si connecté)
+      userRole === 0 ||                          // Propriétaire de la note
+      userRole === 1;                            // Admin de la note
 
-    if (!canDelete) return false;
+    if (!canDelete) {
+      console.log('[deleteComment] Permission refusée:', {
+        userId,
+        commentAuthorId: comment.authorId,
+        userRole,
+        canDelete
+      });
+      return false;
+    }
 
     // Supprimer du Y.Array
     yArrayRef.current.delete(index, 1);
