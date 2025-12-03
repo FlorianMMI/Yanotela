@@ -4,7 +4,9 @@ import { register, login, logout, validate, validateRegistration, forgotPassword
 const router = express.Router();
 
 // Routes d'authentification
+
 router.post('/register', validateRegistration, register);
+
 router.post('/login', login);
 router.post('/logout', logout);
 router.get('/validate/:token', validate);

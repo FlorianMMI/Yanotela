@@ -65,7 +65,6 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                         const label = (typeof currentUserRole === 'number' && ROLE_LABELS[currentUserRole]) ? ROLE_LABELS[currentUserRole] : null;
                         return (
                             <>
-                                <span className="hidden md:inline">Vous êtes </span>
                                 <span>{label ? label.toLowerCase() : 'utilisateur'}</span>
                             </>
                         );

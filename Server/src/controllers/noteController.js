@@ -810,10 +810,10 @@ export const noteController = {
         return res.status(403).json({ message: "Vous n'avez pas accès à cette note" });
       }
 
-      // Role 0 = Owner, Role 1 = Admin
-      if (userPermission.role !== 0 && userPermission.role !== 1) {
+      // Role 0 = Owner
+      if (userPermission.role !== 0) {
         return res.status(403).json({ 
-          message: "Seul le propriétaire ou un administrateur peut supprimer cette note" 
+          message: "Seul le propriétaire peut supprimer cette note" 
         });
       }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+
 import Link from 'next/link';
 import { ForgotPassword } from '@/loader/loader';
 
@@ -134,6 +135,7 @@ export default function ForgotPasswordForm({
         )}
 
         <div>
+
           <button
             type="submit"
             disabled={loading}
