@@ -80,7 +80,7 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
-            # NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:develop
             ${{ env.DOCKER_FRONTEND_REPO }}:develop-${{ github.sha }}
@@ -157,10 +157,6 @@ jobs:
                 listen 80;
                 client_max_body_size 100M;
 
-                # Cloudflare Turnstile: gérer les requêtes /cdn-cgi/
-                location ^~ /cdn-cgi/ {
-                    return 204;
-                }
 
                 # Let's Encrypt (si besoin de renouvellement manuel)
                 location ^~ /.well-known/acme-challenge/ {
@@ -285,7 +281,8 @@ jobs:
                 container_name: yanotela-frontend-dev
                 environment:
                   - NODE_ENV=development
-                  # - NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}
+                  - NEXT_PUBLIC_API_URL=https://preprod.yanotela.fr/api
+                  - NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}
                 env_file:
                   - .env.dev
                 depends_on:
@@ -329,8 +326,8 @@ jobs:
             EOF
             
             # Ajouter les variables Turnstile avec le bon format
-            # echo "TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}" >> .env.dev
-            # echo "TURNSTILE_SECRET_KEY=${{ secrets.DEV_TURNSTILE_SECRET_KEY }}" >> .env.dev
+            echo "TURNSTILE_SITE_KEY=${{ secrets.DEV_TURNSTILE_SITE_KEY }}" >> .env.dev
+            echo "TURNSTILE_SECRET_KEY=${{ secrets.DEV_TURNSTILE_SECRET_KEY }}" >> .env.dev
 
             # Démarrage des services (optimisé : pull + up en une étape)
             docker compose down || true
