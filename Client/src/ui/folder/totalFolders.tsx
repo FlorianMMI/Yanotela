@@ -17,7 +17,7 @@ export default function TotalFolders({ totalFolders }: TotalFoldersProps) {
 
     return (
         <button 
-            className='flex flex-col items-center justify-center p-6 m-1 bg-clrsecondaire rounded-xl shadow-md w-fit h-fit border border-clrsecondaire hover:bg-amber-100 hover:border-amber-500 transition-all cursor-pointer group focus:outline-none focus:ring-2 focus:ring-amber-500' 
+            className='flex flex-col items-center justify-center p-6 m-1 bg-clrsecondaire rounded-xl shadow-md w-[180px] h-fit border border-clrsecondaire hover:bg-amber-100 hover:border-amber-500 transition-all cursor-pointer group focus:outline-none focus:ring-2 focus:ring-amber-500' 
             onClick={redirectToFolders} 
             title='Voir tous mes dossiers'
             aria-label='Voir tous mes dossiers'

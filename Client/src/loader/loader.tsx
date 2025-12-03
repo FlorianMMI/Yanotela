@@ -513,6 +513,7 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
     try {
         
         const apiUrl = getApiUrl();
+
         const body = { ...credentials } as any;
 
         const response = await fetch(`${apiUrl}/login`, {
@@ -563,7 +564,6 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
         
         const apiUrl = getApiUrl();
         const payload = { ...userData } as any;
-
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
             headers: {
@@ -609,6 +609,7 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
+
         const payload: any = { email };
 
         const response = await fetch(`${apiUrl}/forgot-password`, {
@@ -638,6 +639,7 @@ export async function ResetPassword(token: string, password: string): Promise<Au
         
         const apiUrl = getApiUrl();
         const payload: any = { password, token };
+
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
             headers: {
@@ -1184,7 +1186,6 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
         const data = await response.json();
         return { 
             folder: data.folder, 
-            redirectUrl: `/dossiers/${data.folder.id}` 
         };
     } catch (error) {
         console.error("Error creating folder:", error);
@@ -1394,4 +1395,3 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
-

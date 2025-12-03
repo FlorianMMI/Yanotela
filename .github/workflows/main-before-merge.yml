@@ -1,7 +1,7 @@
 name: Deploy App to EC2 (production)
 on:
   push:
-    branches: ["main"]
+    branches: ["fix-main"]
 env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend
@@ -38,7 +38,7 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=https://yanotela.fr/api
-            
+
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:production
             ${{ env.DOCKER_FRONTEND_REPO }}:production-${{ github.sha }}

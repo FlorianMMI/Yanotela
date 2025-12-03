@@ -6,8 +6,12 @@ import { ForgotPassword, InfoUser, updateUser, GetNotes, GetFolders } from '@/lo
 import TotalNotes from "@/ui/note/totalNotes";
 import TotalFolders from "@/ui/folder/totalFolders";
 import { KeyholeIcon, ProfileIcon } from "@/libs/Icons";
+import TrashCard from "@/ui/trash/trashCard";
+import { useRouter } from "next/navigation";
 
 export default function ModificationProfil() {
+
+  const router = useRouter();
   const [userData, setUserData] = useState({
     pseudo: "",
     prenom: "",
@@ -281,7 +285,8 @@ export default function ModificationProfil() {
             </div>
           </div>
 
-          <div className="flex flex-row justify-center gap-4 items-start md:items-center w-full h-full">
+          <div className="flex flex-row justify-center gap-4 items-start md:items-center ">
+            <TrashCard onClick={() => router.push('/corbeille')} />
             <TotalNotes totalNotes={totalNotes} />
             <TotalFolders totalFolders={totalFolders} />
           </div>
