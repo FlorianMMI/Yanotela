@@ -36,6 +36,32 @@ export default function ParamModal({ onClose }: ParamModalProps) {
         user?.pseudo
     );
 
+    // Récupérer le rôle de l'utilisateur sur cette note
+    useEffect(() => {
+        const fetchUserRole = async () => {
+            if (!noteId || !user?.id) {
+                setUserRole(undefined);
+                return;
+            }
+            
+            try {
+                const response = await FetchPermission(noteId);
+                if (response.success && response.permissions) {
+                    // Trouver la permission de l'utilisateur actuel
+                    const userPermission = response.permissions.find(p => p.id_user === user.id);
+                    if (userPermission) {
+                        setUserRole(userPermission.role);
+                        console.log('[commentModal] Rôle utilisateur chargé:', userPermission.role);
+                    }
+                }
+            } catch (error) {
+                console.error('[commentModal] Erreur lors de la récupération du rôle:', error);
+            }
+        };
+
+        fetchUserRole();
+    }, [noteId, user?.id]);
+
     
 
     // Scroll en bas à chaque changement de commentaires
