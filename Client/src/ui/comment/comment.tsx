@@ -42,7 +42,7 @@ export default function Comment({ variant = "user", author, date, text, id, auth
             <p className="text-sm whitespace-pre-line">{text}</p>
             {id && (
               userRole === 0 // propriétaire de la note : bouton pour tous les commentaires
-              || userId === authorId // auteur du commentaire
+              || (userId && userId === authorId) // auteur du commentaire (si connecté)
               || userRole === 1 // admin
             ) && (
               <button onClick={handleDelete} title="Supprimer le commentaire">
