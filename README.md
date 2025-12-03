@@ -10,7 +10,7 @@ Un projet full‑stack léger et moderne pour prendre des notes, collaborer en t
 
 ---
 
-## ⚡ Aperçu
+## ⚡ Aperçuu
 
 - Stack frontend : Next.js 15 (App Router), TypeScript, TailwindCSS v4, éditeur Lexical
 - Backend : Node.js + Express (ESM), Prisma ORM, PostgreSQL
