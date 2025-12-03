@@ -16,8 +16,8 @@ export interface YjsComment {
  * Les commentaires sont stockés dans un Y.Array partagé entre tous les clients
  * 
  * @param noteId - ID de la note
- * @param userId - ID de l'utilisateur courant
- * @param userPseudo - Pseudo de l'utilisateur courant
+ * @param userId - ID de l'utilisateur courant (optionnel pour les anonymes)
+ * @param userPseudo - Pseudo de l'utilisateur courant (optionnel pour les anonymes)
  */
 export function useYjsComments(noteId: string | null, userId?: number, userPseudo?: string) {
   const [comments, setComments] = useState<YjsComment[]>([]);
@@ -109,15 +109,16 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
 
   /**
    * Ajouter un commentaire (synchronisé via YJS)
+   * Permet aux utilisateurs non connectés de commenter en tant qu'anonyme
    */
   const addComment = useCallback((text: string) => {
-    if (!yArrayRef.current || !userId || !userPseudo || !text.trim()) return false;
+    if (!yArrayRef.current || !text.trim()) return false;
 
     const newComment: YjsComment = {
       id: crypto.randomUUID(),
       text: text.trim(),
-      authorId: userId,
-      authorPseudo: userPseudo,
+      authorId: userId || 0, // 0 pour les utilisateurs anonymes
+      authorPseudo: userPseudo || 'Anonyme',
       date: new Date().toISOString(),
     };
 
