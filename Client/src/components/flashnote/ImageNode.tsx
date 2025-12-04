@@ -154,8 +154,8 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
           ...baseStyle,
           ...drawingStyle,
         }}
-        width={this.__width}
-        height={this.__height}
+        width={this.__width || 800}
+        height={this.__height || 600}
         draggable={false}
       />
     );
