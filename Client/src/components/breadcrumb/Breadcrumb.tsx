@@ -396,6 +396,12 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
       ];
     }
 
+    if (pathname === '/a2f') {
+      return [
+        { label: 'Authentification à deux facteurs', isActive: true },
+      ];
+    }
+
     // Fallback pour les autres routes
     return [
       { label: 'Accueil', href: '/' },
