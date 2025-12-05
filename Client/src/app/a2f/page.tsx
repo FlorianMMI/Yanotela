@@ -8,7 +8,7 @@ export default function A2FPage() {
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     // Logique de vérification du code A2F ici
-    console.log('Code A2F soumis :', code);
+    
   }
 
   return (

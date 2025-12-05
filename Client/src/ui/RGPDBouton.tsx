@@ -1,6 +1,5 @@
 export default function RGPDBouton() {
 
-
         return (
             <>
 
@@ -11,8 +10,5 @@ export default function RGPDBouton() {
                 </div>
             </>
         )
-
-
-
 
 }
