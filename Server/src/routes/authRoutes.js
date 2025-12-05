@@ -15,4 +15,5 @@ router.get('/reset-password/:token', resetPasswordGet);
 router.post('/reset-password', resetPasswordPost);
 router.get('/auth/check', checkAuth);
 
+
 export default router;
