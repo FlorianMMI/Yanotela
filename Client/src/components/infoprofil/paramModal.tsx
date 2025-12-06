@@ -8,6 +8,7 @@ import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
 import ThemeSelector from '../theme/ThemeSelector';
 import PWAInstallButton from '@/ui/PWAInstallbutton';
+import RGPDBouton from '@/ui/RGPDBouton';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -102,6 +103,9 @@ export default function ParamModal({ onClose }: ParamModalProps) {
 
                         <hr className="border-t border-primary w-full" />
 
+                        <div>
+                            <RGPDBouton />
+                        </div>
                         
                         {/* Boutton suppression compte */}
                         <button
