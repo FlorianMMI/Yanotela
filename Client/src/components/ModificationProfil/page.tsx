@@ -155,7 +155,7 @@ export default function ModificationProfil() {
   return (
     <>
       {pageLoading ? (
-        <div className="p-4 flex justify-center items-center min-md:min-h-full">
+        <div className="p-4 flex justify-center items-center md:min-h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
@@ -285,11 +285,16 @@ export default function ModificationProfil() {
             </div>
           </div>
 
-          <div className="flex flex-row justify-center gap-4 items-start md:items-center ">
-            <TrashCard onClick={() => router.push('/corbeille')} />
-            <TotalNotes totalNotes={totalNotes} />
-            <TotalFolders totalFolders={totalFolders} />
-          </div>
+            <div className="flex flex-col md:flex-row justify-center gap-4 items-center w-full">
+            <div className="flex flex-row gap-4 justify-center">
+              <TotalNotes totalNotes={totalNotes} />
+              <TotalFolders totalFolders={totalFolders} />
+              
+            </div>
+            <div className="flex flex-row justify-center">
+              <TrashCard onClick={() => router.push('/corbeille')} />
+            </div>
+            </div>
 
         </div>
       )}

@@ -13,6 +13,7 @@ export default function FoldersPage() {
   const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [colorFilters, setColorFilters] = useState<string[]>([]);
+  
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
 
