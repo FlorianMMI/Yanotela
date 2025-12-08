@@ -47,8 +47,7 @@ services:
       - SESSION_SECRET=local_session_secret_dev_only
       - MAIL_SERVICE=gmail
       - GMAIL_USER={mail}
-      - GMAIL_APP_PASSWORD={mdp}
-      - YJS_SERVER_URL=ws://yjs-server:1234
+      - GMAIL_APP_PASSWORD={dev}
     volumes:
       # Mount source code for hot reload
       - ./Server/src:/app/src
@@ -64,8 +63,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      yjs-server:
-        condition: service_started
     command: sh -c "npx prisma migrate deploy && npx nodemon index.js"
 
   # Service de nettoyage automatique des notes supprimées (exécute tous les jours à 3h)
@@ -88,25 +85,17 @@ services:
     command: sh -c "while true; do sleep 86400 && npm run cleanup:notes; done"
     restart: unless-stopped
 
-  # Serveur YJS WebSocket personnalisé pour collaboration temps réel + notifications
+  # Serveur YJS WebSocket pour collaboration temps réel
   yjs-server:
-    build:
-      context: ./Server
-      dockerfile: Dockerfile.preprod
+    image: node:18-alpine
     container_name: yanotela-yjs-server
     working_dir: /app
     ports:
       - "1234:1234"
     environment:
-      - NODE_ENV=development
       - HOST=0.0.0.0
       - PORT=1234
-    volumes:
-      # Mount source code for hot reload
-      - ./Server/src:/app/src
-      - ./Server/package.json:/app/package.json
-      - /app/node_modules
-    command: node src/yjs-server.js
+    command: sh -c "npm install -g @y/websocket-server && y-websocket-server"
     restart: unless-stopped
 
   # Frontend Next.js
@@ -120,6 +109,7 @@ services:
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - INTERNAL_API_URL=http://backend:3001
     volumes:
       # Mount source code for hot reload
       - ./Client/src:/app/src
