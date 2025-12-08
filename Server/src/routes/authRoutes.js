@@ -1,6 +1,6 @@
 import express from 'express';
 import { register, login, logout, validate, validateRegistration, forgotPassword, resetPasswordGet, resetPasswordPost, checkAuth } from '../controllers/authController.js';
-
+import { requireAuth } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -16,5 +16,8 @@ router.get('/reset-password/:token', resetPasswordGet);
 router.post('/reset-password', resetPasswordPost);
 router.get('/auth/check', checkAuth);
 
+
+
+                
 
 export default router;

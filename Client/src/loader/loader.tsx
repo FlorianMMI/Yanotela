@@ -2,6 +2,7 @@ import { Note } from '@/type/Note';
 import { Folder } from '@/type/Folder';
 import { Permission } from '@/type/Permission';
 import { checkAuthResponse } from '@/utils/authFetch';
+import { useRouter } from 'next/navigation';
 
 function getApiUrl() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -1513,3 +1514,61 @@ export async function UpdateNoteTag(noteId: string, tagId: string | null): Promi
     }
 }
 
+export async function Setup2FA(): Promise<{ success: boolean; message?: string; error?: string; redirectUrl?: string }> {
+
+    try {
+        const response = await fetch(`${apiUrl}/user/2fa/setup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message || '2FA setup initiated successfully', redirectUrl: '/a2f' };
+        }
+        else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la configuration de la 2FA' };
+        }
+    } catch (error) {
+        console.error('Erreur Setup2FA:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function Verify2FA(code: string): Promise<{ success: boolean; message?: string; error?: string }> {
+
+    try {
+        const response = await fetch(`${apiUrl}/user/2fa/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ code })
+        });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message || '2FA verified successfully' };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la vérification de la 2FA' };
+        }
+    } catch (error) {
+        console.error('Erreur Verify2FA:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}

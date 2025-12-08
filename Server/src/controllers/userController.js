@@ -12,6 +12,9 @@
 
 import { PrismaClient } from "@prisma/client";
 import { sendDeleteAccountEmail } from "../services/emailService.js";
+import { createClient } from "redis";
+import { a2fEmail, userDataEmail } from "../services/emailService.js";
+
 const prisma = new PrismaClient();
 
 export const userController = {
@@ -409,4 +412,137 @@ export const userController = {
       });
     }
   },
+
+
+  // Mettre en place le code 2FA pour l'utilisateur
+  setup2FA: async (req, res) => {
+
+    // Générer un code numérique (6 chiffres) sécurisé
+    const { randomInt } = await import("crypto");
+    const codeLength = 6; // changer si besoin
+    let a2f = Array.from({ length: codeLength }, () => randomInt(0, 10)).join('');
+  
+    if (!req.session.userId) {
+      return res.status(500).json({ message: "Un problèmes est survenu" });
+    }
+
+    const redisUrl =
+      process.env.REDIS_URL ??
+      `redis://${process.env.REDIS_HOST ?? "127.0.0.1"}:${process.env.REDIS_PORT ?? "6380"}`;
+
+    const redis = createClient({ url: redisUrl });
+
+    console.log("Connexion à Redis...");
+    console.log(`URL Redis: ${redisUrl}`);
+    console.log(`Code 2FA généré: ${a2f}`);
+
+    await redis.connect();
+
+    // Écrire une clé
+    await redis.set(`${req.session.userId}`, `${a2f}`, { EX: 900 }); // expire dans 15 minutes
+
+    await redis.quit();
+
+    // Récupérer l'email de l'utilisateur et envoyer le code 2FA par email
+    const userRecord = await prisma.user.findUnique({
+      where: { id: req.session.userId },
+      select: { email: true },
+    });
+
+    await a2fEmail(userRecord.email, a2f);
+
+    return res.status(200).json({ success: true, message: "Code 2FA envoyé par email" });
+
+  },
+
+
+  check2fa: async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    const { code } = req.body;
+
+    const redisUrl =
+      process.env.REDIS_URL ??
+      `redis://${process.env.REDIS_HOST ?? "127.0.0.1"}:${process.env.REDIS_PORT ?? "6380"}`;
+    const redis = createClient({ url: redisUrl });
+    
+    await redis.connect();
+
+    const storedCode = await redis.get(`${req.session.userId}`);
+    
+    await redis.quit();
+
+    if (storedCode == code){
+      try {
+        await userController.info2fa(req, res);
+      } catch (error) {
+        console.error("Erreur lors de l'envoi des informations:", error);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Erreur lors de l'envoi des informations utilisateur" 
+        });
+      }
+    }
+    else {
+      return res.status(400).json({ success: false, message: "Code 2FA invalide" });
+    }
+
+  },
+
+  // fonction qui récupère les infos utilisateur pour la récupération de données 
+
+  info2fa: async(req, res) => {
+
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      const userId = parseInt(req.session.userId, 10);
+
+      const info = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        pseudo: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        _count: {
+        select: { notes: true },
+        },
+      },
+      });
+
+      if (!info) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+
+      // Envoyer l'email avec les informations utilisateur
+      await userDataEmail(
+        info.email,
+        {
+          "Pseudonyme": info.pseudo,
+          "Nom": info.nom,
+          "Prénom": info.prenom,
+          "E-mail": info.email,
+          "Nombre de notes": info._count.notes,
+        }
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Email d'informations envoyé avec succès"
+      });
+    } catch (error) {
+      console.error("Erreur info2fa:", error);
+      return res.status(500).json({
+      success: false,
+      message: "Erreur"
+      });
+    }
+
+  }
+
 };

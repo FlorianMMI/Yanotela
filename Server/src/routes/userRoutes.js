@@ -22,5 +22,9 @@ router.post('/update', requireAuth, userController.updateUserInfo);
 // Route PATCH pour mettre à jour le thème de l'utilisateur (authentification requise)
 router.patch('/theme', requireAuth, userController.updateUserTheme);
 
-export default router;
+// Route post pour mettre en place le code 2FA (authentification requise) sur redis 
+router.post('/2fa/setup', requireAuth, userController.setup2FA);
 
+router.post('/2fa/verify', requireAuth, userController.check2fa);
+
+export default router;
