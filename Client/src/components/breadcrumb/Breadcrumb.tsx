@@ -250,7 +250,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
           metadata.set('title', finalTitle);
           
         } else {
-          console.warn('⚠️ [Breadcrumb] Y.Doc non trouvé pour', noteId);
+          
         }
 
         // Émettre un événement pour synchroniser avec la page de note
@@ -393,6 +393,12 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
       return [
         { label: 'Profil', href: '/profil' },
         { label: 'Corbeille', isActive: true },
+      ];
+    }
+
+    if (pathname === '/a2f') {
+      return [
+        { label: 'Authentification à deux facteurs', isActive: true },
       ];
     }
 
@@ -593,7 +599,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
                             folderId={folderId!} 
                             folderName={folderData.Nom || folderName}
                             folderDescription={folderData.Description || ""}
-                            folderColor={folderData.CouleurTag || "#882626"}
+                            folderColor={folderData.CouleurTag || "var(--primary)"}
                             noteCount={folderData.noteCount || 0}
                             onUpdate={async (name: string, description: string, color: string) => {
                               // La mise à jour sera gérée par la page dossiers/[id]

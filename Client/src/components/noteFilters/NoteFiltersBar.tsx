@@ -122,7 +122,7 @@ export function NoteFiltersBar({
     <>
       {/* Header Mobile */}
       {!hideMobileHeader && (
-        <div className="block xl:hidden md:block">
+        <div className="block md:hidden">
           <header className="p-4">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-primary">{mobileTitle}</h1>
@@ -221,7 +221,7 @@ export function NoteFiltersBar({
       )}
 
       {/* Barre de recherche et filtres - Desktop */}
-      <div className="hidden xl:block md:hidden">
+      <div className="hidden md:block">
         <div className="flex flex-wrap items-stretch justify-center gap-3 p-4 h-full">
           <SearchBar
             searchTerm={searchTerm}

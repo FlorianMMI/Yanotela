@@ -6,7 +6,6 @@ env:
   DOCKER_USERNAME: jefee
   DOCKER_FRONTEND_REPO: jefee/yanotela-frontend
   DOCKER_BACKEND_REPO: jefee/yanotela-backend
-  EC2_HOST: yanotela.fr
   EC2_USER: ubuntu
   DEPLOY_PATH: /var/www/yanotela
 permissions:
@@ -39,7 +38,7 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=https://yanotela.fr/api
-            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.PROD_TURNSTILE_SITE_KEY }}
+
           tags: |
             ${{ env.DOCKER_FRONTEND_REPO }}:production
             ${{ env.DOCKER_FRONTEND_REPO }}:production-${{ github.sha }}
@@ -86,7 +85,7 @@ jobs:
       - name: Deploy to Production EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ env.EC2_HOST }}
+          host: ${{ secrets.EC2_PROD_HOST_IP }}
           username: ${{ env.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
@@ -162,8 +161,6 @@ jobs:
             # Créer le fichier .env
             cat > .env << 'EOF'
             ${{ secrets.ENV_PROD_FILE }}
-            ${{ secrets.PROD_TURNSTILE_SITE_KEY }}
-            ${{ secrets.PROD_TURNSTILE_SECRET_KEY }}
             EOF
 
             # Arrêter les anciens conteneurs

@@ -2,9 +2,8 @@
 
 import React, { useState, useId } from 'react';
 import { useRouter } from 'next/navigation';
-
 import GoogleAuthButton from './GoogleAuthButton';
-import Turnstile from './Turnstile';
+
 import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon} from '@/libs/Icons';
 
 interface LoginFormProps {
@@ -48,42 +47,35 @@ export default function LoginForm({
       setIsLoading(false);
       return;
     }
-    
-    // Créer un formulaire HTML temporaire pour la soumission, comme avec Google Auth
-    const tempForm = document.createElement('form');
-    tempForm.method = 'POST';
-    tempForm.action = `${process.env.NEXT_PUBLIC_API_URL}/login`;
 
-    // Créer les champs cachés
-    const identifiantInput = document.createElement('input');
-    identifiantInput.type = 'hidden';
-    identifiantInput.name = 'identifiant';
-    identifiantInput.value = identifiant;
-
-    const passwordInput = document.createElement('input');
-    passwordInput.type = 'hidden';
-    passwordInput.name = 'password';
-    passwordInput.value = password;
-
-    tempForm.appendChild(identifiantInput);
-    tempForm.appendChild(passwordInput);
-    // Attach Turnstile token if present
     try {
-      const token = (typeof window !== 'undefined') ? (document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value) : undefined;
-      if (token) {
-        const tokenInput = document.createElement('input');
-        tokenInput.type = 'hidden';
-        tokenInput.name = 'cf-turnstile-response';
-        tokenInput.value = token;
-        tempForm.appendChild(tokenInput);
-      }
-    } catch (err) {
-      // ignore
-    }
-    document.body.appendChild(tempForm);
 
-    // Soumettre le formulaire pour permettre la redirection serveur
-    tempForm.submit();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', 
+        body: JSON.stringify({
+          identifiant,
+          password,
+         
+        }),
+      });      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.error || 'Identifiants incorrects');
+        setIsLoading(false);
+        return;
+      }
+
+      // Succès - rediriger vers /notes
+      // Utiliser window.location pour forcer un rechargement complet et mettre à jour l'état d'auth
+      window.location.href = '/notes';
+    } catch (err) {
+      setError('Erreur de connexion au serveur');
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -163,11 +155,7 @@ export default function LoginForm({
             Mot de passe oublié ?
           </button>
         )}
-      
-        {/* Turnstile widget (will be a no-op in non-prod) */}
-        <div className="w-full mt-3">
-          <Turnstile />
-        </div>
+
         <button 
           type="submit" 
           disabled={isLoading}
@@ -178,7 +166,6 @@ export default function LoginForm({
           </p>
           <ArrowBarIcon className="text-white pointer-events-none" width={40} height={40} />
         </button>
-
 
         {/* Séparateur et connexion Google */}
         <div className="flex flex-col items-center gap-4 w-full">

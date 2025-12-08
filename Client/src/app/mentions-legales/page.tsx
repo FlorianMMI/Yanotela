@@ -12,13 +12,6 @@ export default function MentionsLegalesPage() {
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Header avec retour */}
         <div className="mb-8">
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors mb-4"
-          >
-            <ArrowIcon className="w-5 h-5" />
-            <span className="font-medium">Retour</span>
-          </Link>
           <h1 className="text-4xl font-bold text-clrprincipal mb-2">
             Mentions Légales
           </h1>

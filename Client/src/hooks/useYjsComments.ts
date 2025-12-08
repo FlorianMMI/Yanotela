@@ -24,6 +24,7 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
   const [isConnected, setIsConnected] = useState(false);
   const yArrayRef = useRef<Y.Array<YjsComment> | null>(null);
   const docRef = useRef<Y.Doc | null>(null);
+  const observerRef = useRef<(() => void) | null>(null);
 
   // Fonction pour synchroniser l'état local avec le Y.Array
   const syncComments = useCallback(() => {
@@ -55,7 +56,7 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
       // Timeout après 5s
       const timeout = setTimeout(() => {
         clearInterval(checkInterval);
-        console.warn('[useYjsComments] Timeout en attendant le document YJS');
+        
       }, 5000);
 
       return () => {
@@ -73,10 +74,11 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
       const yComments = yjsDoc.getArray<YjsComment>('comments');
       yArrayRef.current = yComments;
 
-      // Observer les changements
+      // Observer les changements - stocker la référence pour le cleanup
       const observer = () => {
         syncComments();
       };
+      observerRef.current = observer;
 
       yComments.observe(observer);
       
@@ -97,9 +99,10 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
     }
 
     return () => {
-      // Cleanup: retirer l'observer
-      if (yArrayRef.current) {
-        yArrayRef.current.unobserve(syncComments);
+      // Cleanup: retirer l'observer avec la même référence de fonction
+      if (yArrayRef.current && observerRef.current) {
+        yArrayRef.current.unobserve(observerRef.current);
+        observerRef.current = null;
       }
     };
   }, [noteId, syncComments]);

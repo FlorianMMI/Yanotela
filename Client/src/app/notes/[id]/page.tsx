@@ -182,7 +182,7 @@ function YjsSyncPlugin({
         const ydoc = yjsDocuments.get(noteId);
 
         if (!ydoc) {
-          console.warn("⚠️ [YjsSync] Y.Doc non trouvé pour", noteId);
+          
           setSyncStatus("error");
           return;
         }
@@ -382,6 +382,8 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
 
 /**
  * Plugin pour charger le contenu initial de la note dans l'éditeur
+ * IMPORTANT: Ce plugin ne charge le contenu JSON que si le Y.Doc est vide
+ * (le Y.Doc initialisé via registerInitialYjsState a la priorité)
  */
 function LoadInitialContentPlugin({
   content,
@@ -400,14 +402,14 @@ function LoadInitialContentPlugin({
 
     (async () => {
       try {
-        // If a Y.Doc already exists and contains state, prefer Y.Doc as source of truth
+        // Attendre que le CollaborationPlugin ait créé le Y.Doc
         const { yjsDocuments } = await import("@/collaboration/providers");
         let ydoc = yjsDocuments.get(noteId);
 
-        // If the provider hasn't been created yet, wait briefly for it (small race window)
+        // Attendre brièvement que le provider soit créé
         if (!ydoc) {
           const start = Date.now();
-          const maxWait = 300; // ms
+          const maxWait = 500; // Augmenté à 500ms pour laisser le temps au CollaborationPlugin
           while (Date.now() - start < maxWait && !cancelled) {
             await new Promise((r) => setTimeout(r, 50));
             const { yjsDocuments: yjsDocumentsRetry } = await import(
@@ -420,12 +422,13 @@ function LoadInitialContentPlugin({
 
         if (ydoc) {
           // Vérifier si le Y.Doc contient réellement du contenu
-          // (pas juste un état YJS vide qui a quand même un encoded.length > 0)
-          const yXmlText = ydoc.get('root', Y.XmlText);
-          const textContent = yXmlText ? yXmlText.toString().trim() : '';
+          // Le CollaborationPlugin utilise 'root' comme clé pour le Y.XmlElement
+          const encodedState = Y.encodeStateAsUpdate(ydoc);
           
-          if (textContent.length > 0) {
-            // Y.Doc contient du vrai contenu — skip applying DB content to avoid duplication
+          // Un Y.Doc vide a généralement un état < 10 bytes
+          // Un Y.Doc avec du contenu (même un seul paragraphe) a > 10 bytes
+          if (encodedState.length > 10) {
+            // Y.Doc contient du contenu — ne pas écraser avec le JSON de la DB
             hasLoadedRef.current = true;
             return;
           }
@@ -553,9 +556,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   function updateNoteTitle(newTitle: string) {
     if (isReadOnly) {
-      console.warn(
-        "🔒 [Permissions] Modification titre bloquée (lecture seule)"
-      );
+      
       return;
     }
 
@@ -641,27 +642,19 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         const note = noteData;
         setNoteTitle(note.Titre || "Sans titre");
 
-        // ✅ Charger le contenu initial dans l'éditeur
+        // Charger le contenu initial dans l'éditeur
         if (note.Content) {
           setInitialEditorContent(note.Content);
         } else {
-          console.warn("⚠️ [LoadNote] Pas de contenu dans la note");
           setInitialEditorContent(null);
         }
 
-        // ✅ Gestion des permissions (lecture seule)
+        // Gestion des permissions (lecture seule)
         if (note.userRole !== undefined) {
           // Role 3 = lecture seule → bloquer l'édition
           const readOnly = note.userRole === 3;
           setIsReadOnly(readOnly);
-
-          if (readOnly) {
-          } else {
-          }
         } else {
-          console.warn(
-            "⚠️ [Permissions] userRole non reçu du serveur, défaut = édition"
-          );
           setIsReadOnly(false);
         }
       } catch (error) {
@@ -810,9 +803,6 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     };
   }, [id]);
 
-
-
-
   return (
     <div className="flex flex-col gap-4 w-full h-full">
       {/* Notifications */}
@@ -826,7 +816,6 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           {error}
         </div>
       )}
-
 
       {/* Mobile Header */}
       <div className="flex rounded-lg p-2.5 items-center md:hidden bg-primary text-white sticky top-2 z-10">
@@ -932,13 +921,13 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
                 <EditorRefPlugin onEditorReady={setEditor} />
 
-                {/* Charger le contenu initial depuis la base de données (yjs-aware) */}
+                {/* Charger le contenu initial depuis la base de données */}
                 <LoadInitialContentPlugin
                   content={initialEditorContent}
                   noteId={id}
                 />
 
-                {/* ✅ Toujours utiliser CollaborationPlugin pour la sync temps réel */}
+                {/* CollaborationPlugin pour synchronisation temps réel */}
                 <CollaborationPlugin
                   id={id}
                   providerFactory={providerFactory}

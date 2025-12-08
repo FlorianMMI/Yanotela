@@ -33,8 +33,21 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
   // Séparé : vérification auth pure (sans redirection)
   const checkAuth = useCallback(async (): Promise<void> => {
+    // Ne rien faire côté serveur (SSR)
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     setLoading(true);
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!API_URL) {
+      console.error('❌ NEXT_PUBLIC_API_URL not configured');
+      setIsAuthenticated(false);
+      setUser(null);
+      setLoading(false);
+      return;
+    }
 
     const doFetch = async (url: string) => {
       try {
@@ -44,23 +57,13 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         clearTimeout(timeout);
         return resp;
       } catch (e) {
+        console.error('❌ Auth check failed:', e);
         return null;
       }
     };
 
     try {
-      const primaryBase = API_URL || (typeof window !== 'undefined' ? window.location.origin : '');
-      let response = null;
-
-      if (primaryBase) {
-        response = await doFetch(`${primaryBase}/auth/check`);
-      }
-
-      // If primary failed and API_URL was set, try a relative fallback
-      if (!response && API_URL) {
-        response = await doFetch('/auth/check');
-        console.warn('[AuthWrapper] primary auth check failed, attempted relative fallback');
-      }
+      const response = await doFetch(`${API_URL}/auth/check`);
 
       if (!response) {
         throw new Error('No response from auth endpoint');
@@ -75,7 +78,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         setUser(null);
       }
     } catch (err) {
-      console.warn('Auth check failed:', err instanceof Error ? err.message : err);
+      console.error('❌ Auth check error:', err);
       setIsAuthenticated(false);
       setUser(null);
     } finally {

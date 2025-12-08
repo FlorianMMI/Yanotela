@@ -7,14 +7,13 @@ import FolderList from "@/components/folderList/FolderList";
 import { GetFolders } from "@/loader/loader";
 import { SearchMode } from "@/ui/searchbar";
 
-// Métadonnées SEO gérées côté serveur dans layout.tsx
-
 export default function FoldersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchMode, setSearchMode] = useState<SearchMode>("title"); // Force title mode pour les dossiers
   const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [colorFilters, setColorFilters] = useState<string[]>([]);
+  
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
 

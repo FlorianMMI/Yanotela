@@ -74,14 +74,6 @@ export default function Corbeille() {
 
   return (
     <div className="h-full w-full bg-fondpage p-4">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <ReturnButton />
-        <div className="flex items-center gap-2">
-          <TrashIcon className="text-clrprincipal w-6 h-6" />
-          <h1 className="text-2xl font-bold text-clrprincipal">Corbeille</h1>
-        </div>
-      </div>
 
       {/* Liste des notes */}
       {notes.length === 0 ? (

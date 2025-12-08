@@ -25,7 +25,7 @@ export const DossierController = {
         data: {
           Nom: Nom.trim(),
           Description: Description?.trim() || null,
-          CouleurTag: CouleurTag || "#882626",
+          CouleurTag: CouleurTag || "var(--primary)",
           authorId,
         },
       });

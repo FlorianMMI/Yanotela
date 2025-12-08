@@ -41,6 +41,8 @@ jobs:
               const before = result;
               result = result.replace(/console\.log\s*\([^()]*\)\s*;?/g, '');
               result = result.replace(/console\.log\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.warn\s*\([^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.warn\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
               hasChanges = before !== result;
             }
             return result.replace(/\n\s*\n\s*\n/g, '\n\n');
@@ -92,6 +94,8 @@ jobs:
               const before = result;
               result = result.replace(/console\.log\s*\([^()]*\)\s*;?/g, '');
               result = result.replace(/console\.log\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.warn\s*\([^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.warn\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
               hasChanges = before !== result;
             }
             return result.replace(/\n\s*\n\s*\n/g, '\n\n');
@@ -135,10 +139,10 @@ jobs:
           
           # Vérifier s'il y a des changements
           if git diff --quiet && git diff --staged --quiet; then
-            echo "✅ Aucun console.log trouvé - rien à commiter"
+            echo "✅ Aucun console.log/warn trouvé - rien à commiter"
           else
             git add .
-            git commit -m "🧹 chore: Remove console.logs [automated cleanup]"
+            git commit -m "🧹 chore: Remove console.log/warn [automated cleanup]"
             git push
-            echo "✅ Console.logs supprimés et changements poussés"
+            echo "✅ Console.log/warn supprimés et changements poussés"
           fi

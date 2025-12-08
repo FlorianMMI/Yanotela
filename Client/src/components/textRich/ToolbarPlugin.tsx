@@ -5,36 +5,12 @@
  */
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-    SELECTION_CHANGE_COMMAND,
-    FORMAT_TEXT_COMMAND,
-    FORMAT_ELEMENT_COMMAND,
-    $getSelection,
-    $isRangeSelection,
-    COMMAND_PRIORITY_LOW,
-    $isTextNode,
-    $insertNodes,
-} from 'lexical';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, $getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, $isTextNode, $insertNodes } from 'lexical';
 import { $patchStyleText } from '@lexical/selection';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list';
 import { mergeRegister } from '@lexical/utils';
-import {
-    BoldIcon,
-    ItalicIcon,
-    UnderlineIcon,
-    StrikethroughIcon,
-    FontColorIcon,
-    BackgroundColorIcon,
-    ListUlIcon,
-    ListOlIcon,
-    TextLeftIcon,
-    TextCenterIcon,
-    TextRightIcon,
-    TextJustifyIcon,
-    MediaIcon,
-    ModifIcon,
-} from '@/libs/Icons';
+import {BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, FontColorIcon, BackgroundColorIcon, ListUlIcon, ListOlIcon, TextLeftIcon, TextCenterIcon, TextRightIcon, TextJustifyIcon, MediaIcon, ModifIcon, } from '@/libs/Icons';
 import { $createImageNode } from '@/components/flashnote/ImageNode';
 import { $createAudioNode } from '@/components/flashnote/AudioNode';
 import { $createVideoNode } from '@/components/flashnote/VideoNode';
@@ -83,12 +59,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                 if (key === 'font-size') styles.fontSize = val;
                 else if (key === 'font-family') styles.fontFamily = val;
                 else if (key === 'color') styles.fontColor = val;
-                else if (key === 'background-color') {
-                    // Treat fully transparent as no background
-                    if (val !== 'rgba(0, 0, 0, 0)' && val !== 'transparent') {
-                        styles.backgroundColor = val;
-                    }
-                }
+                else if (key === 'background-color') styles.backgroundColor = val;
             });
         } else if (typeof rawStyle === 'object') {
             const styleObj = rawStyle as Record<string, unknown>;
@@ -142,9 +113,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                 if (fontSize) fontSizes.add(fontSize);
                 if (fontFamily) fontFamilies.add(fontFamily);
                 if (fontColor) fontColors.add(fontColor);
-                if (backgroundColor) {
-                    backgroundColors.add(backgroundColor);
-                }
+                if (backgroundColor) backgroundColors.add(backgroundColor);
             }
         });
 
@@ -152,7 +121,16 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         setFontSize(fontSizes.size === 1 ? Array.from(fontSizes)[0] : fontSizes.size > 1 ? '' : '16px');
         setFontFamily(fontFamilies.size === 1 ? Array.from(fontFamilies)[0] : fontFamilies.size > 1 ? '' : 'Gantari');
         if (fontColors.size === 1) setFontColor(Array.from(fontColors)[0]);
-        // if (backgroundColors.size === 1) setBackgroundColor(Array.from(backgroundColors)[0]);
+        if (backgroundColors.size === 1){
+            const tempcolor = Array.from(backgroundColors)[0];
+            if (tempcolor == '#ffffff' || tempcolor == '#FFFFFF'){
+                setBackgroundColor('#727272');
+            }
+            else{
+                setBackgroundColor(Array.from(backgroundColors)[0]);
+            }
+             
+        }
 
         // Format toggles
         const sel = selection as { hasFormat?: (format: string) => boolean };
@@ -327,9 +305,17 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
     }, [applyStyleText]);
 
     const handleBackgroundColorChange = useCallback((color: string) => {
-        const iconColor = color === '#FFFFFF' ? '#727272' : color;
-        setBackgroundColor(iconColor);
-        applyStyleText({ 'background-color': color });
+        
+        if (color == '#ffffff' || color == '#FFFFFF') {
+            
+            setBackgroundColor('#727272');
+            applyStyleText({ 'background-color': color });
+        }
+        else {
+            setBackgroundColor(color);
+            applyStyleText({ 'background-color': color });
+        }
+        
     }, [applyStyleText]);
 
     const handleFontSizeChange = useCallback((size: string) => {
@@ -342,16 +328,17 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         applyStyleText({ 'font-family': family });
     }, [applyStyleText]);
 
-    const formatList = useCallback((listType: 'bullet' | 'number') => {
+    const formatList = (listType: 'bullet' | 'number') => {
         if (isInBulletList || isInNumberedList) {
             editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
         } else {
-            const command = listType === 'bullet' 
-                ? INSERT_UNORDERED_LIST_COMMAND 
-                : INSERT_ORDERED_LIST_COMMAND;
-            editor.dispatchCommand(command, undefined);
+            if (listType === 'bullet') {
+                editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
+            } else {
+                editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
+            }
         }
-    }, [editor, isInBulletList, isInNumberedList]);
+    };
 
     const handleImageImport = useCallback(() => {
         fileInputRef.current?.click();
@@ -371,10 +358,10 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
             return;
         }
 
-        // Check file size (max 10MB)
-        const maxSize = 10 * 1024 * 1024;
-        const maxSizeLabel = '10MB';
-        if (file.size > maxSize) {
+        // Check file size (max 50MB for video, 10MB for audio, 5MB for images)
+        const maxSize= 10 * 1024 * 1024;
+        const maxSizeLabel= '10MB';
+       if (file.size > maxSize) {
             alert(`Le fichier est trop volumineux (max ${maxSizeLabel})`);
             return;
         }
@@ -384,7 +371,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
             const src = e.target?.result as string;
             if (src) {
                 if (isImage) {
-                    // Load image to get dimensions before inserting
+                    // Load image to get dimensions
                     const img = new window.Image();
                     img.onload = () => {
                         editor.update(() => {
@@ -393,14 +380,13 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                 altText: file.name,
                                 width: img.width,
                                 height: img.height,
-                                isDrawing: false,
+                                isDrawing: false, // Imported images are not drawings
                             });
                             $insertNodes([imageNode]);
                         });
                     };
                     img.onerror = () => {
-                        console.error('Failed to load image');
-                        alert('Erreur lors du chargement de l\'image');
+                        alert("Erreur lors du chargement de l'image");
                     };
                     img.src = src;
                 } else {
@@ -444,6 +430,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     aria-label="Gras"
                     title="Gras (Ctrl+B)">
                     <BoldIcon width={20} height={20} />
+
                 </button>
                 <button
                     onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}
@@ -458,6 +445,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     aria-label="Souligner"
                     title="Souligner (Ctrl+U)">
                     <UnderlineIcon width={20} height={20} />
+
                 </button>
                 <button
                     onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')}
@@ -465,10 +453,11 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     aria-label="Barré"
                     title="Barré">
                     <StrikethroughIcon width={20} height={20} />
+
                 </button>
 
                 <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
-
+                
                 {/* Selection de la police d'écriture */}
                 <select
                     value={fontFamily || ''}
@@ -506,7 +495,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                 </select>
 
                 <div className="relative flex items-center gap-2">
-                    <ColorPalette value={fontColor} onChange={handleFontColorChange} asButton small buttonIcon={<FontColorIcon />} />
+                    <ColorPalette  value={fontColor} onChange={handleFontColorChange} asButton small buttonIcon={<FontColorIcon />} />
                 </div>
 
                 <div className="relative flex items-center gap-2">
@@ -611,8 +600,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     {/* Format submenu */}
                     <div className="relative">
                         <button
-                            onMouseDown={(e) => e.preventDefault()}
-                            onTouchStart={(e) => e.preventDefault()}
                             onClick={() => {
                                 setShowFormatMenu(!showFormatMenu);
                                 setShowSizeMenu(false);
@@ -632,8 +619,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                 />
                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200">
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
                                             setShowFormatMenu(false);
@@ -643,8 +628,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                         <span>Gras</span>
                                     </button>
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
                                             setShowFormatMenu(false);
@@ -654,8 +637,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                         <span>Italique</span>
                                     </button>
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
                                             setShowFormatMenu(false);
@@ -665,8 +646,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                         <span>Souligner</span>
                                     </button>
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
                                             setShowFormatMenu(false);
@@ -683,8 +662,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     {/* Options submenu (Size, Color, Export) */}
                     <div className="relative">
                         <button
-                            onMouseDown={(e) => e.preventDefault()}
-                            onTouchStart={(e) => e.preventDefault()}
                             onClick={() => {
                                 setShowSizeMenu(!showSizeMenu);
                                 setShowFormatMenu(false);
@@ -694,6 +671,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showSizeMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Options">
                             <FontColorIcon width={26} height={26} />
+                            
                         </button>
 
                         {showSizeMenu && (
@@ -775,8 +753,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     {/* List submenu */}
                     <div className="relative">
                         <button
-                            onMouseDown={(e) => e.preventDefault()}
-                            onTouchStart={(e) => e.preventDefault()}
                             onClick={() => {
                                 setShowListMenu(!showListMenu);
                                 setShowFormatMenu(false);
@@ -786,6 +762,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showListMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Listes">
                             <ListUlIcon width={26} height={26} />
+                            
                         </button>
 
                         {showListMenu && (
@@ -796,8 +773,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                 />
                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200">
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             formatList('bullet');
                                             setShowListMenu(false);
@@ -807,8 +782,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                         <span>Liste à puces</span>
                                     </button>
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             formatList('number');
                                             setShowListMenu(false);
@@ -825,8 +798,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     {/* Alignment submenu */}
                     <div className="relative">
                         <button
-                            onMouseDown={(e) => e.preventDefault()}
-                            onTouchStart={(e) => e.preventDefault()}
                             onClick={() => {
                                 setShowAlignMenu(!showAlignMenu);
                                 setShowFormatMenu(false);
@@ -846,8 +817,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                 />
                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200">
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
                                             setShowAlignMenu(false);
@@ -857,8 +826,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                         <span>Gauche</span>
                                     </button>
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
                                             setShowAlignMenu(false);
@@ -868,8 +835,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                         <span>Centre</span>
                                     </button>
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
                                             setShowAlignMenu(false);
@@ -879,8 +844,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                         <span>Droite</span>
                                     </button>
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onTouchStart={(e) => e.preventDefault()}
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify');
                                             setShowAlignMenu(false);
@@ -896,23 +859,21 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
 
                     {/* Media import button for mobile */}
                     <button
-                        onMouseDown={(e) => e.preventDefault()}
-                        onTouchStart={(e) => e.preventDefault()}
                         onClick={handleImageImport}
                         className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
                         aria-label="Importer un média">
                         <MediaIcon width={26} height={26} />
+                        
                     </button>
 
                     {/* Drawing Board button for mobile */}
                     {onOpenDrawingBoard && (
                         <button
-                            onMouseDown={(e) => e.preventDefault()}
-                            onTouchStart={(e) => e.preventDefault()}
                             onClick={onOpenDrawingBoard}
                             className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
                             aria-label="Ouvrir le tableau de dessin">
                             <ModifIcon width={26} height={26} />
+                            
                         </button>
                     )}
                 </div>

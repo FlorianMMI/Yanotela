@@ -130,6 +130,9 @@ export default function ColorPalette({
         return <div className={`inline-flex items-center ${small ? 'h-7' : ''}`}>{palette}</div>;
     }
 
+    // Determine if the color is bright (needs dark background)
+    const isBrightColor = luminance(value) > 0.7;
+
     return (
         <>
             <button
@@ -137,7 +140,10 @@ export default function ColorPalette({
                 type="button"
                 onClick={() => (isOpen ? setIsOpen(false) : openAtTrigger())}
                 aria-label="Ouvrir la palette de couleurs"
-                className={`flex items-center justify-center rounded-md p-1 ${small ? 'w-7 h-7' : 'w-8 h-8'} border border-gray-200 bg-white`}
+                className={`flex items-center justify-center rounded-md p-1 ${small ? 'w-7 h-7' : 'w-8 h-8'} border border-gray-200 transition-colors duration-200`}
+                style={{
+                    backgroundColor: isBrightColor ? '#000000' : '#ffffff',
+                }}
             >
                 {React.isValidElement(buttonIcon)
                     ? React.cloneElement(buttonIcon as React.ReactElement<React.SVGProps<SVGSVGElement>>, {

@@ -39,6 +39,17 @@ export default function Home() {
     fetchNotes();
   }, [fetchNotes]);
 
+  // Handler to update a single note in-place (avoid full reload)
+  const handleSingleNoteUpdate = (updatedNote?: Note) => {
+    if (!updatedNote) {
+      // Fallback: full refresh
+      fetchNotes();
+      return;
+    }
+
+    setNotes((prev) => prev.map((n) => (n.id === updatedNote.id ? updatedNote : n)));
+  };
+
   // Filtrer et trier les notes
   const filteredNotes = Array.isArray(notes) ? notes
     .filter(note => {
@@ -71,9 +82,9 @@ export default function Home() {
       let matchesTagColor = true;
       if (tagColorFilter) {
         if (tagColorFilter === 'var(--primary)') {
-          matchesTagColor = !note.tag || note.tag === '' || note.tag === 'var(--primary)';
+          matchesTagColor = !note.tag || !note.tag.couleur;
         } else {
-          matchesTagColor = note.tag === tagColorFilter;
+          matchesTagColor = note.tag?.couleur === tagColorFilter;
         }
       }
 
@@ -112,6 +123,7 @@ export default function Home() {
           <NoteList
             notes={filteredNotes}
             onNoteCreated={fetchNotes}
+            onNoteUpdated={handleSingleNoteUpdate}
             isLoading={loading}
             searchTerm={searchTerm}
             searchMode={searchMode}

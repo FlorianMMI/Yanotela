@@ -23,7 +23,7 @@ export default function ItemBar() {
                 if (note && !('error' in note) && typeof note === 'object') {
                     // Récupérer le tag de la note
                     if ('tag' in note) {
-                        setItemColor(note.tag || 'var(--primary)');
+                        setItemColor(note.tag?.couleur || 'var(--primary)');
                     }
                     
                     // Vérifier le rôle pour le mode lecture seule
@@ -74,7 +74,7 @@ export default function ItemBar() {
                 (async () => {
                     const note = await GetNoteById(pathname.split('/').pop()!);
                     if (note && !('error' in note) && typeof note === 'object' && 'tag' in note) {
-                        setItemColor(note.tag || 'var(--primary)');
+                        setItemColor(note.tag?.couleur || 'var(--primary)');
                     }
                 })();
             } else if (foldersIdRegex.test(pathname)) {

@@ -38,7 +38,7 @@ export function TitleSyncPlugin({
   useEffect(() => {
     const ydoc = yjsDocuments.get(noteId);
     if (!ydoc) {
-      console.warn('⚠️ [TitleSync] Y.Doc non trouvé pour', noteId);
+      
       return;
     }
 
