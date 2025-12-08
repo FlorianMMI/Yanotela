@@ -8,6 +8,7 @@ import { checkAuthResponse } from '@/utils/authFetch';
 import { FetchPermission } from '@/loader/loader';
 import { useYjsComments } from '@/hooks/useYjsComments';
 
+
 interface ParamModalProps {
     onClose: () => void;
 }
@@ -142,7 +143,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                             <div className="text-center text-element">Connexion en cours...</div>
                         ) : (
                             comments.length === 0 ? (
-                                <div className="text-center text-background">Aucun commentaire pour cette note.</div>
+                                <div className="text-center text-element">Aucun commentaire pour cette note.</div>
                             ) : (
                                 comments.map((comment) => (
                                     <Comment
