@@ -514,11 +514,11 @@ export const userController = {
       return res.status(200).json({
       success: true,
       user: {
-        pseudo: info.pseudo,
-        nom: info.nom,
-        prenom: info.prenom,
-        email: info.email,
-        noteCount: info._count?.notes ?? 0,
+        Pseudonyme: info.pseudo,
+        Nom: info.nom,
+        Prénom: info.prenom,
+        "E-mail": info.email,
+        "Nombre de notes": info._count?.notes ?? 0,
       },
       });
     } catch (error) {
