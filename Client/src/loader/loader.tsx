@@ -2,6 +2,7 @@ import { Note } from '@/type/Note';
 import { Folder } from '@/type/Folder';
 import { Permission } from '@/type/Permission';
 import { checkAuthResponse } from '@/utils/authFetch';
+import { useRouter } from 'next/navigation';
 
 function getApiUrl() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -1404,10 +1405,8 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
     }
 }
 
+export async function Setup2FA(): Promise<{ success: boolean; message?: string; error?: string; redirectUrl?: string }> {
 
-// Fonction pour la gestion de l'a2f 
-
-export async function Setup2FA(): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/user/2fa/setup`, {
             method: 'POST',
@@ -1423,7 +1422,7 @@ export async function Setup2FA(): Promise<{ success: boolean; message?: string; 
         }
         if (response.ok) {
             const data = await response.json();
-            return { success: true, message: data.message || '2FA setup initiated successfully' };
+            return { success: true, message: data.message || '2FA setup initiated successfully', redirectUrl: '/a2f' };
         }
         else {
             const errorData = await response.json().catch(() => ({}));
