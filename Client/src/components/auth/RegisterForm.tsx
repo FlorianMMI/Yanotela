@@ -8,7 +8,6 @@ import ConfirmPassword from '@/ui/confirm-password';
 import { Register } from '@/loader/loader';
 import FormMessage from '@/ui/form/FormMessage';
 import GoogleAuthButton from './GoogleAuthButton';
-
 import { ArrowBarIcon } from '@/libs/Icons';
 
 interface RegisterFormProps {
@@ -273,8 +272,6 @@ export default function RegisterForm({
             </Link>
           </span>
         </label>
-
-
         <button
           type="submit"
           className={`w-full p-2.5 rounded-[10px] flex justify-between items-center overflow-hidden transition-all duration-300 ${
