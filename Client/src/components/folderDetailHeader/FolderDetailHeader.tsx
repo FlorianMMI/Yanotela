@@ -59,7 +59,7 @@ export default function FolderDetailHeader({
           </div>
 
           {/* Nom du dossier */}
-          <h2 className="flex-1 font-semibold text-base truncate">
+          <h2 className="block md:hidden flex-1 font-semibold text-base truncate">
             {folderName}
           </h2>
 

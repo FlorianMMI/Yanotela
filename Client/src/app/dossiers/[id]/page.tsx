@@ -178,7 +178,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             {/* Header mobile avec filtres */}
             <FolderDetailHeader
                 folderName={folder?.Nom || ""}
-                folderColor={folder?.CouleurTag || "#882626"}
+                folderColor={folder?.CouleurTag || "var(--primary)"}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchMode={searchMode}

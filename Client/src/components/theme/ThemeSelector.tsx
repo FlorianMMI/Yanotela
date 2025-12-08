@@ -92,7 +92,7 @@ export default function ThemeSelector({ className = "" }: ThemeSelectorProps) {
     const colors = [
       style.getPropertyValue(`--${themeId}-background`).trim() || "#E9EBDB",
       style.getPropertyValue(`--${themeId}-deskbackground`).trim() || "#EDEDED",
-      style.getPropertyValue(`--${themeId}-primary`).trim() || "#882626",
+      style.getPropertyValue(`--${themeId}-primary`).trim() || "var(--primary)",
       style.getPropertyValue(`--${themeId}-foreground`).trim() || "#171717",
     ];
     
