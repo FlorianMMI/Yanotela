@@ -36,6 +36,9 @@ export default function TagManagementModal({ isOpen, onClose, onTagsUpdated }: T
   const [error, setError] = useState<string | null>(null);
   const [primaryColor, setPrimaryColor] = useState<string>(getPrimaryColor());
 
+  // Exclure la couleur primaire des options proposées
+  const colorOptions = FOLDER_COLORS.slice(0, 6).filter(c => c.value !== 'var(--primary)');
+
   useEffect(() => {
     const updatePrimaryColor = () => {
       setPrimaryColor(getPrimaryColor());
@@ -198,7 +201,7 @@ export default function TagManagementModal({ isOpen, onClose, onTagsUpdated }: T
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Couleur</label>
                 <div className="flex gap-2">
-                  {FOLDER_COLORS.slice(0, 6).map((color) => {
+                  {colorOptions.map((color) => {
                     const colorValue = color.value === 'var(--primary)' ? primaryColor : color.value;
                     return (
                       <button
@@ -250,7 +253,7 @@ export default function TagManagementModal({ isOpen, onClose, onTagsUpdated }: T
                             disabled={isLoading}
                           />
                           <div className="flex gap-1">
-                            {FOLDER_COLORS.slice(0, 6).map((color) => {
+                            {colorOptions.map((color) => {
                               const colorValue = color.value === 'var(--primary)' ? primaryColor : color.value;
                               return (
                                 <button
