@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { useRouter } from 'next/navigation';
-
 import GoogleAuthButton from './GoogleAuthButton';
-import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon } from '@/libs/Icons';
+
+import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon} from '@/libs/Icons';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -47,34 +47,42 @@ export default function LoginForm({
       setIsLoading(false);
       return;
     }
-    
-    // Créer un formulaire HTML temporaire pour la soumission, comme avec Google Auth
-    const tempForm = document.createElement('form');
-    tempForm.method = 'POST';
-    tempForm.action = `${process.env.NEXT_PUBLIC_API_URL}/login`;
 
-    // Créer les champs cachés
-    const identifiantInput = document.createElement('input');
-    identifiantInput.type = 'hidden';
-    identifiantInput.name = 'identifiant';
-    identifiantInput.value = identifiant;
+    try {
 
-    const passwordInput = document.createElement('input');
-    passwordInput.type = 'hidden';
-    passwordInput.name = 'password';
-    passwordInput.value = password;
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', 
+        body: JSON.stringify({
+          identifiant,
+          password,
+         
+        }),
+      });      const data = await response.json();
 
-    tempForm.appendChild(identifiantInput);
-    tempForm.appendChild(passwordInput);
-    document.body.appendChild(tempForm);
+      if (!response.ok || !data.success) {
+        setError(data.error || 'Identifiants incorrects');
+        setIsLoading(false);
+        return;
+      }
 
-    // Soumettre le formulaire pour permettre la redirection serveur
-    tempForm.submit();
+      // Succès - rediriger vers /notes
+      // Utiliser window.location pour forcer un rechargement complet et mettre à jour l'état d'auth
+      window.location.href = '/notes';
+    } catch (err) {
+      setError('Erreur de connexion au serveur');
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  const uid = useId();
 
   return (
     <div className={className}>
@@ -86,7 +94,7 @@ export default function LoginForm({
         </p>
       )}
 
-      <form role="form" onSubmit={handleSubmit} id="login-form" className="w-full flex flex-col justify-center items-start gap-2.5">
+      <form role="form" onSubmit={handleSubmit} id={`${uid}-login-form`} className="w-full flex flex-col justify-center items-start gap-2.5">
         {error && (
           <div className="w-full p-2.5 bg-dangerous-100 border-dangerous-600 text-dangerous-600 rounded-[10px] text-sm">
             {error}
@@ -99,12 +107,12 @@ export default function LoginForm({
           </p>
         )}
         
-        <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
+          <div data-property-1="Mail" className="w-full border-primary border-2 p-2.5 bg-clrsecondaire rounded-[10px] flex justify-start items-center gap-2.5">
           <AtIcon className="text-gray-400" width={20} height={20} />
           <input 
             type="text" 
             name="identifiant"
-            id="identifiant"
+            id={`${uid}-identifiant`}
             placeholder="Votre mail ou pseudonyme"
             required
             className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
@@ -118,7 +126,7 @@ export default function LoginForm({
             <input 
               type={showPassword ? "text" : "password"}
               name="password"
-              id="password"
+              id={`${uid}-password`}
               placeholder="Votre mot de passe"
               required
               className="flex-1 bg-transparent text-clrprincipal text-sm font-normal font-gant outline-none"
@@ -147,7 +155,7 @@ export default function LoginForm({
             Mot de passe oublié ?
           </button>
         )}
-      
+
         <button 
           type="submit" 
           disabled={isLoading}

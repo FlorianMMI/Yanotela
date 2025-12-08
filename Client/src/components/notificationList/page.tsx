@@ -19,6 +19,12 @@ interface NotificationListProps {
     isOpenSideBar?: boolean;
 }
 
+interface NotificationItem {
+    id: string;
+    Titre: string;
+    author: Record<string, unknown> | string | null;
+}
+
 export default function NotificationList({ isOpenSideBar = true }: NotificationListProps) {
     const [open, setOpen] = useState(false);
     const notificationRef = useRef<HTMLDivElement>(null);

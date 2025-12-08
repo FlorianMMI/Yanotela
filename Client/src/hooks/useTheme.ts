@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-
-export type ThemeType = "light" | "dark" | "blue" | "green" | "purple" | "night";
+import { ThemeType } from "@/type/Theme";
 
 export interface Theme {
   id: ThemeType;
@@ -10,12 +9,12 @@ export interface Theme {
 
 // Configuration des thèmes disponibles
 export const themes: Theme[] = [
-  { id: "light", name: "Clair" },
-  { id: "dark", name: "Sombre" },
+  { id: "light", name: "Rouge" },
+  // { id: "dark", name: "Sombre" },
   { id: "blue", name: "Bleu" },
   { id: "green", name: "Vert" },
   { id: "purple", name: "Violet" },
-  { id: "night", name: "Nuit" },
+  // { id: "night", name: "Nuit" },
 ];
 
 const defaultTheme: ThemeType = "light";

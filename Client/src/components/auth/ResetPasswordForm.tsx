@@ -45,7 +45,7 @@ export default function ResetPasswordForm({
         }
       } catch (err) {
         setStatus('error');
-        setMessage("Erreur de connexion au serveur");
+        setMessage("Erreur de connexion au serveur :" + (err as Error).message);
       }
     };
 
@@ -54,7 +54,7 @@ export default function ResetPasswordForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!password || !confirmPassword) {
       setStatus('error');
       setMessage('Veuillez remplir tous les champs');
@@ -81,7 +81,7 @@ export default function ResetPasswordForm({
       if (result.success) {
         setStatus('success');
         setMessage('Mot de passe réinitialisé avec succès. Redirection vers la connexion...');
-        
+
         if (onSuccess) {
           setTimeout(onSuccess, 2000);
         } else {

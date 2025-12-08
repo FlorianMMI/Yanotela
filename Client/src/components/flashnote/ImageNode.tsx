@@ -10,6 +10,7 @@ import {
   SerializedLexicalNode,
   Spread,
 } from "lexical";
+import Image from "next/image";
 
 export interface ImagePayload {
   src: string;
@@ -49,7 +50,7 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
       node.__width,
       node.__height,
       node.__isDrawing,
-      (node as any).__key
+      node.getKey()
     );
   }
 
@@ -146,15 +147,15 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
     } : {};
 
     return (
-      <img
+      <Image
         src={this.__src}
         alt={this.__altText}
         style={{
           ...baseStyle,
           ...drawingStyle,
         }}
-        width={this.__width}
-        height={this.__height}
+        width={this.__width || 800}
+        height={this.__height || 600}
         draggable={false}
       />
     );

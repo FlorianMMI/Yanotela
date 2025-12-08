@@ -3,17 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
 
 import { GetNoteById, GetFolderById, UpdateFolder } from '@/loader/loader';
 import NoteMore from '@/components/noteMore/NoteMore';
 import FolderMore from '@/components/folderMore/FolderMore';
 
-import { useRouter } from 'next/navigation';
 import SaveFlashNoteButton from '../flashnote/SaveFlashNoteButton';
 import ConnectedUsers from '../collaboration/ConnectedUsers';
 import { yjsDocuments } from '@/collaboration/providers';
-import { DocsIcon, FlashIcon, FolderIcon, MoreIcon, ProfileIcon } from '@/libs/Icons';
+import { DocsIcon, FlashIcon, FolderIcon, MoreIcon, ProfileIcon, Comment } from '@/libs/Icons';
+
+interface BreadcrumbProps {
+  openCommentModal?: () => void;
+}
 
 interface BreadcrumbItem {
   label: string;
@@ -22,12 +24,22 @@ interface BreadcrumbItem {
   isNoteTitle?: boolean;
 }
 
-export default function Breadcrumb() {
+export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [noteTitle, setNoteTitle] = useState<string>('');
   const [folderName, setFolderName] = useState<string>('');
-  const [folderData, setFolderData] = useState<any>(null); // Pour stocker toutes les infos du dossier
+
+  interface FolderData {
+    Nom: string;
+    Description?: string | null;
+    CouleurTag?: string | null;
+    ModifiedAt?: string | null;
+    noteCount?: number;
+    // allow other properties returned by the API without using `any`
+    [key: string]: unknown;
+  }
+
+  const [folderData, setFolderData] = useState<FolderData | null>(null); // Pour stocker toutes les infos du dossier
   const [tempFolderName, setTempFolderName] = useState<string>('');
   const [showNoteMore, setShowNoteMore] = useState(false);
   const [showFolderMore, setShowFolderMore] = useState(false);
@@ -238,7 +250,7 @@ export default function Breadcrumb() {
           metadata.set('title', finalTitle);
           
         } else {
-          console.warn('⚠️ [Breadcrumb] Y.Doc non trouvé pour', noteId);
+          
         }
 
         // Émettre un événement pour synchroniser avec la page de note
@@ -331,7 +343,6 @@ export default function Breadcrumb() {
     }
 
     if (pathname.startsWith('/notes/') && segments.length > 1) {
-      const noteId = segments[1];
       // Utiliser noteTitle s'il existe et n'est pas vide, sinon utiliser le fallback par défaut
       const displayTitle = noteTitle && noteTitle.trim() !== '' ? noteTitle : '';
       return [
@@ -382,6 +393,12 @@ export default function Breadcrumb() {
       return [
         { label: 'Profil', href: '/profil' },
         { label: 'Corbeille', isActive: true },
+      ];
+    }
+
+    if (pathname === '/a2f') {
+      return [
+        { label: 'Authentification à deux facteurs', isActive: true },
       ];
     }
 
@@ -532,6 +549,19 @@ export default function Breadcrumb() {
                     <div className="flex-1 flex justify-end min-w-0 absolute right-4 top-2">
                       <ConnectedUsers noteId={noteId} />
 
+                      <button
+                        onClick={() => {
+                          if (openCommentModal) openCommentModal();
+                        }}
+                        className="ml-2"
+                      >
+                        <Comment 
+                          width={30}
+                          height={30}
+                          className='text-primary cursor-pointer'
+                        />
+                      </button>
+
                       <span
                         onClick={() => setShowNoteMore((prev) => !prev)}
                         className="ml-2"
@@ -565,11 +595,11 @@ export default function Breadcrumb() {
                       {showFolderMore && folderData && (
                         <div className="absolute right-0 mt-10 z-100">
                           <FolderMore 
-                            folder={{ ModifiedAt: folderData.ModifiedAt }}
+                            folder={{ ModifiedAt: folderData.ModifiedAt ?? "" }}
                             folderId={folderId!} 
                             folderName={folderData.Nom || folderName}
                             folderDescription={folderData.Description || ""}
-                            folderColor={folderData.CouleurTag || "#882626"}
+                            folderColor={folderData.CouleurTag || "var(--primary)"}
                             noteCount={folderData.noteCount || 0}
                             onUpdate={async (name: string, description: string, color: string) => {
                               // La mise à jour sera gérée par la page dossiers/[id]

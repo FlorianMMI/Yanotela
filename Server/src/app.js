@@ -22,11 +22,11 @@ const __dirname = dirname(__filename);
 
 // Middleware
 app.set('trust proxy', 1);
-app.use(helmet()); // Sécurité de base
+app.use(helmet());
 app.use(sessionMiddleware);
 app.use(corsConfig);
 app.use(express.static(join(__dirname, '../public')));
-// 🔥 Augmentation de la limite pour supporter les images base64 dans yjsState
+
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
 app.disable('x-powered-by');
@@ -43,25 +43,13 @@ app.use('/awareness', awarenessRoutes); // Routes pour l'auto-synchronisation de
 
 // Route de health check pour Docker
 app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+  res.status(200).send({
   });
 });
 
 // Route de base - API uniquement
 app.get('/', (req, res) => {
-  res.json({
-    message: 'Yanotela API',
-    version: '1.0.0',
-    status: 'running',
-    authenticated: !!req.session.userId,
-    user: req.session.userId ? {
-      id: req.session.userId,
-      pseudo: req.session.pseudo
-    } : null
+res.status(200).send({
   });
 });
 

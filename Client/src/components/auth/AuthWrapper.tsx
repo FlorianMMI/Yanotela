@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import React, { useEffect, useState, createContext, useContext } from "react";
+import React, { useEffect, useState, useCallback, createContext, useContext, useMemo } from "react";
 
 type User = { id: number; pseudo: string; email: string } | null;
 
@@ -22,62 +22,91 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User>(null);
 
-  const publicRoutes = ['/login', '/register', '/forgot-password', '/'];
-  const protectedRoutes = ['/corbeille', '/dossiers', '/profil'];
-  // Les notes individuelles peuvent être publiques, donc on ne les bloque pas systématiquement
+  const publicRoutes = useMemo<string[]>(
+    () => ['/login', '/register', '/forgot-password', '/'],
+    []
+  );
+  const protectedRoutes = useMemo<string[]>(
+    () => ['/corbeille', '/dossiers', '/profil'],
+    []
+  );
 
-  const isPublicRoute = publicRoutes.some(route => pathname === route) || pathname.startsWith('/validate/');
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-  // Notes listing nécessite l'authentification, mais pas les notes individuelles
-  const isNotesListing = pathname === '/notes';
+  // Séparé : vérification auth pure (sans redirection)
+  const checkAuth = useCallback(async (): Promise<void> => {
+    // Ne rien faire côté serveur (SSR)
+    if (typeof window === 'undefined') {
+      return;
+    }
 
-  const checkAuth = async () => {
+    setLoading(true);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!API_URL) {
+      console.error('❌ NEXT_PUBLIC_API_URL not configured');
+      setIsAuthenticated(false);
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    const doFetch = async (url: string) => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const resp = await fetch(url, { method: 'GET', credentials: 'include', signal: controller.signal });
+        clearTimeout(timeout);
+        return resp;
+      } catch (e) {
+        console.error('❌ Auth check failed:', e);
+        return null;
+      }
+    };
+
     try {
-      setLoading(true);
-      const API_URL = process.env.NEXT_PUBLIC_API_URL;
-      const response = await fetch(`${API_URL}/auth/check`, {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const response = await doFetch(`${API_URL}/auth/check`);
+
+      if (!response) {
+        throw new Error('No response from auth endpoint');
+      }
 
       if (response.ok) {
         const data = await response.json();
         setIsAuthenticated(!!data.authenticated);
         setUser(data.user ?? null);
-
-        if (data.authenticated && isPublicRoute && pathname !== '/') {
-          router.replace('/notes');
-          return;
-        }
       } else {
         setIsAuthenticated(false);
         setUser(null);
-
-        // Rediriger uniquement pour les routes vraiment protégées (pas les notes individuelles)
-        if (isProtectedRoute || isNotesListing) {
-          router.replace('/login');
-          return;
-        }
       }
     } catch (err) {
-      console.error('Erreur lors de la vérification d\'authentification:', err);
+      console.error('❌ Auth check error:', err);
       setIsAuthenticated(false);
       setUser(null);
-
-      if (isProtectedRoute || isNotesListing) {
-        router.replace('/login');
-        return;
-      }
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Plus de dépendance sur pathname/router
 
+  // Check auth uniquement au montage (une seule fois)
   useEffect(() => {
     checkAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [checkAuth]);
 
+  // Redirection basée sur l'état d'authentification et le pathname
+  useEffect(() => {
+    if (loading || isAuthenticated === null) return;
+
+    const isPublic = publicRoutes.some(route => pathname === route) || pathname.startsWith('/validate/');
+    const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
+    const isNotesList = pathname === '/notes';
+
+    if (isAuthenticated && isPublic && pathname !== '/') {
+      router.replace('/notes');
+    } else if (!isAuthenticated && (isProtected || isNotesList)) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, loading, pathname, router, publicRoutes, protectedRoutes]);
+
+  // Écoute des événements de rafraîchissement d'auth
   useEffect(() => {
     const handleAuthRefresh = () => {
       checkAuth();
@@ -94,7 +123,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       window.removeEventListener('auth-refresh', handleAuthRefresh);
       window.removeEventListener('storage', handleStorage);
     };
-  }, []);
+  }, [checkAuth]);
 
   if (loading) {
     return (

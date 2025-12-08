@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 import Note from '@/ui/note/Note';
 import NoteSkeleton from '@/ui/note/NoteSkeleton';
 import { Note as NoteType } from '@/type/Note';
@@ -17,6 +16,7 @@ interface NoteListProps {
   allowCreateNote?: boolean; // Autoriser la création de note (par défaut: true)
   folderId?: string; // ID du dossier pour créer la note directement dedans
   onCreateNote?: () => void; // Callback personnalisé pour la création de note
+  onNoteUpdated?: (updatedNote?: NoteType) => void; // Optional single-note update handler
   searchTerm?: string; // Terme de recherche pour surlignage
   searchMode?: SearchMode; // Mode de recherche actif
 }
@@ -28,11 +28,22 @@ export default function NoteList({
   allowCreateNote = true, 
   folderId, 
   onCreateNote,
+  onNoteUpdated,
   searchTerm = "",
   searchMode = "all"
 }: NoteListProps) {
 
   const router = useRouter();
+
+  // Update a single note in the list without reloading everything
+  const handleSingleNoteUpdate = (updatedNote?: NoteType) => {
+    if (onNoteUpdated) {
+      onNoteUpdated(updatedNote);
+      return;
+    }
+    // Fallback: trigger full refresh
+    if (onNoteCreated) onNoteCreated();
+  };
 
   const handleCreateNote = async () => {
     // Si un callback personnalisé est fourni, l'utiliser
@@ -60,16 +71,7 @@ export default function NoteList({
   };
 
   return (
-    <main className="p-4 relative">
-      {/* Message si aucune note et pas en chargement - Centré sur la page */}
-      {!isLoading && notes.length === 0 && (
-       
-          <p className="absolute inset-0 flex items-center justify-center pointer-events-none text-element text-lg font-gant mx-4 text-center">
-            Aucune note trouvée. Créez votre première note !
-          </p>
-        
-      )}
-
+    <main className="p-4">
       <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] max-w-full gap-4 md:gap-6 justify-items-start">
 
         {/* Add Note Button - Only shown if allowCreateNote is true */}
@@ -103,12 +105,24 @@ export default function NoteList({
           <Note 
             key={note.id} 
             note={note} 
-            onNoteUpdated={onNoteCreated}
+            onNoteUpdated={handleSingleNoteUpdate}
             searchTerm={searchTerm}
             searchMode={searchMode}
           />
         ))}
       </div>
+
+      {/* Message si aucune note */}
+      {!isLoading && notes.length === 0 && (
+        <div className="text-center py-16 px-4 pointer-events-none select-none">
+          <p className="text-element font-geo text-xl italic">
+            Aucune note pour le moment
+          </p>
+          <p className="text-element/70 font-gant text-sm mt-2">
+            Appuyez sur + pour créer votre première note
+          </p>
+        </div>
+      )}
     </main>
   );
 }

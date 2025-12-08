@@ -19,9 +19,9 @@
  * ```
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $getRoot, $insertNodes, $createTextNode, $createParagraphNode, $getSelection, $isRangeSelection, type EditorState } from 'lexical';
+import { $getRoot, $getSelection, $isRangeSelection, type EditorState } from 'lexical';
 import * as Y from 'yjs';
 
 interface YjsCollaborationPluginProps {
@@ -53,7 +53,7 @@ export function YjsCollaborationPlugin({
    */
   useEffect(() => {
     if (!editor || !ytext) {
-      console.warn('[YjsCollaborationPlugin] Editor ou ytext manquant');
+      
       return;
     }
 
@@ -74,7 +74,7 @@ export function YjsCollaborationPlugin({
         
         // Vérifier que c'est un EditorState valide
         if (!parsedState.root || parsedState.root.type !== 'root') {
-          console.warn('[YjsCollaborationPlugin] ⚠️ État Yjs invalide, ignoré');
+          
           return;
         }
 
@@ -82,7 +82,6 @@ export function YjsCollaborationPlugin({
         const editorRoot = editor.getRootElement();
         const hasFocus = editorRoot && (document.activeElement === editorRoot || editorRoot.contains(document.activeElement));
         
-        let savedSelection: any = null;
         let savedAnchorOffset: number | null = null;
         let savedFocusOffset: number | null = null;
         let savedAnchorKey: string | null = null;
@@ -93,7 +92,6 @@ export function YjsCollaborationPlugin({
           editor.getEditorState().read(() => {
             const selection = $getSelection();
             if ($isRangeSelection(selection)) {
-              savedSelection = selection.clone();
               savedAnchorOffset = selection.anchor.offset;
               savedFocusOffset = selection.focus.offset;
               savedAnchorKey = selection.anchor.key;
@@ -134,7 +132,7 @@ export function YjsCollaborationPlugin({
                   
                 }
               } catch (err) {
-                console.warn('[YjsCollaborationPlugin] ⚠️ Impossible de restaurer la sélection exacte:', err);
+                
                 // Fallback: juste restaurer le focus sans position précise
               }
             }, {
@@ -144,7 +142,7 @@ export function YjsCollaborationPlugin({
           });
         }
       } catch (err) {
-        console.warn('[YjsCollaborationPlugin] Erreur parsing Yjs content:', err);
+        
       }
     };
 
@@ -166,7 +164,7 @@ export function YjsCollaborationPlugin({
           });
         }
       } catch (err) {
-        console.warn('[YjsCollaborationPlugin] Erreur parsing état initial:', err);
+        
       }
     }
 

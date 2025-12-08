@@ -154,7 +154,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
 
     if (loading) {
         return (
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-3 md:p-4">
                 <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
@@ -163,7 +163,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
     }
 
     return (
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3 md:p-4">
             {/* Messages de succès/erreur */}
             {success && (
                 <div className="mb-4 p-3 bg-success-100 text-success-700 rounded-lg text-sm">
@@ -180,11 +180,11 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
             {currentFolder && (
                 <div className="mb-6">
                     <p className="text-sm text-gray-600 mb-3">Dossier actuel :</p>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border-2 border-primary">
-                        <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border-2 border-primary">
+                        <div className="flex items-center gap-2">
                                 <div 
                                 className="shrink-0"
-                                style={{ color: currentFolder.CouleurTag || '#882626' }}
+                                style={{ color: currentFolder.CouleurTag }}
                             >
                                 <FolderIcon width={24} height={24} />
                             </div>
@@ -203,7 +203,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                 className="text-dangerous-600 hover:text-dangerous-700 disabled:opacity-50"
                                 title="Retirer du dossier"
                             >
-                            <TrashIcon width={20} height={20} />
+                            <TrashIcon width={16} height={16} />
                         </button>
                     </div>
                 </div>
@@ -234,18 +234,18 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                             <span className="text-gray-700">
                                 {currentFolder ? "Sélectionner un autre dossier..." : "Sélectionner un dossier..."}
                             </span>
-                            {isDropdownOpen ? <ChevronIcon width={20} height={20} className="text-gray-500 rotate-180"  /> : <ChevronIcon width={20} height={20} className="text-gray-500" />}
+                            {!isDropdownOpen ? <ChevronIcon width={20} height={20} className="text-gray-500 rotate-180"  /> : <ChevronIcon width={20} height={20} className="text-gray-500" />}
                         </button>
 
                         {/* Menu déroulant avec position fixed */}
                         {isDropdownOpen && (
                             <div 
                                 ref={dropdownRef}
-                                className="fixed z-[9999] bg-white border-2 border-gray-200 rounded-lg shadow-2xl max-h-[30vh] overflow-hidden"
+                                className="fixed bg-white border-2 border-gray-200 rounded-lg shadow-2xl max-h-[30vh] overflow-hidden"
                                 style={{
-                                    top: `${dropdownPosition.top}px`,
-                                    left: `${dropdownPosition.left}px`,
-                                    width: `${dropdownPosition.width}px`
+                                    top: dropdownPosition.top + 'px',
+                                    left: dropdownPosition.left + 'px',
+                                    width: dropdownPosition.width + 'px'
                                 }}
                             >
                                 {/* Barre de recherche */}
@@ -294,7 +294,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                                 >
                                                     <div 
                                                         className="shrink-0"
-                                                        style={{ color: folder.CouleurTag || '#882626' }}
+                                                        style={{ color: folder.CouleurTag || 'var(--primary)' }}
                                                     >
                                                         <FolderIcon width={24} height={24} />
                                                     </div>

@@ -25,9 +25,6 @@ export default function ConfirmPassword({
   const [passwordInvalid, setPasswordInvalid] = useState(false);
   const [passwordMismatch, setPasswordMismatch] = useState(false);
 
-  // Critères de validation du mot de passe
-  const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_\-\.]).+$/;
-
   // Fonctions pour gérer la visibilité des mots de passe
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -39,6 +36,8 @@ export default function ConfirmPassword({
 
   // Vérification du mot de passe en temps réel
   useEffect(() => {
+  // Critères de validation du mot de passe
+    const passwordCriteria = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*_\-\.]).+$/;
     if (password === "") {
       setPasswordInvalid(false);
       return;

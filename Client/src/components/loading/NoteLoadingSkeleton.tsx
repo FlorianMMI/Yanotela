@@ -36,9 +36,9 @@ export default function NoteLoadingSkeleton() {
         {/* Cercle principal avec couleur de votre DA */}
         <motion.div
           className="w-16 h-16 border-4 rounded-full relative"
-          style={{ borderColor: '#882626' }}
+          style={{ borderColor: 'var(--primary)' }}
           animate={{
-            borderColor: ['#882626', '#ff0000', '#882626']
+            borderColor: ['var(--primary)', '#ff0000', 'var(--primary)']
           }}
           transition={{
             duration: 2,
@@ -61,7 +61,7 @@ export default function NoteLoadingSkeleton() {
           >
             <svg 
               className="w-6 h-6" 
-              style={{ color: '#882626' }}
+              style={{ color: 'var(--primary)' }}
               fill="currentColor" 
               viewBox="0 0 24 24"
             >
@@ -80,7 +80,7 @@ export default function NoteLoadingSkeleton() {
       >
         <motion.h3
           className="font-geologica text-lg font-semibold"
-          style={{ color: '#882626' }}
+          style={{ color: 'var(--primary)' }}
           animate={{
             opacity: [0.7, 1, 0.7]
           }}
@@ -99,7 +99,7 @@ export default function NoteLoadingSkeleton() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
         >
-          Préparation de l'éditeur
+          Préparation de l&apos;éditeur
           <motion.span
             animate={{ opacity: [0, 1, 0] }}
             transition={{
@@ -122,7 +122,7 @@ export default function NoteLoadingSkeleton() {
       >
         <motion.div
           className="h-full rounded-full"
-          style={{ backgroundColor: '#882626' }}
+          style={{ backgroundColor: 'var(--primary)' }}
           initial={{ width: '0%', x: '-100%' }}
           animate={{ 
             width: '100%', 
@@ -143,7 +143,7 @@ export default function NoteLoadingSkeleton() {
           key={index}
           className="absolute w-2 h-2 rounded-full"
           style={{ 
-            backgroundColor: '#882626',
+            backgroundColor: 'var(--primary)',
             left: `${20 + (index * 10)}%`,
             top: `${30 + (index % 2) * 40}%`,
             opacity: 0.3

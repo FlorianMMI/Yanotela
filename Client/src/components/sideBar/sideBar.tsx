@@ -6,26 +6,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSidebarToggle } from '@/hooks/useSidebarToggle';
 import AuthSidebar from './AuthSidebar';
 import NavigationSidebar from './NavigationSidebar';
-import Icon from '@/ui/Icon';
 import { ArrowIcon } from '@/libs/Icons';
 
-interface SideBarProps {
-    className?: string;
-}
-
-export default function SideBar({ className }: SideBarProps) {
+export default function SideBar() {
   const { isAuthenticated, loading, user } = useAuth();
   const { isOpen, toggle, setOpen } = useSidebarToggle();
-
-  // Ouvrir automatiquement la sidebar quand l'utilisateur est authentifié
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      setOpen(true);
-    }
-    else{
-      setOpen(true);
-    }
-  }, [isAuthenticated, user, setOpen]);
 
   // Loading state 
 

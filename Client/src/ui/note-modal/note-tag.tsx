@@ -1,74 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { FOLDER_COLORS } from '@/hooks/folderColors';
-import { UpdateNoteTag } from '@/loader/loader';
+import { GetUserTags, UpdateNoteTag } from '@/loader/loader';
+
+interface Tag {
+  id: string;
+  nom: string;
+  couleur: string;
+}
 
 interface TagNoteProps {
   noteId: string;
-  currentTag?: string;
+  currentTagId?: string | null;
   onTagUpdated?: () => void;
 }
 
-// Fonction pour récupérer la vraie valeur de la variable CSS --primary
-const getPrimaryColor = (): string => {
-  if (typeof window !== 'undefined') {
-    const computed = getComputedStyle(document.documentElement);
-    const primaryColor = computed.getPropertyValue('--primary').trim();
-    return primaryColor || '#882626'; // Fallback si la variable n'est pas trouvée
-  }
-  return '#882626';
-};
-
-export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNoteProps) {
-  const [primaryColor, setPrimaryColor] = useState<string>(getPrimaryColor());
-  const [selectedColor, setSelectedColor] = useState<string>(currentTag || getPrimaryColor());
+export default function TagNote({ noteId, currentTagId, onTagUpdated }: TagNoteProps) {
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(currentTagId || null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Si le tag actuel est vide, null ou undefined, on force la couleur par défaut dynamique
-    if (!currentTag || currentTag.trim() === '' || currentTag === 'var(--primary)') {
-      setSelectedColor(primaryColor);
-    } else {
-      setSelectedColor(currentTag);
-    }
-  }, [currentTag]);
+    loadTags();
+  }, []);
 
-  // Écouter les changements de thème pour mettre à jour la couleur primary
   useEffect(() => {
-    const updatePrimaryColor = () => {
-      setPrimaryColor(getPrimaryColor());
+    setSelectedTagId(currentTagId || null);
+  }, [currentTagId]);
+
+  // Écouter les mises à jour des tags
+  useEffect(() => {
+    const handleTagsUpdated = () => {
+      loadTags();
     };
 
-    // Observer les changements de la variable CSS --primary
-    const observer = new MutationObserver(updatePrimaryColor);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class', 'data-theme']
-    });
-
-    // Écouter aussi les événements de changement de thème
-    window.addEventListener('storage', updatePrimaryColor);
-    window.addEventListener('theme-changed', updatePrimaryColor);
-
+    window.addEventListener('tagsUpdated', handleTagsUpdated);
     return () => {
-      observer.disconnect();
-      window.removeEventListener('storage', updatePrimaryColor);
-      window.removeEventListener('theme-changed', updatePrimaryColor);
+      window.removeEventListener('tagsUpdated', handleTagsUpdated);
     };
   }, []);
 
-  const handleColorChange = async (color: string) => {
-    if (color === selectedColor) return;
-
-    // Si l'utilisateur choisit la couleur par défaut, on utilise la valeur dynamique
-    if (!color || color.trim() === '' || color === 'var(--primary)' || color === primaryColor) {
-      setSelectedColor(primaryColor);
-    } else {
-      setSelectedColor(color);
+  const loadTags = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await GetUserTags();
+      if (result.success && result.tags) {
+        setTags(result.tags);
+      } else {
+        setError(result.error || 'Erreur lors du chargement des tags');
+      }
+    } catch (err) {
+      setError('Erreur lors du chargement des tags');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleTagChange = async (tagId: string | null) => {
+    if (tagId === selectedTagId) return;
+
+    setSelectedTagId(tagId);
     setIsUpdating(true);
+    setError(null);
 
     try {
-      const result = await UpdateNoteTag(noteId, color);
+      const result = await UpdateNoteTag(noteId, tagId);
       if (result.success) {
         if (onTagUpdated) {
           onTagUpdated();
@@ -77,72 +75,128 @@ export default function TagNote({ noteId, currentTag, onTagUpdated }: TagNotePro
         window.dispatchEvent(new Event('noteTagUpdated'));
       } else {
         console.error("Erreur lors de la mise à jour du tag:", result.error);
-        alert(result.error || "Erreur lors de la mise à jour du tag");
-        // Restaurer la couleur précédente en cas d'erreur
-        setSelectedColor(currentTag || 'var(--primary)');
+        setError(result.error || "Erreur lors de la mise à jour du tag");
+        // Restaurer le tag précédent en cas d'erreur
+        setSelectedTagId(currentTagId || null);
       }
     } catch (error) {
       console.error("Erreur lors de la mise à jour du tag:", error);
-      alert("Une erreur est survenue lors de la mise à jour du tag");
-      // Restaurer la couleur précédente en cas d'erreur
-      setSelectedColor(currentTag || 'var(--primary)');
+      setError("Une erreur est survenue lors de la mise à jour du tag");
+      // Restaurer le tag précédent en cas d'erreur
+      setSelectedTagId(currentTagId || null);
     } finally {
       setIsUpdating(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex-1 overflow-y-auto p-4 max-h-[50vh]">
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-4 max-h-[50vh]">
       <div className="space-y-4">
-        <p className="text-sm text-gray-600 mb-4">
-          Choisissez une couleur pour le tag de cette note :
-        </p>
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm mb-4">
+            {error}
+          </div>
+        )}
 
-        <div className="grid grid-cols-3 gap-3">
-          {FOLDER_COLORS.map((color) => {
-            const colorValue = color.value === 'var(--primary)' ? primaryColor : color.value;
-            const isSelected = selectedColor === colorValue;
-            
-            return (
+        {tags.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500 mb-4">
+              Vous n'avez pas encore créé de tags personnalisés.
+            </p>
+            <p className="text-sm text-gray-400">
+              Cliquez sur l'icône de stylo à côté de "Tag couleur" pour en créer.
+            </p>
+          </div>
+        ) : (
+          <>
+            <p className="text-sm text-gray-600 mb-4">
+              Choisissez un tag pour cette note :
+            </p>
+
+            <div className="space-y-2">
+              {/* Option "Aucun tag" */}
               <button
-                key={color.id}
-                onClick={() => handleColorChange(colorValue)}
+                onClick={() => handleTagChange(null)}
                 disabled={isUpdating}
                 className={`
-                  relative flex flex-col items-center p-3 rounded-lg border-2 transition-all
-                  ${isSelected 
-                    ? 'border-gray-400 shadow-md' 
-                    : 'border-gray-200 hover:border-gray-300'
+                  w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left
+                  ${selectedTagId === null
+                    ? 'border-gray-400 bg-gray-50 shadow-md'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }
-                  ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-sm'}
+                  ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
-                title={color.label}
               >
-                {/* Aperçu de la couleur */}
-                <div
-                  className="w-8 h-8 rounded-full border-2 border-white shadow-sm mb-2"
-                  style={{ backgroundColor: colorValue }}
-                />
-                
-                {/* Nom de la couleur */}
-                <span className="text-xs font-medium text-gray-700">
-                  {color.label}
-                </span>
-
-                {/* Indicateur de sélection */}
-                {isSelected && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 8 8">
+                <div className="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 bg-gray-100 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-700">Aucun tag</span>
+                </div>
+                {selectedTagId === null && (
+                  <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 8 8">
                       <path d="M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z"/>
                     </svg>
                   </div>
                 )}
               </button>
-            );
-          })}
-        </div>
 
-       
+              {/* Tags personnalisés */}
+              {tags.map((tag) => {
+                const isSelected = selectedTagId === tag.id;
+
+                return (
+                  <button
+                    key={tag.id}
+                    onClick={() => handleTagChange(tag.id)}
+                    disabled={isUpdating}
+                    className={`
+                      w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left
+                      ${isSelected
+                        ? 'border-gray-400 bg-gray-50 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }
+                      ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
+                  >
+                    {/* Aperçu de la couleur */}
+                    <div
+                      className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                      style={{ backgroundColor: tag.couleur }}
+                    />
+
+                    {/* Nom du tag */}
+                    <div className="flex-1">
+                      <span className="text-sm font-medium text-gray-700">{tag.nom}</span>
+                    </div>
+
+                    {/* Indicateur de sélection */}
+                    {isSelected && (
+                      <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 8 8">
+                          <path d="M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z"/>
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {isUpdating && (
           <div className="flex justify-center py-2">

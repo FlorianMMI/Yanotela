@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Icons from "@/ui/Icon";
 import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser, GetNotes, GetFolders } from '@/loader/loader';
 import TotalNotes from "@/ui/note/totalNotes";
 import TotalFolders from "@/ui/folder/totalFolders";
 import { KeyholeIcon, ProfileIcon } from "@/libs/Icons";
+import TrashCard from "@/ui/trash/trashCard";
+import { useRouter } from "next/navigation";
 
 export default function ModificationProfil() {
+
+  const router = useRouter();
   const [userData, setUserData] = useState({
     pseudo: "",
     prenom: "",
@@ -39,6 +42,7 @@ export default function ModificationProfil() {
         }
       } catch (err) {
         setError("Erreur lors du chargement des informations");
+        void err;
       } finally {
         setPageLoading(false);
       }
@@ -48,13 +52,13 @@ export default function ModificationProfil() {
   }, []);
 
   // Fonction pour sauvegarder un champ spécifique
-  const handleFieldSave = async (fieldName: string, newValue: string) => {
+  const handleFieldSave = async (fieldName: keyof typeof userData, newValue: string) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const updateData: any = {};
+      const updateData: Partial<Record<keyof typeof userData, string>> = {};
       updateData[fieldName] = newValue;
 
       const result = await updateUser(updateData);
@@ -151,7 +155,7 @@ export default function ModificationProfil() {
   return (
     <>
       {pageLoading ? (
-        <div className="p-4 flex justify-center items-center min-md:min-h-full">
+        <div className="p-4 flex justify-center items-center md:min-h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
@@ -281,10 +285,16 @@ export default function ModificationProfil() {
             </div>
           </div>
 
-          <div className="flex flex-row justify-center gap-4 items-start md:items-center w-full h-full">
-            <TotalNotes totalNotes={totalNotes} />
-            <TotalFolders totalFolders={totalFolders} />
-          </div>
+            <div className="flex flex-col md:flex-row justify-center gap-4 items-center w-full">
+            <div className="flex flex-row gap-4 justify-center">
+              <TotalNotes totalNotes={totalNotes} />
+              <TotalFolders totalFolders={totalFolders} />
+              
+            </div>
+            <div className="flex flex-row justify-center">
+              <TrashCard onClick={() => router.push('/corbeille')} />
+            </div>
+            </div>
 
         </div>
       )}

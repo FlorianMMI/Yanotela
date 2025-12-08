@@ -1,6 +1,5 @@
-import Image from "next/image";
 import { RechercheIcon, TextLeftIcon, DocsIcon, ChevronIcon, CheckIcon } from '@/libs/Icons';
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 
 export type SearchMode = 'all' | 'title' | 'content';
@@ -64,16 +63,16 @@ export default function SearchBar({
 
     return (
         <>
-            <div className="relative flex w-full max-w-[40rem] gap-2">
+            <div className="relative flex w-full max-w-160 gap-2">
                 {/* Barre de recherche */}
-                <div className="relative w-full flex h-full p-4 gap-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:shadow-lg focus:border-transparent bg-white text-black transition-all duration-300">
+                <div className="relative w-full flex h-full px-4 py-2 gap-4 border border-gray-300 rounded-lg bg-white text-black transition-all duration-300">
                     <RechercheIcon width={20} height={20} className="text-gray-500" />
                     <input
                         type="text"
                         placeholder={getPlaceholder()}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full md:w-[25rem] "
+                        className="w-full md:w-100 outline-none focus:outline-none"
                     />
                 </div>
 

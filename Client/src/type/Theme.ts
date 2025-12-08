@@ -7,7 +7,7 @@
  * Types de thèmes disponibles dans l'application
  * Ajoutez de nouveaux types ici lors de la création de nouveaux thèmes
  */
-export type ThemeType = "light" | "dark" | "blue" | "green" | "purple";
+export type ThemeType = "light" | "dark" | "blue" | "green" | "purple" | "night";
 
 /**
  * Interface définissant les couleurs d'un thème

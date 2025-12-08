@@ -4,13 +4,27 @@
   scrollbar-width: thin;
 }
 
-/* Pour Chrome, Edge, Safari */
+.custom-scrollbar-comment {
+  scrollbar-color: var(--deskbackground ) var(--primary);
+  scrollbar-width: thin;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
   background: var(--deskbackground);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--primary);
+  border-radius: 8px;
+}
+
+/* Pour Chrome, Edge, Safari */
+.custom-scrollbar-comment::-webkit-scrollbar {
+  width: 8px;
+  background: var(--primary);
+}
+.custom-scrollbar-comment::-webkit-scrollbar-thumb {
+  background: var(--deskbackground);
   border-radius: 8px;
 }
 @import url('https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&family=Geologica:wght@100..900&display=swap');
@@ -77,23 +91,6 @@
     --light-text-light-note: oklch(55.1% 0.027 264.364);
     --light-motif-opacity: 0.03;
 
-    /* Theme-specific variables for DARK "Rouge Crépuscule" theme */
-    --dark-background: #121212;          /* Noir très profond pour le fond */
-    --dark-deskbackground: #1e1e1e;      /* Noir légèrement plus clair pour le bureau */
-    --dark-foreground: #e9eddb;          /* Beige clair pour le texte principal */
-    --dark-beige-foncer: #3a3a3a;        /* Gris foncé pour les éléments secondaires */
-    --dark-gris-clair: #b8b8b8;          /* Gris clair pour les bordures ou textes secondaires */
-    --dark-primary: #882626;             /* Rouge foncé comme couleur principale */
-    --dark-primary-hover: #a83232;       /* Rouge légèrement plus clair au survol */
-    --dark-error-clair: oklch(70% 0.237 25.331); /* Rouge clair pour les erreurs */
-    --dark-light: #0a0a0a;               /* Noir pour les éléments "light" */
-    --dark-dark: #e9eddb;                /* Beige clair pour les éléments "dark" (texte sur fond sombre) */
-    --dark-light-note: #252525;          /* Fond des notes ou zones secondaires */
-    --dark-text-light-note: #c0c0c0;     /* Texte clair sur fond de note */
-    --dark-motif-opacity: 0.02;          /* Opacité subtile pour les motifs */
-    --dark-accent: #5c3a3a;              /* Rouge-brun pour les accents discrets */
-    --dark-shadow: rgba(136, 38, 38, 0.3); /* Ombre douce basée sur le rouge */
-
     /* Theme-specific variables for BLUE theme */
     --blue-background: #e0e7ff;
     --blue-deskbackground: #dbeafe;
@@ -138,22 +135,6 @@
     --purple-light-note: white;
     --purple-text-light-note: #6b21a8;
     --purple-motif-opacity: 0.03;
-
-
-    /* Theme-specific variables for Night(blue dark) theme */
-    --night-background: #0f172a;
-    --night-deskbackground: #1e293b;
-    --night-foreground: #e0e7ff;
-    --night-beige-foncer: #1e293b;
-    --night-gris-clair: #c7d2fe;
-    --night-primary: #3142da;
-    --night-primary-hover: #2a2cc4;
-    --night-error-clair: oklch(70% 0.237 25.331);
-    --night-light: #1e293b;
-    --night-dark: #e0e7ff;
-    --night-light-note: #1e293b;
-    --night-text-light-note: #c7d2fe;
-    --night-motif-opacity: 0.01;
 
   }
 

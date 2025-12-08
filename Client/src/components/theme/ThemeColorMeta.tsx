@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
  * en fonction du thème actif de l'utilisateur
  */
 export default function ThemeColorMeta() {
-  const [themeColor, setThemeColor] = useState('#E9EBDB'); // light background par défaut
+  const [, setThemeColor] = useState('#E9EBDB'); // light background par défaut
 
   useEffect(() => {
     // Fonction pour obtenir la couleur du thème actif

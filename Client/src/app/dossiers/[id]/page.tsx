@@ -166,7 +166,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             // Filtre couleur de tag
             const matchesTagColor = !tagColorFilter
                 ? true
-                : (note.CouleurTag === tagColorFilter || (!note.CouleurTag && tagColorFilter === "var(--primary)"));
+                : (note.tag?.couleur === tagColorFilter || (!note.tag?.couleur && tagColorFilter === "var(--primary)"));
 
             return matchesSearch && matchesCollaboration && matchesTagColor;
         })
@@ -181,7 +181,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             {/* Header mobile avec filtres */}
             <FolderDetailHeader
                 folderName={folder?.Nom || ""}
-                folderColor={folder?.CouleurTag || "#882626"}
+                folderColor={folder?.CouleurTag || "var(--primary)"}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchMode={searchMode}
@@ -202,7 +202,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 <div className="fixed inset-0 z-50 md:hidden">
                     <div className="absolute right-4 top-20">
                         <FolderMore
-                            folder={folder as any}
+                            folder={folder as Folder}
                             folderId={id}
                             folderName={folder?.Nom || ""}
                             folderDescription={folder?.Description || ""}

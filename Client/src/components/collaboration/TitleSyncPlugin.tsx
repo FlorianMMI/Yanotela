@@ -10,6 +10,7 @@
 import { useEffect, useRef } from 'react';
 import * as Y from 'yjs';
 import { yjsDocuments } from '@/collaboration/providers';
+import { checkAuthResponse } from '@/utils/authFetch';
 
 interface TitleSyncPluginProps {
   noteId: string;
@@ -37,7 +38,7 @@ export function TitleSyncPlugin({
   useEffect(() => {
     const ydoc = yjsDocuments.get(noteId);
     if (!ydoc) {
-      console.warn('⚠️ [TitleSync] Y.Doc non trouvé pour', noteId);
+      
       return;
     }
 
@@ -53,7 +54,10 @@ export function TitleSyncPlugin({
     }
 
     // Observer les changements du titre depuis YJS (synchronisation entrante)
-    const observer = (event: Y.YMapEvent<any>) => {
+    // Signature: (event: Y.YMapEvent<unknown>, transaction: Y.Transaction) => void
+    // On inclut le paramètre transaction même si on ne l'utilise pas pour correspondre à l'API Yjs
+    const observer = (event: Y.YMapEvent<unknown>, transaction: Y.Transaction) => {
+      void transaction;
       // Vérifier si la clé 'title' a changé
       if (event.keysChanged.has('title')) {
         const remoteTitle = metadata.get('title') as string | undefined;
@@ -73,7 +77,7 @@ export function TitleSyncPlugin({
       metadata.unobserve(observer);
       
     };
-  }, [noteId, onTitleChange]); // Retirer 'title' des dépendances
+  }, [noteId, onTitleChange, title]);
 
   // Synchroniser le titre local → YJS quand il change
   useEffect(() => {
@@ -125,6 +129,11 @@ export function TitleSyncPlugin({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ Titre: currentTitle })
         });
+
+        // Vérifier si session expirée (401)
+        if (!checkAuthResponse(response)) {
+          return;
+        }
 
         if (response.ok) {
           

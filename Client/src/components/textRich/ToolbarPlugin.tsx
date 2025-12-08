@@ -39,7 +39,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
     const [fontSize, setFontSize] = useState('16px');
     const [fontFamily, setFontFamily] = useState('Gantari');
     const [fontColor, setFontColor] = useState('#727272');
-    const [backgroundColor, setBackgroundColor] = useState('#ffffff');
+    const [backgroundColor, setBackgroundColor] = useState('#727272');
     const [isInBulletList, setIsInBulletList] = useState(false);
     const [isInNumberedList, setIsInNumberedList] = useState(false);
     const [alignment, setAlignment] = useState<'left' | 'center' | 'right' | 'justify' | ''>('');
@@ -121,7 +121,16 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         setFontSize(fontSizes.size === 1 ? Array.from(fontSizes)[0] : fontSizes.size > 1 ? '' : '16px');
         setFontFamily(fontFamilies.size === 1 ? Array.from(fontFamilies)[0] : fontFamilies.size > 1 ? '' : 'Gantari');
         if (fontColors.size === 1) setFontColor(Array.from(fontColors)[0]);
-        if (backgroundColors.size === 1) setBackgroundColor(Array.from(backgroundColors)[0]);
+        if (backgroundColors.size === 1){
+            const tempcolor = Array.from(backgroundColors)[0];
+            if (tempcolor == '#ffffff' || tempcolor == '#FFFFFF'){
+                setBackgroundColor('#727272');
+            }
+            else{
+                setBackgroundColor(Array.from(backgroundColors)[0]);
+            }
+             
+        }
 
         // Format toggles
         const sel = selection as { hasFormat?: (format: string) => boolean };
@@ -296,8 +305,17 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
     }, [applyStyleText]);
 
     const handleBackgroundColorChange = useCallback((color: string) => {
-        setBackgroundColor(color);
-        applyStyleText({ 'background-color': color });
+        
+        if (color == '#ffffff' || color == '#FFFFFF') {
+            
+            setBackgroundColor('#727272');
+            applyStyleText({ 'background-color': color });
+        }
+        else {
+            setBackgroundColor(color);
+            applyStyleText({ 'background-color': color });
+        }
+        
     }, [applyStyleText]);
 
     const handleFontSizeChange = useCallback((size: string) => {
@@ -352,28 +370,42 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         reader.onload = (e) => {
             const src = e.target?.result as string;
             if (src) {
-                editor.update(() => {
-                    if (isImage) {
-                        const imageNode = $createImageNode({
-                            src,
-                            altText: file.name,
-                            isDrawing: false, // Imported images are not drawings
+                if (isImage) {
+                    // Load image to get dimensions
+                    const img = new window.Image();
+                    img.onload = () => {
+                        editor.update(() => {
+                            const imageNode = $createImageNode({
+                                src,
+                                altText: file.name,
+                                width: img.width,
+                                height: img.height,
+                                isDrawing: false, // Imported images are not drawings
+                            });
+                            $insertNodes([imageNode]);
                         });
-                        $insertNodes([imageNode]);
-                    } else if (isAudio) {
-                        const audioNode = $createAudioNode({
-                            src,
-                            altText: file.name,
-                        });
-                        $insertNodes([audioNode]);
-                    } else if (isVideo) {
-                        const videoNode = $createVideoNode({
-                            src,
-                            altText: file.name,
-                        });
-                        $insertNodes([videoNode]);
-                    }
-                });
+                    };
+                    img.onerror = () => {
+                        alert("Erreur lors du chargement de l'image");
+                    };
+                    img.src = src;
+                } else {
+                    editor.update(() => {
+                        if (isAudio) {
+                            const audioNode = $createAudioNode({
+                                src,
+                                altText: file.name,
+                            });
+                            $insertNodes([audioNode]);
+                        } else if (isVideo) {
+                            const videoNode = $createVideoNode({
+                                src,
+                                altText: file.name,
+                            });
+                            $insertNodes([videoNode]);
+                        }
+                    });
+                }
             }
         };
         reader.readAsDataURL(file);
