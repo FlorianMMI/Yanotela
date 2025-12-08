@@ -1,8 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
-import { CloseIcon, TrashIcon} from '@/libs/Icons';
+import { CloseIcon } from '@/libs/Icons';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
@@ -22,8 +21,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     const handleDeleteAccount = () => {
         setShowDeleteConfirm(true);
     };
-
-    const router = useRouter();
 
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
