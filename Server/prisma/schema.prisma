@@ -23,7 +23,6 @@ model User {
   notes         Note[]
   modifiedNotes Note[]        @relation("NoteModifier")
   permissions   Permission[]
-  commentaire   commentaire[]
   noteFolders   NoteFolder[]
   tags          Tag[]
 }
@@ -38,11 +37,11 @@ model Note {
   ModifiedAt  DateTime      @default(now())
   modifierId  Int?
   deletedAt   DateTime?
+  isPublic    Boolean       @default(false)
   author      User         @relation(fields: [authorId], references: [id])
   modifier    User?        @relation("NoteModifier", fields: [modifierId], references: [id])
   tag         Tag?         @relation(fields: [tagId], references: [id], onDelete: SetNull)
   permissions Permission[]
-  commentaire commentaire[]
   noteFolder  NoteFolder?
 }
 
