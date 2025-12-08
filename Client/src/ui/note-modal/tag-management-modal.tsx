@@ -135,7 +135,6 @@ export default function TagManagementModal({ isOpen, onClose, onTagsUpdated }: T
   };
 
   const handleDeleteTag = async (tagId: string) => {
-    
 
     setIsLoading(true);
     setError(null);

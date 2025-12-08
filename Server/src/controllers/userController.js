@@ -413,7 +413,6 @@ export const userController = {
     }
   },
 
-
   // Mettre en place le code 2FA pour l'utilisateur
   setup2FA: async (req, res) => {
 
@@ -431,10 +430,6 @@ export const userController = {
       `redis://${process.env.REDIS_HOST ?? "127.0.0.1"}:${process.env.REDIS_PORT ?? "6380"}`;
 
     const redis = createClient({ url: redisUrl });
-
-    console.log("Connexion à Redis...");
-    console.log(`URL Redis: ${redisUrl}`);
-    console.log(`Code 2FA généré: ${a2f}`);
 
     await redis.connect();
 
@@ -454,7 +449,6 @@ export const userController = {
     return res.status(200).json({ success: true, message: "Code 2FA envoyé par email" });
 
   },
-
 
   check2fa: async (req, res) => {
     if (!req.session.userId) {
