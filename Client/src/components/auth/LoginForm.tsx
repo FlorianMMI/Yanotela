@@ -2,7 +2,6 @@
 
 import React, { useState, useId } from 'react';
 import { useRouter } from 'next/navigation';
-
 import GoogleAuthButton from './GoogleAuthButton';
 
 import { ArrowBarIcon, AtIcon, EyesCloseIcon, EyesIcon, KeyholeIcon} from '@/libs/Icons';
@@ -156,7 +155,6 @@ export default function LoginForm({
             Mot de passe oublié ?
           </button>
         )}
-      
 
         <button 
           type="submit" 

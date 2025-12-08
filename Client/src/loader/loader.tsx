@@ -5,16 +5,10 @@ import { checkAuthResponse } from '@/utils/authFetch';
 import { useRouter } from 'next/navigation';
 
 function getApiUrl() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) {
-        console.error('❌ NEXT_PUBLIC_API_URL is not configured');
-        return '';
-    }
-    return apiUrl;
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
+    return '';
 }
-
-
-
 /**
  * Vérifie si la réponse est un 401 et déclenche la redirection si nécessaire
  * @returns true si la réponse est OK ou non-401, false si 401 (redirection déclenchée)
@@ -619,7 +613,6 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
 
         const payload: any = { email };
 
-
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
             headers: {
@@ -647,7 +640,6 @@ export async function ResetPassword(token: string, password: string): Promise<Au
         
         const apiUrl = getApiUrl();
         const payload: any = { password, token };
-
 
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',

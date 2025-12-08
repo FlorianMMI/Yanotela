@@ -49,8 +49,6 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       return;
     }
 
-    console.log('🔍 Checking auth at:', `${API_URL}/auth/check`);
-
     const doFetch = async (url: string) => {
       try {
         const controller = new AbortController();
@@ -70,8 +68,6 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       if (!response) {
         throw new Error('No response from auth endpoint');
       }
-
-      console.log('✅ Auth response status:', response.status);
 
       if (response.ok) {
         const data = await response.json();

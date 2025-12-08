@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-
 import { useRouter } from 'next/navigation';
 import ConfirmPassword from '@/ui/confirm-password';
 import { ResetPassword, ValidateResetToken } from '@/loader/loader';
@@ -171,7 +170,6 @@ export default function ResetPasswordForm({
         )}
 
         <div>
-
           <button
             type="submit"
             disabled={status === 'loading' || status === 'success'}
