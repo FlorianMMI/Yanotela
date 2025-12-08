@@ -25,5 +25,8 @@ router.patch('/theme', requireAuth, userController.updateUserTheme);
 // Route post pour mettre en place le code 2FA (authentification requise) sur redis 
 router.post('/2fa/setup', userController.setup2FA);
 
+// Route get pour avoir les informations du code 2FA (authentification requise)
+router.get('/2fa/info', userController.info2fa);
+
 export default router;
 

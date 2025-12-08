@@ -153,7 +153,7 @@ async function sendValidationEmail(to, token) {
                 Vous serez automatiquement redirigé.e sur Yanotela pour vous connecter.
               </p>
 
-              <div style="text-align: center; display: flex; gap: 20px; justify-content: center; align-items: center; padding: 20px 0;">
+              <div style="text-align: center; padding: 20px 0;">
                 <a
                   href="${validationUrl}"
                   style="
@@ -317,7 +317,7 @@ async function sendResetPasswordEmail(to, token) {
                 Pour votre sécurité, ce lien expirera dans 1 heure.
               </p>
 
-              <div style="text-align: center; display: flex; gap: 20px; justify-content: center; align-items: center; padding: 20px 0;">
+              <div style="text-align: center; padding: 20px 0;">
                 <a
                   href="${resetUrl}"
                   style="
@@ -495,7 +495,7 @@ async function sendDeleteAccountEmail(to) {
               Si vous avez des questions ou que cette suppression n'était pas intentionnelle, <span style="font-weight: 600">contactez-nous rapidement</span>.
             </p>
 
-            <div style="text-align: center; display: flex; gap: 20px; justify-content: center; align-items: center; padding: 20px 0;">
+            <div style="text-align: center; padding: 20px 0;">
               <a
                 href="mailto:${process.env.SUPPORT_EMAIL || 'noreply.yanotela@gmail.com'}"
                 style="
@@ -506,16 +506,15 @@ async function sendDeleteAccountEmail(to) {
                   border-radius: 8px;
                   text-decoration: none;
                   font-weight: 600;
+                  margin-right: 20px;
                 "
               >
                 Contacter le support
               </a>
-
               <a
                 href="${FRONT_URL}"
                 style="
                   display: inline-block;
-                  margin-left: 12px;
                   background: #eef2f4;
                   color: #222;
                   padding: 14px 20px;
@@ -701,7 +700,7 @@ async function sendNoteInvitationEmail(to, inviterName, noteTitle, noteId, role)
                 Il est possible que vous ayiez à vous connecter.
               </p>
 
-              <div style="text-align: center; display: flex; gap: 20px; justify-content: center; align-items: center; padding: 20px 0;">
+              <div style="text-align: center; padding: 20px 0;">
                 <a
                   href="${noteUrl}"
                   style="
@@ -855,7 +854,7 @@ async function a2fEmail(to, validationCode) {
                 Veuillez renseigner le code ci-dessous pour valider votre identité :
               </p>
 
-              <div style="text-align: center; display: flex; gap: 20px; justify-content: center; align-items: center; padding: 20px 0;">
+              <div style="text-align: center; padding: 20px 0;">
                 <span
                   style="
                     font-size: 24px;

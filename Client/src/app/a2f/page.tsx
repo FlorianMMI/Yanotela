@@ -1,9 +1,7 @@
 "use client";
-
-import React from 'react';
-
+import { useState } from 'react';
 export default function A2FPage() {
-  const [code, setCode] = React.useState('');
+  const [code, setCode] = useState('');
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
