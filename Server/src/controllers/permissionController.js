@@ -115,6 +115,7 @@ const UpdatePermission = async (req, res) => {
 
       // Notifier l'utilisateur du changement de rôle via YJS
       try {
+        console.log(`🔔 [UpdatePermission] Préparation notification changement rôle pour userId=${userId}, noteId=${noteId}`);
         const note = await prisma.note.findUnique({
           where: { id: noteId },
           select: { Titre: true },
@@ -123,6 +124,7 @@ const UpdatePermission = async (req, res) => {
           where: { id: connected },
           select: { pseudo: true },
         });
+        console.log(`🔔 [UpdatePermission] Appel notifyRoleChanged: userId=${parseInt(userId)}, note="${note?.Titre || "Sans titre"}", oldRole=${oldRole}, newRole=${newRole}, actor=${actor?.pseudo || "Un administrateur"}`);
         await notifyRoleChanged(
           parseInt(userId),
           noteId,
@@ -131,8 +133,9 @@ const UpdatePermission = async (req, res) => {
           newRole,
           actor?.pseudo || "Un administrateur"
         );
+        console.log(`✅ [UpdatePermission] Notification changement rôle envoyée avec succès`);
       } catch (notifError) {
-        console.error("[UpdatePermission] Erreur notification:", notifError);
+        console.error("❌ [UpdatePermission] Erreur notification:", notifError);
         // Ne pas bloquer la réponse si la notification échoue
       }
 

@@ -43,25 +43,25 @@ export default function NotificationBase({
 
     return (
         <div className={
-            `relative w-full after:content-[''] after:block after:absolute after:left-0 after:bottom-0 after:w-full after:border-b after:border-b-gray-300 hover:after:border-b-[#882626] transition-all duration-200 ease-in-out rounded-md hover:bg-white/5 hover:shadow-md hover:scale-[1.01] p-3 ` +
-            (variant === 'row' ? 'flex flex-row items-start gap-3' : 'flex flex-col gap-2')
+            `notification-item relative w-full max-w-full ` +
+            (variant === 'row' ? 'flex flex-row items-start gap-2 sm:gap-3' : 'flex flex-col gap-2')
         }>
-            <div className="flex items-start gap-3 flex-1 min-w-0 overflow-hidden">
+            <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0 max-w-full">
                 {icon && (
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full ${iconBgColor} flex items-center justify-center`}>
+                    <div className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full ${iconBgColor} flex items-center justify-center`}>
                         {icon}
                     </div>
                 )}
-                <div className="flex-1 min-w-0 overflow-hidden">
-                    <h3 className="font-bold text-primary break-words line-clamp-2">{title}</h3>
-                    <div className="text-gray-500 text-sm break-words">{message}</div>
+                <div className="flex-1 min-w-0 max-w-full overflow-hidden">
+                    <h3 className="font-bold text-primary text-sm sm:text-base break-words line-clamp-2 overflow-hidden">{title}</h3>
+                    <div className="text-gray-500 text-xs sm:text-sm break-words overflow-hidden">{message}</div>
                 </div>
             </div>
 
             {onDismiss && (
                 <button 
                     onClick={handleDismiss} 
-                    className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 flex-shrink-0 self-start" 
+                    className="p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 flex-shrink-0 self-start transition-colors" 
                     aria-label="Fermer la notification"
                 >
                     <CloseIcon width={16} height={16} className="text-gray-400"/>

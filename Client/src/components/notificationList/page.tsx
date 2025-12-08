@@ -86,6 +86,17 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                 );
             
             case 'NOTE_DELETED':
+                return (
+                    <NotificationNoteDeleted
+                        key={n.id}
+                        id={n.id}
+                        noteTitle={n.noteTitle || ''}
+                        actorPseudo={n.actorPseudo}
+                        isAdmin={false}
+                        onDismiss={deleteNotification}
+                    />
+                );
+
             case 'NOTE_DELETED_ADMIN':
                 return (
                     <NotificationNoteDeleted
@@ -208,11 +219,11 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
             {shouldShowRedIndicator && (
                 <div className={`absolute right-3 z-30 pointer-events-none ${isOpenSideBar ? 'top-6' : 'top-3'}`}>
                     {unreadCount <= 9 ? (
-                        <div className="min-w-[18px] h-[18px] bg-dangerous-500 rounded-full animate-pulse flex items-center justify-center">
+                        <div className="notification-badge bg-dangerous-500 rounded-full">
                             <span className="text-white text-xs font-bold">{unreadCount}</span>
                         </div>
                     ) : (
-                        <div className="min-w-[20px] h-[18px] bg-dangerous-500 rounded-full animate-pulse flex items-center justify-center px-1">
+                        <div className="notification-badge min-w-[20px] bg-dangerous-500 rounded-full px-1">
                             <span className="text-white text-xs font-bold">9+</span>
                         </div>
                     )}
@@ -236,25 +247,18 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
 
                 {/* Dropdown */}
                 {open && (
-                    <div className=" absolute -left-5 top-full mt-2 sm:mt-3 w-[18.5rem] max-w-[calc(100vw-3rem)] sm:w-80 sm:max-h-[calc(100vh-10rem)] z-100">
-                        <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[calc(100vh-10rem)]">
-                            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                                <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
-                                <div className="flex items-center gap-2">
-                                    {unreadCount > 0 && (
-                                        <span className="text-xs font-semibold text-white bg-dangerous-500 px-2 py-1 rounded-full">
-                                            {unreadCount} non {unreadCount > 1 ? 'lues' : 'lue'}
-                                        </span>
-                                    )}
-                                    <span className="text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded-full">{notifications.length}</span>
-                                </div>
+                    <div className="absolute -left-5 top-full mt-2 sm:mt-3 w-[calc(100vw-2rem)] max-w-[20rem] sm:w-80 sm:max-w-[22rem] z-[100]">
+                        <div className="notification-dropdown bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-10rem)]">
+                            
+                            <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-800">Notifications</h3>
                             </div>
 
-                            <div className="p-4 space-y-3 overflow-y-auto overflow-x-hidden flex-1 min-h-0">
+                            <div className="notification-list-container p-3 sm:p-4 space-y-2 sm:space-y-3 overflow-y-auto overflow-x-hidden flex-1 min-h-0">
                                 {loading ? (
                                     <div className="flex flex-col items-center justify-center py-6">
                                         <NotificationsIcon width={36} height={36} className="text-gray-400 mb-3 animate-spin" />
-                                        <p className="text-gray-600">Chargement...</p>
+                                        <p className="text-gray-600 text-sm">Chargement...</p>
                                     </div>
                                 ) : notifications.length > 0 ? (
                                     <div className="space-y-2 w-full">
@@ -263,14 +267,14 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-6 gap-3">
                                         <NotificationsIcon width={36} height={36} className="text-gray-400" />
-                                        <p className="text-gray-600">Aucune notification</p>
+                                        <p className="text-gray-600 text-sm">Aucune notification</p>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="px-4 py-3 border-t border-gray-100 flex justify-end bg-gray-50">
+                            <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-t border-gray-100 flex justify-end bg-gray-50">
                                 <button
-                                    className="px-4 py-2 bg-primary text-white rounded-lg transition-colors shadow-sm"
+                                    className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors shadow-sm"
                                     onClick={handleRefresh}
                                     aria-label="Rafraîchir les notifications"
                                 >

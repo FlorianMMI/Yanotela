@@ -46,8 +46,8 @@ services:
       - CLIENT_URL=http://localhost:3000
       - SESSION_SECRET=local_session_secret_dev_only
       - MAIL_SERVICE=gmail
-      - GMAIL_USER={mail}
-      - GMAIL_APP_PASSWORD={dev}
+      - GMAIL_USER="noreply.yanotela@gmail.com"
+      - GMAIL_APP_PASSWORD="mlmx lguv vdbm eyac"
     volumes:
       # Mount source code for hot reload
       - ./Server/src:/app/src
@@ -87,7 +87,9 @@ services:
 
   # Serveur YJS WebSocket pour collaboration temps réel
   yjs-server:
-    image: node:18-alpine
+    build:
+      context: ./Server
+      dockerfile: Dockerfile.preprod
     container_name: yanotela-yjs-server
     working_dir: /app
     ports:
@@ -95,8 +97,11 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=1234
-    command: sh -c "npm install -g @y/websocket-server && y-websocket-server"
+    command: node src/yjs-server.js
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
 
   # Frontend Next.js
   frontend:

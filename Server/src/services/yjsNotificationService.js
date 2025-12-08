@@ -140,6 +140,9 @@ export function unregisterNotificationRoom(userId) {
  * @private
  */
 async function createAndBroadcastNotification(type, userId, data) {
+  console.log(`📦 [createAndBroadcastNotification] Création notification type=${type}, userId=${userId}`);
+  console.log(`📦 [createAndBroadcastNotification] Données:`, data);
+  
   const notification = {
     id: `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     type,
@@ -148,12 +151,15 @@ async function createAndBroadcastNotification(type, userId, data) {
     read: false,
     ...data,
   };
+  
+  console.log(`📦 [createAndBroadcastNotification] Notification complète créée:`, notification);
 
   // Stocker en mémoire (pour référence/debug)
   if (!pendingNotifications.has(userId)) {
     pendingNotifications.set(userId, []);
   }
   pendingNotifications.get(userId).push(notification);
+  console.log(`💾 [createAndBroadcastNotification] Stockée en mémoire, total pour user ${userId}: ${pendingNotifications.get(userId).length}`);
 
   // Auto-nettoyage après 24h
   setTimeout(() => {
@@ -161,9 +167,10 @@ async function createAndBroadcastNotification(type, userId, data) {
   }, 24 * 60 * 60 * 1000);
 
   // ✅ ENVOYER AU SERVEUR YJS VIA WEBSOCKET
+  console.log(`📤 [createAndBroadcastNotification] Appel sendNotificationToUser pour userId=${userId}`);
   const sent = await sendNotificationToUser(userId, notification);
   
-  console.log(`✅ [YJS NOTIF] ${type} créée pour user=${userId}, envoyée au serveur YJS=${sent}`);
+  console.log(`${sent ? '✅' : '❌'} [createAndBroadcastNotification] ${type} créée pour user=${userId}, envoyée au serveur YJS=${sent}`);
   return notification;
 }
 
@@ -358,18 +365,31 @@ export async function notifyUserAdded(userId, noteId, noteTitle, role, actorPseu
  * await notifyRoleChanged(targetUserId, noteId, note.Titre, oldRole, newRole, req.session.pseudo);
  */
 export async function notifyRoleChanged(userId, noteId, noteTitle, oldRole, newRole, actorPseudo) {
-  console.log(`🔔 [NOTIF] Rôle changé: userId=${userId}, note="${noteTitle}", ${oldRole} → ${newRole}`);
+  console.log(`🔔 [yjsNotificationService] notifyRoleChanged appelé:`, {
+    userId,
+    noteId,
+    noteTitle,
+    oldRole,
+    newRole,
+    actorPseudo,
+    timestamp: new Date().toISOString()
+  });
   
   const roleLabel = ROLE_LABELS[newRole] || 'Collaborateur';
   const isPromotion = newRole < oldRole; // Rôles: 0=owner, 1=admin, 2=editor, 3=reader
   
-  return createNotification(NotificationType.ROLE_CHANGED, userId, {
+  console.log(`📋 [yjsNotificationService] Détails notification: roleLabel=${roleLabel}, isPromotion=${isPromotion}`);
+  
+  const result = await createNotification(NotificationType.ROLE_CHANGED, userId, {
     noteId,
     noteTitle,
     actorPseudo,
     roleLabel,
     isPromotion,
   });
+  
+  console.log(`✅ [yjsNotificationService] notifyRoleChanged terminé, notification créée:`, result.id);
+  return result;
 }
 
 /**

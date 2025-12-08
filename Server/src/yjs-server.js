@@ -228,6 +228,21 @@ function setupWSConnection(ws, req) {
         notifications.push(notification);
         awareness.setLocalStateField('notifications', notifications);
         
+        // IMPORTANT: Encoder et broadcaster manuellement le changement d'awareness
+        // car setLocalStateField ne déclenche pas automatiquement le broadcast
+        const awarenessEncoder = encoding.createEncoder();
+        encoding.writeVarUint(awarenessEncoder, messageAwareness);
+        encoding.writeVarUint8Array(
+          awarenessEncoder,
+          awarenessProtocol.encodeAwarenessUpdate(awareness, [doc.clientID])
+        );
+        const awarenessMessage = encoding.toUint8Array(awarenessEncoder);
+        
+        // Envoyer à tous les clients connectés
+        conns.forEach((conn) => {
+          send(conn, awarenessMessage);
+        });
+        
         console.log(`📡 [YJS] Notification broadcastée à ${conns.size} clients dans room ${roomName}`);
         return;
       }

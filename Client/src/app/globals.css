@@ -447,3 +447,155 @@ input, textarea, select, [role="button"], button {
   width: 0;
 }
 
+/* =================================
+   STYLES DES NOTIFICATIONS
+   ================================= */
+
+/* Conteneur principal du dropdown de notifications */
+.notification-dropdown {
+  box-sizing: border-box;
+  contain: layout style paint;
+}
+
+/* Conteneur de la liste des notifications avec scroll custom */
+.notification-list-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--deskbackground);
+  box-sizing: border-box;
+}
+
+.notification-list-container::-webkit-scrollbar {
+  width: 6px;
+  background: var(--deskbackground);
+}
+
+.notification-list-container::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+.notification-list-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+}
+
+/* Chaque item de notification */
+.notification-item {
+  position: relative;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+  overflow: hidden;
+  max-width: 100%;
+  
+  /* Bordure inférieure subtile */
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item:hover {
+  background-color: rgba(136, 38, 38, 0.03);
+  transform: translateX(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Effet de hover sur les thèmes sombres */
+body.dark .notification-item:hover,
+body.night .notification-item:hover {
+  background-color: rgba(136, 38, 38, 0.08);
+}
+
+/* Assurer que le texte ne dépasse jamais */
+.notification-item h3,
+.notification-item p,
+.notification-item div {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* Animation d'entrée pour les notifications */
+@keyframes notification-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-item {
+  animation: notification-slide-in 0.3s ease-out;
+}
+
+/* Badge de compteur de notifications non lues */
+.notification-badge {
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  animation: notification-badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes notification-badge-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Responsive: ajustements pour petits écrans */
+@media (max-width: 640px) {
+  .notification-dropdown {
+    max-width: calc(100vw - 1rem);
+  }
+  
+  .notification-item {
+    padding: 0.625rem;
+  }
+  
+  .notification-item h3 {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  
+  .notification-item p,
+  .notification-item div {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+}
+
+/* Assurer que les icônes restent alignées */
+.notification-item svg {
+  flex-shrink: 0;
+}
+
+/* Style pour les boutons d'action dans les notifications */
+.notification-item button {
+  flex-shrink: 0;
+  transition: all 0.2s ease-in-out;
+}
+
+.notification-item button:hover {
+  transform: scale(1.1);
+}
+
+.notification-item button:active {
+  transform: scale(0.95);
+}
+
+

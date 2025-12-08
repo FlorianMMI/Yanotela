@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FetchPermission, UpdatePermission, AddPermission, RemovePermission, IsPublic, setPublic } from "@/loader/loader";
 import { useAuth } from "@/hooks/useAuth";
 import { CheckIcon, CopyIcon, CopyLinkIcon, CrownIcon } from '@/libs/Icons';
+import ConfirmRemoveUserModal from "./ConfirmRemoveUserModal";
 
 const ROLE_LABELS = ["Propriétaire", "Administrateur", "Éditeur", "Lecteur"];
 
@@ -21,6 +22,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     const [isTogglePublic, setIsTogglePublic] = useState(false); // false = privé par défaut
     const [copied, setCopied] = useState(false);
     const [currentUserRole, setCurrentUserRole] = useState<number | null>(null); // Rôle de l'utilisateur connecté
+    const [userToRemove, setUserToRemove] = useState<{ id: number; pseudo: string } | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -157,33 +159,15 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                                         <option value={2}>Éditeur</option>
                                                         <option value={3}>Lecteur</option>
                                                     </select>
+
                                                     <button
                                                         className="text-xs text-primary hover:text-primary-hover px-2 py-1 border border-primary hover:border-primary-hover rounded transition-colors w-full"
                                                         title="Retirer l'accès à la note"
                                                         disabled={item.user.id === connectedUserId}
                                                         style={item.user.id === connectedUserId ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                                                        onClick={async () => {
+                                                        onClick={() => {
                                                             if (item.user.id === connectedUserId) return;
-                                                            if (window.confirm(`Retirer ${item.user.pseudo} de la note ?`)) {
-                                                                const result = await RemovePermission(noteId, item.user.id);
-                                                                if (result.success) {
-                                                                    // Refresh permissions
-                                                                    const data = await FetchPermission(noteId);
-                                                                    if (data.success) {
-                                                                        const perms = data.permissions || [];
-                                                                        setPermissions(perms);
-                                                                        // Mettre à jour le rôle courant si nécessaire
-                                                                        const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
-                                                                        setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
-                                                                    }
-                                                                    // Appeler le callback pour rafraîchir la liste des notes
-                                                                    if (onShareSuccess) {
-                                                                        onShareSuccess();
-                                                                    }
-                                                                } else {
-                                                                    alert(result.error || 'Erreur lors de la suppression');
-                                                                }
-                                                            }
+                                                            setUserToRemove({ id: item.user.id, pseudo: item.user.pseudo });
                                                         }}
                                                     >
                                                         Retirer
@@ -290,6 +274,34 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                     </p>
                 </div>
             )}
+
+            {/* Modale de confirmation de suppression */}
+            <ConfirmRemoveUserModal
+                isOpen={userToRemove !== null}
+                onClose={() => setUserToRemove(null)}
+                onConfirm={async () => {
+                    if (!userToRemove) return;
+                    const result = await RemovePermission(noteId, userToRemove.id);
+                    if (result.success) {
+                        // Refresh permissions
+                        const data = await FetchPermission(noteId);
+                        if (data.success) {
+                            const perms = data.permissions || [];
+                            setPermissions(perms);
+                            // Mettre à jour le rôle courant si nécessaire
+                            const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
+                            setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
+                        }
+                        // Appeler le callback pour rafraîchir la liste des notes
+                        if (onShareSuccess) {
+                            onShareSuccess();
+                        }
+                    } else {
+                        alert(result.error || 'Erreur lors de la suppression');
+                    }
+                }}
+                userName={userToRemove?.pseudo || ""}
+            />
         </div>
     );
 };
