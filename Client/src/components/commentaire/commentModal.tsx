@@ -8,7 +8,6 @@ import { checkAuthResponse } from '@/utils/authFetch';
 import { FetchPermission } from '@/loader/loader';
 import { useYjsComments } from '@/hooks/useYjsComments';
 
-
 interface ParamModalProps {
     onClose: () => void;
 }
@@ -40,31 +39,29 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     useEffect(() => {
         const fetchUserRole = async () => {
             if (!noteId || !user?.id) {
-                console.log('[commentModal] Pas de noteId ou user.id:', { noteId, userId: user?.id });
+                
                 setUserRole(undefined);
                 return;
             }
             
             try {
-                console.log('[commentModal] Récupération des permissions pour noteId:', noteId, 'userId:', user.id);
-                const response = await FetchPermission(noteId);
-                console.log('[commentModal] Réponse FetchPermission:', response);
                 
+                const response = await FetchPermission(noteId);
+
                 if (response.success && response.permissions) {
-                    console.log('[commentModal] Permissions reçues:', response.permissions);
+                    
                     // Trouver la permission de l'utilisateur actuel
                     // Note: le backend retourne 'userId' (camelCase) et non 'id_user'
                     const userPermission = response.permissions.find(p => p.userId === user.id);
-                    console.log('[commentModal] Permission trouvée pour user:', userPermission);
-                    
+
                     if (userPermission) {
                         setUserRole(userPermission.role);
-                        console.log('[commentModal] ✅ Rôle utilisateur défini:', userPermission.role);
+                        
                     } else {
-                        console.warn('[commentModal] ⚠️ Aucune permission trouvée pour userId:', user.id);
+                        
                     }
                 } else {
-                    console.warn('[commentModal] ⚠️ Échec ou pas de permissions:', response);
+                    
                 }
             } catch (error) {
                 console.error('[commentModal] ❌ Erreur lors de la récupération du rôle:', error);
@@ -73,8 +70,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
 
         fetchUserRole();
     }, [noteId, user?.id]);
-
-    
 
     // Scroll en bas à chaque changement de commentaires
     useEffect(() => {
