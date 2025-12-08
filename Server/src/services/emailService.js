@@ -1026,6 +1026,9 @@ async function userDataEmail(to, userData) {
                   `).join('')}
                 </ul>
               </div>
+              <p style="font-size: 12px; color: #222;>
+                Pour la sécurité de vos données, l'équipe Yanotela n'a pas accès au contenu de vos notes, ni à votre mot de passe.
+              </p>
               <p style="font-size: 12px; color: #882626">
                 Si vous n'êtes pas à l'origine de cette demande, veuillez réinitialiser les mots de passe de votre compte
                 Yanotela et de votre adresse e-mail immédiatement.

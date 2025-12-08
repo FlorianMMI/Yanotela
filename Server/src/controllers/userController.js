@@ -13,7 +13,7 @@
 import { PrismaClient } from "@prisma/client";
 import { sendDeleteAccountEmail } from "../services/emailService.js";
 import { createClient } from "redis";
-import { a2fEmail } from "../services/emailService.js";
+import { a2fEmail, userDataEmail } from "../services/emailService.js";
 
 const prisma = new PrismaClient();
 
@@ -475,7 +475,15 @@ export const userController = {
     await redis.quit();
 
     if (storedCode == code){
-      return res.status(200).json({ success: true, message: "Code 2FA valide" });
+      try {
+        await userController.info2fa(req, res);
+      } catch (error) {
+        console.error("Erreur lors de l'envoi des informations:", error);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Erreur lors de l'envoi des informations utilisateur" 
+        });
+      }
     }
     else {
       return res.status(400).json({ success: false, message: "Code 2FA invalide" });
@@ -511,15 +519,21 @@ export const userController = {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
 
+      // Envoyer l'email avec les informations utilisateur
+      await userDataEmail(
+        info.email,
+        {
+          "Pseudonyme": info.pseudo,
+          "Nom": info.nom,
+          "Prénom": info.prenom,
+          "E-mail": info.email,
+          "Nombre de notes": info._count.notes,
+        }
+      );
+
       return res.status(200).json({
-      success: true,
-      user: {
-        Pseudonyme: info.pseudo,
-        Nom: info.nom,
-        Prénom: info.prenom,
-        "E-mail": info.email,
-        "Nombre de notes": info._count?.notes ?? 0,
-      },
+        success: true,
+        message: "Email d'informations envoyé avec succès"
       });
     } catch (error) {
       console.error("Erreur info2fa:", error);
@@ -532,6 +546,3 @@ export const userController = {
   }
 
 };
-
-
-
