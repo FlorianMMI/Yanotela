@@ -41,7 +41,7 @@ export default function NotificationSomeoneInvited({
             title="Nouvel invité"
             message={message}
             icon={<ProfileIcon width={16} height={16} className="text-blue-500" />}
-            iconBgColor="bg-blue-100"
+            iconBgColor="var(--color-info-100)"
             onDismiss={onDismiss}
             variant={variant}
         />

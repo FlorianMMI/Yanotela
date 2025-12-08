@@ -41,7 +41,7 @@ export default function NotificationNoteDeleted({
             title={isAdmin ? "Note supprimée" : "Note supprimée"}
             message={message}
             icon={<TrashIcon width={16} height={16} className="text-dangerous-500" />}
-            iconBgColor="bg-dangerous-100"
+            iconBgColor="var(--color-dangerous-100)"
             onDismiss={onDismiss}
             variant={variant}
         />

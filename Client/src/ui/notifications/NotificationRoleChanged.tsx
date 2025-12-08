@@ -40,7 +40,7 @@ export default function NotificationRoleChanged({
             title={isPromotion ? "Promotion" : "Changement de rôle"}
             message={message}
             icon={<ArrowIcon width={16} height={16} className={isPromotion ? "text-success-500 rotate-180" : "text-warning-500"} />}
-            iconBgColor={isPromotion ? "bg-success-100" : "bg-warning-100"}
+            iconBgColor={isPromotion ? "var(--color-success-100)" : "var(--color-warning-100, #FEF3C7)"}
             onDismiss={onDismiss}
             variant={variant}
         />

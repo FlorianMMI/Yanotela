@@ -38,7 +38,7 @@ export default function NotificationCollaboratorRemoved({
             title="Collaborateur exclu"
             message={message}
             icon={<CloseIcon width={16} height={16} className="text-warning-500" />}
-            iconBgColor="bg-warning-100"
+            iconBgColor="var(--color-warning-100, #FEF3C7)"
             onDismiss={onDismiss}
             variant={variant}
         />

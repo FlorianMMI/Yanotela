@@ -9,6 +9,7 @@ export interface NotificationBaseProps {
     title: string;
     message: React.ReactNode;
     icon?: React.ReactNode;
+    // Accept a CSS color string (e.g. 'var(--color-element)' or '#fff') for theme compatibility
     iconBgColor?: string;
     onDismiss?: (notificationId: string) => Promise<void>;
     variant?: 'row' | 'stack';
@@ -23,7 +24,7 @@ export default function NotificationBase({
     title, 
     message,
     icon,
-    iconBgColor = 'bg-gray-100',
+    iconBgColor = 'var(--color-element)',
     onDismiss,
     variant = 'stack' 
 }: NotificationBaseProps) {
@@ -48,11 +49,14 @@ export default function NotificationBase({
         }>
             <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0 max-w-full">
                 {icon && (
-                    <div className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full ${iconBgColor} flex items-center justify-center`}>
+                    <div
+                        className="notif-icon flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: iconBgColor }}
+                    >
                         {icon}
                     </div>
                 )}
-                <div className="flex-1 min-w-0 max-w-full overflow-hidden">
+                <div className="notification-content flex-1 min-w-0 max-w-full overflow-hidden">
                     <h3 className="font-bold text-primary text-sm sm:text-base break-words line-clamp-2 overflow-hidden">{title}</h3>
                     <div className="text-gray-500 text-xs sm:text-sm break-words overflow-hidden">{message}</div>
                 </div>

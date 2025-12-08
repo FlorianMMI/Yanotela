@@ -36,7 +36,7 @@ export default function NotificationUserLeft({
             title="Départ d'un collaborateur"
             message={message}
             icon={<ExitIcon width={16} height={16} className="text-gray-500" />}
-            iconBgColor="bg-gray-100"
+            iconBgColor="var(--color-gray-100)"
             onDismiss={onDismiss}
             variant={variant}
         />

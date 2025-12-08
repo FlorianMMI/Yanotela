@@ -251,7 +251,14 @@ export default function NotificationList({ isOpenSideBar = true }: NotificationL
                         <div className="notification-dropdown bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[calc(100vh-8rem)] sm:max-h-[calc(100vh-10rem)]">
                             
                             <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-800">Notifications</h3>
+                                <div className="flex items-center gap-3">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-800">Notifications</h3>
+                                    {unreadCount > 0 && (
+                                        <div className="notification-badge rounded-full">
+                                            <span className="text-xs font-bold">{unreadCount <= 9 ? unreadCount : '9+'}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="notification-list-container p-3 sm:p-4 space-y-2 sm:space-y-3 overflow-y-auto overflow-x-hidden flex-1 min-h-0">

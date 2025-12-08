@@ -35,7 +35,7 @@ export default function NotificationRemoved({
             title="Exclusion d'une note"
             message={message}
             icon={<CloseIcon width={16} height={16} className="text-dangerous-500" />}
-            iconBgColor="bg-dangerous-100"
+            iconBgColor="var(--color-dangerous-100)"
             onDismiss={onDismiss}
             variant={variant}
         />

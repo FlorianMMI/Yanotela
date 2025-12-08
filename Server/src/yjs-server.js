@@ -104,7 +104,8 @@ function extractUserIdFromNotificationRoom(roomName) {
  * Envoyer un message YJS à une connexion WebSocket
  */
 function send(conn, message) {
-  if (conn.readyState !== conn.OPEN) {
+  // Vérifier que la connexion est ouverte (readyState 1 = OPEN)
+  if (conn.readyState !== 1) {
     return;
   }
   conn.send(message, (err) => {
@@ -227,17 +228,22 @@ function setupWSConnection(ws, req) {
         const notifications = localState.notifications || [];
         notifications.push(notification);
         awareness.setLocalStateField('notifications', notifications);
-        
+
         // IMPORTANT: Encoder et broadcaster manuellement le changement d'awareness
-        // car setLocalStateField ne déclenche pas automatiquement le broadcast
+        // Déterminer les clientIDs affectés. Si le doc a un clientID serveur, l'utiliser,
+        // sinon broadcaster pour tous les états connus.
+        const changedClientIDs = (typeof doc.clientID === 'number' && doc.clientID >= 0)
+          ? [doc.clientID]
+          : Array.from(awareness.getStates().keys());
+
         const awarenessEncoder = encoding.createEncoder();
         encoding.writeVarUint(awarenessEncoder, messageAwareness);
         encoding.writeVarUint8Array(
           awarenessEncoder,
-          awarenessProtocol.encodeAwarenessUpdate(awareness, [doc.clientID])
+          awarenessProtocol.encodeAwarenessUpdate(awareness, changedClientIDs)
         );
         const awarenessMessage = encoding.toUint8Array(awarenessEncoder);
-        
+
         // Envoyer à tous les clients connectés
         conns.forEach((conn) => {
           send(conn, awarenessMessage);
