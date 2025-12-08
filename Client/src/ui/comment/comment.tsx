@@ -27,8 +27,48 @@ export default function Comment({ variant = "user", author, date, text, id, auth
 
   const handleDelete = () => {
     if (!id || !onDelete) return;
+    
+    // Debug: afficher les valeurs pour comprendre le problème
+    console.log('[Comment] Tentative de suppression:', {
+      id,
+      userId,
+      authorId,
+      userRole,
+      isAuthor: userId === authorId,
+      isOwner: userRole === 0,
+      isAdmin: userRole === 1
+    });
+    
     onDelete(id);
   };
+
+  // Calculer si l'utilisateur peut supprimer ce commentaire
+  // - Propriétaire de la note (role 0) : peut supprimer tous les commentaires
+  // - Admin de la note (role 1) : peut supprimer tous les commentaires
+  // - Auteur du commentaire : peut supprimer son propre commentaire
+  const canDelete = Boolean(
+    id && 
+    onDelete && 
+    (
+      userRole === 0 || 
+      userRole === 1 || 
+      (userId !== undefined && authorId !== undefined && userId === authorId)
+    )
+  );
+
+  // Debug pour voir pourquoi le bouton n'apparaît pas
+  console.log('[Comment] Calcul canDelete:', {
+    id,
+    userId,
+    authorId,
+    userRole,
+    canDelete,
+    hasId: Boolean(id),
+    hasOnDelete: Boolean(onDelete),
+    isOwner: userRole === 0,
+    isAdmin: userRole === 1,
+    isAuthor: userId !== undefined && authorId !== undefined && userId === authorId
+  });
 
   return (
     <section className={divClass}>
@@ -40,16 +80,11 @@ export default function Comment({ variant = "user", author, date, text, id, auth
           </div>
           <div className="flex justify-between items-end">
             <p className="text-sm whitespace-pre-line">{text}</p>
-            {id && (
-              userRole === 0 // propriétaire de la note : bouton pour tous les commentaires
-              || (userId && userId === authorId) // auteur du commentaire (si connecté)
-              || userRole === 1 // admin
-            ) && (
+            {canDelete && (
               <button onClick={handleDelete} title="Supprimer le commentaire">
                 <TrashIcon className="w-3 h-3 text-red-500 hover:text-red-700 cursor-pointer mt-2" />
               </button>
-            )
-            }
+            )}
           </div>
         </div>
       </div>
