@@ -24,6 +24,7 @@ model User {
   modifiedNotes Note[]       @relation("NoteModifier")
   permissions   Permission[]
   noteFolders   NoteFolder[]
+  tags          Tag[]
 }
 
 model Note {
@@ -31,13 +32,14 @@ model Note {
   Titre       String
   Content     String
   yjsState    Bytes?
-  tag         String?      // Couleur du tag de la note (optionnel)
+  tagId       String?      // Référence vers un Tag personnalisé (optionnel)
   authorId    Int
   ModifiedAt  DateTime     @default(now())
   modifierId  Int?
   deletedAt   DateTime?
   author      User         @relation(fields: [authorId], references: [id])
   modifier    User?        @relation("NoteModifier", fields: [modifierId], references: [id])
+  tag         Tag?         @relation(fields: [tagId], references: [id], onDelete: SetNull)
   permissions Permission[]
   noteFolder  NoteFolder?
   isPublic    Boolean      @default(false)
@@ -81,6 +83,20 @@ model NoteFolder {
   @@index([folderId])
   @@index([userId])
   @@map("note_folder")
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  nom       String
+  couleur   String
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     Note[]
+
+  @@unique([userId, nom])
+  @@index([userId])
 }
 
 // Note: Les commentaires sont maintenant gérés via YJS (Y.Array partagé)
