@@ -1374,8 +1374,117 @@ export async function GetNoteFolder(noteId: string): Promise<{ success: boolean;
     }
 }
 
-// Mettre à jour le tag d'une note
-export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ success: boolean; message?: string; error?: string }> {
+// ========== Gestion des Tags personnalisés ==========
+
+// Récupérer tous les tags de l'utilisateur
+export async function GetUserTags(): Promise<{ success: boolean; tags?: any[]; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/list`, {
+            method: "GET",
+            credentials: 'include'
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la récupération des tags' };
+        }
+
+        const data = await response.json();
+        return { success: true, tags: data.tags };
+    } catch (error) {
+        console.error("Error fetching user tags:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Créer un nouveau tag
+export async function CreateTag(nom: string, couleur: string): Promise<{ success: boolean; tag?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/create`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ nom, couleur })
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la création du tag' };
+        }
+
+        const data = await response.json();
+        return { success: true, tag: data.tag };
+    } catch (error) {
+        console.error("Error creating tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Mettre à jour un tag existant
+export async function UpdateTag(tagId: string, nom: string, couleur: string): Promise<{ success: boolean; tag?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/${tagId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ nom, couleur })
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la modification du tag' };
+        }
+
+        const data = await response.json();
+        return { success: true, tag: data.tag };
+    } catch (error) {
+        console.error("Error updating tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Supprimer un tag
+export async function DeleteTag(tagId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/${tagId}`, {
+            method: "DELETE",
+            credentials: 'include'
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la suppression du tag' };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Mettre à jour le tag d'une note (avec tagId)
+export async function UpdateNoteTag(noteId: string, tagId: string | null): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/tag/${noteId}`, {
             method: "PATCH",
@@ -1383,7 +1492,7 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
                 "Content-Type": "application/json"
             },
             credentials: 'include',
-            body: JSON.stringify({ tag })
+            body: JSON.stringify({ tagId })
         });
 
         // Vérifier si session expirée (401)
@@ -1403,3 +1512,4 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
+

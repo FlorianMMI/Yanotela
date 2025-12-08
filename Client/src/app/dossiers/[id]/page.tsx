@@ -163,7 +163,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             // Filtre couleur de tag
             const matchesTagColor = !tagColorFilter
                 ? true
-                : (note.tag === tagColorFilter || (!note.tag && tagColorFilter === "var(--primary)"));
+                : (note.tag?.couleur === tagColorFilter || (!note.tag?.couleur && tagColorFilter === "var(--primary)"));
 
             return matchesSearch && matchesCollaboration && matchesTagColor;
         })
