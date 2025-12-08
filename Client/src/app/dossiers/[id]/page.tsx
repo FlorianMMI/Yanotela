@@ -163,7 +163,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             // Filtre couleur de tag
             const matchesTagColor = !tagColorFilter
                 ? true
-                : (note.tag === tagColorFilter || (!note.tag && tagColorFilter === "var(--primary)"));
+                : (note.tag?.couleur === tagColorFilter || (!note.tag?.couleur && tagColorFilter === "var(--primary)"));
 
             return matchesSearch && matchesCollaboration && matchesTagColor;
         })
@@ -178,7 +178,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             {/* Header mobile avec filtres */}
             <FolderDetailHeader
                 folderName={folder?.Nom || ""}
-                folderColor={folder?.CouleurTag || "#882626"}
+                folderColor={folder?.CouleurTag || "var(--primary)"}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchMode={searchMode}

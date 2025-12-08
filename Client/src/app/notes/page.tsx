@@ -82,9 +82,9 @@ export default function Home() {
       let matchesTagColor = true;
       if (tagColorFilter) {
         if (tagColorFilter === 'var(--primary)') {
-          matchesTagColor = !note.tag || note.tag === '' || note.tag === 'var(--primary)';
+          matchesTagColor = !note.tag || !note.tag.couleur;
         } else {
-          matchesTagColor = note.tag === tagColorFilter;
+          matchesTagColor = note.tag?.couleur === tagColorFilter;
         }
       }
 

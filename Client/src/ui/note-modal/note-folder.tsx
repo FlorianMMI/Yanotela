@@ -294,7 +294,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                                 >
                                                     <div 
                                                         className="shrink-0"
-                                                        style={{ color: folder.CouleurTag || '#882626' }}
+                                                        style={{ color: folder.CouleurTag || 'var(--primary)' }}
                                                     >
                                                         <FolderIcon width={24} height={24} />
                                                     </div>
