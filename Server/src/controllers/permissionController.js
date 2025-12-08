@@ -24,6 +24,7 @@ const getPermission = async (userId, noteId) => {
 
 export async function FetchPermission(req, res) {
   const { noteId } = req.params;
+  console.log('[FetchPermission] Récupération permissions pour noteId:', noteId);
   try {
     const permissions = await prisma.permission.findMany({
       where: {
@@ -39,6 +40,7 @@ export async function FetchPermission(req, res) {
         },
       },
     });
+    console.log('[FetchPermission] Permissions trouvées:', permissions);
     res.json({ permissions });
   } catch (error) {
     console.error("Erreur lors de la récupération des permissions:", error);

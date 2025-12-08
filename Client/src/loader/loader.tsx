@@ -865,6 +865,7 @@ export async function updateUser(data: { prenom?: string; nom?: string; pseudo?:
 }
 
 export async function FetchPermission(noteId: string): Promise<{ success: boolean; permissions?: Permission[]; error?: string }> {
+    console.log('[loader] FetchPermission appelé avec noteId:', noteId);
     try {
         const response = await fetch(`${apiUrl}/permission/note/${noteId}`, {
             method: 'GET',
@@ -874,20 +875,25 @@ export async function FetchPermission(noteId: string): Promise<{ success: boolea
             credentials: 'include',
         });
 
+        console.log('[loader] FetchPermission response status:', response.status);
+
         // Vérifier si session expirée (401)
         if (!handleAuthError(response)) {
+            console.log('[loader] FetchPermission - Session expirée');
             return { success: false, error: 'Session expirée' };
         }
 
         if (response.ok) {
             const data = await response.json();
+            console.log('[loader] FetchPermission data reçue:', data);
             return { success: true, permissions: data.permissions };
         } else {
             const errorData = await response.json().catch(() => ({}));
+            console.log('[loader] FetchPermission erreur:', errorData);
             return { success: false, error: errorData.message || 'Erreur lors de la récupération des permissions' };
         }
     } catch (error) {
-        console.error('Erreur lors de la récupération des permissions:', error);
+        console.error('[loader] Erreur lors de la récupération des permissions:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
