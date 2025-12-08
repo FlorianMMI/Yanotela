@@ -299,6 +299,7 @@ jobs:
                 container_name: yanotela-nginx-dev
                 ports:
                   - "80:80"
+                  - "443:443"
                 volumes:
                   - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
                   - /etc/letsencrypt:/etc/letsencrypt:ro
