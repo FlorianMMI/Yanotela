@@ -2,6 +2,7 @@ import { Note } from '@/type/Note';
 import { Folder } from '@/type/Folder';
 import { Permission } from '@/type/Permission';
 import { checkAuthResponse } from '@/utils/authFetch';
+import { useRouter } from 'next/navigation';
 
 function getApiUrl() {
     if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
@@ -1168,7 +1169,7 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
             body: JSON.stringify({
                 Nom: folderData?.Nom || "Nouveau dossier",
                 Description: folderData?.Description || "",
-                CouleurTag: folderData?.CouleurTag || "#882626",
+                CouleurTag: folderData?.CouleurTag || "var(--primary)",
             })
         });
 
@@ -1366,8 +1367,117 @@ export async function GetNoteFolder(noteId: string): Promise<{ success: boolean;
     }
 }
 
-// Mettre à jour le tag d'une note
-export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ success: boolean; message?: string; error?: string }> {
+// ========== Gestion des Tags personnalisés ==========
+
+// Récupérer tous les tags de l'utilisateur
+export async function GetUserTags(): Promise<{ success: boolean; tags?: any[]; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/list`, {
+            method: "GET",
+            credentials: 'include'
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la récupération des tags' };
+        }
+
+        const data = await response.json();
+        return { success: true, tags: data.tags };
+    } catch (error) {
+        console.error("Error fetching user tags:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Créer un nouveau tag
+export async function CreateTag(nom: string, couleur: string): Promise<{ success: boolean; tag?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/create`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ nom, couleur })
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la création du tag' };
+        }
+
+        const data = await response.json();
+        return { success: true, tag: data.tag };
+    } catch (error) {
+        console.error("Error creating tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Mettre à jour un tag existant
+export async function UpdateTag(tagId: string, nom: string, couleur: string): Promise<{ success: boolean; tag?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/${tagId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ nom, couleur })
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la modification du tag' };
+        }
+
+        const data = await response.json();
+        return { success: true, tag: data.tag };
+    } catch (error) {
+        console.error("Error updating tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Supprimer un tag
+export async function DeleteTag(tagId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/${tagId}`, {
+            method: "DELETE",
+            credentials: 'include'
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la suppression du tag' };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Mettre à jour le tag d'une note (avec tagId)
+export async function UpdateNoteTag(noteId: string, tagId: string | null): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/tag/${noteId}`, {
             method: "PATCH",
@@ -1375,7 +1485,7 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
                 "Content-Type": "application/json"
             },
             credentials: 'include',
-            body: JSON.stringify({ tag })
+            body: JSON.stringify({ tagId })
         });
 
         // Vérifier si session expirée (401)
@@ -1392,6 +1502,65 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: true, message: data.message || 'Tag mis à jour avec succès' };
     } catch (error) {
         console.error("Error updating note tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function Setup2FA(): Promise<{ success: boolean; message?: string; error?: string; redirectUrl?: string }> {
+
+    try {
+        const response = await fetch(`${apiUrl}/user/2fa/setup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message || '2FA setup initiated successfully', redirectUrl: '/a2f' };
+        }
+        else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la configuration de la 2FA' };
+        }
+    } catch (error) {
+        console.error('Erreur Setup2FA:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function Verify2FA(code: string): Promise<{ success: boolean; message?: string; error?: string }> {
+
+    try {
+        const response = await fetch(`${apiUrl}/user/2fa/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ code })
+        });
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message || '2FA verified successfully' };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la vérification de la 2FA' };
+        }
+    } catch (error) {
+        console.error('Erreur Verify2FA:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }

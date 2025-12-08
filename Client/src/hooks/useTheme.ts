@@ -9,7 +9,7 @@ export interface Theme {
 
 // Configuration des thèmes disponibles
 export const themes: Theme[] = [
-  { id: "light", name: "Clair" },
+  { id: "light", name: "Rouge" },
   // { id: "dark", name: "Sombre" },
   { id: "blue", name: "Bleu" },
   { id: "green", name: "Vert" },

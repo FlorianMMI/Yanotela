@@ -1,14 +1,26 @@
 "use client";
-
-import React from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Verify2FA } from '@/loader/loader';
 
 export default function A2FPage() {
-  const [code, setCode] = React.useState('');
+  const router = useRouter();
+  const [code, setCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    // Logique de vérification du code A2F ici
-    
+    try {
+      const result = await Verify2FA(code);
+      if (result.success) {
+        router.push('/a2f/success');
+      } else {
+        setError(result.error || 'Code A2F invalide. Veuillez réessayer.');
+      }
+    } catch (error) {
+      setError('Une erreur est survenue. Veuillez réessayer plus tard.');
+      console.error('Erreur lors de la vérification A2F :', error);
+    }
   }
 
   return (
@@ -26,6 +38,9 @@ export default function A2FPage() {
         <p className="text-center text-gray-700">
           Veuillez entrer ce code ci-dessous pour continuer.
         </p>
+        {
+          error && <p className="text-red-500 text-sm">{error}</p>
+        }
         <input 
           type="text"
           maxLength={6}

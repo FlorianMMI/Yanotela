@@ -51,7 +51,7 @@ export default function Notification({ id, title, author, onNotificationUpdate, 
     return (
         <>
             <div className={
-                `relative after:content-[''] after:block after:absolute after:left-0 after:bottom-0 after:w-full after:border-b after:border-b-gray-300 hover:after:border-b-[#882626] transition-all duration-200 ease-in-out rounded-md hover:bg-white/5 hover:shadow-md hover:scale-[1.01] cursor-pointer ` +
+                `relative after:content-[''] after:block after:absolute after:left-0 after:bottom-0 after:w-full after:border-b after:border-b-gray-300 hover:after:border-b-[var(--primary)] transition-all duration-200 ease-in-out rounded-md hover:bg-white/5 hover:shadow-md hover:scale-[1.01] cursor-pointer ` +
                 (variant === 'row' ? 'flex flex-row items-center gap-3 p-2' : 'flex flex-col p-2')
             }>
                 <div className={variant === 'row' ? 'flex-1 min-w-0' : ''}>

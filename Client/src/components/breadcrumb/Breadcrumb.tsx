@@ -599,7 +599,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
                             folderId={folderId!} 
                             folderName={folderData.Nom || folderName}
                             folderDescription={folderData.Description || ""}
-                            folderColor={folderData.CouleurTag || "#882626"}
+                            folderColor={folderData.CouleurTag || "var(--primary)"}
                             noteCount={folderData.noteCount || 0}
                             onUpdate={async (name: string, description: string, color: string) => {
                               // La mise à jour sera gérée par la page dossiers/[id]

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
 import TagNote from "@/ui/note-modal/note-tag";
+import TagManagementModal from "@/ui/note-modal/tag-management-modal";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
 import { ArrowBarIcon, ExitIcon, DuplicateIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
@@ -18,8 +19,9 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
     const [currentView, setCurrentView] = useState<ModalView>("menu");
     const [isDeleting, setIsDeleting] = useState(false);
     const [noteTitle, setNoteTitle] = useState<string>("");
-    const [noteTag, setNoteTag] = useState<string>("");
+    const [noteTagId, setNoteTagId] = useState<string | null>(null);
     const [userRole, setUserRole] = useState<number | undefined>(undefined);
+    const [showTagManagement, setShowTagManagement] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
@@ -30,7 +32,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
             if (noteData && typeof noteData === 'object' && 'Titre' in noteData) {
                 setNoteTitle(noteData.Titre);
                 setUserRole(noteData.userRole);
-                setNoteTag(noteData.tag || '');
+                setNoteTagId(noteData.tagId || null);
             }
         };
         loadNoteInfo();
@@ -39,6 +41,11 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
     // Gérer les clics en dehors du modal
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            // Ne pas fermer si on clique dans le TagManagementModal
+            if (showTagManagement) {
+                return;
+            }
+            
             if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
                 onClose();
             }
@@ -48,7 +55,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [onClose]);
+    }, [onClose, showTagManagement]);
 
     const handleDeleteNote = async () => {
         setIsDeleting(true);
@@ -165,7 +172,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                         />
                     );
             case "tag":
-                return <TagNote noteId={noteId} currentTag={noteTag} onTagUpdated={onNoteUpdated} />;
+                return <TagNote noteId={noteId} currentTagId={noteTagId} onTagUpdated={onNoteUpdated} />;
             case "delete":
             case "leave":
                 return null; // Le modal sera rendu en dehors du contenu
@@ -174,7 +181,14 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     <div className="w-52 md:w-64">
                         <div className="flex flex-col gap-1 p-2">
                             <NoteButton Icon={FolderIcon} Title="Dossiers" modal="folder" setCurrentView={setCurrentView} borderTop={false} />
-                            <NoteButton Icon={PaletteIcon} Title="Tag couleur" modal="tag" setCurrentView={setCurrentView} />
+                            <NoteButton 
+                                Icon={PaletteIcon} 
+                                Title="Tag couleur" 
+                                modal="tag" 
+                                setCurrentView={setCurrentView}
+                                showEditIcon={true}
+                                onEditClick={() => setShowTagManagement(true)}
+                            />
                             <NoteButton Icon={PartageIcon} Title="Partager la note" modal="share" setCurrentView={setCurrentView} />
                             <NoteButton Icon={InfoIcon} Title="Infos de la note" modal="info" setCurrentView={setCurrentView} />
                             <NoteButton Icon={DuplicateIcon} Title="Dupliquer la note" onClick={handleDuplicateNote} />
@@ -193,6 +207,13 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
 
     return (
         <>
+            {/* Modal de gestion des tags */}
+            <TagManagementModal 
+                isOpen={showTagManagement}
+                onClose={() => setShowTagManagement(false)}
+                onTagsUpdated={onNoteUpdated}
+            />
+
             {currentView === "delete" ? (
                 <NoteDeleteConfirm
                     noteTitle={noteTitle}

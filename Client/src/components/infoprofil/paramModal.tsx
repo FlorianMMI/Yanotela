@@ -1,13 +1,13 @@
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
-import { CloseIcon, TrashIcon} from '@/libs/Icons';
+import { CloseIcon } from '@/libs/Icons';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
 import ThemeSelector from '../theme/ThemeSelector';
 import PWAInstallButton from '@/ui/PWAInstallbutton';
+import RGPDBouton from '@/ui/RGPDBouton';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -21,8 +21,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     const handleDeleteAccount = () => {
         setShowDeleteConfirm(true);
     };
-
-    const router = useRouter();
 
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
@@ -102,6 +100,10 @@ export default function ParamModal({ onClose }: ParamModalProps) {
 
                         <hr className="border-t border-primary w-full" />
 
+                        <div>
+                            <RGPDBouton />
+                        </div>
+                        
                         {/* Boutton suppression compte */}
                         <button
                             className="px-4 py-2 bg-primary text-white font-bold rounded hover:bg-primary-hover hover:shadow-lg transition-all duration-300 cursor-pointer"

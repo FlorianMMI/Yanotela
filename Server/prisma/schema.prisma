@@ -25,21 +25,22 @@ model User {
   permissions   Permission[]
   commentaire   commentaire[]
   noteFolders   NoteFolder[]
+  tags          Tag[]
 }
 
 model Note {
   id          String        @id
   Titre       String
   Content     String
+  yjsState    Bytes?
+  tagId       String?      // Référence vers un Tag personnalisé (optionnel)
   authorId    Int
   ModifiedAt  DateTime      @default(now())
   modifierId  Int?
   deletedAt   DateTime?
-  yjsState    Bytes?
-  tag         String?
-  isPublic    Boolean       @default(false)
-  author      User          @relation(fields: [authorId], references: [id])
-  modifier    User?         @relation("NoteModifier", fields: [modifierId], references: [id])
+  author      User         @relation(fields: [authorId], references: [id])
+  modifier    User?        @relation("NoteModifier", fields: [modifierId], references: [id])
+  tag         Tag?         @relation(fields: [tagId], references: [id], onDelete: SetNull)
   permissions Permission[]
   commentaire commentaire[]
   noteFolder  NoteFolder?
@@ -85,12 +86,19 @@ model NoteFolder {
   @@map("note_folder")
 }
 
-model commentaire {
-  id       String   @id
-  text     String
-  date     DateTime @default(now())
-  authorId Int
-  id_note  String
-  User     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  Note     Note     @relation(fields: [id_note], references: [id], onDelete: Cascade)
+model Tag {
+  id        String   @id @default(uuid())
+  nom       String
+  couleur   String
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     Note[]
+
+  @@unique([userId, nom])
+  @@index([userId])
 }
+
+// Note: Les commentaires sont maintenant gérés via YJS (Y.Array partagé)
+// Voir: Client/src/hooks/useYjsComments.ts
