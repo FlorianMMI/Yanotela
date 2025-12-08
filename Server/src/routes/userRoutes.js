@@ -27,4 +27,7 @@ router.post('/2fa/setup', requireAuth, userController.setup2FA);
 
 router.post('/2fa/verify', requireAuth, userController.check2fa);
 
+// Route get pour avoir les informations du code 2FA (authentification requise)
+router.get('/2fa/info', userController.info2fa);
+
 export default router;

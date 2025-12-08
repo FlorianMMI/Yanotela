@@ -1,14 +1,12 @@
 "use client";
-
-import React from 'react';
-
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Verify2FA } from '@/loader/loader';
 
 export default function A2FPage() {
   const router = useRouter();
-  const [code, setCode] = React.useState('');
-  const [error, setError] = React.useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();

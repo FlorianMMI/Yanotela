@@ -481,8 +481,55 @@ export const userController = {
       return res.status(400).json({ success: false, message: "Code 2FA invalide" });
     }
 
-  } 
+  },
 
+  // fonction qui récupère les infos utilisateur pour la récupération de données 
+
+  info2fa: async(req, res) => {
+
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      const userId = parseInt(req.session.userId, 10);
+
+      const info = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        pseudo: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        _count: {
+        select: { notes: true },
+        },
+      },
+      });
+
+      if (!info) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+
+      return res.status(200).json({
+      success: true,
+      user: {
+        Pseudonyme: info.pseudo,
+        Nom: info.nom,
+        Prénom: info.prenom,
+        "E-mail": info.email,
+        "Nombre de notes": info._count?.notes ?? 0,
+      },
+      });
+    } catch (error) {
+      console.error("Erreur info2fa:", error);
+      return res.status(500).json({
+      success: false,
+      message: "Erreur"
+      });
+    }
+
+  }
 
 };
 
