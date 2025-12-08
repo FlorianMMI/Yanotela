@@ -757,7 +757,7 @@ async function sendNoteInvitationEmail(to, inviterName, noteTitle, noteId, role)
   }
 }
 
-async function a2fEmail(to, code) {
+async function a2fEmail(to, validationCode) {
   // transporter
   const transport = createEmailTransporter();
   if (!transport) {
@@ -876,7 +876,7 @@ async function a2fEmail(to, code) {
                 Ce code est valide pendant 15 minutes.
               </p>
               <p style="font-size: 12px; color: #882626">
-                Si vous pensez que quelqu'un utilise compte Yanotela sans votre autorisation, veuillez réinitialiser votre mot de passe dès que possible.
+                Si vous pensez que quelqu'un utilise votre compte Yanotela sans votre autorisation, veuillez réinitialiser votre mot de passe dès que possible.
               </p>
 
             </div>

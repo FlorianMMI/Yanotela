@@ -1403,3 +1403,34 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
+
+
+// Fonction pour la gestion de l'a2f 
+
+export async function Setup2FA(): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/user/2fa/setup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message || '2FA setup initiated successfully' };
+        }
+        else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la configuration de la 2FA' };
+        }
+    } catch (error) {
+        console.error('Erreur Setup2FA:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
