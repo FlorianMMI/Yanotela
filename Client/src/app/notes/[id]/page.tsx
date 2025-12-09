@@ -425,15 +425,8 @@ function LoadInitialContentPlugin({
           return;
         }
 
-        // Check if Y.Doc already has content (from sync or previous load)
-        const encoded = Y.encodeStateAsUpdate(ydoc);
-        if (encoded && encoded.length > 2) { // More than empty doc structure
-          console.log('✅ [LoadContent] Y.Doc contient déjà des données, skip chargement DB');
-          hasLoadedRef.current = true;
-          return;
-        }
-
-        // Y.Doc is empty, load content from DB
+        // Y.Doc est disponible, charger le contenu depuis DB
+        // Note: On charge toujours car yjsState peut être obsolète
         const parsedContent = JSON.parse(content);
 
         editor.update(() => {
@@ -639,6 +632,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         setNoteTitle(note.Titre || "Sans titre");
 
         // Charger le contenu initial dans l'éditeur
+        // Le LoadInitialContentPlugin vérifie si Y.Doc a déjà des données avant de charger
         if (note.Content) {
           setInitialEditorContent(note.Content);
         } else {

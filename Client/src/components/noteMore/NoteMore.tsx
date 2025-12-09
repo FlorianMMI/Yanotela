@@ -5,6 +5,7 @@ import TagManagementModal from "@/ui/note-modal/tag-management-modal";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
 import { ArrowBarIcon, DupplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
+import NoteButton from "@/ui/note-modal/note-button";
 
 interface NoteMoreProps {
     noteId: string;
@@ -190,7 +191,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                             />
                             <NoteButton Icon={PartageIcon} Title="Partager la note" modal="share" setCurrentView={setCurrentView} />
                             <NoteButton Icon={InfoIcon} Title="Infos de la note" modal="info" setCurrentView={setCurrentView} />
-                            <NoteButton Icon={DuplicateIcon} Title="Dupliquer la note" onClick={handleDuplicateNote} />
+                            <NoteButton Icon={DupplicateIcon} Title="Dupliquer la note" onClick={handleDuplicateNote} />
                             {/*  "Supprimer" pour Owner uniquement (0) / Quitter pour les autres */}
                             {userRole !== 0 ? (
                             <NoteButton Icon={ExitIcon} delete Title="Quitter la note" modal="leave" setCurrentView={setCurrentView} />
