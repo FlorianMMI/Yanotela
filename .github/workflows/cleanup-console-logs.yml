@@ -43,7 +43,7 @@ jobs:
               result = result.replace(/console\.log\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
               result = result.replace(/console\.warn\s*\([^()]*\)\s*;?/g, '');
               result = result.replace(/console\.warn\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
-              result = result.replace(//console\.error\s*\([^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.error\s*\([^()]*\)\s*;?/g, '');
               result = result.replace(/console\.error\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
               hasChanges = before !== result;
             }
