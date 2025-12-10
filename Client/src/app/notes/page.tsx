@@ -19,7 +19,6 @@ export default function Home() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const hasFetched = useRef(false);
   
   // Charger les notes au montage du composant (évite double appel en Strict Mode)
   const fetchNotes = useCallback(async () => {
