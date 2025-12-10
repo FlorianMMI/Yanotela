@@ -53,8 +53,7 @@ export function migrateContentToYjs(lexicalJSON) {
     try {
       parsedContent = JSON.parse(lexicalJSON);
     } catch (parseError) {
-      console.error('❌ [YJS Migration] JSON invalide - création d\'un document YJS vide');
-      
+
       // Créer un document YJS vide pour éviter les boucles de migration
       const ydoc = new Y.Doc();
       const yXmlText = ydoc.get('root', Y.XmlText);
@@ -92,7 +91,7 @@ export function migrateContentToYjs(lexicalJSON) {
 
     return Buffer.from(yjsState);
   } catch (error) {
-    console.error('❌ [YJS Migration] Erreur fatale:', error);
+    
     return null;
   }
 }
@@ -189,7 +188,7 @@ export function extractContentFromYjs(yjsState) {
 
     return JSON.stringify(lexicalJSON);
   } catch (error) {
-    console.error('❌ [YJS Extract] Erreur:', error);
+    
     return null;
   }
 }

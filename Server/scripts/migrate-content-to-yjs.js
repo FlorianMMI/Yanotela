@@ -149,7 +149,7 @@ async function migrateNote(note) {
 
     return { status: 'success', size: yjsStateBuffer.length };
   } catch (error) {
-    console.error(`   ❌ Erreur migration:`, error.message);
+    
     return { status: 'error', error: error.message };
   }
 }
@@ -240,7 +240,7 @@ async function main() {
     }
 
   } catch (error) {
-    console.error('\n❌ ERREUR FATALE:', error);
+    
     process.exit(1);
   } finally {
     await prisma.$disconnect();

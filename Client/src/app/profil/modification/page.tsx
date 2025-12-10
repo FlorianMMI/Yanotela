@@ -80,7 +80,7 @@ export default function ModificationProfil() {
         }, 5000);
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      
       setError('Erreur de connexion au serveur');
       
       // Faire disparaître le message d'erreur après 5 secondes
@@ -119,7 +119,7 @@ export default function ModificationProfil() {
         setError(result.error || 'Erreur lors de l\'envoi du mail de confirmation');
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      
       setError('Erreur de connexion au serveur');
     } finally {
       setLoading(false);

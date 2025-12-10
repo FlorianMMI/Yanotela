@@ -57,7 +57,7 @@ async function createTestNote() {
     });
 
   } catch (error) {
-    console.error('❌ Erreur:', error.message);
+    
   } finally {
     await prisma.$disconnect();
   }

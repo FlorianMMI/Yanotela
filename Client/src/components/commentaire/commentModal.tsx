@@ -64,7 +64,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                     
                 }
             } catch (error) {
-                console.error('[commentModal] ❌ Erreur lors de la récupération du rôle:', error);
+                
             }
         };
 

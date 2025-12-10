@@ -37,11 +37,11 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 setShowSuccessModal(true);
                 
             } else {
-                console.error('Erreur lors de la suppression:', response.error);
+                
                 alert('Erreur lors de la suppression du compte: ' + response.error);
             }
         } catch (error) {
-            console.error('Erreur lors de la suppression du compte:', error);
+            
             alert('Une erreur est survenue lors de la suppression du compte.');
         } finally {
             setIsDeleting(false);

@@ -23,11 +23,11 @@ export default function Logout(){
                 setShowConfirm(false);
                 router.push('/login');
             } else {
-                console.error('Erreur de déconnexion:', response.error);
+                
                 setShowConfirm(false);
             }
         } catch (error) {
-            console.error('Erreur de déconnexion:', error);
+            
             setShowConfirm(false);
         }
     };

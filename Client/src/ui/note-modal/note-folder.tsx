@@ -79,7 +79,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                 setCurrentFolder(null);
             }
         } catch (err) {
-            console.error("Error fetching folder data:", err);
+            
             setError("Erreur lors du chargement des dossiers");
         } finally {
             setLoading(false);
@@ -110,7 +110,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                 setError(response.error || "Erreur lors de l'assignation");
             }
         } catch (err) {
-            console.error("Error assigning note to folder:", err);
+            
             setError("Erreur de connexion au serveur");
         } finally {
             setSaving(false);
@@ -145,7 +145,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                 setError(response.error || "Erreur lors du retrait");
             }
         } catch (err) {
-            console.error("Error removing note from folder:", err);
+            
             setError("Erreur de connexion au serveur");
         } finally {
             setSaving(false);

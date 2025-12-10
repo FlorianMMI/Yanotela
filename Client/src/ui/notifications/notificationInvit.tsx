@@ -40,7 +40,7 @@ export default function Notification({
                     router.push(`/notes/${noteId}`);
                 }
             } catch (error) {
-                console.error("Erreur lors de l'acceptation de la notification:", error);
+                
             }
         }
     };
@@ -58,7 +58,7 @@ export default function Notification({
                 // Déclencher la mise à jour globale des notifications
                 refreshNotifications();
             } catch (error) {
-                console.error("Erreur lors du refus de la notification:", error);
+                
             }
         }
     };

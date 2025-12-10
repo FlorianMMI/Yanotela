@@ -30,7 +30,7 @@ export default function Corbeille() {
       const response = await GetDeletedNotes();
       setNotes(response.notes || []);
     } catch (error) {
-      console.error("Erreur lors du chargement des notes supprimées:", error);
+      
       setNotes([]);
     } finally {
       setLoading(false);
@@ -59,7 +59,7 @@ export default function Corbeille() {
         alert(response.error || "Erreur lors de la restauration");
       }
     } catch (error) {
-      console.error("Erreur lors de la restauration:", error);
+      
       alert("Une erreur est survenue lors de la restauration");
     } finally {
       setRestoring(null);

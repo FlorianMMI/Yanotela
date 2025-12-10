@@ -24,7 +24,7 @@ const getPermission = async (userId, noteId) => {
     });
     return permission;
   } catch (error) {
-    console.error("Erreur lors de la récupération des permissions:", error);
+    
     throw new Error("Erreur lors de la récupération des permissions");
   }
 };
@@ -50,7 +50,7 @@ export async function FetchPermission(req, res) {
     
     res.json({ permissions });
   } catch (error) {
-    console.error("Erreur lors de la récupération des permissions:", error);
+    
     res
       .status(500)
       .json({ error: "Erreur lors de la récupération des permissions" });
@@ -117,7 +117,7 @@ const UpdatePermission = async (req, res) => {
 
       // Notifier l'utilisateur du changement de rôle via YJS
       try {
-        console.log(`🔔 [UpdatePermission] Préparation notification changement rôle pour userId=${userId}, noteId=${noteId}`);
+        
         const note = await prisma.note.findUnique({
           where: { id: noteId },
           select: { Titre: true },
@@ -126,7 +126,7 @@ const UpdatePermission = async (req, res) => {
           where: { id: connected },
           select: { pseudo: true },
         });
-        console.log(`🔔 [UpdatePermission] Appel notifyRoleChanged: userId=${parseInt(userId)}, note="${note?.Titre || "Sans titre"}", oldRole=${oldRole}, newRole=${newRole}, actor=${actor?.pseudo || "Un administrateur"}`);
+        
         await notifyRoleChanged(
           parseInt(userId),
           noteId,
@@ -135,9 +135,9 @@ const UpdatePermission = async (req, res) => {
           newRole,
           actor?.pseudo || "Un administrateur"
         );
-        console.log(`✅ [UpdatePermission] Notification changement rôle envoyée avec succès`);
+        
       } catch (notifError) {
-        console.error("❌ [UpdatePermission] Erreur notification:", notifError);
+        
         // Ne pas bloquer la réponse si la notification échoue
       }
 
@@ -149,7 +149,7 @@ const UpdatePermission = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Erreur lors de la mise à jour des permissions:", error);
+    
     return res
       .status(500)
       .json({ error: "Erreur serveur lors de la mise à jour des permissions" });
@@ -245,10 +245,7 @@ async function AddPermission(req, res) {
       );
     } catch (emailError) {
       // L'email a échoué mais la permission a été créée avec succès
-      console.error(
-        "Erreur lors de l'envoi de l'email d'invitation:",
-        emailError
-      );
+      
       // On continue quand même car la permission est créée
     }
 
@@ -262,7 +259,7 @@ async function AddPermission(req, res) {
         inviter?.pseudo || "Un utilisateur"
       );
     } catch (notifError) {
-      console.error("Erreur lors de l'envoi de la notification YJS:", notifError);
+      
       // On continue quand même car la permission est créée
     }
 
@@ -277,7 +274,7 @@ async function AddPermission(req, res) {
         inviter?.pseudo || "Un utilisateur"
       );
     } catch (notifError) {
-      console.error("Erreur lors de l'envoi de la notification SOMEONE_INVITED:", notifError);
+      
       // On continue quand même
     }
 
@@ -293,7 +290,7 @@ async function AddPermission(req, res) {
       emailSent: true, // Indiquer que l'email a été tenté
     });
   } catch (error) {
-    console.error("Erreur lors de l'ajout de permission:", error);
+    
     res
       .status(500)
       .json({ error: "Erreur serveur lors de l'ajout de l'utilisateur" });
@@ -358,7 +355,7 @@ async function RemovePermission(req, res) {
         actor?.pseudo || "Un administrateur"
       );
     } catch (notifError) {
-      console.error("[RemovePermission] Erreur notification REMOVED:", notifError);
+      
       // Ne pas bloquer la suppression si la notification échoue
     }
 
@@ -372,7 +369,7 @@ async function RemovePermission(req, res) {
         actor?.pseudo || "Un administrateur"
       );
     } catch (notifError) {
-      console.error("[RemovePermission] Erreur notification COLLABORATOR_REMOVED:", notifError);
+      
       // Ne pas bloquer si la notification échoue
     }
 
@@ -397,7 +394,7 @@ async function RemovePermission(req, res) {
     });
     res.json({ success: true, message: "Permission retirée avec succès" });
   } catch (error) {
-    console.error("Erreur lors de la suppression de permission:", error);
+    
     res
       .status(500)
       .json({ error: "Erreur serveur lors de la suppression de permission" });

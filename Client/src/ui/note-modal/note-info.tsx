@@ -23,7 +23,7 @@ export default function NoteInfoUI({ noteId }: NoteInfoUIProps) {
             const data = await GetNoteById(id);
             setNoteInfo(data);
         } catch (err) {
-            console.error("Error fetching note by ID:", err);
+            
             setError("Erreur lors de la récupération de la note");
         } finally {
             setLoading(false);

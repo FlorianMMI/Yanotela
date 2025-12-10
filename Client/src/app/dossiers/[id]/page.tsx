@@ -43,12 +43,12 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 setFolder(response.folder);
                 setNotes(Array.isArray(response.notes) ? response.notes : []);
             } else {
-                console.error("Dossier introuvable");
+                
                 setFolder(null);
                 setNotes([]);
             }
         } catch (error) {
-            console.error("Error loading folder:", error);
+            
             setFolder(null);
             setNotes([]);
         } finally {
@@ -102,7 +102,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 detail: { folderId: id, title: name }
             }));
         } else {
-            console.error("Erreur lors de la sauvegarde:", response.error);
+            
             throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
         }
     };

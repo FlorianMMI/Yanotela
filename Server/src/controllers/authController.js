@@ -55,7 +55,7 @@ const register = async (req, res) => {
     try {
       await sendValidationEmail(email, token);
     } catch (emailError) {
-      console.error("Erreur lors de l'envoi de l'email:", emailError);
+      
       // On continue quand même pour créer l'utilisateur
     }
 
@@ -84,7 +84,7 @@ const register = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Erreur server:", err);
+    
       return res.status(500).json({
         error: "Erreur serveur. Réessayez plus tard.",
       });
@@ -219,7 +219,7 @@ const login = async (req, res) => {
     // Redirection vers le client après authentification (même comportement que Google Auth)
     return res.redirect(`${clientUrl}/notes`);
   } catch (err) {
-    console.error("Erreur connexion", err);
+    
     const serverError = "Erreur serveur lors de la connexion";
     if (isJsonRequest) {
         return res.status(401).json({
@@ -234,7 +234,7 @@ const login = async (req, res) => {
 const logout = (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      console.error("Erreur destruction session:", err);
+      
       return res.status(500).json({
         error: "Erreur lors de la déconnexion",
       });
@@ -278,7 +278,7 @@ const validate = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Erreur validation:", err);
+    
     return res.status(500).json({
       error: "Erreur serveur",
     });
@@ -322,7 +322,7 @@ const forgotPassword = async (req, res) => {
         "Si votre adresse email est valide, vous recevrez un email de réinitialisation",
     });
   } catch (err) {
-    console.error("Erreur forgot password:", err);
+    
     return res.status(500).json({
       error: "Erreur serveur. Réessayez plus tard.",
     });
@@ -350,7 +350,7 @@ const resetPasswordGet = async (req, res) => {
       token: token,
     });
   } catch (err) {
-    console.error("Erreur reset password get:", err);
+    
     return res.status(500).json({
       error: "Erreur serveur",
     });
@@ -402,7 +402,7 @@ const resetPasswordPost = async (req, res) => {
       message: "Mot de passe réinitialisé avec succès",
     });
   } catch (err) {
-    console.error("Erreur reset password post:", err);
+    
     return res.status(500).json({
       error: "Erreur serveur",
     });
@@ -441,7 +441,7 @@ const checkAuth = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Erreur vérification authentification:", err);
+    
     return res.status(500).json({
       authenticated: false,
     });

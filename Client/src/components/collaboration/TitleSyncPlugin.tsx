@@ -145,10 +145,10 @@ export function TitleSyncPlugin({
             detail: { noteId, title: currentTitle } 
           }));
         } else {
-          console.error('❌ [TitleSync] Erreur HTTP', response.status);
+          
         }
       } catch (error) {
-        console.error('❌ [TitleSync] Erreur sauvegarde:', error);
+        
       }
     }, 2000);
 

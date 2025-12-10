@@ -8,7 +8,7 @@ export const validateGoogleOAuth = (req, res, next) => {
     validateGoogleConfig();
     next();
   } catch (error) {
-    console.error('Configuration Google OAuth invalide:', error.message);
+    
     return res.status(500).render('index', { 
       error: 'Service Google temporairement indisponible' 
     });
@@ -51,7 +51,7 @@ export const addUserToLocals = async (req, res, next) => {
         isLoggedIn: true
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération des informations utilisateur:', error);
+      
       res.locals.user = null;
     }
   } else {
@@ -64,8 +64,7 @@ export const addUserToLocals = async (req, res, next) => {
  * Middleware pour gérer les erreurs OAuth
  */
 export const handleOAuthErrors = (error, req, res, next) => {
-  console.error('Erreur OAuth:', error);
-  
+
   // Nettoyer la session OAuth en cas d'erreur
   delete req.session.oauthState;
   delete req.session.linkingAccount;

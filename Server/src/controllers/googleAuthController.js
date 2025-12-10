@@ -36,7 +36,7 @@ export const initiateGoogleAuth = (req, res) => {
 
     res.redirect(authUrl);
   } catch (error) {
-    console.error('Erreur lors de l\'initiation Google Auth:', error);
+    
       res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur lors de la connexion avec Google')}`);
   }
 };
@@ -50,13 +50,13 @@ export const handleGoogleCallback = async (req, res) => {
 
     // Vérifier s'il y a une erreur OAuth
     if (error) {
-      console.error('Erreur OAuth Google:', error);
+      
       return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Connexion Google annulée ou échouée')}`);
     }
 
     // Vérifier l'état CSRF
     if (!state || state !== req.session.oauthState) {
-      console.error('État CSRF invalide');
+      
       return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur de sécurité lors de la connexion')}`);
     }
 
@@ -143,7 +143,7 @@ export const handleGoogleCallback = async (req, res) => {
       return res.redirect(`${clientUrl}/notes`);
     }
   } catch (error) {
-    console.error('Erreur lors du callback Google:', error);
+    
       res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur lors de la connexion avec Google')}`);
   } finally {
     // Nettoyer l'état de la session
@@ -159,7 +159,7 @@ export const googleLogout = async (req, res) => {
     // Détruire la session locale
     req.session.destroy((err) => {
       if (err) {
-        console.error('Erreur lors de la destruction de session:', err);
+        
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur lors de la déconnexion')}`);
       }
 
@@ -168,7 +168,7 @@ export const googleLogout = async (req, res) => {
       res.redirect('/');
     });
   } catch (error) {
-    console.error('Erreur lors de la déconnexion Google:', error);
+    
       res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent('Erreur lors de la déconnexion')}`);
   }
 };
@@ -198,7 +198,7 @@ export const linkGoogleAccount = async (req, res) => {
 
     res.redirect(authUrl);
   } catch (error) {
-    console.error('Erreur lors de la liaison du compte Google:', error);
+    
       res.redirect(`${process.env.CLIENT_URL}/settings?error=${encodeURIComponent('Erreur lors de la liaison avec Google')}`);
   }
 };

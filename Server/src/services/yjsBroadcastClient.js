@@ -60,24 +60,23 @@ function getOrCreateConnection(userId) {
     
     // Créer une nouvelle connexion
     const wsUrl = `${YJS_SERVER_URL}/${roomName}`;
-    console.log(`🔌 [YJS Client] Connexion à ${wsUrl}`);
-    
+
     const ws = new WebSocket(wsUrl);
     
     ws.on('open', () => {
-      console.log(`✅ [YJS Client] Connecté à room: ${roomName}`);
+      
       connections.set(roomName, ws);
       resolve(ws);
     });
     
     ws.on('error', (error) => {
-      console.error(`❌ [YJS Client] Erreur connexion ${roomName}:`, error.message);
+      
       connections.delete(roomName);
       reject(error);
     });
     
     ws.on('close', () => {
-      console.log(`🔌 [YJS Client] Déconnecté de room: ${roomName}`);
+      
       connections.delete(roomName);
     });
     
@@ -105,13 +104,11 @@ export async function sendNotificationToUser(userId, notification) {
     // Encoder et envoyer le message
     const message = encodeNotificationMessage(notification);
     ws.send(message);
-    
-    console.log(`📤 [YJS Client] Notification envoyée à userId=${userId}, type=${notification.type}`);
+
     return true;
     
   } catch (error) {
-    console.error(`❌ [YJS Client] Échec envoi notification à userId=${userId}:`, error.message);
-    
+
     // Stocker en file d'attente pour retry ultérieur
     pendingNotifications.push({ userId, notification, timestamp: Date.now() });
     
@@ -137,8 +134,7 @@ export async function broadcastNotificationToUsers(userIds, notification) {
     if (success) sent++;
     else failed++;
   }
-  
-  console.log(`📡 [YJS Client] Broadcast: ${sent} envoyées, ${failed} échouées`);
+
   return { sent, failed };
 }
 
@@ -147,7 +143,7 @@ export async function broadcastNotificationToUsers(userIds, notification) {
  */
 export function closeAllConnections() {
   connections.forEach((ws, roomName) => {
-    console.log(`🔌 [YJS Client] Fermeture connexion: ${roomName}`);
+    
     ws.close();
   });
   connections.clear();

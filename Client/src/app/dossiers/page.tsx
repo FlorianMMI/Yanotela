@@ -25,7 +25,7 @@ export default function FoldersPage() {
       const response = await GetFolders();
       setFolders(response.folders || []);
     } catch (error) {
-      console.error("Error loading folders:", error);
+      
       setFolders([]);
     } finally {
       setLoading(false);

@@ -257,7 +257,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                     setCopied(true);
                                     setTimeout(() => setCopied(false), 2000);
                                 } catch (err) {
-                                    console.error('Erreur copie lien', err);
+                                    
                                     alert('Impossible de copier le lien.');
                                 }
                             }}

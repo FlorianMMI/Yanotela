@@ -7,7 +7,7 @@ try {
 
     }
 } catch (error) {
-    console.error('Erreur import Prisma:', error);
+    
 }
 
 const httpServer = createServer(async (req, res) => {
