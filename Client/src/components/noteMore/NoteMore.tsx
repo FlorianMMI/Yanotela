@@ -4,8 +4,8 @@ import TagNote from "@/ui/note-modal/note-tag";
 import TagManagementModal from "@/ui/note-modal/tag-management-modal";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
-import { ArrowBarIcon, ExitIcon, DuplicateIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
-import NoteButton from '@/ui/note-modal/note-button';
+import { ArrowBarIcon, DupplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
+import NoteButton from "@/ui/note-modal/note-button";
 
 interface NoteMoreProps {
     noteId: string;
@@ -191,7 +191,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                             />
                             <NoteButton Icon={PartageIcon} Title="Partager la note" modal="share" setCurrentView={setCurrentView} />
                             <NoteButton Icon={InfoIcon} Title="Infos de la note" modal="info" setCurrentView={setCurrentView} />
-                            <NoteButton Icon={DuplicateIcon} Title="Dupliquer la note" onClick={handleDuplicateNote} />
+                            <NoteButton Icon={DupplicateIcon} Title="Dupliquer la note" onClick={handleDuplicateNote} />
                             {/*  "Supprimer" pour Owner uniquement (0) / Quitter pour les autres */}
                             {userRole !== 0 ? (
                             <NoteButton Icon={ExitIcon} delete Title="Quitter la note" modal="leave" setCurrentView={setCurrentView} />
@@ -230,12 +230,12 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     isLeaving={true}
                 />
             ) : (
-                <div 
+                <div
                     ref={modalRef}
                     className="bg-white rounded-xl w-52 md:w-64 shadow-lg overflow-hidden relative h-auto flex flex-col"
                 >
-                    
-                    <div className="p-2 gap-2 border-b border-element flex items-center">
+
+                    <div className="p-3 md:p-4 pb-2 border-b border-element flex items-center">
                         {currentView !== "menu" && (
                             <button
                                 className="rounded hover:bg-deskbackground transition-colors"
@@ -247,7 +247,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                         )}
                         <h3 className="text-base md:text-lg font-semibold text-foreground">{getModalTitle()}</h3>
                     </div>
-                    
+
                     {renderContent()}
                 </div>
             )}
