@@ -74,7 +74,7 @@ export const awarenessController = {
       });
 
     } catch (error) {
-      console.error("[autoAcceptPermission] Erreur:", error);
+      
       return res.status(500).json({
         success: false,
         message: "Erreur lors de l'auto-acceptation de la permission",

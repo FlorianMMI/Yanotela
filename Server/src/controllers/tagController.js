@@ -23,7 +23,7 @@ export const getUserTags = async (req, res) => {
       tags
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération des tags:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erreur lors de la récupération des tags'
@@ -74,7 +74,7 @@ export const createTag = async (req, res) => {
       tag
     });
   } catch (error) {
-    console.error('Erreur lors de la création du tag:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erreur lors de la création du tag'
@@ -146,7 +146,7 @@ export const updateTag = async (req, res) => {
       tag: updatedTag
     });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du tag:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erreur lors de la mise à jour du tag'
@@ -191,7 +191,7 @@ export const deleteTag = async (req, res) => {
       message: 'Tag supprimé avec succès'
     });
   } catch (error) {
-    console.error('Erreur lors de la suppression du tag:', error);
+    
     res.status(500).json({
       success: false,
       error: 'Erreur lors de la suppression du tag'

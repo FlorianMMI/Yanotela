@@ -44,7 +44,7 @@ export async function CreateNote(): Promise<{ note: Note | null; redirectUrl?: s
         const data = await response.json();
         return { note: data.note, redirectUrl: data.redirectUrl };
     } catch (error) {
-        console.error("Error creating note:", error);
+        
         return { note: null };
     }
 }
@@ -72,7 +72,7 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
 
         // Vérification que les données attendues sont présentes
         if (!data.notes || typeof data.totalNotes === 'undefined') {
-            console.error('Invalid response format - missing notes or totalNotes:', data);
+            
             return { notes: [], totalNotes: 0 };
         }
 
@@ -140,7 +140,7 @@ export async function GetNotes(): Promise<{ notes: Note[]; totalNotes: number }>
 
         return { notes: data.notes, totalNotes: data.totalNotes };
     } catch (error) {
-        console.error("Error fetching notes:", error);
+        
         return { notes: [], totalNotes: 0 };
     }
 }
@@ -168,7 +168,7 @@ export async function GetNoteById(id: string): Promise<Note | { error: string } 
         }
         return data;
     } catch (error) {
-        console.error("Error fetching note by ID:", error);
+        
         return { error: "Erreur de connexion au serveur" };
     }
 }
@@ -196,7 +196,7 @@ export async function SaveNote(id: string, noteData: Partial<Note>): Promise<boo
         return true;
     }
     catch (error) {
-        console.error("Error saving note:", error);
+        
         return false;
     }
 }
@@ -230,7 +230,7 @@ export async function DeleteNote(id: string): Promise<{ success: boolean; messag
             message: data.message || "Note supprimée avec succès"
         };
     } catch (error) {
-        console.error("Error deleting note:", error);
+        
         return {
             success: false,
             error: error instanceof Error ? error.message : "Erreur inconnue"
@@ -269,7 +269,7 @@ export async function DuplicateNote(id: string): Promise<{ success: boolean; not
             message: data.message || "Note dupliquée avec succès"
         };
     } catch (error) {
-        console.error("Error duplicating note:", error);
+        
         return {
             success: false,
             error: error instanceof Error ? error.message : "Erreur inconnue"
@@ -306,7 +306,7 @@ export async function LeaveNote(id: string): Promise<{ success: boolean; message
             message: data.message || "Vous avez quitté la note avec succès"
         };
     } catch (error) {
-        console.error("Error leaving note:", error);
+        
         return {
             success: false,
             error: error instanceof Error ? error.message : "Erreur inconnue"
@@ -336,7 +336,7 @@ export async function GetDeletedNotes(): Promise<{ notes: Note[]; totalNotes: nu
         const data = await response.json();
 
         if (!data.notes || typeof data.totalNotes === 'undefined') {
-            console.error('Invalid response format - missing notes or totalNotes:', data);
+            
             return { notes: [], totalNotes: 0 };
         }
 
@@ -369,7 +369,7 @@ export async function GetDeletedNotes(): Promise<{ notes: Note[]; totalNotes: nu
 
         return { notes: data.notes, totalNotes: data.totalNotes };
     } catch (error) {
-        console.error("Error fetching deleted notes:", error);
+        
         return { notes: [], totalNotes: 0 };
     }
 }
@@ -403,7 +403,7 @@ export async function RestoreNote(id: string): Promise<{ success: boolean; messa
             message: data.message || "Note restaurée avec succès"
         };
     } catch (error) {
-        console.error("Error restoring note:", error);
+        
         return {
             success: false,
             error: error instanceof Error ? error.message : "Erreur inconnue"
@@ -440,7 +440,7 @@ export async function setPublic(noteId: string, isPublic: boolean): Promise<{ su
             message: data.message || "Statut public modifié avec succès"
         };
     } catch (error) {
-        console.error("Error setting note public status:", error);
+        
         return {
             success: false,
             error: error instanceof Error ? error.message : "Erreur inconnue"
@@ -476,7 +476,7 @@ export async function IsPublic(noteId: string): Promise<{ success: boolean; isPu
             isPublic: data.isPublic
         };
     } catch (error) {
-        console.error("Error checking if note is public:", error);
+        
         return {
             success: false,
             error: error instanceof Error ? error.message : "Erreur inconnue"
@@ -545,7 +545,7 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
                     };
                 }
             } catch (userInfoError) {
-                console.error('Erreur lors de la récupération du thème:', userInfoError);
+                
             }
             
             return { success: true, message: 'Connexion réussie' };
@@ -554,7 +554,7 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
             return { success: false, error: errorData.error || 'Erreur lors de la connexion' };
         }
     } catch (error) {
-        console.error('Erreur de connexion:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -582,7 +582,7 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
         } else {
             // Si ce n'est pas du JSON, lire comme texte
             const textResponse = await response.text();
-            console.error("Réponse non-JSON reçue:", textResponse);
+            
             return { success: false, error: "Le serveur a renvoyé une réponse inattendue" };
         }
 
@@ -600,7 +600,7 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
             }
         }
     } catch (error) {
-        console.error("Erreur d'inscription:", error);
+        
         return { success: false, error: "Erreur de connexion au serveur: " + (error as Error).message };
     }
 }
@@ -629,7 +629,7 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
             return { success: true, message: 'Si votre adresse email est valide, vous recevrez un email de réinitialisation' };
         }
     } catch (error) {
-        console.error('Erreur:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -657,7 +657,7 @@ export async function ResetPassword(token: string, password: string): Promise<Au
             return { success: false, error: data.error || 'Erreur lors de la réinitialisation du mot de passe' };
         }
     } catch (error) {
-        console.error('Erreur:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -691,7 +691,7 @@ export async function Logout(): Promise<AuthResponse> {
             return { success: false, error: 'Erreur lors de la déconnexion' };
         }
     } catch (error) {
-        console.error('Erreur de déconnexion:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -738,7 +738,7 @@ export async function InfoUser(): Promise<InfoUserResponse> {
             return { success: false, error: errorData.message || 'Erreur lors de la récupération des informations utilisateur' };
         }
     } catch (error) {
-        console.error('Erreur InfoUser:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -783,7 +783,7 @@ export async function DeleteAccount(reason?: string): Promise<DeleteAccountRespo
             return { success: false, error: data.message || 'Erreur lors de la suppression du compte' };
         }
     } catch (error) {
-        console.error('Erreur DeleteAccount:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -812,7 +812,7 @@ export async function CancelAccountDeletion(): Promise<AuthResponse> {
             return { success: false, error: data.message || 'Erreur lors de l\'annulation de la suppression' };
         }
     } catch (error) {
-        console.error('Erreur CancelAccountDeletion:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -842,7 +842,7 @@ export async function updateUser(data: { prenom?: string; nom?: string; pseudo?:
             return { success: false, error: errorData.error || 'Erreur lors de la mise à jour des informations utilisateur' };
         }
     } catch (error) {
-        console.error('Erreur lors de la mise à jour des informations utilisateur:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -871,7 +871,7 @@ export async function Setup2FA(): Promise<{ success: boolean; message?: string; 
             return { success: false, error: errorData.error || 'Erreur lors de la configuration de la 2FA' };
         }
     } catch (error) {
-        console.error('Erreur Setup2FA:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -901,7 +901,7 @@ export async function Verify2FA(code: string): Promise<{ success: boolean; messa
             return { success: false, error: errorData.error || 'Erreur lors de la vérification de la 2FA' };
         }
     } catch (error) {
-        console.error('Erreur Verify2FA:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -933,7 +933,7 @@ export async function FetchPermission(noteId: string): Promise<{ success: boolea
             return { success: false, error: errorData.message || 'Erreur lors de la récupération des permissions' };
         }
     } catch (error) {
-        console.error('[loader] Erreur lors de la récupération des permissions:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -962,7 +962,7 @@ export async function UpdatePermission(noteId: string, userId: number, newRole: 
             return { success: false, error: errorData.error || 'Erreur lors de la modification du rôle' };
         }
     } catch (error) {
-        console.error('Erreur lors de la modification du rôle:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -991,7 +991,7 @@ export async function AddPermission(noteId: string, identifier: string, role: nu
             return { success: false, error: errorData.error || 'Erreur lors de l\'ajout de l\'utilisateur' };
         }
     } catch (error) {
-        console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1019,7 +1019,7 @@ export async function RemovePermission(noteId: string, userId: number): Promise<
             return { success: false, error: errorData.error || 'Erreur lors de la suppression de la permission' };
         }
     } catch (error) {
-        console.error('Erreur lors de la suppression de la permission:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1059,7 +1059,7 @@ export async function GetNotifications(): Promise<{ success: boolean; notes?: No
             return { success: false, error: errorData.message || 'Erreur lors de la récupération des notifications' };
         }
     } catch (error) {
-        console.error('Erreur GetNotifications:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1087,7 +1087,7 @@ export async function AcceptNotification(invitationId: string): Promise<{ succes
             return { success: false, error: errorData.error || 'Erreur lors de l\'acceptation de l\'invitation' };
         }
     } catch (error) {
-        console.error('Erreur AcceptNotification:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1115,7 +1115,7 @@ export async function RefuseNotification(invitationId: string): Promise<{ succes
             return { success: false, error: errorData.error || 'Erreur lors du refus de l\'invitation' };
         }
     } catch (error) {
-        console.error('Erreur RefuseNotification:', error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1147,7 +1147,7 @@ export async function GetFolders(): Promise<{ folders: Folder[]; totalFolders: n
             totalFolders: data.totalFolders || 0 
         };
     } catch (error) {
-        console.error("Error loading folders:", error);
+        
         return { folders: [], totalFolders: 0 };
     }
 }
@@ -1215,7 +1215,7 @@ export async function GetFolderById(id: string): Promise<{ folder: Folder | null
         
         return { folder: data.folder, notes: data.notes || [] };
     } catch (error) {
-        console.error("Error loading folder:", error);
+        
         return { folder: null, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1242,7 +1242,7 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error("Error creating folder:", errorData);
+            
             return { folder: null };
         }
 
@@ -1251,7 +1251,7 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
             folder: data.folder, 
         };
     } catch (error) {
-        console.error("Error creating folder:", error);
+        
         return { folder: null };
     }
 }
@@ -1280,7 +1280,7 @@ export async function UpdateFolder(id: string, folderData: { Nom?: string; Descr
         const data = await response.json();
         return { success: true, folder: data.folder };
     } catch (error) {
-        console.error("Error updating folder:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1308,7 +1308,7 @@ export async function DeleteFolder(id: string): Promise<{ success: boolean; mess
         const data = await response.json();
         return { success: true, message: data.message };
     } catch (error) {
-        console.error("Error deleting folder:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1339,7 +1339,7 @@ export async function AddNoteToFolder(noteId: string, folderId: string): Promise
         const data = await response.json();
         return { success: true, message: data.message };
     } catch (error) {
-        console.error("Error adding note to folder:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1368,7 +1368,7 @@ export async function AssignNoteToFolder(noteId: string, folderId: string): Prom
         const data = await response.json();
         return { success: true, message: data.message };
     } catch (error) {
-        console.error("Error assigning note to folder:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1396,7 +1396,7 @@ export async function RemoveNoteFromFolder(noteId: string): Promise<{ success: b
         const data = await response.json();
         return { success: true, message: data.message };
     } catch (error) {
-        console.error("Error removing note from folder:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1424,7 +1424,7 @@ export async function GetNoteFolder(noteId: string): Promise<{ success: boolean;
         const data = await response.json();
         return { success: true, folder: data.folder };
     } catch (error) {
-        console.error("Error getting note folder:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1451,7 +1451,7 @@ export async function GetUserTags(): Promise<{ success: boolean; tags?: any[]; e
         const data = await response.json();
         return { success: true, tags: data.tags };
     } catch (error) {
-        console.error("Error fetching user tags:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1480,7 +1480,7 @@ export async function CreateTag(nom: string, couleur: string): Promise<{ success
         const data = await response.json();
         return { success: true, tag: data.tag };
     } catch (error) {
-        console.error("Error creating tag:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1509,7 +1509,7 @@ export async function UpdateTag(tagId: string, nom: string, couleur: string): Pr
         const data = await response.json();
         return { success: true, tag: data.tag };
     } catch (error) {
-        console.error("Error updating tag:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1533,7 +1533,7 @@ export async function DeleteTag(tagId: string): Promise<{ success: boolean; erro
 
         return { success: true };
     } catch (error) {
-        console.error("Error deleting tag:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1563,7 +1563,7 @@ export async function UpdateNoteTag(noteId: string, tagId: string | null): Promi
         const data = await response.json();
         return { success: true, message: data.message || 'Tag mis à jour avec succès' };
     } catch (error) {
-        console.error("Error updating note tag:", error);
+        
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1595,7 +1595,7 @@ export async function AutoAcceptPermission(noteId: string): Promise<{ success: b
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error('Erreur lors de l\'auto-acceptation:', error);
+        
         return { success: false, error: 'Erreur réseau lors de l\'auto-acceptation' };
     }
 }

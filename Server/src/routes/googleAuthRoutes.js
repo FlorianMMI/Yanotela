@@ -48,7 +48,7 @@ router.post('/google/unlink', async (req, res) => {
     
     res.json({ success: true, message: 'Compte Google délié avec succès' });
   } catch (error) {
-    console.error('Erreur lors de la suppression du lien Google:', error);
+    
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

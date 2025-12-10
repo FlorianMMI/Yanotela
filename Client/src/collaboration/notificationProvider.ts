@@ -62,14 +62,13 @@ export interface NotificationData {
 export function connectNotificationProvider(userId: number): void {
   // Si déjà connecté avec le même userId, ne rien faire
   if (notificationProvider && currentUserId === userId) {
-    console.log('[NotifProvider] Déjà connecté pour user', userId);
+    
     return;
   }
 
   // Déconnecter l'ancien provider si présent
   disconnectNotificationProvider();
 
-  console.log('[NotifProvider] Connexion pour user', userId);
   currentUserId = userId;
 
   // Créer le Y.Doc pour les notifications
@@ -102,7 +101,7 @@ export function connectNotificationProvider(userId: number): void {
 
   // Logs pour debugging
   notificationProvider.on('status', ({ status }: { status: string }) => {
-    console.log(`[NotifProvider] Status: ${status}`);
+    
   });
 
   // Premier check au démarrage
@@ -114,7 +113,7 @@ export function connectNotificationProvider(userId: number): void {
  */
 export function disconnectNotificationProvider(): void {
   if (notificationProvider) {
-    console.log('[NotifProvider] Déconnexion pour user', currentUserId);
+    
     notificationProvider.disconnect();
     notificationProvider.destroy();
     notificationProvider = null;

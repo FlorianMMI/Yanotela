@@ -56,7 +56,7 @@ class GoogleAuthService {
       await this.oauth2Client.revokeToken(accessToken);
       return true;
     } catch (error) {
-      console.error('Erreur lors de la révocation des tokens:', error);
+      
       return false;
     }
   }

@@ -52,7 +52,7 @@ const theme = {
 };
 
 function onError(error: string | Error) {
-  console.error(error);
+  
 }
 
 // Clés localStorage pour Flash Note
@@ -127,7 +127,7 @@ export default function FlashNoteWidget() {
         }
       }
     } catch (error) {
-      console.error('Erreur lors du chargement depuis localStorage:', error);
+      
     } finally {
       setIsLoading(false);
     }
@@ -272,7 +272,7 @@ export default function FlashNoteWidget() {
           setIsSavingContent(false);
         }, 300);
       } catch (error) {
-        console.error('Erreur localStorage contenu:', error);
+        
         setIsSavingContent(false);
       }
     }

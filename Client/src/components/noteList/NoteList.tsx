@@ -66,7 +66,7 @@ export default function NoteList({
       const url = folderId ? `${redirectUrl}?folderId=${folderId}` : redirectUrl;
       router.push(url);
     } else {
-      console.error("Erreur : Impossible de récupérer l'ID de la note créée.");
+      
     }
   };
 

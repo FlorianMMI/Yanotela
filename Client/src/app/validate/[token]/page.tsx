@@ -62,7 +62,7 @@ export default function ValidatePage({ params }: ValidatePageProps) {
           setErrorMessage(data.error || 'Erreur lors de la validation du compte');
         }
       } catch (error) {
-        console.error('Erreur validation:', error);
+        
         setStatus('error');
         setErrorMessage('Erreur de connexion au serveur');
       }

@@ -65,7 +65,7 @@ async function syncThemeWithBackend(theme: ThemeType): Promise<boolean> {
     
     return response.ok;
   } catch (error) {
-    console.error("Failed to sync theme with backend:", error);
+    
     return false;
   }
 }
@@ -95,7 +95,7 @@ export function useTheme() {
 
   const changeTheme = async (newTheme: ThemeType) => {
     if (!themes.some(t => t.id === newTheme)) {
-      console.error(`Invalid theme: ${newTheme}`);
+      
       return;
     }
 

@@ -62,7 +62,7 @@ export const userController = {
 
       return res.status(200).json(userWithNoteCount);
     } catch (error) {
-      console.error("Erreur getUserInfo:", error);
+      
       return res
         .status(500)
         .json({
@@ -113,10 +113,7 @@ export const userController = {
       try {
         await sendDeleteAccountEmail(email);
       } catch (emailError) {
-        console.error(
-          "Erreur lors de l'envoi de l'email de confirmation:",
-          emailError
-        );
+        
         // On continue le processus même si l'email échoue
       }
 
@@ -127,7 +124,7 @@ export const userController = {
       // 🚪 Détruire la session car l'utilisateur ne peut plus se connecter
       req.session.destroy((sessionError) => {
         if (sessionError) {
-          console.error("Erreur destruction session:", sessionError);
+          
         }
       });
 
@@ -137,7 +134,7 @@ export const userController = {
         deletionDate: deletionDate.toISOString(),
       });
     } catch (error) {
-      console.error("Erreur requestAccountDeletion:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la demande de suppression du compte",
         error: error.message,
@@ -196,7 +193,7 @@ export const userController = {
         message: "La suppression de votre compte a été annulée avec succès.",
       });
     } catch (error) {
-      console.error("Erreur cancelAccountDeletion:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de l'annulation de la suppression",
         error: error.message,
@@ -252,10 +249,7 @@ export const userController = {
 
           deletedCount++;
         } catch (deleteError) {
-          console.error(
-            `❌ Erreur lors de la suppression du compte ${user.id}:`,
-            deleteError
-          );
+          
         }
       }
 
@@ -265,7 +259,7 @@ export const userController = {
         deletedCount,
       });
     } catch (error) {
-      console.error("Erreur deleteExpiredAccounts:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la suppression des comptes expirés",
         error: error.message,
@@ -355,7 +349,6 @@ export const userController = {
         user: updatedUser,
       });
     } catch (error) {
-      console.error("Erreur updateUserInfo:", error);
 
       // Gestion des erreurs Prisma spécifiques
       if (error.code === "P2002") {
@@ -405,7 +398,7 @@ export const userController = {
         theme: updatedUser.theme,
       });
     } catch (error) {
-      console.error("Erreur updateUserTheme:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la mise à jour du thème",
         error: error.message,
@@ -472,7 +465,7 @@ export const userController = {
       try {
         await userController.info2fa(req, res);
       } catch (error) {
-        console.error("Erreur lors de l'envoi des informations:", error);
+        
         return res.status(500).json({ 
           success: false, 
           message: "Erreur lors de l'envoi des informations utilisateur" 
@@ -530,7 +523,7 @@ export const userController = {
         message: "Email d'informations envoyé avec succès"
       });
     } catch (error) {
-      console.error("Erreur info2fa:", error);
+      
       return res.status(500).json({
       success: false,
       message: "Erreur"

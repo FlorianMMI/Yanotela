@@ -47,8 +47,7 @@ async function test() {
     }
 
   } catch (error) {
-    console.error('❌ Erreur:', error.message);
-    
+
     if (error.message.includes('yjsState')) {
 
     }

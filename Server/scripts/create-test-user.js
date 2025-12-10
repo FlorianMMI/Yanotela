@@ -32,7 +32,7 @@ async function createTestUser() {
         });
 
     } catch (error) {
-        console.error('❌ Erreur lors de la création de l\'utilisateur test:', error);
+        
     } finally {
         await prisma.$disconnect();
     }
