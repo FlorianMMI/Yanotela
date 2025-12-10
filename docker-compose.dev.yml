@@ -46,8 +46,8 @@ services:
       - CLIENT_URL=http://localhost:3000
       - SESSION_SECRET=local_session_secret_dev_only
       - MAIL_SERVICE=gmail
-      - GMAIL_USER=noreply.yanotela@gmail.com
-      - GMAIL_APP_PASSWORD=mlmxlguvvdbmeyac
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
     volumes:
       # Mount source code for hot reload
       - ./Server/src:/app/src
