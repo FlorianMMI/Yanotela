@@ -42,7 +42,7 @@ export function useAuthRedirect(options?: { skipRedirect?: boolean }) {
     } catch (e) {
       // Network or other errors
       // eslint-disable-next-line no-console
-      console.error('Auth check failed:', e);
+      
       setLocalAuth(false);
       if (!isPublicPage && !options?.skipRedirect) router.push('/login');
     } finally {
