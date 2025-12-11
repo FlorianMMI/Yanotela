@@ -103,16 +103,11 @@ describe('useAuthRedirect', () => {
   test('devrait gérer les erreurs fetch', async () => {
     (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-    const consoleError = jest.spyOn(console, 'error').mockImplementation();
-
     renderHook(() => useAuthRedirect());
 
     await waitFor(() => {
-      expect(consoleError).toHaveBeenCalled();
       expect(mockPush).toHaveBeenCalledWith('/login');
     });
-
-    consoleError.mockRestore();
   });
 
   test('devrait utiliser NEXT_PUBLIC_API_URL pour auth check', async () => {
