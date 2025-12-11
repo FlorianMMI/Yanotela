@@ -4,7 +4,7 @@ interface NoteButtonProps {
     Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     Title: string;
     modal?: string;
-    setCurrentView?: React.Dispatch<React.SetStateAction<any>> | ((view: string) => void); onClick?: () => void;
+    setCurrentView?: React.Dispatch<React.SetStateAction<string>> | ((view: string) => void); onClick?: () => void;
     borderTop?: boolean;
     delete?: boolean;
     showEditIcon?: boolean;

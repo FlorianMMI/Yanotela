@@ -11,6 +11,7 @@ import noteRoutes from './routes/noteRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import FolderRoutes from './routes/FolderRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import notificationPreferenceRoutes from './routes/notificationPreferenceRoutes.js';
 import permissionRoutes from './routes/permissionRoutes.js';
 import googleAuthRoutes from './routes/googleAuthRoutes.js';
 import awarenessRoutes from './routes/awarenessRoutes.js';
@@ -39,6 +40,7 @@ app.use('/user', userRoutes);
 app.use('/permission', permissionRoutes);
 app.use('/auth', googleAuthRoutes); // Routes Google OAuth
 app.use('/notification', notificationRoutes);
+app.use('/notification-preference', notificationPreferenceRoutes); // Routes pour les préférences de notifications
 app.use('/dossiers', FolderRoutes); // Routes pour les dossiers
 app.use('/awareness', awarenessRoutes); // Routes pour l'auto-synchronisation des permissions
 app.use('/tag', tagRoutes); // Routes pour les tags

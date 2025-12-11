@@ -13,7 +13,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 describe('useAuthRedirect', () => {
-  let mockRouter: any;
+  let mockRouter: { push: jest.Mock };
   let mockPush: jest.Mock;
 
   beforeEach(() => {

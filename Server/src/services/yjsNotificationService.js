@@ -8,6 +8,7 @@
  * - Stockage en mémoire : Map<userId, notifications[]>
  * - Diffusion via YJS Awareness (WebSocket) - LE BACKEND ENVOIE AU SERVEUR YJS
  * - Auto-nettoyage après 24h
+ * - Vérification des préférences utilisateur avant envoi (app/mail)
  * 
  * IMPORTANT: Le backend et le serveur YJS sont dans des conteneurs Docker séparés.
  * Le backend utilise yjsBroadcastClient.js pour envoyer les notifications au serveur YJS.
@@ -28,6 +29,13 @@
 
 import { PrismaClient } from "@prisma/client";
 import { sendNotificationToUser, broadcastNotificationToUsers } from "./yjsBroadcastClient.js";
+import { 
+  sendNoteInvitationEmail, 
+  sendCommentEmail, 
+  sendRoleChangeEmail, 
+  sendNoteDeletedEmail, 
+  sendUserRemovedEmail 
+} from "./emailService.js";
 
 const prisma = new PrismaClient();
 
@@ -135,12 +143,77 @@ export function unregisterNotificationRoom(userId) {
 }
 
 /**
+ * Vérifie les préférences de notification d'un utilisateur
+ * Retourne un objet { app: boolean, mail: boolean }
+ * @param {number} userId - ID de l'utilisateur
+ * @param {string} notificationCode - Code du type de notification (INVITATION, REMOVED, etc.)
+ * @returns {Promise<{app: boolean, mail: boolean}>}
+ */
+async function checkNotificationPreferences(userId, notificationCode) {
+  try {
+    // Trouver le type de notification par son code
+    const notifType = await prisma.notificationType.findUnique({
+      where: { code: notificationCode },
+    });
+
+    if (!notifType) {
+      console.warn(`[checkNotificationPreferences] Type de notification inconnu: ${notificationCode}`);
+      return { app: true, mail: true }; // Par défaut, tout activé
+    }
+
+    // Si le type est désactivé globalement, ne pas envoyer
+    if (!notifType.isActive) {
+      console.log(`[checkNotificationPreferences] Type ${notificationCode} désactivé globalement`);
+      return { app: false, mail: false };
+    }
+
+    // Chercher les préférences utilisateur pour ce type
+    const pref = await prisma.userNotificationPreference.findUnique({
+      where: {
+        userId_notificationTypeId: {
+          userId,
+          notificationTypeId: notifType.id,
+        },
+      },
+    });
+
+    // Si pas de préférence utilisateur, tout est activé par défaut
+    if (!pref) {
+      return { app: true, mail: true };
+    }
+
+    return { 
+      app: pref.appEnabled, 
+      mail: pref.mailEnabled 
+    };
+  } catch (error) {
+    console.error('[checkNotificationPreferences] Erreur:', error);
+    // En cas d'erreur, autoriser les notifications par défaut
+    return { app: true, mail: true };
+  }
+}
+
+/**
  * Crée une notification et la diffuse via le serveur YJS WebSocket
  * Utilise le client WebSocket pour communiquer avec le serveur YJS séparé
+ * Vérifie les préférences utilisateur avant l'envoi
  * @private
  */
 async function createAndBroadcastNotification(type, userId, data) {
+  console.log(`📦 [createAndBroadcastNotification] Création notification type=${type}, userId=${userId}`);
+  console.log(`📦 [createAndBroadcastNotification] Données:`, data);
+  
+  // Vérifier les préférences utilisateur
+  const preferences = await checkNotificationPreferences(userId, type);
+  console.log(`🔍 [createAndBroadcastNotification] Préférences pour user=${userId}, type=${type}:`, preferences);
 
+  // Si notification app désactivée, ne pas envoyer
+  if (!preferences.app) {
+    console.log(`⏭️ [createAndBroadcastNotification] Notification app désactivée pour user=${userId}, type=${type}`);
+    // On retourne null ou un objet sans envoyer
+    return { skipped: true, reason: 'app_disabled' };
+  }
+  
   const notification = {
     id: `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     type,
@@ -163,8 +236,13 @@ async function createAndBroadcastNotification(type, userId, data) {
 
   // ✅ ENVOYER AU SERVEUR YJS VIA WEBSOCKET
   
-  const sent = await sendNotificationToUser(userId, notification);
-
+  console.log(`${sent ? '✅' : '❌'} [createAndBroadcastNotification] ${type} créée pour user=${userId}, envoyée au serveur YJS=${sent}`);
+  
+  // TODO: Gérer l'envoi d'email si preferences.mail === true
+  // if (preferences.mail) {
+  //   await sendNotificationEmail(userId, type, data);
+  // }
+  
   return notification;
 }
 
@@ -196,6 +274,17 @@ function createNotification(type, userId, data) {
  * await notifyUserRemoved(targetUserId, noteId, note.Titre, req.session.pseudo);
  */
 export async function notifyUserRemoved(userId, noteId, noteTitle, actorPseudo = 'Un administrateur') {
+  console.log(`🔔 [NOTIF] Exclusion: userId=${userId}, note="${noteTitle}"`);
+  
+  // Envoi email
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (user?.email) {
+      sendUserRemovedEmail(user.email, noteTitle, actorPseudo).catch(e => console.error('Erreur envoi email exclusion:', e));
+    }
+  } catch (e) {
+    console.error('Erreur récupération email pour exclusion:', e);
+  }
 
   return createNotification(NotificationType.REMOVED, userId, {
     noteId,
@@ -221,6 +310,17 @@ export async function notifyUserRemoved(userId, noteId, noteTitle, actorPseudo =
  * await notifyInvitation(targetUser.id, noteId, note.Titre, targetRole, req.session.pseudo);
  */
 export async function notifyInvitation(userId, noteId, noteTitle, role, actorPseudo) {
+  console.log(`🔔 [NOTIF] Invitation: userId=${userId}, note="${noteTitle}", par ${actorPseudo}`);
+  
+  // Envoi email
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (user?.email) {
+      sendNoteInvitationEmail(user.email, actorPseudo, noteTitle, noteId, role).catch(e => console.error('Erreur envoi email invitation:', e));
+    }
+  } catch (e) {
+    console.error('Erreur récupération email pour invitation:', e);
+  }
 
   const roleLabel = ROLE_LABELS[role] || 'Collaborateur';
   
@@ -277,12 +377,17 @@ export async function notifyNoteDeleted(noteId, noteTitle, actorUserId, actorPse
         noteId,
         userId: { not: actorUserId }
       },
-      select: { userId: true, role: true },
+      select: { userId: true, role: true, user: { select: { email: true } } },
     });
 
     // Créer une notification pour chaque collaborateur
     const notifications = [];
     for (const perm of permissions) {
+      // Envoi email
+      if (perm.user?.email) {
+        sendNoteDeletedEmail(perm.user.email, noteTitle, actorPseudo).catch(e => console.error('Erreur envoi email suppression:', e));
+      }
+
       // Admins (rôle 0-1) reçoivent NOTE_DELETED_ADMIN, les autres NOTE_DELETED_MEMBER
       const notifType = perm.role <= 1 
         ? NotificationType.NOTE_DELETED_ADMIN 
@@ -365,7 +470,19 @@ export async function notifyRoleChanged(userId, noteId, noteTitle, oldRole, newR
   
   const roleLabel = ROLE_LABELS[newRole] || 'Collaborateur';
   const isPromotion = newRole < oldRole; // Rôles: 0=owner, 1=admin, 2=editor, 3=reader
+  
+  // Envoi email
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (user?.email) {
+      sendRoleChangeEmail(user.email, noteTitle, roleLabel, noteId).catch(e => console.error('Erreur envoi email rôle:', e));
+    }
+  } catch (e) {
+    console.error('Erreur récupération email pour rôle:', e);
+  }
 
+  console.log(`📋 [yjsNotificationService] Détails notification: roleLabel=${roleLabel}, isPromotion=${isPromotion}`);
+  
   const result = await createNotification(NotificationType.ROLE_CHANGED, userId, {
     noteId,
     noteTitle,
@@ -554,12 +671,17 @@ export async function notifyCommentAdded(noteId, noteTitle, commentAuthorPseudo,
         noteId,
         userId: { not: commentAuthorId },
       },
-      select: { userId: true },
+      select: { userId: true, user: { select: { email: true } } },
     });
 
     const notifications = [];
 
     for (const collab of collaborators) {
+      // Envoi email
+      if (collab.user?.email) {
+        sendCommentEmail(collab.user.email, commentAuthorPseudo, noteTitle, commentPreview, noteId).catch(e => console.error('Erreur envoi email commentaire:', e));
+      }
+
       const notif = createNotification(NotificationType.COMMENT_ADDED, collab.userId, {
         noteId,
         noteTitle,

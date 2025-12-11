@@ -31,7 +31,7 @@ describe('notificationUtils', () => {
 
     test('ne devrait rien faire si window est undefined', () => {
       const originalWindow = global.window;
-      // @ts-ignore
+      // @ts-expect-error - Testing environment manipulation
       delete global.window;
 
       expect(() => refreshNotifications()).not.toThrow();

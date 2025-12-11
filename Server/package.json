@@ -17,6 +17,9 @@
     "create-test-user": "node scripts/create-test-user.js",
     "cleanup:notes": "node scripts/cleanup-deleted-notes.js"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
     "@prisma/client": "^6.18.0",
     "axios": "^1.4.0",

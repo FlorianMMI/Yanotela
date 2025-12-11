@@ -4,9 +4,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CloseIcon } from '@/libs/Icons';
 import Comment from '@/ui/comment/comment';
 import { Send } from '@/libs/Icons';
-import { checkAuthResponse } from '@/utils/authFetch';
+
 import { FetchPermission } from '@/loader/loader';
 import { useYjsComments } from '@/hooks/useYjsComments';
+
+
+import { useAuth } from '@/hooks/useAuth';
+import { usePathname } from 'next/navigation';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -15,8 +19,8 @@ interface ParamModalProps {
 export default function ParamModal({ onClose }: ParamModalProps) {
     const commentsContainerRef = React.useRef<HTMLDivElement>(null);
     const [userRole, setUserRole] = useState<number | undefined>(undefined);
-    const { user } = require('@/hooks/useAuth').useAuth();
-    const pathname = require('next/navigation').usePathname();
+    const { user } = useAuth();
+    const pathname = usePathname();
 
     // Extraire l'id de la note depuis l'URL
     const extractNoteId = () => {
@@ -51,7 +55,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 if (response.success && response.permissions) {
                     
                     // Trouver la permission de l'utilisateur actuel
-                    // Note: le backend retourne 'userId' (camelCase) et non 'id_user'
+                    // Note: le backend retourne 'userId' (camelCase)
                     const userPermission = response.permissions.find(p => p.userId === user.id);
 
                     if (userPermission) {
@@ -160,7 +164,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                     <form className='w-full mt-4 border-t border-gray-300 pt-2 flex flex-col gap-2' onSubmit={handleSubmit}>
                         {!user && (
                             <div className="text-xs text-gray-600 italic px-2">
-                                💬 Vous commentez en tant qu'<span className="font-semibold">Anonyme</span>
+                                💬 Vous commentez en tant qu&apos;<span className="font-semibold">Anonyme</span>
                             </div>
                         )}
                         <div className="flex gap-2">
