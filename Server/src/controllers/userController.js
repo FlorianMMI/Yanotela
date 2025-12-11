@@ -13,7 +13,7 @@
 import { PrismaClient } from "@prisma/client";
 import { sendDeleteAccountEmail } from "../services/emailService.js";
 import { a2fEmail, userDataEmail } from "../services/emailService.js";
-import { redis } from '../config/redisConfig.js';
+import { client } from '../config/redisConfig.js';
 
 const prisma = new PrismaClient();
 
@@ -419,7 +419,7 @@ export const userController = {
     }
 
     // Écrire une clé
-    await redis.set(`${req.session.userId}`, `${a2f}`, { EX: 900 }); // expire dans 15 minutes
+    await client.set(`${req.session.userId}`, `${a2f}`, { EX: 900 }); // expire dans 15 minutes
 
     // Récupérer l'email de l'utilisateur et envoyer le code 2FA par email
     const userRecord = await prisma.user.findUnique({
@@ -440,7 +440,7 @@ export const userController = {
 
     const { code } = req.body;
 
-    const storedCode = await redis.get(`${req.session.userId}`);
+    const storedCode = await client.get(`${req.session.userId}`);
 
     if (storedCode == code){
       try {
