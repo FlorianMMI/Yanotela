@@ -418,8 +418,6 @@ export const userController = {
       return res.status(500).json({ message: "Un problèmes est survenu" });
     }
 
-   
-
     // Écrire une clé
     await redis.set(`${req.session.userId}`, `${a2f}`, { EX: 900 }); // expire dans 15 minutes
 
@@ -442,11 +440,7 @@ export const userController = {
 
     const { code } = req.body;
 
-    
-
     const storedCode = await redis.get(`${req.session.userId}`);
-    
-
 
     if (storedCode == code){
       try {
