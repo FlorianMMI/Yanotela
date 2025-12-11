@@ -12,8 +12,8 @@
 
 import { PrismaClient } from "@prisma/client";
 import { sendDeleteAccountEmail } from "../services/emailService.js";
-import { createClient } from "redis";
 import { a2fEmail, userDataEmail } from "../services/emailService.js";
+import { redis } from '../config/redisConfig.js';
 
 const prisma = new PrismaClient();
 
@@ -418,18 +418,10 @@ export const userController = {
       return res.status(500).json({ message: "Un problèmes est survenu" });
     }
 
-    const redisUrl =
-      process.env.REDIS_URL ??
-      `redis://${process.env.REDIS_HOST ?? "redis-dev"}:${process.env.REDIS_PORT ?? "6379"}`;
-
-    const redis = createClient({ url: redisUrl });
-
-    await redis.connect();
+   
 
     // Écrire une clé
     await redis.set(`${req.session.userId}`, `${a2f}`, { EX: 900 }); // expire dans 15 minutes
-
-    await redis.quit();
 
     // Récupérer l'email de l'utilisateur et envoyer le code 2FA par email
     const userRecord = await prisma.user.findUnique({
@@ -450,16 +442,11 @@ export const userController = {
 
     const { code } = req.body;
 
-    const redisUrl =
-      process.env.REDIS_URL ??
-      `redis://${process.env.REDIS_HOST ?? "redis-dev"}:${process.env.REDIS_PORT ?? "6379"}`;
-    const redis = createClient({ url: redisUrl });
     
-    await redis.connect();
 
     const storedCode = await redis.get(`${req.session.userId}`);
     
-    await redis.quit();
+
 
     if (storedCode == code){
       try {
