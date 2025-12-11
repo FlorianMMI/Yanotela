@@ -19,7 +19,6 @@ describe('useAuthRedirect', () => {
   beforeEach(() => {
     mockPush = jest.fn();
     mockRouter = { push: mockPush };
-    mockRouter = { push: mockPush };
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
     (usePathname as jest.Mock).mockReturnValue('/notes');
 
