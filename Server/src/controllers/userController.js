@@ -13,7 +13,7 @@
 import { PrismaClient } from "@prisma/client";
 import { sendDeleteAccountEmail } from "../services/emailService.js";
 import { a2fEmail, userDataEmail } from "../services/emailService.js";
-import { client } from '../config/redisConfig.js';
+import client from '../config/redisConfig.js';
 
 const prisma = new PrismaClient();
 
