@@ -111,7 +111,7 @@ const login = async (req, res) => {
           success: false,
         });
     }
-    return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(genericError)}`);
+    return 
   }
 
   try {
@@ -130,7 +130,7 @@ const login = async (req, res) => {
           success: false,
         });
       }
-      return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(genericError)}`);
+      return 
     }
 
     if (!user.is_verified) {
@@ -148,14 +148,14 @@ const login = async (req, res) => {
         // Envoyer l'email de validation
         await sendValidationEmail(user.email, validationToken);
 
-        const verifyError = "Compte non activé. Un email de validation vous a été envoyé.";
+        const verifyError = "Utilisateur, mot de passe incorrect ou compte non activé";
         if (isJsonRequest) {
           return res.status(401).json({
             error: verifyError,
             success: false,
           });
         }
-        return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(verifyError)}`);
+        return 
       } catch (emailError) {
         if (isJsonRequest) {
           return res.status(401).json({

@@ -16,6 +16,7 @@ interface NoteListProps {
   allowCreateNote?: boolean; // Autoriser la création de note (par défaut: true)
   folderId?: string; // ID du dossier pour créer la note directement dedans
   onCreateNote?: () => void; // Callback personnalisé pour la création de note
+  onNoteUpdated?: (updatedNote?: NoteType) => void; // Optional single-note update handler
   searchTerm?: string; // Terme de recherche pour surlignage
   searchMode?: SearchMode; // Mode de recherche actif
 }
@@ -27,11 +28,22 @@ export default function NoteList({
   allowCreateNote = true, 
   folderId, 
   onCreateNote,
+  onNoteUpdated,
   searchTerm = "",
   searchMode = "all"
 }: NoteListProps) {
 
   const router = useRouter();
+
+  // Update a single note in the list without reloading everything
+  const handleSingleNoteUpdate = (updatedNote?: NoteType) => {
+    if (onNoteUpdated) {
+      onNoteUpdated(updatedNote);
+      return;
+    }
+    // Fallback: trigger full refresh
+    if (onNoteCreated) onNoteCreated();
+  };
 
   const handleCreateNote = async () => {
     // Si un callback personnalisé est fourni, l'utiliser
@@ -93,7 +105,7 @@ export default function NoteList({
           <Note 
             key={note.id} 
             note={note} 
-            onNoteUpdated={onNoteCreated}
+            onNoteUpdated={handleSingleNoteUpdate}
             searchTerm={searchTerm}
             searchMode={searchMode}
           />

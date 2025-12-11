@@ -1,6 +1,6 @@
 import { Note } from '@/type/Note';
-import { Folder } from '@/type/Folder';
 import { Permission } from '@/type/Permission';
+import { Folder } from '@/type/Folder';
 import { checkAuthResponse } from '@/utils/authFetch';
 
 function getApiUrl() {
@@ -8,14 +8,6 @@ function getApiUrl() {
     if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
     return '';
 }
-
-function getTurnstileToken() {
-    // if (typeof window === 'undefined') return undefined;
-    // const el = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
-    // return el?.value;
-    return undefined; // Turnstile désactivé
-}
-
 /**
  * Vérifie si la réponse est un 401 et déclenche la redirection si nécessaire
  * @returns true si la réponse est OK ou non-401, false si 401 (redirection déclenchée)
@@ -521,9 +513,8 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
     try {
         
         const apiUrl = getApiUrl();
-        // const token = getTurnstileToken();
+
         const body = { ...credentials } as any;
-        // if (token) body['cf-turnstile-response'] = token;
 
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
@@ -572,10 +563,7 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
-        // const token = getTurnstileToken();
         const payload = { ...userData } as any;
-        // if (token) payload['cf-turnstile-response'] = token;
-
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
             headers: {
@@ -621,9 +609,8 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
-        // const token = getTurnstileToken();
+
         const payload: any = { email };
-        // if (token) payload['cf-turnstile-response'] = token;
 
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
@@ -651,9 +638,7 @@ export async function ResetPassword(token: string, password: string): Promise<Au
     try {
         
         const apiUrl = getApiUrl();
-        // const tokenVal = getTurnstileToken();
         const payload: any = { password, token };
-        // if (tokenVal) payload['cf-turnstile-response'] = tokenVal;
 
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
@@ -862,14 +847,45 @@ export async function updateUser(data: { prenom?: string; nom?: string; pseudo?:
     }
 }
 
-export async function FetchPermission(noteId: string): Promise<{ success: boolean; permissions?: Permission[]; error?: string }> {
+export async function Setup2FA(): Promise<{ success: boolean; message?: string; error?: string; redirectUrl?: string }> {
+
     try {
-        const response = await fetch(`${apiUrl}/permission/note/${noteId}`, {
-            method: 'GET',
+        const response = await fetch(`${apiUrl}/user/2fa/setup`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include',
+        });
+        
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, message: data.message || '2FA setup initiated successfully', redirectUrl: '/a2f' };
+        }
+        else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la configuration de la 2FA' };
+        }
+    } catch (error) {
+        console.error('Erreur Setup2FA:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function Verify2FA(code: string): Promise<{ success: boolean; message?: string; error?: string }> {
+
+    try {
+        const response = await fetch(`${apiUrl}/user/2fa/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ code })
         });
 
         // Vérifier si session expirée (401)
@@ -879,13 +895,47 @@ export async function FetchPermission(noteId: string): Promise<{ success: boolea
 
         if (response.ok) {
             const data = await response.json();
+            return { success: true, message: data.message || '2FA verified successfully' };
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la vérification de la 2FA' };
+        }
+    } catch (error) {
+        console.error('Erreur Verify2FA:', error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+export async function FetchPermission(noteId: string): Promise<{ success: boolean; permissions?: Permission[]; error?: string }> {
+    console.log('[loader] FetchPermission appelé avec noteId:', noteId);
+    try {
+        const response = await fetch(`${apiUrl}/permission/note/${noteId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        console.log('[loader] FetchPermission response status:', response.status);
+
+        // Vérifier si session expirée (401)
+        if (!handleAuthError(response)) {
+            console.log('[loader] FetchPermission - Session expirée');
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log('[loader] FetchPermission data reçue:', data);
             return { success: true, permissions: data.permissions };
         } else {
             const errorData = await response.json().catch(() => ({}));
+            console.log('[loader] FetchPermission erreur:', errorData);
             return { success: false, error: errorData.message || 'Erreur lors de la récupération des permissions' };
         }
     } catch (error) {
-        console.error('Erreur lors de la récupération des permissions:', error);
+        console.error('[loader] Erreur lors de la récupération des permissions:', error);
         return { success: false, error: 'Erreur de connexion au serveur' };
     }
 }
@@ -1183,7 +1233,7 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
             body: JSON.stringify({
                 Nom: folderData?.Nom || "Nouveau dossier",
                 Description: folderData?.Description || "",
-                CouleurTag: folderData?.CouleurTag || "#882626",
+                CouleurTag: folderData?.CouleurTag || "var(--primary)",
             })
         });
 
@@ -1201,7 +1251,6 @@ export async function CreateFolder(folderData?: { Nom?: string; Description?: st
         const data = await response.json();
         return { 
             folder: data.folder, 
-            redirectUrl: `/dossiers/${data.folder.id}` 
         };
     } catch (error) {
         console.error("Error creating folder:", error);
@@ -1382,8 +1431,117 @@ export async function GetNoteFolder(noteId: string): Promise<{ success: boolean;
     }
 }
 
-// Mettre à jour le tag d'une note
-export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ success: boolean; message?: string; error?: string }> {
+// ========== Gestion des Tags personnalisés ==========
+
+// Récupérer tous les tags de l'utilisateur
+export async function GetUserTags(): Promise<{ success: boolean; tags?: any[]; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/list`, {
+            method: "GET",
+            credentials: 'include'
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la récupération des tags' };
+        }
+
+        const data = await response.json();
+        return { success: true, tags: data.tags };
+    } catch (error) {
+        console.error("Error fetching user tags:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Créer un nouveau tag
+export async function CreateTag(nom: string, couleur: string): Promise<{ success: boolean; tag?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/create`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ nom, couleur })
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la création du tag' };
+        }
+
+        const data = await response.json();
+        return { success: true, tag: data.tag };
+    } catch (error) {
+        console.error("Error creating tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Mettre à jour un tag existant
+export async function UpdateTag(tagId: string, nom: string, couleur: string): Promise<{ success: boolean; tag?: any; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/${tagId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify({ nom, couleur })
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la modification du tag' };
+        }
+
+        const data = await response.json();
+        return { success: true, tag: data.tag };
+    } catch (error) {
+        console.error("Error updating tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Supprimer un tag
+export async function DeleteTag(tagId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/tag/${tagId}`, {
+            method: "DELETE",
+            credentials: 'include'
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.error || 'Erreur lors de la suppression du tag' };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting tag:", error);
+        return { success: false, error: 'Erreur de connexion au serveur' };
+    }
+}
+
+// Mettre à jour le tag d'une note (avec tagId)
+export async function UpdateNoteTag(noteId: string, tagId: string | null): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/note/tag/${noteId}`, {
             method: "PATCH",
@@ -1391,7 +1549,7 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
                 "Content-Type": "application/json"
             },
             credentials: 'include',
-            body: JSON.stringify({ tag })
+            body: JSON.stringify({ tagId })
         });
 
         // Vérifier si session expirée (401)
@@ -1412,3 +1570,34 @@ export async function UpdateNoteTag(noteId: string, tag: string): Promise<{ succ
     }
 }
 
+// ============== AWARENESS / AUTO-SYNC FUNCTIONS ==============
+
+/**
+ * Auto-accepte une permission quand l'utilisateur rejoint une note
+ * Cette fonction est appelée automatiquement par setAwarenessUserInfo (dans le fichier collaboration/providers.ts)
+ * 
+ * @param noteId - ID de la note rejointe
+ * @returns Promise avec le résultat de l'auto-acceptation
+ */
+export async function AutoAcceptPermission(noteId: string): Promise<{ success: boolean; autoAccepted?: boolean; message?: string; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/awareness/auto-accept/${noteId}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return { success: false, error: errorData.error || 'Erreur lors de l\'auto-acceptation' };
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Erreur lors de l\'auto-acceptation:', error);
+        return { success: false, error: 'Erreur réseau lors de l\'auto-acceptation' };
+    }
+}

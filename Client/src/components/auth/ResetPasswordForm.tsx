@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-// import Turnstile from './Turnstile';
 import { useRouter } from 'next/navigation';
 import ConfirmPassword from '@/ui/confirm-password';
 import { ResetPassword, ValidateResetToken } from '@/loader/loader';
@@ -171,8 +170,6 @@ export default function ResetPasswordForm({
         )}
 
         <div>
-          {/* Turnstile widget (no-op in non-prod) */}
-            {/* <Turnstile /> */}
           <button
             type="submit"
             disabled={status === 'loading' || status === 'success'}

@@ -16,6 +16,7 @@ import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { getPermission } from "./permissionController.js";
 import { migrateContentToYjs, needsMigration, extractContentFromYjs } from "../services/yjsMigration.js";
+import { notifyNoteDeleted, notifyUserLeft } from "../services/yjsNotificationService.js";
 
 const prisma = new PrismaClient();
 
@@ -42,6 +43,7 @@ export const noteController = {
             include: {
               author: true,
               modifier: true,
+              tag: true, // Inclure le tag personnalisé
             },
           },
         },
@@ -64,7 +66,8 @@ export const noteController = {
             id: note.id,
             Titre: note.Titre,
             Content: note.Content,
-            tag: note.tag, // Ajouter le tag de la note
+            tagId: note.tagId, // ID du tag personnalisé
+            tag: note.tag, // Informations complètes du tag (nom, couleur)
             author: note.author ? note.author.pseudo : null,
             modifier: note.modifier ? note.modifier.pseudo : null,
             ModifiedAt: note.ModifiedAt,
@@ -278,6 +281,7 @@ export const noteController = {
         include: {
           author: true,
           modifier: true,
+          tag: true, // Inclure le tag personnalisé
         },
       });
 
@@ -366,7 +370,7 @@ export const noteController = {
         modifier: note.modifier ? note.modifier.pseudo : null,
         ModifiedAt: note.ModifiedAt,
         userRole: userRole, // Rôle de l'utilisateur (3 par défaut pour accès public)
-        tag: note.tag, // Couleur du tag de la note
+        tagId: note.tagId, // ID du tag personnalisé de la note
         isPublic: note.isPublic, // Indiquer si la note est publique
       });
     } catch (error) {
@@ -810,11 +814,24 @@ export const noteController = {
         return res.status(403).json({ message: "Vous n'avez pas accès à cette note" });
       }
 
-      // Role 0 = Owner, Role 1 = Admin
-      if (userPermission.role !== 0 && userPermission.role !== 1) {
+      // Role 0 = Owner
+      if (userPermission.role !== 0) {
         return res.status(403).json({ 
-          message: "Seul le propriétaire ou un administrateur peut supprimer cette note" 
+          message: "Seul le propriétaire peut supprimer cette note" 
         });
+      }
+
+      // 🔔 Notifier tous les collaborateurs de la suppression AVANT la transaction
+      try {
+        // Récupérer le pseudo de l'utilisateur qui supprime
+        const actor = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { pseudo: true },
+        });
+        await notifyNoteDeleted(id, note.Titre, userId, actor?.pseudo || "Un utilisateur");
+      } catch (notifError) {
+        console.error('[deleteNote] Erreur notification:', notifError);
+        // Ne pas bloquer la suppression si la notification échoue
       }
 
       // Soft delete: définir deletedAt à la date actuelle ET nettoyer les relations NoteFolder
@@ -878,6 +895,12 @@ export const noteController = {
         });
       }
 
+      // Récupérer les infos de l'utilisateur qui quitte pour la notification
+      const leavingUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { pseudo: true },
+      });
+
       // Supprimer la permission (l'utilisateur quitte la note)
       // La table Permission utilise une clé primaire composite (noteId, userId)
       await prisma.permission.delete({
@@ -888,6 +911,14 @@ export const noteController = {
           },
         },
       });
+
+      // 🔔 Notifier les admins que l'utilisateur a quitté (désactivé sur notes publiques)
+      try {
+        await notifyUserLeft(id, note.Titre, leavingUser?.pseudo || "Un utilisateur", userId, note.isPublic);
+      } catch (notifError) {
+        console.error('[leaveNote] Erreur notification:', notifError);
+        // Ne pas bloquer si la notification échoue
+      }
 
       res.status(200).json({ 
         message: "Vous avez quitté la note avec succès",
@@ -1122,7 +1153,7 @@ export const noteController = {
    */
   updateNoteTag: async (req, res) => {
     const { id } = req.params;
-    const { tag } = req.body;
+    const { tagId } = req.body;
     const { userId } = req.session;
 
     // Vérification supplémentaire : empêcher toute modification si le rôle est 3 (lecteur)
@@ -1130,14 +1161,27 @@ export const noteController = {
       return res.status(403).json({ message: "Vous n'avez que les droits de lecture sur cette note" });
     }
 
-    // Validation du tag (doit être une couleur hex valide ou vide)
-    if (tag && typeof tag === 'string' && tag !== '') {
-      const hexColorRegex = /^#([0-9A-F]{3}|[0-9A-F]{6})$/i;
-      const cssVarRegex = /^var\(--[a-zA-Z-]+\)$/;
-      
-      if (!hexColorRegex.test(tag) && !cssVarRegex.test(tag)) {
+    // Si un tagId est fourni, vérifier qu'il appartient bien à l'utilisateur
+    if (tagId !== null && tagId !== undefined) {
+      try {
+        const tag = await prisma.tag.findUnique({
+          where: { id: tagId }
+        });
+
+        if (!tag) {
+          return res.status(404).json({ 
+            message: "Tag non trouvé" 
+          });
+        }
+
+        if (tag.userId !== userId) {
+          return res.status(403).json({ 
+            message: "Vous ne pouvez pas utiliser un tag qui ne vous appartient pas" 
+          });
+        }
+      } catch (error) {
         return res.status(400).json({ 
-          message: "Le tag doit être une couleur hexadécimale valide (#000000) ou une variable CSS (var(--primary))" 
+          message: "ID de tag invalide" 
         });
       }
     }
@@ -1147,7 +1191,7 @@ export const noteController = {
       const updatedNote = await prisma.note.update({
         where: { id },
         data: {
-          tag: tag || null, // Permet de supprimer le tag en passant une chaîne vide
+          tagId: tagId || null, // null pour supprimer le tag
           ModifiedAt: new Date(),
           modifierId: userId,
         },
@@ -1155,7 +1199,7 @@ export const noteController = {
 
       res.status(200).json({ 
         message: "Tag mis à jour avec succès",
-        tag: updatedNote.tag 
+        tagId: updatedNote.tagId 
       });
     } catch (error) {
       console.error("[updateNoteTag] Erreur:", error);

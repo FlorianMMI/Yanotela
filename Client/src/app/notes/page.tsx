@@ -1,7 +1,6 @@
 "use client";
-import React from "react";
 
-import { useState, useEffect, Suspense, useCallback } from "react";
+import { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import { Note } from "@/type/Note";
 import NoteHeader from "@/components/noteHeader/NoteHeader";
 import NoteList from "@/components/noteList/NoteList";
@@ -21,7 +20,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   
-  // Charger les notes au montage du composant
+  // Charger les notes au montage du composant (évite double appel en Strict Mode)
   const fetchNotes = useCallback(async () => {
     try {
       setLoading(true);
@@ -38,6 +37,17 @@ export default function Home() {
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
+
+  // Handler to update a single note in-place (avoid full reload)
+  const handleSingleNoteUpdate = (updatedNote?: Note) => {
+    if (!updatedNote) {
+      // Fallback: full refresh
+      fetchNotes();
+      return;
+    }
+
+    setNotes((prev) => prev.map((n) => (n.id === updatedNote.id ? updatedNote : n)));
+  };
 
   // Filtrer et trier les notes
   const filteredNotes = Array.isArray(notes) ? notes
@@ -71,9 +81,9 @@ export default function Home() {
       let matchesTagColor = true;
       if (tagColorFilter) {
         if (tagColorFilter === 'var(--primary)') {
-          matchesTagColor = !note.tag || note.tag === '' || note.tag === 'var(--primary)';
+          matchesTagColor = !note.tag || !note.tag.couleur;
         } else {
-          matchesTagColor = note.tag === tagColorFilter;
+          matchesTagColor = note.tag?.couleur === tagColorFilter;
         }
       }
 
@@ -112,6 +122,7 @@ export default function Home() {
           <NoteList
             notes={filteredNotes}
             onNoteCreated={fetchNotes}
+            onNoteUpdated={handleSingleNoteUpdate}
             isLoading={loading}
             searchTerm={searchTerm}
             searchMode={searchMode}

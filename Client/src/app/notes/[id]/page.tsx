@@ -382,6 +382,8 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
 
 /**
  * Plugin pour charger le contenu initial de la note dans l'éditeur
+ * IMPORTANT: Ce plugin ne charge le contenu JSON que si le Y.Doc est vide
+ * (le Y.Doc initialisé via registerInitialYjsState a la priorité)
  */
 function LoadInitialContentPlugin({
   content,
@@ -400,50 +402,40 @@ function LoadInitialContentPlugin({
 
     (async () => {
       try {
-        // If a Y.Doc already exists and contains state, prefer Y.Doc as source of truth
-        const { yjsDocuments } = await import("@/collaboration/providers");
+        // Wait for CollaborationPlugin to create the Y.Doc and bootstrap structure
+        const { yjsDocuments } = await import('@/collaboration/providers');
         let ydoc = yjsDocuments.get(noteId);
 
-        // If the provider hasn't been created yet, wait briefly for it (small race window)
+        // Wait up to 1 second for Y.Doc to be created by CollaborationPlugin
         if (!ydoc) {
           const start = Date.now();
-          const maxWait = 300; // ms
+          const maxWait = 1000; // ms
           while (Date.now() - start < maxWait && !cancelled) {
-            await new Promise((r) => setTimeout(r, 50));
-            const { yjsDocuments: yjsDocumentsRetry } = await import(
-              "@/collaboration/providers"
-            );
+            await new Promise((r) => setTimeout(r, 100));
+            const { yjsDocuments: yjsDocumentsRetry } = await import('@/collaboration/providers');
             ydoc = yjsDocumentsRetry.get(noteId);
             if (ydoc) break;
           }
         }
 
-        if (ydoc) {
-          // Vérifier si le Y.Doc contient réellement du contenu
-          // (pas juste un état YJS vide qui a quand même un encoded.length > 0)
-          const yXmlText = ydoc.get('root', Y.XmlText);
-          const textContent = yXmlText ? yXmlText.toString().trim() : '';
-          
-          if (textContent.length > 0) {
-            // Y.Doc contient du vrai contenu — skip applying DB content to avoid duplication
-            hasLoadedRef.current = true;
-            return;
-          }
-        }
-
         if (cancelled) return;
 
+        if (!ydoc) {
+          console.warn('⚠️ [LoadContent] Y.Doc non trouvé après 1s');
+          return;
+        }
+
+        // Y.Doc est disponible, charger le contenu depuis DB
+        // Note: On charge toujours car yjsState peut être obsolète
         const parsedContent = JSON.parse(content);
 
-        editor.update(
-          () => {
-            const newEditorState = editor.parseEditorState(parsedContent);
-            editor.setEditorState(newEditorState);
-          },
-          {
-            tag: "history-merge",
-          }
-        );
+        editor.update(() => {
+          const newEditorState = editor.parseEditorState(parsedContent);
+          editor.setEditorState(newEditorState);
+          console.log('✅ [LoadContent] Contenu chargé depuis DB');
+        }, {
+          tag: 'history-merge',
+        });
 
         hasLoadedRef.current = true;
       } catch (err) {
@@ -639,25 +631,20 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         const note = noteData;
         setNoteTitle(note.Titre || "Sans titre");
 
-        // ✅ Charger le contenu initial dans l'éditeur
+        // Charger le contenu initial dans l'éditeur
+        // Le LoadInitialContentPlugin vérifie si Y.Doc a déjà des données avant de charger
         if (note.Content) {
           setInitialEditorContent(note.Content);
         } else {
-          
           setInitialEditorContent(null);
         }
 
-        // ✅ Gestion des permissions (lecture seule)
+        // Gestion des permissions (lecture seule)
         if (note.userRole !== undefined) {
           // Role 3 = lecture seule → bloquer l'édition
           const readOnly = note.userRole === 3;
           setIsReadOnly(readOnly);
-
-          if (readOnly) {
-          } else {
-          }
         } else {
-          
           setIsReadOnly(false);
         }
       } catch (error) {
@@ -718,13 +705,38 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
-    // Petit délai pour s'assurer que le provider est créé
-    setTimeout(() => {
-      setAwarenessUserInfo(id, userProfile.name, userProfile.color);
-    }, 500);
-
-    setAwarenessUserInfo(id, userProfile.name, userProfile.color);
-  }, [userProfile, id]);
+    // Ne pas appeler setAwarenessUserInfo immédiatement
+    // Le provider sera créé par CollaborationPlugin, on attend qu'il soit prêt
+    
+    // Récupérer l'userId pour la synchronisation automatique des permissions
+    const userId = user ? (user as any).id : undefined;
+    
+    // Attendre que le provider soit créé (après le montage du CollaborationPlugin)
+    // On utilise un intervalle pour vérifier régulièrement
+    let attempts = 0;
+    const maxAttempts = 20; // 20 * 200ms = 4 secondes max
+    
+    const intervalId = setInterval(() => {
+      attempts++;
+      
+      // Essayer de mettre à jour l'awareness
+      const success = setAwarenessUserInfo(id, userProfile.name, userProfile.color, userId);
+      
+      // Si succès, arrêter l'intervalle
+      if (success) {
+        clearInterval(intervalId);
+        return;
+      }
+      
+      // Arrêter après le max d'essais
+      if (attempts >= maxAttempts) {
+        console.warn('[Awareness] Provider non créé après 4s, abandon');
+        clearInterval(intervalId);
+      }
+    }, 200);
+    
+    return () => clearInterval(intervalId);
+  }, [userProfile, id, user]);
 
   // Gestion des paramètres de recherche (assignation au dossier)
   useEffect(() => {
@@ -924,13 +936,13 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
                 <EditorRefPlugin onEditorReady={setEditor} />
 
-                {/* Charger le contenu initial depuis la base de données (yjs-aware) */}
+                {/* Charger le contenu initial depuis la base de données */}
                 <LoadInitialContentPlugin
                   content={initialEditorContent}
                   noteId={id}
                 />
 
-                {/* ✅ Toujours utiliser CollaborationPlugin pour la sync temps réel */}
+                {/* CollaborationPlugin pour synchronisation temps réel */}
                 <CollaborationPlugin
                   id={id}
                   providerFactory={providerFactory}

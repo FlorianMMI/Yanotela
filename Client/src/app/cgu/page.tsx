@@ -1,8 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { ArrowIcon } from '@/libs/Icons';
-
 export const noAuth = true;
 
 export default function CGUPage() {
@@ -11,24 +9,16 @@ export default function CGUPage() {
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Header avec retour */}
         <div className="mb-8">
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors mb-4"
-          >
-            <ArrowIcon className="w-5 h-5" />
-            <span className="font-medium">Retour</span>
-          </Link>
           <h1 className="text-4xl font-bold text-clrprincipal mb-2">
             Conditions Générales d&apos;Utilisation (CGU)
           </h1>
           <p className="text-sm text-element">
-            Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}
+            Dernière mise à jour : 15/11/2025
           </p>
         </div>
 
         {/* Contenu des CGU */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 space-y-8">
-          
           {/* Section 1 */}
           <section>
             <h2 className="text-2xl font-semibold text-clrprincipal mb-4">

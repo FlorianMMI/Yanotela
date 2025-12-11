@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef, useCallback } from "react";
 import { useState, useEffect, Suspense } from "react";
 import { Folder } from "@/type/Folder";
 import FolderHeader from "@/components/folderHeader/FolderHeader";
@@ -7,26 +7,21 @@ import FolderList from "@/components/folderList/FolderList";
 import { GetFolders } from "@/loader/loader";
 import { SearchMode } from "@/ui/searchbar";
 
-// Métadonnées SEO gérées côté serveur dans layout.tsx
-
 export default function FoldersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchMode, setSearchMode] = useState<SearchMode>("title"); // Force title mode pour les dossiers
   const [sortBy, setSortBy] = useState<"recent" | "creation">("recent");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [colorFilters, setColorFilters] = useState<string[]>([]);
+  
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasFetched = useRef(false);
 
-  // Charger les dossiers au montage du composant
-  useEffect(() => {
-    fetchFolders();
-  }, []);
-
-  const fetchFolders = async () => {
+  // Charger les dossiers au montage du composant (évite double appel en Strict Mode)
+  const fetchFolders = useCallback(async () => {
     try {
       setLoading(true);
-      
       const response = await GetFolders();
       setFolders(response.folders || []);
     } catch (error) {
@@ -35,7 +30,13 @@ export default function FoldersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetchFolders();
+  }, [fetchFolders]);
 
   // Filtrer et trier les dossiers
   const filteredFolders = Array.isArray(folders) ? folders
