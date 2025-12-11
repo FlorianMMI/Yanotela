@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 import { ArrowBarIcon, DupplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
 import NoteButton from "@/ui/note-modal/note-button";
 
+import { Note } from "@/type/Note";
+
 interface NoteMoreProps {
     noteId: string;
     onClose: () => void;
-    onNoteUpdated?: (updatedNote?: any) => void; // Callback pour rafraîchir la liste (peut recevoir la note mise à jour)
+    onNoteUpdated?: (updatedNote?: Note) => void; // Callback pour rafraîchir la liste (peut recevoir la note mise à jour)
 }
 
 type ModalView = "menu" | "share" | "info" | "folder" | "tag" | "delete" | "leave";
@@ -164,7 +166,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                                         const updated = await GetNoteById(noteId);
                                         onNoteUpdated(updated);
                                     }
-                                } catch (err) {
+                                } catch {
                                     // If fetching fails, still notify parent with no payload
                                     if (onNoteUpdated) onNoteUpdated();
                                 }

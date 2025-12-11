@@ -7,7 +7,6 @@
 
 const DISMISSED_NOTIFICATIONS_KEY = 'yanotela_dismissed_notifications';
 const MAX_DISMISSED_ENTRIES = 500; // Limite pour éviter de remplir le localStorage
-const CLEANUP_INTERVAL_DAYS = 30; // Nettoyer les entrées de plus de 30 jours
 
 /**
  * Nettoie les anciennes notifications supprimées (plus de 30 jours)

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { GetNoteById } from "@/loader/loader";
+import { Note } from "@/type/Note";
 
 interface NoteInfoUIProps {
     noteId: string;
 }
 
 export default function NoteInfoUI({ noteId }: NoteInfoUIProps) {
-    const [noteInfo, setNoteInfo] = useState<any>(null);
+    const [noteInfo, setNoteInfo] = useState<Note | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 

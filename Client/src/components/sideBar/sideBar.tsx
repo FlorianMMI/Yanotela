@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarToggle } from '@/hooks/useSidebarToggle';
@@ -10,7 +10,7 @@ import { ArrowIcon } from '@/libs/Icons';
 
 export default function SideBar() {
   const { isAuthenticated, loading, user } = useAuth();
-  const { isOpen, toggle, setOpen } = useSidebarToggle();
+  const { isOpen, toggle } = useSidebarToggle();
 
   // Loading state 
 

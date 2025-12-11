@@ -48,28 +48,140 @@ export const userController = {
       }
 
       // Compter le nombre de notes de l'utilisateur
-      const noteCount = await prisma.note.count({
+      const notesCount = await prisma.note.count({
         where: {
           authorId: userId,
+          deletedAt: null,
         },
       });
 
-      // Ajouter le nombre de notes aux informations utilisateur
-      const userWithNoteCount = {
+      // Retourner les infos utilisateur + stats
+      res.json({
         ...user,
-        noteCount,
-      };
-
-      return res.status(200).json(userWithNoteCount);
+        notesCount,
+      });
     } catch (error) {
       
-      return res
-        .status(500)
-        .json({
-          message:
-            "Erreur lors de la récupération des informations utilisateur",
-          error: error.message,
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  },
+
+  // Récupérer les préférences de notification
+  getNotificationPreferences: async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      const userId = parseInt(req.session.userId, 10);
+      
+      // Récupérer tous les types de notification
+      const types = await prisma.notification_type.findMany();
+      
+      // Récupérer les préférences utilisateur
+      const prefs = await prisma.user_notification_preference.findMany({
+        where: { user_id: userId }
+      });
+
+      // Mapper vers le format attendu par le frontend (3 catégories)
+      const getPref = (code) => {
+        const type = types.find(t => t.code === code);
+        if (!type) return { app: true, mail: true };
+        const pref = prefs.find(p => p.notification_type_id === type.id);
+        return pref ? { app: pref.app_enabled, mail: pref.mail_enabled } : { app: true, mail: true };
+      };
+
+      // Pour simplifier, on prend la valeur de la première notification du groupe
+      const invitation = getPref('INVITATION');
+      const comment = getPref('COMMENT_ADDED');
+      const activity = getPref('ROLE_CHANGED');
+
+      const result = [
+        {
+          id: "invitation",
+          name: "Invitations et partages",
+          appnotif: invitation.app,
+          mailnotif: invitation.mail,
+        },
+        {
+          id: "comment",
+          name: "Commentaires",
+          appnotif: comment.app,
+          mailnotif: comment.mail,
+        },
+        {
+          id: "activity",
+          name: "Activités sur mes notes",
+          appnotif: activity.app,
+          mailnotif: activity.mail,
+        },
+      ];
+
+      res.json(result);
+    } catch (error) {
+      
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  },
+
+  // Mettre à jour les préférences de notification
+  updateNotificationPreferences: async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    const { preferences } = req.body; // Array of { id, appnotif, mailnotif }
+
+    try {
+      const userId = parseInt(req.session.userId, 10);
+      const types = await prisma.notification_type.findMany();
+
+      const updateType = async (code, app, mail) => {
+        const type = types.find(t => t.code === code);
+        if (!type) return;
+
+        await prisma.user_notification_preference.upsert({
+          where: {
+            user_id_notification_type_id: {
+              user_id: userId,
+              notification_type_id: type.id
+            }
+          },
+          update: {
+            app_enabled: app,
+            mail_enabled: mail,
+            updated_at: new Date()
+          },
+          create: {
+            user_id: userId,
+            notification_type_id: type.id,
+            app_enabled: app,
+            mail_enabled: mail,
+            updated_at: new Date()
+          }
         });
+      };
+
+      for (const pref of preferences) {
+        if (pref.id === 'invitation') {
+          await updateType('INVITATION', pref.appnotif, pref.mailnotif);
+          await updateType('SOMEONE_INVITED', pref.appnotif, pref.mailnotif);
+          await updateType('USER_ADDED', pref.appnotif, pref.mailnotif);
+        } else if (pref.id === 'comment') {
+          await updateType('COMMENT_ADDED', pref.appnotif, pref.mailnotif);
+        } else if (pref.id === 'activity') {
+          await updateType('REMOVED', pref.appnotif, pref.mailnotif);
+          await updateType('NOTE_DELETED', pref.appnotif, pref.mailnotif);
+          await updateType('ROLE_CHANGED', pref.appnotif, pref.mailnotif);
+          await updateType('COLLABORATOR_REMOVED', pref.appnotif, pref.mailnotif);
+          await updateType('USER_LEFT', pref.appnotif, pref.mailnotif);
+        }
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      
+      res.status(500).json({ message: "Erreur serveur" });
     }
   },
 

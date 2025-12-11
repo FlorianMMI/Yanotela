@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useCallback } from "react";
-import { GetNotes, InfoUser, GetFolders } from "@/loader/loader";
+import { InfoUser } from "@/loader/loader";
 import { useEffect, useState } from "react";
 import Logout from "@/ui/logout";
 import ModificationProfil from "@/components/ModificationProfil/page";

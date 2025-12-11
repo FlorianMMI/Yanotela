@@ -72,7 +72,7 @@ export default function LoginForm({
       // Succès - rediriger vers /notes
       // Utiliser window.location pour forcer un rechargement complet et mettre à jour l'état d'auth
       window.location.href = '/notes';
-    } catch (err) {
+    } catch {
       setError('Erreur de connexion au serveur');
       setIsLoading(false);
     }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { GetFolders, AssignNoteToFolder, RemoveNoteFromFolder, GetNoteFolder } from "@/loader/loader";
 import { Folder } from "@/type/Folder";
 import { FolderIcon, TrashIcon, ChevronIcon, SearchIcon, XIcon, CheckIcon } from '@/libs/Icons';
@@ -24,7 +24,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
 
     useEffect(() => {
         fetchData();
-    }, [noteId]);
+    }, [noteId, fetchData]);
 
     // Calculer la position du dropdown et fermer quand on clique à l'extérieur
     useEffect(() => {
@@ -60,7 +60,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
         };
     }, [isDropdownOpen]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
 
@@ -84,7 +84,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
         } finally {
             setLoading(false);
         }
-    };
+    }, [noteId]);
 
     const handleFolderSelect = async (folderId: string) => {
         setSaving(true);

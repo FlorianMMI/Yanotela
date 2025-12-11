@@ -623,7 +623,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                     className="fixed inset-0 z-40"
                                     onClick={() => setShowFormatMenu(false)}
                                 />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200">
+                                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200" style={{ marginLeft: 'max(-0.5rem, calc(50vw - 50% - 6rem))' }}>
                                     <button
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
@@ -686,7 +686,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                     className="fixed inset-0 z-40"
                                     onClick={() => setShowSizeMenu(false)}
                                 />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-3 flex flex-col gap-3 z-50 border border-gray-200">
+                                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl p-3 flex flex-col gap-3 z-50 border border-gray-200" style={{ marginLeft: 'max(-0.5rem, calc(50vw - 50% - 6rem))' }}>
                                     <div>
                                         <label className="text-xs text-gray-600 mb-1 block">Taille</label>
                                         <select
@@ -777,7 +777,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                     className="fixed inset-0 z-40"
                                     onClick={() => setShowListMenu(false)}
                                 />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200">
+                                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200" style={{ marginLeft: 'max(-0.5rem, calc(50vw - 50% - 6rem))' }}>
                                     <button
                                         onClick={() => {
                                             formatList('bullet');
@@ -821,7 +821,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                     className="fixed inset-0 z-40"
                                     onClick={() => setShowAlignMenu(false)}
                                 />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200">
+                                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200" style={{ marginLeft: 'max(-0.5rem, calc(50vw - 50% - 6rem))' }}>
                                     <button
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');

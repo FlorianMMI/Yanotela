@@ -56,6 +56,31 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         }
     }, [id]);
 
+    const handleUpdateFolder = useCallback(async (name: string, description: string, color: string) => {
+        const response = await UpdateFolder(id, {
+            Nom: name,
+            Description: description,
+            CouleurTag: color,
+        });
+
+        if (response.success && response.folder) {
+            setFolder(response.folder);
+            // Émettre un événement pour synchroniser avec le Breadcrumb
+            window.dispatchEvent(new CustomEvent('folderTitleUpdated', {
+                detail: { folderId: id, title: name }
+            }));
+        } else {
+            
+            throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
+        }
+    }, [id]);
+
+    const handleDeleteFolder = useCallback(() => {
+        // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
+        // Rediriger vers la liste des dossiers
+        router.push("/dossiers");
+    }, [router]);
+
     useEffect(() => {
         if (hasFetched.current) return;
         hasFetched.current = true;
@@ -86,32 +111,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             window.removeEventListener('folderUpdateRequested', handleUpdateRequest);
             window.removeEventListener('folderDeleteRequested', handleDeleteRequest);
         };
-    }, [id, fetchFolderData]);
-
-    const handleUpdateFolder = async (name: string, description: string, color: string) => {
-        const response = await UpdateFolder(id, {
-            Nom: name,
-            Description: description,
-            CouleurTag: color,
-        });
-
-        if (response.success && response.folder) {
-            setFolder(response.folder);
-            // Émettre un événement pour synchroniser avec le Breadcrumb
-            window.dispatchEvent(new CustomEvent('folderTitleUpdated', {
-                detail: { folderId: id, title: name }
-            }));
-        } else {
-            
-            throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
-        }
-    };
-
-    const handleDeleteFolder = () => {
-        // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
-        // Rediriger vers la liste des dossiers
-        router.push("/dossiers");
-    };
+    }, [id, fetchFolderData, handleDeleteFolder, handleUpdateFolder]);
 
     if (loading) {
         return (

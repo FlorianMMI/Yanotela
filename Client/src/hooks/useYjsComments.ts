@@ -111,7 +111,7 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
    * Ajouter un commentaire (synchronisé via YJS)
    * Permet aux utilisateurs non connectés de commenter en tant qu'anonyme
    */
-  const addComment = useCallback((text: string) => {
+  const addComment = useCallback(async (text: string) => {
     if (!yArrayRef.current || !text.trim()) return false;
 
     const newComment: YjsComment = {
@@ -125,8 +125,28 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
     // Ajouter au Y.Array (sera synchronisé automatiquement)
     yArrayRef.current.push([newComment]);
     
+    // Notifier le serveur si l'utilisateur est connecté
+    if (userId && noteId) {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        // Ne pas attendre la réponse pour ne pas bloquer l'UI
+        fetch(`${apiUrl}/notification/comment/${noteId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            commentPreview: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
+          }),
+        }).catch(err => );
+      } catch (error) {
+        
+      }
+    }
+    
     return true;
-  }, [userId, userPseudo]);
+  }, [userId, userPseudo, noteId]);
 
   /**
    * Supprimer un commentaire (synchronisé via YJS)

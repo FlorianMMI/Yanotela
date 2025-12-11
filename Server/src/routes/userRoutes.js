@@ -27,4 +27,10 @@ router.post('/2fa/setup', requireAuth, userController.setup2FA);
 
 router.post('/2fa/verify', requireAuth, userController.check2fa);
 
+// Route GET pour récupérer les préférences de notification
+router.get('/notifications/preferences', requireAuth, userController.getNotificationPreferences);
+
+// Route PUT pour mettre à jour les préférences de notification
+router.put('/notifications/preferences', requireAuth, userController.updateNotificationPreferences);
+
 export default router;

@@ -2,115 +2,104 @@
  * Client WebSocket pour communiquer avec le serveur YJS
  * 
  * Ce service permet au backend Express d'envoyer des notifications
- * au serveur YJS qui les diffusera aux clients connectés.
+ * au serveur YJS qui les diffusera aux clients connectés via l'Awareness.
  * 
  * Architecture :
- * - Le backend ne gère PAS les connexions WebSocket des clients
- * - Le backend envoie les notifications au serveur YJS via HTTP ou WebSocket interne
- * - Le serveur YJS diffuse aux clients connectés
+ * - Le backend agit comme un client YJS (WebsocketProvider)
+ * - Il se connecte aux rooms de notifications des utilisateurs
+ * - Il met à jour son état Awareness avec les notifications
  */
 
+import { WebsocketProvider } from 'y-websocket';
+import * as Y from 'yjs';
 import WebSocket from 'ws';
 
 // URL du serveur YJS (dans Docker: yjs-server:1234, en local: localhost:1234)
 const YJS_SERVER_URL = process.env.YJS_SERVER_URL || 'ws://yjs-server:1234';
 
-// Connexions WebSocket par room (pour éviter de recréer à chaque notification)
-const connections = new Map();
-
-// File d'attente des notifications en cas de déconnexion
-const pendingNotifications = [];
+// Providers par room (pour éviter de recréer à chaque notification)
+const providers = new Map();
 
 /**
- * Message personnalisé pour les notifications (type=99 pour éviter conflit avec YJS)
- */
-const MESSAGE_NOTIFICATION = 99;
-
-/**
- * Encode un message de notification pour le serveur YJS
- * Format: [MESSAGE_NOTIFICATION, JSON stringified notification]
- */
-function encodeNotificationMessage(notification) {
-  const json = JSON.stringify(notification);
-  const encoder = new TextEncoder();
-  const jsonBytes = encoder.encode(json);
-  
-  // Format: 1 byte type + JSON
-  const message = new Uint8Array(1 + jsonBytes.length);
-  message[0] = MESSAGE_NOTIFICATION;
-  message.set(jsonBytes, 1);
-  
-  return message;
-}
-
-/**
- * Obtient ou crée une connexion WebSocket vers une room de notifications
+ * Obtient ou crée un provider YJS pour une room de notifications
  * @param {number} userId - ID de l'utilisateur cible
- * @returns {Promise<WebSocket>} Connexion WebSocket
+ * @returns {WebsocketProvider} Provider YJS
  */
-function getOrCreateConnection(userId) {
-  return new Promise((resolve, reject) => {
-    const roomName = `yanotela-notifications-${userId}`;
-    
-    // Vérifier si une connexion existe déjà et est ouverte
-    const existing = connections.get(roomName);
-    if (existing && existing.readyState === WebSocket.OPEN) {
-      return resolve(existing);
-    }
-    
-    // Créer une nouvelle connexion
-    const wsUrl = `${YJS_SERVER_URL}/${roomName}`;
+function getOrCreateProvider(userId) {
+  const roomName = `yanotela-notifications-${userId}`;
+  
+  let provider = providers.get(roomName);
+  if (provider) {
+    return provider;
+  }
 
-    const ws = new WebSocket(wsUrl);
+  const doc = new Y.Doc();
+  provider = new WebsocketProvider(
+    YJS_SERVER_URL,
+    roomName,
+    doc,
+    { 
+      WebSocketPolyfill: WebSocket,
+      connect: true
+    }
+  );
+  
+  provider.on('status', ({ status }) => {
     
-    ws.on('open', () => {
-      
-      connections.set(roomName, ws);
-      resolve(ws);
-    });
-    
-    ws.on('error', (error) => {
-      
-      connections.delete(roomName);
-      reject(error);
-    });
-    
-    ws.on('close', () => {
-      
-      connections.delete(roomName);
-    });
-    
-    // Timeout de connexion
-    setTimeout(() => {
-      if (ws.readyState !== WebSocket.OPEN) {
-        ws.terminate();
-        reject(new Error('Timeout connexion WebSocket'));
-      }
-    }, 5000);
   });
+  
+  providers.set(roomName, provider);
+  return provider;
 }
 
 /**
- * Envoie une notification à un utilisateur via le serveur YJS
+ * Envoie une notification à un utilisateur via le serveur YJS (Awareness)
  * 
  * @param {number} userId - ID de l'utilisateur cible
  * @param {object} notification - Notification à envoyer
- * @returns {Promise<boolean>} true si envoyé, false sinon
+ * @returns {Promise<boolean>} true si envoyé
  */
 export async function sendNotificationToUser(userId, notification) {
   try {
-    const ws = await getOrCreateConnection(userId);
+    const provider = getOrCreateProvider(userId);
     
-    // Encoder et envoyer le message
-    const message = encodeNotificationMessage(notification);
-    ws.send(message);
+    // Attendre que la connexion soit établie (optionnel mais préférable)
+    if (!provider.wsconnected) {
+      await new Promise(resolve => {
+        const onStatus = ({ status }) => {
+          if (status === 'connected') {
+            provider.off('status', onStatus);
+            resolve();
+          }
+        };
+        provider.on('status', onStatus);
+        // Timeout de sécurité
+        setTimeout(() => {
+            provider.off('status', onStatus);
+            resolve(); 
+        }, 2000);
+      });
+    }
+
+    // Récupérer les notifications existantes dans l'awareness local
+    const currentLocalState = provider.awareness.getLocalState();
+    const currentNotifications = currentLocalState?.notifications || [];
+    
+    // Ajouter la nouvelle notification
+    // On garde un historique limité pour s'assurer que le client a le temps de la recevoir
+    const updatedNotifications = [...currentNotifications, notification];
+    
+    // Limiter à 20 notifications pour éviter de surcharger l'awareness
+    if (updatedNotifications.length > 20) {
+      updatedNotifications.splice(0, updatedNotifications.length - 20);
+    }
+    
+    // Mettre à jour l'awareness
+    provider.awareness.setLocalStateField('notifications', updatedNotifications);
 
     return true;
     
   } catch (error) {
-
-    // Stocker en file d'attente pour retry ultérieur
-    pendingNotifications.push({ userId, notification, timestamp: Date.now() });
     
     return false;
   }
@@ -142,11 +131,12 @@ export async function broadcastNotificationToUsers(userIds, notification) {
  * Ferme toutes les connexions WebSocket
  */
 export function closeAllConnections() {
-  connections.forEach((ws, roomName) => {
+  providers.forEach((provider, roomName) => {
     
-    ws.close();
+    provider.disconnect();
+    provider.destroy();
   });
-  connections.clear();
+  providers.clear();
 }
 
 /**
@@ -154,8 +144,8 @@ export function closeAllConnections() {
  */
 export function getConnectionStats() {
   return {
-    activeConnections: connections.size,
-    pendingNotifications: pendingNotifications.length,
+    activeConnections: providers.size,
+    pendingNotifications: 0, // Plus utilisé avec cette implémentation
   };
 }
 
