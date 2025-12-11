@@ -32,7 +32,7 @@ export default function GoogleAuthButton({
       const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       
       // Redirection directe vers la route Google OAuth du serveur
-      router.push(`${baseUrl}/auth/google`);
+      router.push(`${baseUrl}/api/auth/google`);
     } catch (error) {
       
       setIsLoading(false);
