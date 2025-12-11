@@ -53,7 +53,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 if (response.success && response.permissions) {
                     console.log('[commentModal] Permissions reçues:', response.permissions);
                     // Trouver la permission de l'utilisateur actuel
-                    // Note: le backend retourne 'userId' (camelCase) et non 'id_user'
+                    // Note: le backend retourne 'userId' (camelCase)
                     const userPermission = response.permissions.find(p => p.userId === user.id);
                     console.log('[commentModal] Permission trouvée pour user:', userPermission);
                     
