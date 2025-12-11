@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
-import { InfoUser } from "@/loader/loader";
+import React, { useRef, useCallback } from "react";
+import { GetNotes, InfoUser, GetFolders } from "@/loader/loader";
 import { useEffect, useState } from "react";
 import Logout from "@/ui/logout";
 import ModificationProfil from "@/components/ModificationProfil/page";
@@ -25,29 +25,33 @@ export default function Profil() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isParamModalOpen, setIsParamModalOpen] = useState(false);
+  const hasFetched = useRef(false);
+
+  // Charger les infos utilisateur (évite double appel en Strict Mode)
+  const fetchUserInfo = useCallback(async () => {
+    try {
+      const response = await InfoUser();
+
+      if (response.success && response.user) {
+        setUserInfo(response.user);
+      } else {
+        setError(
+          response.error || "Erreur lors de la récupération des informations"
+        );
+      }
+    } catch (err) {
+      setError("Erreur de connexion");
+      console.error("Erreur:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const response = await InfoUser();
-
-        if (response.success && response.user) {
-          setUserInfo(response.user);
-        } else {
-          setError(
-            response.error || "Erreur lors de la récupération des informations"
-          );
-        }
-      } catch (err) {
-        setError("Erreur de connexion");
-        console.error("Erreur:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     fetchUserInfo();
-  }, []);
+  }, [fetchUserInfo]);
 
   if (loading) {
     return (

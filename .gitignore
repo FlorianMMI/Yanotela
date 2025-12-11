@@ -35,3 +35,9 @@ coverage/
 
 # yjs
 Server/yjs-db
+
+# fichier md de documentation
+ARCHITECTURE-NOTIFICATIONS-YJS.md
+
+# Docker compsose
+docker-compose.dev.yml

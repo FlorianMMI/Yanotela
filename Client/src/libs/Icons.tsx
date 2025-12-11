@@ -64,6 +64,7 @@ export function AtIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function BackgroundColorIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -79,6 +80,7 @@ export function BackgroundColorIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function BoldIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -94,6 +96,7 @@ export function BoldIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function ChevronIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -112,6 +115,7 @@ export function ChevronIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -127,6 +131,7 @@ export function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function CloseIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -144,6 +149,7 @@ export function CloseIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function CrownIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -159,6 +165,7 @@ export function CrownIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function DocsIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -178,6 +185,7 @@ export function DocsIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function DownloadIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -196,16 +204,15 @@ export function DownloadIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-export function DuplicateIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-        <svg xmlns="http://www.w3.org/2000/svg" {...props} viewBox="0 0 24 24">
-          <g fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2.5">
-          <path strokeLinecap="round" d="M16.75 4.5V1.75a1 1 0 0 0-1-1h-14a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1H4.5"/>
-          <path d="M7.25 8.25a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-14a1 1 0 0 1-1-1z"/>
-          </g>
+
+export function DupplicateIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+        <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 3H4C2.9 3 2 3.9 2 5V17H4V5H16V3ZM19 7H8C6.9 7 6 7.9 6 9V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V9C21 7.9 20.1 7 19 7ZM19 21H8V9H19V21Z" fill="currentColor"/>
         </svg>
   );
 }
+
 export function ExitIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -228,6 +235,7 @@ export function ExitIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function EyesCloseIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -249,6 +257,7 @@ export function EyesCloseIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function EyesIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -266,6 +275,7 @@ export function EyesIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function FileIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} fill="currentColor" viewBox="0 0 24 24">
@@ -273,6 +283,7 @@ export function FileIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function FiltreIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -290,6 +301,7 @@ export function FiltreIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function FlashIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -308,6 +320,7 @@ export function FlashIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function FolderIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -323,6 +336,7 @@ export function FolderIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function FontColorIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -340,6 +354,7 @@ export function FontColorIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} viewBox="-0.5 0 48 48" version="1.1">
@@ -366,6 +381,7 @@ export function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function ImageIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -383,6 +399,7 @@ export function ImageIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function InfoIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -398,6 +415,7 @@ export function InfoIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function ItalicIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -413,6 +431,7 @@ export function ItalicIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function KebabIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -442,6 +461,7 @@ export function KebabIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function KeyholeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -653,14 +673,11 @@ export function NotificationsIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export function PaletteIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} viewBox="0 0 512 512">
-      <path
-        fill="currentColor"
-        d="M410.842,207.265c97.767-8.626,117.891-54.628,89.098-97.749C448.234,32.075,334.016,1.59,218.762,36.607 C73.721,80.672-22.226,214.687,4.453,335.938C31.13,457.19,170.334,519.762,315.375,475.697 c62.951-19.13,116.653-55.201,155.091-99.821c15.516-18.01,20.891-73.726-50.998-70.844 C342.812,308.106,332.197,214.206,410.842,207.265z M385.949,102.144c7.068-7.059,16.84-11.111,26.839-11.111 c9.998,0,19.762,4.052,26.838,11.111c7.067,7.076,11.119,16.848,11.119,26.847s-4.052,19.762-11.119,26.838 c-7.076,7.067-16.84,11.12-26.838,11.12c-9.999,0-19.771-4.052-26.839-11.12c-7.067-7.076-11.119-16.839-11.119-26.838 S378.882,109.22,385.949,102.144z M65.256,226.724c5.711-17.185,24.26-26.485,41.436-20.782 c17.185,5.711,26.493,24.261,20.79,41.437c-5.711,17.184-24.269,26.484-41.438,20.789C68.861,262.449,59.553,243.9,65.256,226.724z M127.946,377.433c-11.794,12.451-31.455,12.998-43.905,1.214c-12.459-11.793-12.998-31.446-1.204-43.896 c11.785-12.459,31.437-13.006,43.896-1.213C139.182,345.323,139.73,364.975,127.946,377.433z M190.542,171.051 c-15.466,11.128-37.031,7.606-48.159-7.86c-11.128-15.474-7.606-37.03,7.859-48.159v-0.008 c15.475-11.119,37.032-7.598,48.159,7.868C209.53,138.358,206.009,159.923,190.542,171.051z M250.461,105.589 c-2.317-19.88,11.919-37.857,31.8-40.165c19.872-2.308,37.857,11.929,40.165,31.8c2.316,19.872-11.928,37.856-31.801,40.164 C270.746,139.706,252.769,125.461,250.461,105.589z M360.897,377.106c0,12.121-4.911,23.948-13.478,32.524 c-8.567,8.566-20.411,13.478-32.533,13.478c-12.113,0-23.965-4.912-32.524-13.478c-8.566-8.576-13.478-20.403-13.478-32.524 c0-12.122,4.912-23.974,13.478-32.542c8.559-8.559,20.411-13.47,32.524-13.47c12.122,0,23.966,4.911,32.533,13.47 C355.986,353.131,360.897,364.983,360.897,377.106z"
-      />
-    </svg>
-  );
+    return (
+        <svg {...props} viewBox="0 0 512 512" >
+            <path fill="currentColor" d="M410.842,207.265c97.767-8.626,117.891-54.628,89.098-97.749C448.234,32.075,334.016,1.59,218.762,36.607 C73.721,80.672-22.226,214.687,4.453,335.938C31.13,457.19,170.334,519.762,315.375,475.697 c62.951-19.13,116.653-55.201,155.091-99.821c15.516-18.01,20.891-73.726-50.998-70.844 C342.812,308.106,332.197,214.206,410.842,207.265z M385.949,102.144c7.068-7.059,16.84-11.111,26.839-11.111 c9.998,0,19.762,4.052,26.838,11.111c7.067,7.076,11.119,16.848,11.119,26.847s-4.052,19.762-11.119,26.838 c-7.076,7.067-16.84,11.12-26.838,11.12c-9.999,0-19.771-4.052-26.839-11.12c-7.067-7.076-11.119-16.839-11.119-26.838 S378.882,109.22,385.949,102.144z M65.256,226.724c5.711-17.185,24.26-26.485,41.436-20.782 c17.185,5.711,26.493,24.261,20.79,41.437c-5.711,17.184-24.269,26.484-41.438,20.789C68.861,262.449,59.553,243.9,65.256,226.724z M127.946,377.433c-11.794,12.451-31.455,12.998-43.905,1.214c-12.459-11.793-12.998-31.446-1.204-43.896 c11.785-12.459,31.437-13.006,43.896-1.213C139.182,345.323,139.73,364.975,127.946,377.433z M190.542,171.051 c-15.466,11.128-37.031,7.606-48.159-7.86c-11.128-15.474-7.606-37.03,7.859-48.159v-0.008 c15.475-11.119,37.032-7.598,48.159,7.868C209.53,138.358,206.009,159.923,190.542,171.051z M250.461,105.589 c-2.317-19.88,11.919-37.857,31.8-40.165c19.872-2.308,37.857,11.929,40.165,31.8c2.316,19.872-11.928,37.856-31.801,40.164 C270.746,139.706,252.769,125.461,250.461,105.589z M360.897,377.106c0,12.121-4.911,23.948-13.478,32.524 c-8.567,8.566-20.411,13.478-32.533,13.478c-12.113,0-23.965-4.912-32.524-13.478c-8.566-8.576-13.478-20.403-13.478-32.524 c0-12.122,4.912-23.974,13.478-32.542c8.559-8.559,20.411-13.47,32.524-13.47c12.122,0,23.966,4.911,32.533,13.47 C355.986,353.131,360.897,364.983,360.897,377.106z" />
+        </svg>
+    );
 }
 
 export function PartageIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -725,6 +742,7 @@ export function ProfileIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function RecentIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -740,6 +758,7 @@ export function RecentIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function RechercheIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -755,6 +774,7 @@ export function RechercheIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function RefreshIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -790,6 +810,7 @@ export function SaveIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function SearchIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -808,6 +829,7 @@ export function SearchIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function SettingsIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -838,6 +860,7 @@ export function ShareIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function StrikethroughIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -877,6 +900,7 @@ export function StrikethroughIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function StyleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -912,6 +936,7 @@ export function TextCenterIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function TextJustifyIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -930,6 +955,7 @@ export function TextJustifyIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function TextLeftIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -947,6 +973,7 @@ export function TextLeftIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function TextRightIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -964,6 +991,7 @@ export function TextRightIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function TrashIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -979,6 +1007,7 @@ export function TrashIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function UnderlineIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -994,6 +1023,7 @@ export function UnderlineIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
 export function XIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -1035,51 +1065,29 @@ export function Comment(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export function CopyIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 5.04877L10.367 4.70563C12.7995 2.43146 16.7432 2.43146 19.1757 4.70563M16.9735 15L19.1757 12.9411C20.3438 11.849 20.951 10.4309 20.9972 9" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M14 18.9278L13.6345 19.2773C11.2123 21.5937 7.25434 21.5644 4.83209 19.248C2.43376 16.9546 2.37639 13.2153 4.74095 10.89L5.64594 10" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M6.58739 3L7.5 5.20521" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M3.50238 6.08658L9.05021 8.79453" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
+    return (
+        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 5.04877L10.367 4.70563C12.7995 2.43146 16.7432 2.43146 19.1757 4.70563M16.9735 15L19.1757 12.9411C20.3438 11.849 20.951 10.4309 20.9972 9" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M14 18.9278L13.6345 19.2773C11.2123 21.5937 7.25434 21.5644 4.83209 19.248C2.43376 16.9546 2.37639 13.2153 4.74095 10.89L5.64594 10" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M6.58739 3L7.5 5.20521" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M3.50238 6.08658L9.05021 8.79453" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    )
 }
 
 export function CopyLinkIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg {...props} width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M14.1625 18.4876L13.4417 19.2084C11.053 21.5971 7.18019 21.5971 4.79151 19.2084C2.40283 16.8198 2.40283 12.9469 4.79151 10.5583L5.51236 9.8374" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M9.8374 14.1625L14.1625 9.8374" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M9.8374 5.51236L10.5583 4.79151C12.9469 2.40283 16.8198 2.40283 19.2084 4.79151M18.4876 14.1625L19.2084 13.4417C20.4324 12.2177 21.0292 10.604 20.9988 9" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
+    return (
+        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14.1625 18.4876L13.4417 19.2084C11.053 21.5971 7.18019 21.5971 4.79151 19.2084C2.40283 16.8198 2.40283 12.9469 4.79151 10.5583L5.51236 9.8374" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M9.8374 14.1625L14.1625 9.8374" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M9.8374 5.51236L10.5583 4.79151C12.9469 2.40283 16.8198 2.40283 19.2084 4.79151M18.4876 14.1625L19.2084 13.4417C20.4324 12.2177 21.0292 10.604 20.9988 9" stroke="#1C274C" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    )
 }
 
 export function PublicIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" {...props} viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M5.578 5.343a9.25 9.25 0 0 0 6.803 15.9c-.206-.912-.234-2.138.393-3.319c.652-1.229 2.002-1.762 2.995-2.006a9.2 9.2 0 0 1 1.898-.254h.043c1.673-.018 2.426-.562 2.826-1.08c.342-.444.47-.887.602-1.336l.05-.172A9.22 9.22 0 0 0 18.6 5.519l-.027.1c-.163.594-.425 1.202-.711 1.636c-.256.388-.752.78-1.164 1.076a10 10 0 0 1-.902.56c-.228.132-.433.25-.63.38c-.432.286-.766.593-.991 1.056a.67.67 0 0 0-.035.49c.075.272.126.578.126.889c.002.649-.328 1.176-.753 1.518a2.4 2.4 0 0 1-1.521.526c-2.455-.027-3.965-2.02-4.164-4.236c-.08-.881-.466-1.773-.954-2.552a8.8 8.8 0 0 0-1.296-1.62m1.167-.956a10.5 10.5 0 0 1 1.4 1.779c.558.89 1.069 2.012 1.177 3.214c.15 1.68 1.213 2.854 2.686 2.87a.9.9 0 0 0 .563-.194c.146-.117.196-.24.195-.346c0-.156-.026-.328-.072-.495a2.16 2.16 0 0 1 .131-1.542c.385-.794.956-1.285 1.514-1.653c.239-.158.487-.3.71-.43l.09-.05c.255-.148.48-.28.683-.427c.431-.31.704-.557.787-.684c.183-.276.388-.734.518-1.207c.103-.374.131-.662.122-.84A9.2 9.2 0 0 0 12 2.75a9.2 9.2 0 0 0-5.255 1.637M22.68 13.24q.07-.61.071-1.24c0-5.937-4.813-10.75-10.75-10.75S1.25 6.063 1.25 12S6.063 22.75 12 22.75c5.46 0 9.97-4.071 10.659-9.344a3 3 0 0 1 .048-.156zm-2.774 3.567c-.596.218-1.314.348-2.179.357h-.031l-.09.003a7.7 7.7 0 0 0-1.477.208c-.902.221-1.693.62-2.029 1.252c-.456.859-.39 1.793-.22 2.432a9.26 9.26 0 0 0 6.026-4.252" clipRule="evenodd" />
-    </svg>
-  )
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" {...props} viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M5.578 5.343a9.25 9.25 0 0 0 6.803 15.9c-.206-.912-.234-2.138.393-3.319c.652-1.229 2.002-1.762 2.995-2.006a9.2 9.2 0 0 1 1.898-.254h.043c1.673-.018 2.426-.562 2.826-1.08c.342-.444.47-.887.602-1.336l.05-.172A9.22 9.22 0 0 0 18.6 5.519l-.027.1c-.163.594-.425 1.202-.711 1.636c-.256.388-.752.78-1.164 1.076a10 10 0 0 1-.902.56c-.228.132-.433.25-.63.38c-.432.286-.766.593-.991 1.056a.67.67 0 0 0-.035.49c.075.272.126.578.126.889c.002.649-.328 1.176-.753 1.518a2.4 2.4 0 0 1-1.521.526c-2.455-.027-3.965-2.02-4.164-4.236c-.08-.881-.466-1.773-.954-2.552a8.8 8.8 0 0 0-1.296-1.62m1.167-.956a10.5 10.5 0 0 1 1.4 1.779c.558.89 1.069 2.012 1.177 3.214c.15 1.68 1.213 2.854 2.686 2.87a.9.9 0 0 0 .563-.194c.146-.117.196-.24.195-.346c0-.156-.026-.328-.072-.495a2.16 2.16 0 0 1 .131-1.542c.385-.794.956-1.285 1.514-1.653c.239-.158.487-.3.71-.43l.09-.05c.255-.148.48-.28.683-.427c.431-.31.704-.557.787-.684c.183-.276.388-.734.518-1.207c.103-.374.131-.662.122-.84A9.2 9.2 0 0 0 12 2.75a9.2 9.2 0 0 0-5.255 1.637M22.68 13.24q.07-.61.071-1.24c0-5.937-4.813-10.75-10.75-10.75S1.25 6.063 1.25 12S6.063 22.75 12 22.75c5.46 0 9.97-4.071 10.659-9.344a3 3 0 0 1 .048-.156zm-2.774 3.567c-.596.218-1.314.348-2.179.357h-.031l-.09.003a7.7 7.7 0 0 0-1.477.208c-.902.221-1.693.62-2.029 1.252c-.456.859-.39 1.793-.22 2.432a9.26 9.26 0 0 0 6.026-4.252" clipRule="evenodd" />
+        </svg>
+    )
 }
-
-export function Send(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M11.5003 12H5.41872M5.24634 12.7972L4.24158 15.7986C3.69128 17.4424 3.41613 18.2643 3.61359 18.7704C3.78506 19.21 4.15335 19.5432 4.6078 19.6701C5.13111 19.8161 5.92151 19.4604 7.50231 18.7491L17.6367 14.1886C19.1797 13.4942 19.9512 13.1471 20.1896 12.6648C20.3968 12.2458 20.3968 11.7541 20.1896 11.3351C19.9512 10.8529 19.1797 10.5057 17.6367 9.81135L7.48483 5.24303C5.90879 4.53382 5.12078 4.17921 4.59799 4.32468C4.14397 4.45101 3.77572 4.78336 3.60365 5.22209C3.40551 5.72728 3.67772 6.54741 4.22215 8.18767L5.24829 11.2793C5.34179 11.561 5.38855 11.7019 5.407 11.8459C5.42338 11.9738 5.42321 12.1032 5.40651 12.231C5.38768 12.375 5.34057 12.5157 5.24634 12.7972Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// export function flashNote(props: React.SVGProps<SVGSVGElement>) {
-
