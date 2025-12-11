@@ -9,16 +9,16 @@ const client = createClient({
 });
 
 client.on('error', (err) => {
-  console.error('❌ Redis Error:', err.message);
+  
 });
 
 client.on('connect', () => {
-  console.log('✅ Redis connecté !');
+  
 });
 
 // Connexion au démarrage
 await client.connect().catch(err => {
-  console.error('❌ Impossible de se connecter à Redis:', err.message);
+  
 });
 
 export default client;
