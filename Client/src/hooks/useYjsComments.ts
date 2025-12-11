@@ -139,9 +139,9 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
           body: JSON.stringify({
             commentPreview: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
           }),
-        }).catch(err => console.error('[useYjsComments] Erreur notification:', err));
+        }).catch(err => );
       } catch (error) {
-        console.error('[useYjsComments] Erreur pré-notification:', error);
+        
       }
     }
     

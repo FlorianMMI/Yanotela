@@ -59,7 +59,7 @@ export default function NotificationPage() {
           }));
         }
       } catch (e) {
-        console.error("Failed to load notification prefs", e);
+        
       } finally {
         setIsLoading(false);
       }
@@ -130,9 +130,8 @@ export default function NotificationPage() {
       setInitialNotifications(JSON.parse(JSON.stringify(notifications)));
       setHasChanges(false);
 
-      console.log('Notifications sauvegardées avec succès');
     } catch (error) {
-      console.error('❌ Erreur de sauvegarde:', error);
+      
     } finally {
       setIsSaving(false);
     }

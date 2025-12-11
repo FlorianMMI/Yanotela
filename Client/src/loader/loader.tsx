@@ -1630,7 +1630,7 @@ export async function GetNotificationPreferences(): Promise<{ success: boolean; 
         const data = await response.json();
         return { success: true, preferences: data };
     } catch (error) {
-        console.error('Erreur GetNotificationPreferences:', error);
+        
         return { success: false, error: 'Erreur réseau' };
     }
 }
@@ -1656,7 +1656,7 @@ export async function UpdateNotificationPreferences(preferences: NotificationSet
 
         return { success: true };
     } catch (error) {
-        console.error('Erreur UpdateNotificationPreferences:', error);
+        
         return { success: false, error: 'Erreur réseau' };
     }
 }

@@ -32,9 +32,7 @@ function getOrCreateProvider(userId) {
   if (provider) {
     return provider;
   }
-  
-  console.log(`🔌 [YJS Client] Création provider pour room: ${roomName}`);
-  
+
   const doc = new Y.Doc();
   provider = new WebsocketProvider(
     YJS_SERVER_URL,
@@ -47,7 +45,7 @@ function getOrCreateProvider(userId) {
   );
   
   provider.on('status', ({ status }) => {
-    console.log(`[YJS Client] Status room ${roomName}: ${status}`);
+    
   });
   
   providers.set(roomName, provider);
@@ -98,12 +96,11 @@ export async function sendNotificationToUser(userId, notification) {
     
     // Mettre à jour l'awareness
     provider.awareness.setLocalStateField('notifications', updatedNotifications);
-    
-    console.log(`📤 [YJS Client] Notification envoyée à userId=${userId} via Awareness`);
+
     return true;
     
   } catch (error) {
-    console.error(`❌ [YJS Client] Échec envoi notification à userId=${userId}:`, error.message);
+    
     return false;
   }
 }
@@ -135,7 +132,7 @@ export async function broadcastNotificationToUsers(userIds, notification) {
  */
 export function closeAllConnections() {
   providers.forEach((provider, roomName) => {
-    console.log(`🔌 [YJS Client] Fermeture provider: ${roomName}`);
+    
     provider.disconnect();
     provider.destroy();
   });

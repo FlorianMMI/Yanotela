@@ -61,7 +61,7 @@ export const userController = {
         notesCount,
       });
     } catch (error) {
-      console.error("Erreur getUserInfo:", error);
+      
       res.status(500).json({ message: "Erreur serveur" });
     }
   },
@@ -119,7 +119,7 @@ export const userController = {
 
       res.json(result);
     } catch (error) {
-      console.error("Erreur getNotificationPreferences:", error);
+      
       res.status(500).json({ message: "Erreur serveur" });
     }
   },
@@ -180,7 +180,7 @@ export const userController = {
 
       res.json({ success: true });
     } catch (error) {
-      console.error("Erreur updateNotificationPreferences:", error);
+      
       res.status(500).json({ message: "Erreur serveur" });
     }
   },
