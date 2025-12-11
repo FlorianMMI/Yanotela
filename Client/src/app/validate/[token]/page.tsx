@@ -51,7 +51,7 @@ export default function ValidatePage({ params }: ValidatePageProps) {
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
             });
-          } catch (e) {
+          } catch {
             // ignore
           }
           setTimeout(() => {

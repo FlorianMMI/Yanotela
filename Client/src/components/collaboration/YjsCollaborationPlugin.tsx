@@ -131,7 +131,7 @@ export function YjsCollaborationPlugin({
                   selection.dirty = true;
                   
                 }
-              } catch (err) {
+              } catch {
                 
                 // Fallback: juste restaurer le focus sans position précise
               }
@@ -141,7 +141,7 @@ export function YjsCollaborationPlugin({
             });
           });
         }
-      } catch (err) {
+      } catch {
         
       }
     };
@@ -163,7 +163,7 @@ export function YjsCollaborationPlugin({
             }
           });
         }
-      } catch (err) {
+      } catch {
         
       }
     }

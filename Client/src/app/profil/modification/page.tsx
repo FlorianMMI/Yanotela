@@ -2,7 +2,7 @@
 
 import ReturnButton from "@/ui/returnButton";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import Icons from "@/ui/Icon";
+
 import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser } from '@/loader/loader';
 import { CheckIcon, CloseIcon, KeyholeIcon } from "@/libs/Icons";
@@ -33,7 +33,7 @@ export default function ModificationProfil() {
       } else {
         setError("Impossible de charger les informations utilisateur");
       }
-    } catch (err) {
+    } catch {
       setError("Erreur lors du chargement des informations");
     } finally {
       setPageLoading(false);

@@ -20,7 +20,7 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
     openContextMenu();
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = () => {
     if (isInTrash) return;
     longPressTimer.current = setTimeout(() => {
       openContextMenu();

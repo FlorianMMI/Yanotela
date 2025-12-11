@@ -13,11 +13,12 @@ jest.mock('next/navigation', () => ({
 }));
 
 describe('useAuthRedirect', () => {
-  let mockRouter: any;
+  let mockRouter: { push: jest.Mock };
   let mockPush: jest.Mock;
 
   beforeEach(() => {
     mockPush = jest.fn();
+    mockRouter = { push: mockPush };
     mockRouter = { push: mockPush };
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
     (usePathname as jest.Mock).mockReturnValue('/notes');

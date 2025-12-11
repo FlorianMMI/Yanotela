@@ -12,7 +12,7 @@
  * - ROLE_CHANGED : Promotion/rétrogradation de rôle
  */
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { 
   connectNotificationProvider, 
   disconnectNotificationProvider, 
@@ -22,6 +22,7 @@ import { cleanupOldDismissedNotifications } from '@/utils/notificationStorageUti
 
 // Clé localStorage pour les notifications supprimées
 const DISMISSED_NOTIFICATIONS_KEY = 'yanotela_dismissed_notifications';
+const NOTIFICATION_PREFS_KEY = 'yanotela_notification_prefs';
 
 /**
  * Charge les IDs des notifications supprimées depuis localStorage
@@ -55,6 +56,16 @@ function saveDismissedNotification(userId: number, notificationId: string): void
   }
 }
 
+function getNotificationPrefs() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem(NOTIFICATION_PREFS_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+}
+
 export type NotificationType = 
   | 'INVITATION' 
   | 'REMOVED' 
@@ -67,6 +78,41 @@ export type NotificationType =
   | 'COLLABORATOR_REMOVED'
   | 'USER_LEFT'
   | 'COMMENT_ADDED';
+
+interface NotificationSetting {
+  id: string;
+  appnotif: boolean;
+}
+
+function isNotificationEnabled(type: NotificationType, prefs: NotificationSetting[] | null): boolean {
+  if (!prefs) return true; // Default to true if no prefs
+
+  let categoryId = '';
+  switch (type) {
+    case 'INVITATION':
+    case 'REMOVED':
+    case 'ROLE_CHANGED':
+    case 'SOMEONE_INVITED':
+    case 'COLLABORATOR_REMOVED':
+    case 'USER_LEFT':
+      categoryId = 'invitation';
+      break;
+    case 'COMMENT_ADDED':
+      categoryId = 'comment';
+      break;
+    case 'NOTE_DELETED':
+    case 'NOTE_DELETED_ADMIN':
+    case 'NOTE_DELETED_MEMBER':
+    case 'USER_ADDED':
+      categoryId = 'activity';
+      break;
+    default:
+      return true;
+  }
+
+  const pref = prefs.find((p) => p.id === categoryId);
+  return pref ? pref.appnotif : true;
+}
 
 export interface YjsNotification {
   id: string;
@@ -98,10 +144,27 @@ export interface YjsNotification {
  * @returns deleteNotification - Fonction pour supprimer une notification
  */
 export function useYjsNotifications(userId?: number) {
-  const [notifications, setNotifications] = useState<YjsNotification[]>([]);
+  const [allNotifications, setAllNotifications] = useState<YjsNotification[]>([]);
+  const [prefs, setPrefs] = useState<NotificationSetting[] | null>(null);
   const [loading, setLoading] = useState(true);
   const hasInitialized = useRef(false);
   const dismissedNotificationsRef = useRef<Set<string>>(new Set());
+
+  // Charger les préférences
+  useEffect(() => {
+    const loadPrefs = () => {
+        const p = getNotificationPrefs();
+        setPrefs(p);
+    };
+    loadPrefs();
+    window.addEventListener('notificationPrefsChanged', loadPrefs);
+    return () => window.removeEventListener('notificationPrefsChanged', loadPrefs);
+  }, []);
+
+  // Filtrer les notifications
+  const notifications = useMemo(() => {
+    return allNotifications.filter(n => isNotificationEnabled(n.type, prefs));
+  }, [allNotifications, prefs]);
 
   // Connecter au provider de notifications et charger les invitations initiales
   useEffect(() => {
@@ -125,7 +188,7 @@ export function useYjsNotifications(userId?: number) {
 
     // 2. Écouter les notifications temps réel
     const removeListener = addNotificationListener((realTimeNotifs) => {
-      setNotifications((prev) => {
+      setAllNotifications((prev) => {
         // Filtrer les notifications supprimées
         const filtered = realTimeNotifs.filter((n) => !dismissedNotificationsRef.current.has(n.id));
         
@@ -163,7 +226,7 @@ export function useYjsNotifications(userId?: number) {
           }));
           
           // Filtrer les invitations supprimées + éviter doublons
-          setNotifications((prev) => {
+          setAllNotifications((prev) => {
             const existingIds = new Set(prev.map((n) => n.id));
             const newInvitations = invitations.filter(
               (n) => !existingIds.has(n.id) && !dismissedNotificationsRef.current.has(n.id)
@@ -213,7 +276,7 @@ export function useYjsNotifications(userId?: number) {
           }));
           
           // Filtrer les invitations supprimées + remplacer les invitations actuelles
-          setNotifications((prev) => {
+          setAllNotifications((prev) => {
             const nonInvitations = prev.filter((n) => n.type !== 'INVITATION');
             const filteredInvitations = invitations.filter(
               (n) => !dismissedNotificationsRef.current.has(n.id)
@@ -249,14 +312,14 @@ export function useYjsNotifications(userId?: number) {
           dismissedNotificationsRef.current.add(notificationId);
           
           // Supprimer la notification de la liste après acceptation
-          setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+          setAllNotifications((prev) => prev.filter((n) => n.id !== notificationId));
         }
       } catch (error) {
         console.error('[markAsRead] Erreur:', error);
       }
     } else {
       // Pour les autres types de notifications, juste marquer comme lue
-      setNotifications((prev) =>
+      setAllNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
       );
     }
@@ -270,7 +333,7 @@ export function useYjsNotifications(userId?: number) {
     dismissedNotificationsRef.current.add(notificationId);
 
     // Supprimer localement
-    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    setAllNotifications((prev) => prev.filter((n) => n.id !== notificationId));
 
     // Si c'est une invitation classique, appeler l'API
     if (notificationId.startsWith('invitation-')) {

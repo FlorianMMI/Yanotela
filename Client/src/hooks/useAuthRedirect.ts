@@ -31,7 +31,7 @@ export function useAuthRedirect(options?: { skipRedirect?: boolean }) {
         try {
           const data = await res.json();
           setLocalAuth(Boolean(data?.authenticated));
-        } catch (_) {
+        } catch {
           // If no JSON, consider authenticated by virtue of ok
           setLocalAuth(true);
         }
@@ -41,7 +41,7 @@ export function useAuthRedirect(options?: { skipRedirect?: boolean }) {
       }
     } catch (e) {
       // Network or other errors
-      // eslint-disable-next-line no-console
+
       console.error(e);
       setLocalAuth(false);
       if (!isPublicPage && !options?.skipRedirect) router.push('/login');

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { noteController } from '../controllers/noteController.js';
+import { notificationController } from '../controllers/notificationController.js';
 import { requireAuth, requireNoteOwnership, requireWriteAccess } from '../middlewares/authMiddleware.js';
 
 //** Ce fichier permet de gérer les routes liées aux notes */
@@ -17,5 +18,8 @@ router.post('/accept/:id', requireAuth, noteController.acceptInvitation);
 
 // Route Post pour refuser une invitation (authentification requise)
 router.post('/refuse/:id', requireAuth, noteController.deleteInvitation);
+
+// Route Post pour notifier d'un nouveau commentaire
+router.post('/comment/:noteId', requireAuth, notificationController.notifyComment);
 
 export default router;

@@ -28,6 +28,13 @@
 
 import { PrismaClient } from "@prisma/client";
 import { sendNotificationToUser, broadcastNotificationToUsers } from "./yjsBroadcastClient.js";
+import { 
+  sendNoteInvitationEmail, 
+  sendCommentEmail, 
+  sendRoleChangeEmail, 
+  sendNoteDeletedEmail, 
+  sendUserRemovedEmail 
+} from "./emailService.js";
 
 const prisma = new PrismaClient();
 
@@ -204,6 +211,16 @@ function createNotification(type, userId, data) {
 export async function notifyUserRemoved(userId, noteId, noteTitle, actorPseudo = 'Un administrateur') {
   console.log(`🔔 [NOTIF] Exclusion: userId=${userId}, note="${noteTitle}"`);
   
+  // Envoi email
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (user?.email) {
+      sendUserRemovedEmail(user.email, noteTitle, actorPseudo).catch(e => console.error('Erreur envoi email exclusion:', e));
+    }
+  } catch (e) {
+    console.error('Erreur récupération email pour exclusion:', e);
+  }
+
   return createNotification(NotificationType.REMOVED, userId, {
     noteId,
     noteTitle,
@@ -230,6 +247,16 @@ export async function notifyUserRemoved(userId, noteId, noteTitle, actorPseudo =
 export async function notifyInvitation(userId, noteId, noteTitle, role, actorPseudo) {
   console.log(`🔔 [NOTIF] Invitation: userId=${userId}, note="${noteTitle}", par ${actorPseudo}`);
   
+  // Envoi email
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (user?.email) {
+      sendNoteInvitationEmail(user.email, actorPseudo, noteTitle, noteId, role).catch(e => console.error('Erreur envoi email invitation:', e));
+    }
+  } catch (e) {
+    console.error('Erreur récupération email pour invitation:', e);
+  }
+
   const roleLabel = ROLE_LABELS[role] || 'Collaborateur';
   
   const notification = {
@@ -287,12 +314,17 @@ export async function notifyNoteDeleted(noteId, noteTitle, actorUserId, actorPse
         noteId,
         userId: { not: actorUserId }
       },
-      select: { userId: true, role: true },
+      select: { userId: true, role: true, user: { select: { email: true } } },
     });
 
     // Créer une notification pour chaque collaborateur
     const notifications = [];
     for (const perm of permissions) {
+      // Envoi email
+      if (perm.user?.email) {
+        sendNoteDeletedEmail(perm.user.email, noteTitle, actorPseudo).catch(e => console.error('Erreur envoi email suppression:', e));
+      }
+
       // Admins (rôle 0-1) reçoivent NOTE_DELETED_ADMIN, les autres NOTE_DELETED_MEMBER
       const notifType = perm.role <= 1 
         ? NotificationType.NOTE_DELETED_ADMIN 
@@ -378,6 +410,16 @@ export async function notifyRoleChanged(userId, noteId, noteTitle, oldRole, newR
   const roleLabel = ROLE_LABELS[newRole] || 'Collaborateur';
   const isPromotion = newRole < oldRole; // Rôles: 0=owner, 1=admin, 2=editor, 3=reader
   
+  // Envoi email
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (user?.email) {
+      sendRoleChangeEmail(user.email, noteTitle, roleLabel, noteId).catch(e => console.error('Erreur envoi email rôle:', e));
+    }
+  } catch (e) {
+    console.error('Erreur récupération email pour rôle:', e);
+  }
+
   console.log(`📋 [yjsNotificationService] Détails notification: roleLabel=${roleLabel}, isPromotion=${isPromotion}`);
   
   const result = await createNotification(NotificationType.ROLE_CHANGED, userId, {
@@ -578,12 +620,17 @@ export async function notifyCommentAdded(noteId, noteTitle, commentAuthorPseudo,
         noteId,
         userId: { not: commentAuthorId },
       },
-      select: { userId: true },
+      select: { userId: true, user: { select: { email: true } } },
     });
 
     const notifications = [];
 
     for (const collab of collaborators) {
+      // Envoi email
+      if (collab.user?.email) {
+        sendCommentEmail(collab.user.email, commentAuthorPseudo, noteTitle, commentPreview, noteId).catch(e => console.error('Erreur envoi email commentaire:', e));
+      }
+
       const notif = createNotification(NotificationType.COMMENT_ADDED, collab.userId, {
         noteId,
         noteTitle,

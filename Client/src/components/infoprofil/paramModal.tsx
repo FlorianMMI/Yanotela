@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
-import { CloseIcon, TrashIcon, NotificationsIcon} from '@/libs/Icons';
+
+import { CloseIcon } from '@/libs/Icons';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';

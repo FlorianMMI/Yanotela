@@ -111,10 +111,10 @@ export default function TagNote({ noteId, currentTagId, onTagUpdated }: TagNoteP
         {tags.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500 mb-4">
-              Vous n'avez pas encore créé de tags personnalisés.
+              Vous n&apos;avez pas encore créé de tags personnalisés.
             </p>
             <p className="text-sm text-gray-400">
-              Cliquez sur l'icône de stylo à côté de "Tag couleur" pour en créer.
+              Cliquez sur l&apos;icône de stylo à côté de &quot;Tag couleur&quot; pour en créer.
             </p>
           </div>
         ) : (

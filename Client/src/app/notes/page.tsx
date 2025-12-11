@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useCallback, useRef } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { Note } from "@/type/Note";
 import NoteHeader from "@/components/noteHeader/NoteHeader";
 import NoteList from "@/components/noteList/NoteList";

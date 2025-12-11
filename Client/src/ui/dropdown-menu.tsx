@@ -16,7 +16,7 @@ interface DropdownMenuProps {
  */
 export function DropdownMenu({
   isOpen,
-  onClose,
+
   children,
   className = '',
 }: DropdownMenuProps) {

@@ -1062,4 +1062,133 @@ async function userDataEmail(to, userData) {
     }
 }
 
-export { sendValidationEmail, sendResetPasswordEmail, sendDeleteAccountEmail, sendNoteInvitationEmail, a2fEmail, userDataEmail };
+async function sendCommentEmail(to, commenterName, noteTitle, commentPreview, noteId) {
+  if (process.env.NODE_ENV === 'test') return { success: true };
+  const noteUrl = `${FRONT_URL}/notes/${noteId}`;
+  const transport = createEmailTransporter();
+  if (!transport) throw new Error('Impossible de créer le transporteur email');
+
+  try {
+    await transport.verify();
+    const fromAddress = process.env.EMAIL_SERVICE === 'gmail' ? `"Yanotela" <${process.env.GMAIL_USER}>` : '"Yanotela" <no-reply@yanotela.com>';
+    
+    await transport.sendMail({
+      from: fromAddress,
+      to,
+      subject: `Nouveau commentaire sur "${noteTitle}"`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h2 style="color: #882626;">Nouveau commentaire</h2>
+          <p><strong>${commenterName}</strong> a commenté sur la note <strong>"${noteTitle}"</strong> :</p>
+          <blockquote style="border-left: 4px solid #ddd; padding-left: 10px; color: #555; font-style: italic;">
+            "${commentPreview}"
+          </blockquote>
+          <a href="${noteUrl}" style="display: inline-block; background: #882626; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 10px 0;">Voir le commentaire</a>
+        </div>
+      `
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Erreur envoi email commentaire:', error);
+    return { success: false, error };
+  }
+}
+
+async function sendRoleChangeEmail(to, noteTitle, newRoleLabel, noteId) {
+  if (process.env.NODE_ENV === 'test') return { success: true };
+  const noteUrl = `${FRONT_URL}/notes/${noteId}`;
+  const transport = createEmailTransporter();
+  if (!transport) throw new Error('Impossible de créer le transporteur email');
+
+  try {
+    await transport.verify();
+    const fromAddress = process.env.EMAIL_SERVICE === 'gmail' ? `"Yanotela" <${process.env.GMAIL_USER}>` : '"Yanotela" <no-reply@yanotela.com>';
+
+    await transport.sendMail({
+      from: fromAddress,
+      to,
+      subject: `Vos droits ont changé sur "${noteTitle}"`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h2 style="color: #882626;">Mise à jour des permissions</h2>
+          <p>Votre rôle sur la note <strong>"${noteTitle}"</strong> a été modifié.</p>
+          <p>Vous êtes maintenant : <strong>${newRoleLabel}</strong>.</p>
+          <a href="${noteUrl}" style="display: inline-block; background: #882626; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 10px 0;">Accéder à la note</a>
+        </div>
+      `
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Erreur envoi email rôle:', error);
+    return { success: false, error };
+  }
+}
+
+async function sendNoteDeletedEmail(to, noteTitle, deleterName) {
+  if (process.env.NODE_ENV === 'test') return { success: true };
+  const transport = createEmailTransporter();
+  if (!transport) throw new Error('Impossible de créer le transporteur email');
+
+  try {
+    await transport.verify();
+    const fromAddress = process.env.EMAIL_SERVICE === 'gmail' ? `"Yanotela" <${process.env.GMAIL_USER}>` : '"Yanotela" <no-reply@yanotela.com>';
+
+    await transport.sendMail({
+      from: fromAddress,
+      to,
+      subject: `La note "${noteTitle}" a été supprimée`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h2 style="color: #882626;">Note supprimée</h2>
+          <p>La note <strong>"${noteTitle}"</strong> sur laquelle vous collaboriez a été supprimée par <strong>${deleterName}</strong>.</p>
+          <p>Elle n'est plus accessible.</p>
+        </div>
+      `
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Erreur envoi email suppression:', error);
+    return { success: false, error };
+  }
+}
+
+async function sendUserRemovedEmail(to, noteTitle, removerName) {
+  if (process.env.NODE_ENV === 'test') return { success: true };
+  const transport = createEmailTransporter();
+  if (!transport) throw new Error('Impossible de créer le transporteur email');
+
+  try {
+    await transport.verify();
+    const fromAddress = process.env.EMAIL_SERVICE === 'gmail' ? `"Yanotela" <${process.env.GMAIL_USER}>` : '"Yanotela" <no-reply@yanotela.com>';
+
+    await transport.sendMail({
+      from: fromAddress,
+      to,
+      subject: `Vous avez été retiré de "${noteTitle}"`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h2 style="color: #882626;">Accès révoqué</h2>
+          <p><strong>${removerName}</strong> vous a retiré l'accès à la note <strong>"${noteTitle}"</strong>.</p>
+          <p>Vous ne pouvez plus consulter ni modifier cette note.</p>
+        </div>
+      `
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Erreur envoi email exclusion:', error);
+    return { success: false, error };
+  }
+}
+
+export { 
+  sendValidationEmail, 
+  sendResetPasswordEmail, 
+  sendDeleteAccountEmail, 
+  sendNoteInvitationEmail, 
+  a2fEmail, 
+  userDataEmail,
+  sendCommentEmail,
+  sendRoleChangeEmail,
+  sendNoteDeletedEmail,
+  sendUserRemovedEmail
+};

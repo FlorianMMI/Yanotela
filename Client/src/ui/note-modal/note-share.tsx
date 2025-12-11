@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FetchPermission, UpdatePermission, AddPermission, RemovePermission, IsPublic, setPublic } from "@/loader/loader";
-import { Permission } from "@/type/Permission";
+
 import { useAuth } from "@/hooks/useAuth";
-import { CheckIcon, CopyIcon, CopyLinkIcon, CrownIcon } from '@/libs/Icons';
+import { CopyIcon, CopyLinkIcon, CrownIcon } from '@/libs/Icons';
 import ConfirmRemoveUserModal from "./ConfirmRemoveUserModal";
 
 const ROLE_LABELS = ["Propriétaire", "Administrateur", "Éditeur", "Lecteur"];

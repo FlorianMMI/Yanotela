@@ -10,25 +10,27 @@ interface NotificationSetting {
   mailnotif: boolean;
 }
 
+const NOTIFICATION_PREFS_KEY = 'yanotela_notification_prefs';
+
 export default function NotificationPage() {
   // État initial des notifications
   const [notifications, setNotifications] = useState<NotificationSetting[]>([
     {
-      id: "1",
-      name: "Recherche de notes",
-      appnotif: true,
-      mailnotif: false,
-    },
-    {
-      id: "2",
-      name: "Partage de notes",
+      id: "invitation",
+      name: "Invitations et partages",
       appnotif: true,
       mailnotif: true,
     },
     {
-      id: "3",
+      id: "comment",
       name: "Commentaires",
-      appnotif: false,
+      appnotif: true,
+      mailnotif: true,
+    },
+    {
+      id: "activity",
+      name: "Activités sur mes notes",
+      appnotif: true,
       mailnotif: true,
     },
   ]);
@@ -38,10 +40,31 @@ export default function NotificationPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Initialiser l'état de référence au montage
+  // Charger depuis localStorage au montage
   useEffect(() => {
-    setInitialNotifications(JSON.parse(JSON.stringify(notifications)));
+    const savedPrefs = localStorage.getItem(NOTIFICATION_PREFS_KEY);
+    if (savedPrefs) {
+      try {
+        const parsed = JSON.parse(savedPrefs);
+        // Fusionner avec les défauts pour garder les nouveaux types si ajoutés
+        setNotifications(prev => prev.map(p => {
+          const saved = parsed.find((s: NotificationSetting) => s.id === p.id);
+          return saved ? { ...p, ...saved } : p;
+        }));
+      } catch (e) {
+        console.error("Erreur lecture préférences notifications", e);
+      }
+    }
   }, []);
+
+  // Mettre à jour initialNotifications après le chargement initial (ou changement)
+  useEffect(() => {
+    // On ne met à jour initialNotifications que si c'est la première fois (chargement)
+    // ou après une sauvegarde réussie (géré dans handleSave)
+    if (initialNotifications.length === 0 && notifications.length > 0) {
+       setInitialNotifications(JSON.parse(JSON.stringify(notifications)));
+    }
+  }, [notifications, initialNotifications]); // Dépendance simplifiée, attention à la boucle infinie si mal géré
 
   // Détecter les modifications
   useEffect(() => {
@@ -75,32 +98,21 @@ export default function NotificationPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // TODO: Remplacer par votre appel API
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      // Sauvegarde locale
+      localStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(notifications));
       
-      const response = await fetch(`${apiUrl}/notification/update-all`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          notifications: notifications.map(n => ({
-            id: n.id,
-            appnotif: n.appnotif ? 1 : 0,
-            mailnotif: n.mailnotif ? 1 : 0,
-          }))
-        })
-      });
+      // Simuler un délai réseau pour l'UX
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (response.ok) {
-        // Mettre à jour l'état initial après sauvegarde réussie
-        setInitialNotifications(JSON.parse(JSON.stringify(notifications)));
-        setHasChanges(false);
-        
-        // Notification de succès (optionnel)
-        console.log('Notifications sauvegardées avec succès');
-      } else {
-        console.error('Erreur lors de la sauvegarde');
+      setInitialNotifications(JSON.parse(JSON.stringify(notifications)));
+      setHasChanges(false);
+      
+      // Déclencher un événement pour que les autres composants se mettent à jour
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('notificationPrefsChanged'));
       }
+      
+      console.log('Notifications sauvegardées avec succès (local)');
     } catch (error) {
       console.error('Erreur de sauvegarde:', error);
     } finally {

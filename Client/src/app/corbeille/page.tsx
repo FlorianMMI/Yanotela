@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Note } from "@/type/Note";
 import { GetDeletedNotes, RestoreNote } from "@/loader/loader";
 import { TrashIcon, RefreshIcon, CloseIcon } from "@/libs/Icons";
-import ReturnButton from "@/ui/returnButton";
 
 export default function Corbeille() {
   const [notes, setNotes] = useState<Note[]>([]);

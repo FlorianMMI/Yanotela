@@ -50,9 +50,9 @@ export default function NoteDeleteConfirm({
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">{isLeaving ? 'Quitter la note' : 'Supprimer la note'}</h2>
                     <p className="text-gray-600 mb-3">
                         {isLeaving ? (
-                            <>Êtes-vous sûr de vouloir quitter la note <span className="font-semibold">"{noteTitle}"</span> ?</>
+                            <>Êtes-vous sûr de vouloir quitter la note <span className="font-semibold">&quot;{noteTitle}&quot;</span> ?</>
                         ) : (
-                            <>Êtes-vous sûr de vouloir supprimer la note <span className="font-semibold">"{noteTitle}"</span> ?</>
+                            <>Êtes-vous sûr de vouloir supprimer la note <span className="font-semibold">&quot;{noteTitle}&quot;</span> ?</>
                         )}
                     </p>
                     <p className="text-sm text-gray-500">

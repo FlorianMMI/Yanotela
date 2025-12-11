@@ -50,9 +50,9 @@ import ToolbarPlugin from "@/components/textRich/ToolbarPlugin";
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { TitleSyncPlugin } from "@/components/collaboration/TitleSyncPlugin";
-import { MoreIcon, Comment } from "@/libs/Icons";
+import { MoreIcon } from "@/libs/Icons";
 import "@/components/textRich/EditorStyles.css";
-import CommentModal from "@/components/commentaire/commentModal";
+
 
 // Contexte pour partager l'état de synchronisation
 interface SyncContextType {
@@ -709,7 +709,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
     // Le provider sera créé par CollaborationPlugin, on attend qu'il soit prêt
     
     // Récupérer l'userId pour la synchronisation automatique des permissions
-    const userId = user ? (user as any).id : undefined;
+    const userId = user ? user.id : undefined;
     
     // Attendre que le provider soit créé (après le montage du CollaborationPlugin)
     // On utilise un intervalle pour vérifier régulièrement

@@ -1,4 +1,4 @@
-import { Note } from '@/type/Note';
+import { Note, Tag } from '@/type/Note';
 import { Permission } from '@/type/Permission';
 import { Folder } from '@/type/Folder';
 import { checkAuthResponse } from '@/utils/authFetch';
@@ -514,7 +514,7 @@ export async function Login(credentials: LoginCredentials): Promise<AuthResponse
         
         const apiUrl = getApiUrl();
 
-        const body = { ...credentials } as any;
+        const body = { ...credentials };
 
         const response = await fetch(`${apiUrl}/login`, {
             method: 'POST',
@@ -563,7 +563,7 @@ export async function Register(userData: RegisterData): Promise<AuthResponse> {
     try {
         
         const apiUrl = getApiUrl();
-        const payload = { ...userData } as any;
+        const payload = { ...userData };
         const response = await fetch(`${apiUrl}/register`, {
             method: "POST",
             headers: {
@@ -610,7 +610,7 @@ export async function ForgotPassword(email: string): Promise<AuthResponse> {
         
         const apiUrl = getApiUrl();
 
-        const payload: any = { email };
+        const payload = { email };
 
         const response = await fetch(`${apiUrl}/forgot-password`, {
             method: 'POST',
@@ -638,7 +638,7 @@ export async function ResetPassword(token: string, password: string): Promise<Au
     try {
         
         const apiUrl = getApiUrl();
-        const payload: any = { password, token };
+        const payload = { password, token };
 
         const response = await fetch(`${apiUrl}/reset-password`, {
             method: 'POST',
@@ -1434,7 +1434,7 @@ export async function GetNoteFolder(noteId: string): Promise<{ success: boolean;
 // ========== Gestion des Tags personnalisés ==========
 
 // Récupérer tous les tags de l'utilisateur
-export async function GetUserTags(): Promise<{ success: boolean; tags?: any[]; error?: string }> {
+export async function GetUserTags(): Promise<{ success: boolean; tags?: Tag[]; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/tag/list`, {
             method: "GET",
@@ -1459,7 +1459,7 @@ export async function GetUserTags(): Promise<{ success: boolean; tags?: any[]; e
 }
 
 // Créer un nouveau tag
-export async function CreateTag(nom: string, couleur: string): Promise<{ success: boolean; tag?: any; error?: string }> {
+export async function CreateTag(nom: string, couleur: string): Promise<{ success: boolean; tag?: Tag; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/tag/create`, {
             method: "POST",
@@ -1488,7 +1488,7 @@ export async function CreateTag(nom: string, couleur: string): Promise<{ success
 }
 
 // Mettre à jour un tag existant
-export async function UpdateTag(tagId: string, nom: string, couleur: string): Promise<{ success: boolean; tag?: any; error?: string }> {
+export async function UpdateTag(tagId: string, nom: string, couleur: string): Promise<{ success: boolean; tag?: Tag; error?: string }> {
     try {
         const response = await fetch(`${apiUrl}/tag/${tagId}`, {
             method: "PUT",
@@ -1599,5 +1599,66 @@ export async function AutoAcceptPermission(noteId: string): Promise<{ success: b
     } catch (error) {
         console.error('Erreur lors de l\'auto-acceptation:', error);
         return { success: false, error: 'Erreur réseau lors de l\'auto-acceptation' };
+    }
+}
+
+// ============== NOTIFICATION PREFERENCES ==============
+
+export interface NotificationSetting {
+    id: string;
+    name: string;
+    appnotif: boolean;
+    mailnotif: boolean;
+}
+
+export async function GetNotificationPreferences(): Promise<{ success: boolean; preferences?: NotificationSetting[]; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/user/notifications/preferences`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            return { success: false, error: 'Erreur lors de la récupération des préférences' };
+        }
+
+        const data = await response.json();
+        return { success: true, preferences: data };
+    } catch (error) {
+        console.error('Erreur GetNotificationPreferences:', error);
+        return { success: false, error: 'Erreur réseau' };
+    }
+}
+
+export async function UpdateNotificationPreferences(preferences: NotificationSetting[]): Promise<{ success: boolean; error?: string }> {
+    try {
+        const response = await fetch(`${apiUrl}/user/notifications/preferences`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ preferences }),
+        });
+
+        if (!handleAuthError(response)) {
+            return { success: false, error: 'Session expirée' };
+        }
+
+        if (!response.ok) {
+            return { success: false, error: 'Erreur lors de la mise à jour des préférences' };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Erreur UpdateNotificationPreferences:', error);
+        return { success: false, error: 'Erreur réseau' };
     }
 }
