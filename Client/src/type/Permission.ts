@@ -8,10 +8,10 @@
  */
 export interface Permission {
   /** ID de l'utilisateur ayant la permission */
-  id_user: number;
+  userId: number;
   
   /** ID de la note concernée */
-  id_note: string;
+  noteId: string;
   
   /** Rôle de l'utilisateur (0=propriétaire, 1=admin, 2=éditeur, 3=lecteur) */
   role: number;

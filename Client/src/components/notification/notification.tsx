@@ -140,7 +140,7 @@ export default function NotificationPage() {
   }
 
   return (
-    <div className="">
+    <div className="mb-12">
       {/* En-têtes */}
       <div className="flex items-center gap-4 mb-6 pb-4 border-b">
         <div className="flex-1 text-xl font-semibold">
@@ -157,6 +157,8 @@ export default function NotificationPage() {
           l&apos;app
         </div>
       </div>
+
+      <div className="h-96 overflow-y-auto custom-scrollbar">
 
       {/* Ligne "Toutes les notifications" */}
       <div className="mb-6 pb-4 border-b border-dashed">
@@ -186,7 +188,7 @@ export default function NotificationPage() {
           />
         ))}
       </div>
-
+</div>
       {/* Bouton de sauvegarde */}
       <div className="mt-8 flex justify-end">
         <button
@@ -201,6 +203,7 @@ export default function NotificationPage() {
           {isSaving ? 'Sauvegarde en cours...' : 'Sauvegarder'}
         </button>
       </div>
+      
     </div>
   );
 }

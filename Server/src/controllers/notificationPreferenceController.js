@@ -22,6 +22,8 @@ export const getPreferences = async (req, res) => {
       where: { isActive: true },
       orderBy: { id: 'asc' },
     });
+    console.log(`🔍 [NotificationPreference] Types trouvés: ${allTypes.length}`);
+    console.log('📋 Types:', allTypes.map(t => `${t.code} (${t.name})`).join(', '));
 
     // Récupérer les préférences existantes de l'utilisateur
     const existingPrefs = await prisma.userNotificationPreference.findMany({
