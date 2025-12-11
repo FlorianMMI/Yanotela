@@ -274,7 +274,7 @@ export async function notifyUserRemoved(userId, noteId, noteTitle, actorPseudo =
   try {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
     if (user?.email) {
-      sendUserRemovedEmail(user.email, noteTitle, actorPseudo).catch(e => );
+      sendUserRemovedEmail(user.email, noteTitle, actorPseudo).catch(() => {});
     }
   } catch (e) {
     
@@ -309,7 +309,7 @@ export async function notifyInvitation(userId, noteId, noteTitle, role, actorPse
   try {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
     if (user?.email) {
-      sendNoteInvitationEmail(user.email, actorPseudo, noteTitle, noteId, role).catch(e => );
+      sendNoteInvitationEmail(user.email, actorPseudo, noteTitle, noteId, role).catch(() => {});
     }
   } catch (e) {
     
@@ -378,7 +378,7 @@ export async function notifyNoteDeleted(noteId, noteTitle, actorUserId, actorPse
     for (const perm of permissions) {
       // Envoi email
       if (perm.user?.email) {
-        sendNoteDeletedEmail(perm.user.email, noteTitle, actorPseudo).catch(e => );
+        sendNoteDeletedEmail(perm.user.email, noteTitle, actorPseudo).catch(() => {});
       }
 
       // Admins (rôle 0-1) reçoivent NOTE_DELETED_ADMIN, les autres NOTE_DELETED_MEMBER
@@ -468,7 +468,7 @@ export async function notifyRoleChanged(userId, noteId, noteTitle, oldRole, newR
   try {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
     if (user?.email) {
-      sendRoleChangeEmail(user.email, noteTitle, roleLabel, noteId).catch(e => );
+      sendRoleChangeEmail(user.email, noteTitle, roleLabel, noteId).catch(() => {});
     }
   } catch (e) {
     
@@ -670,7 +670,7 @@ export async function notifyCommentAdded(noteId, noteTitle, commentAuthorPseudo,
     for (const collab of collaborators) {
       // Envoi email
       if (collab.user?.email) {
-        sendCommentEmail(collab.user.email, commentAuthorPseudo, noteTitle, commentPreview, noteId).catch(e => );
+        sendCommentEmail(collab.user.email, commentAuthorPseudo, noteTitle, commentPreview, noteId).catch(() => {});
       }
 
       const notif = createNotification(NotificationType.COMMENT_ADDED, collab.userId, {
