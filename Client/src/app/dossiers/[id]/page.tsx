@@ -43,12 +43,12 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 setFolder(response.folder);
                 setNotes(Array.isArray(response.notes) ? response.notes : []);
             } else {
-                console.error("Dossier introuvable");
+                
                 setFolder(null);
                 setNotes([]);
             }
         } catch (error) {
-            console.error("Error loading folder:", error);
+            
             setFolder(null);
             setNotes([]);
         } finally {

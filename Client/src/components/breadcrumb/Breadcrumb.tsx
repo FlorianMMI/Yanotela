@@ -111,7 +111,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
           setNoteTitle(title);
           setTempTitle(title);
         } catch (error) {
-          console.error('Erreur lors du chargement du titre Flash Note:', error);
+          
           setNoteTitle("Flash:");
           setTempTitle("Flash:");
         }
@@ -157,7 +157,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
             setTempTitle(errorTitle);
           }
         } catch (error) {
-          console.error('Erreur lors du chargement du titre:', error);
+          
           const errorTitle = 'Erreur de chargement';
           setNoteTitle(errorTitle);
           setTempTitle(errorTitle);
@@ -185,7 +185,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
             setTempFolderName('Dossier');
           }
         } catch (error) {
-          console.error('Erreur lors du chargement du dossier:', error);
+          
           setFolderName('Dossier');
         }
       }
@@ -230,7 +230,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
         setSuccess('Titre Flash Note sauvegardé localement');
         setTimeout(() => setSuccess(null), 2000);
       } catch (error) {
-        console.error('Erreur localStorage titre Flash Note:', error);
+        
         setError('Erreur lors de la sauvegarde du titre');
         setTimeout(() => setError(null), 3000);
       }
@@ -258,7 +258,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
           detail: { noteId, title: finalTitle }
         }));
       } catch (error) {
-        console.error('Erreur lors de la synchronisation du titre:', error);
+        
         setError('Erreur de synchronisation');
         setTimeout(() => setError(null), 3000);
       }
@@ -321,7 +321,7 @@ export default function Breadcrumb({ openCommentModal }: BreadcrumbProps) {
           setTempFolderName(folderName); // Restaurer le titre précédent
         }
       } catch (error) {
-        console.error('Erreur lors de la mise à jour du dossier:', error);
+        
         setError('Erreur de synchronisation');
         setTimeout(() => setError(null), 3000);
         setTempFolderName(folderName); // Restaurer le titre précédent

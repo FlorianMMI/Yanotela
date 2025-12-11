@@ -77,11 +77,11 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     router.push('/notes');
                 }
             } else {
-                console.error("Erreur lors de la suppression:", result.error);
+                
                 alert(result.error || "Erreur lors de la suppression de la note");
             }
         } catch (error) {
-            console.error("Erreur lors de la suppression:", error);
+            
             alert("Une erreur est survenue lors de la suppression");
         } finally {
             setIsDeleting(false);
@@ -106,11 +106,11 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     router.push('/notes');
                 }
             } else {
-                console.error("Erreur lors de la sortie:", result.error);
+                
                 alert(result.error || "Erreur lors de la sortie de la note");
             }
         } catch (error) {
-            console.error("Erreur lors de la sortie:", error);
+            
             alert("Une erreur est survenue lors de la sortie de la note");
         } finally {
             setIsDeleting(false);
@@ -125,11 +125,11 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     router.push(result.redirectUrl);
                 }
             } else {
-                console.error("Erreur lors de la duplication:", result.error);
+                
                 alert(result.error || "Erreur lors de la duplication de la note");
             }
         } catch (error) {
-            console.error("Erreur lors de la duplication:", error);
+            
             alert("Une erreur est survenue lors de la duplication de la note");
         }
     };

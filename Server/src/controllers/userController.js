@@ -12,8 +12,8 @@
 
 import { PrismaClient } from "@prisma/client";
 import { sendDeleteAccountEmail } from "../services/emailService.js";
-import { createClient } from "redis";
 import { a2fEmail, userDataEmail } from "../services/emailService.js";
+import client from '../config/redisConfig.js';
 
 const prisma = new PrismaClient();
 
@@ -225,10 +225,7 @@ export const userController = {
       try {
         await sendDeleteAccountEmail(email);
       } catch (emailError) {
-        console.error(
-          "Erreur lors de l'envoi de l'email de confirmation:",
-          emailError
-        );
+        
         // On continue le processus même si l'email échoue
       }
 
@@ -239,7 +236,7 @@ export const userController = {
       // 🚪 Détruire la session car l'utilisateur ne peut plus se connecter
       req.session.destroy((sessionError) => {
         if (sessionError) {
-          console.error("Erreur destruction session:", sessionError);
+          
         }
       });
 
@@ -249,7 +246,7 @@ export const userController = {
         deletionDate: deletionDate.toISOString(),
       });
     } catch (error) {
-      console.error("Erreur requestAccountDeletion:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la demande de suppression du compte",
         error: error.message,
@@ -308,7 +305,7 @@ export const userController = {
         message: "La suppression de votre compte a été annulée avec succès.",
       });
     } catch (error) {
-      console.error("Erreur cancelAccountDeletion:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de l'annulation de la suppression",
         error: error.message,
@@ -364,10 +361,7 @@ export const userController = {
 
           deletedCount++;
         } catch (deleteError) {
-          console.error(
-            `❌ Erreur lors de la suppression du compte ${user.id}:`,
-            deleteError
-          );
+          
         }
       }
 
@@ -377,7 +371,7 @@ export const userController = {
         deletedCount,
       });
     } catch (error) {
-      console.error("Erreur deleteExpiredAccounts:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la suppression des comptes expirés",
         error: error.message,
@@ -467,7 +461,6 @@ export const userController = {
         user: updatedUser,
       });
     } catch (error) {
-      console.error("Erreur updateUserInfo:", error);
 
       // Gestion des erreurs Prisma spécifiques
       if (error.code === "P2002") {
@@ -517,14 +510,13 @@ export const userController = {
         theme: updatedUser.theme,
       });
     } catch (error) {
-      console.error("Erreur updateUserTheme:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la mise à jour du thème",
         error: error.message,
       });
     }
   },
-
 
   // Mettre en place le code 2FA pour l'utilisateur
   setup2FA: async (req, res) => {
@@ -538,22 +530,8 @@ export const userController = {
       return res.status(500).json({ message: "Un problèmes est survenu" });
     }
 
-    const redisUrl =
-      process.env.REDIS_URL ??
-      `redis://${process.env.REDIS_HOST ?? "127.0.0.1"}:${process.env.REDIS_PORT ?? "6380"}`;
-
-    const redis = createClient({ url: redisUrl });
-
-    console.log("Connexion à Redis...");
-    console.log(`URL Redis: ${redisUrl}`);
-    console.log(`Code 2FA généré: ${a2f}`);
-
-    await redis.connect();
-
     // Écrire une clé
-    await redis.set(`${req.session.userId}`, `${a2f}`, { EX: 900 }); // expire dans 15 minutes
-
-    await redis.quit();
+    await client.set(`${req.session.userId}`, `${a2f}`, { EX: 900 }); // expire dans 15 minutes
 
     // Récupérer l'email de l'utilisateur et envoyer le code 2FA par email
     const userRecord = await prisma.user.findUnique({
@@ -567,7 +545,6 @@ export const userController = {
 
   },
 
-
   check2fa: async (req, res) => {
     if (!req.session.userId) {
       return res.status(401).json({ message: "Utilisateur non authentifié" });
@@ -575,22 +552,13 @@ export const userController = {
 
     const { code } = req.body;
 
-    const redisUrl =
-      process.env.REDIS_URL ??
-      `redis://${process.env.REDIS_HOST ?? "127.0.0.1"}:${process.env.REDIS_PORT ?? "6380"}`;
-    const redis = createClient({ url: redisUrl });
-    
-    await redis.connect();
-
-    const storedCode = await redis.get(`${req.session.userId}`);
-    
-    await redis.quit();
+    const storedCode = await client.get(`${req.session.userId}`);
 
     if (storedCode == code){
       try {
         await userController.info2fa(req, res);
       } catch (error) {
-        console.error("Erreur lors de l'envoi des informations:", error);
+        
         return res.status(500).json({ 
           success: false, 
           message: "Erreur lors de l'envoi des informations utilisateur" 
@@ -648,7 +616,7 @@ export const userController = {
         message: "Email d'informations envoyé avec succès"
       });
     } catch (error) {
-      console.error("Erreur info2fa:", error);
+      
       return res.status(500).json({
       success: false,
       message: "Erreur"

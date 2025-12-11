@@ -104,7 +104,7 @@ export const notificationRooms = new Map();
  */
 export function registerProvider(noteId, provider) {
   yjsProviders.set(noteId, provider);
-  console.log(`✅ [YJS NOTIF SERVICE] Provider enregistré: noteId=${noteId}, total=${yjsProviders.size}`);
+  
 }
 
 /**
@@ -115,7 +115,7 @@ export function registerProvider(noteId, provider) {
 export function unregisterProvider(noteId) {
   const removed = yjsProviders.delete(noteId);
   if (removed) {
-    console.log(`🧹 [YJS NOTIF SERVICE] Provider désenregistré: noteId=${noteId}, restants=${yjsProviders.size}`);
+    
   }
 }
 
@@ -127,7 +127,7 @@ export function unregisterProvider(noteId) {
  */
 export function registerNotificationRoom(userId, room) {
   notificationRooms.set(userId, room);
-  console.log(`🔔 [YJS NOTIF SERVICE] Room de notifications enregistrée: userId=${userId}, total=${notificationRooms.size}`);
+  
 }
 
 /**
@@ -138,7 +138,7 @@ export function registerNotificationRoom(userId, room) {
 export function unregisterNotificationRoom(userId) {
   const removed = notificationRooms.delete(userId);
   if (removed) {
-    console.log(`🧹 [YJS NOTIF SERVICE] Room de notifications désenregistrée: userId=${userId}, restantes=${notificationRooms.size}`);
+    
   }
 }
 
@@ -222,15 +222,12 @@ async function createAndBroadcastNotification(type, userId, data) {
     read: false,
     ...data,
   };
-  
-  console.log(`📦 [createAndBroadcastNotification] Notification complète créée:`, notification);
 
   // Stocker en mémoire (pour référence/debug)
   if (!pendingNotifications.has(userId)) {
     pendingNotifications.set(userId, []);
   }
   pendingNotifications.get(userId).push(notification);
-  console.log(`💾 [createAndBroadcastNotification] Stockée en mémoire, total pour user ${userId}: ${pendingNotifications.get(userId).length}`);
 
   // Auto-nettoyage après 24h
   setTimeout(() => {
@@ -238,8 +235,6 @@ async function createAndBroadcastNotification(type, userId, data) {
   }, 24 * 60 * 60 * 1000);
 
   // ✅ ENVOYER AU SERVEUR YJS VIA WEBSOCKET
-  console.log(`📤 [createAndBroadcastNotification] Appel sendNotificationToUser pour userId=${userId}`);
-  const sent = await sendNotificationToUser(userId, notification);
   
   console.log(`${sent ? '✅' : '❌'} [createAndBroadcastNotification] ${type} créée pour user=${userId}, envoyée au serveur YJS=${sent}`);
   
@@ -355,8 +350,7 @@ export async function notifyInvitation(userId, noteId, noteTitle, role, actorPse
 
   // ✅ ENVOYER AU SERVEUR YJS VIA WEBSOCKET (même pattern que les autres notifications)
   const sent = await sendNotificationToUser(userId, notification);
-  
-  console.log(`✅ [YJS NOTIF] INVITATION envoyée au serveur YJS pour user=${userId}, sent=${sent}`);
+
   return notification;
 }
 
@@ -375,7 +369,6 @@ export async function notifyInvitation(userId, noteId, noteTitle, role, actorPse
  * await notifyNoteDeleted(noteId, note.Titre, userId, actor?.pseudo || "Un utilisateur");
  */
 export async function notifyNoteDeleted(noteId, noteTitle, actorUserId, actorPseudo = 'Un utilisateur') {
-  console.log(`🔔 [NOTIF] Note supprimée: "${noteTitle}" par ${actorPseudo}`);
 
   try {
     // Récupérer tous les collaborateurs avec leur rôle (sauf celui qui a supprimé)
@@ -408,11 +401,10 @@ export async function notifyNoteDeleted(noteId, noteTitle, actorUserId, actorPse
       notifications.push(notif);
     }
 
-    console.log(`✅ [NOTIF] ${notifications.length} notifications NOTE_DELETED diffusées`);
     return notifications;
 
   } catch (error) {
-    console.error('[notifyNoteDeleted] Erreur:', error);
+    
     return [];
   }
 }
@@ -440,8 +432,7 @@ export async function notifyNoteDeleted(noteId, noteTitle, actorUserId, actorPse
  * }
  */
 export async function notifyUserAdded(userId, noteId, noteTitle, role, actorPseudo) {
-  console.log(`🔔 [NOTIF] Utilisateur ajouté: userId=${userId}, note="${noteTitle}", role=${role}`);
-  
+
   const roleLabel = ROLE_LABELS[role] || 'Collaborateur';
   
   return createNotification(NotificationType.USER_ADDED, userId, {
@@ -499,8 +490,7 @@ export async function notifyRoleChanged(userId, noteId, noteTitle, oldRole, newR
     roleLabel,
     isPromotion,
   });
-  
-  console.log(`✅ [yjsNotificationService] notifyRoleChanged terminé, notification créée:`, result.id);
+
   return result;
 }
 
@@ -520,7 +510,6 @@ export async function notifyRoleChanged(userId, noteId, noteTitle, oldRole, newR
  * await notifySomeoneInvited(noteId, note.Titre, targetUser.pseudo, targetRole, req.session.userId, inviter.pseudo);
  */
 export async function notifySomeoneInvited(noteId, noteTitle, invitedUserPseudo, invitedRole, actorUserId, actorPseudo) {
-  console.log(`🔔 [NOTIF] Quelqu'un invité: ${invitedUserPseudo} sur "${noteTitle}" par ${actorPseudo}`);
 
   try {
     // Récupérer les admins/propriétaires de la note (rôle 0-1) sauf celui qui invite
@@ -547,11 +536,10 @@ export async function notifySomeoneInvited(noteId, noteTitle, invitedUserPseudo,
       notifications.push(notif);
     }
 
-    console.log(`✅ [NOTIF] ${notifications.length} notifications SOMEONE_INVITED diffusées`);
     return notifications;
 
   } catch (error) {
-    console.error('[notifySomeoneInvited] Erreur:', error);
+    
     return [];
   }
 }
@@ -570,7 +558,6 @@ export async function notifySomeoneInvited(noteId, noteTitle, invitedUserPseudo,
  * await notifyCollaboratorRemoved(noteId, note.Titre, removedUser.pseudo, req.session.userId, actor.pseudo);
  */
 export async function notifyCollaboratorRemoved(noteId, noteTitle, removedUserPseudo, actorUserId, actorPseudo) {
-  console.log(`🔔 [NOTIF] Collaborateur exclu: ${removedUserPseudo} de "${noteTitle}" par ${actorPseudo}`);
 
   try {
     // Récupérer les admins/propriétaires de la note (rôle 0-1) sauf celui qui exclut
@@ -595,11 +582,10 @@ export async function notifyCollaboratorRemoved(noteId, noteTitle, removedUserPs
       notifications.push(notif);
     }
 
-    console.log(`✅ [NOTIF] ${notifications.length} notifications COLLABORATOR_REMOVED diffusées`);
     return notifications;
 
   } catch (error) {
-    console.error('[notifyCollaboratorRemoved] Erreur:', error);
+    
     return [];
   }
 }
@@ -622,11 +608,9 @@ export async function notifyCollaboratorRemoved(noteId, noteTitle, removedUserPs
 export async function notifyUserLeft(noteId, noteTitle, leavingUserPseudo, leavingUserId, isPublic = false) {
   // Ne pas notifier sur les notes publiques
   if (isPublic) {
-    console.log(`⏭️ [NOTIF] USER_LEFT ignoré: note "${noteTitle}" est publique`);
+    
     return [];
   }
-
-  console.log(`🔔 [NOTIF] Utilisateur parti: ${leavingUserPseudo} a quitté "${noteTitle}"`);
 
   try {
     // Récupérer les admins/propriétaires de la note (rôle 0-1)
@@ -650,11 +634,10 @@ export async function notifyUserLeft(noteId, noteTitle, leavingUserPseudo, leavi
       notifications.push(notif);
     }
 
-    console.log(`✅ [NOTIF] ${notifications.length} notifications USER_LEFT diffusées`);
     return notifications;
 
   } catch (error) {
-    console.error('[notifyUserLeft] Erreur:', error);
+    
     return [];
   }
 }
@@ -677,11 +660,9 @@ export async function notifyUserLeft(noteId, noteTitle, leavingUserPseudo, leavi
 export async function notifyCommentAdded(noteId, noteTitle, commentAuthorPseudo, commentAuthorId, commentPreview, isPublic = false) {
   // Ne pas notifier sur les notes publiques
   if (isPublic) {
-    console.log(`⏭️ [NOTIF] COMMENT_ADDED ignoré: note "${noteTitle}" est publique`);
+    
     return [];
   }
-
-  console.log(`🔔 [NOTIF] Commentaire ajouté sur "${noteTitle}" par ${commentAuthorPseudo}`);
 
   try {
     // Récupérer tous les collaborateurs sauf l'auteur du commentaire
@@ -710,11 +691,10 @@ export async function notifyCommentAdded(noteId, noteTitle, commentAuthorPseudo,
       notifications.push(notif);
     }
 
-    console.log(`✅ [NOTIF] ${notifications.length} notifications COMMENT_ADDED diffusées`);
     return notifications;
 
   } catch (error) {
-    console.error('[notifyCommentAdded] Erreur:', error);
+    
     return [];
   }
 }
@@ -752,7 +732,7 @@ export function markNotificationAsRead(userId, notificationId) {
   if (!notification) return false;
 
   notification.read = true;
-  console.log(`✅ [NOTIF] Notification ${notificationId} marquée comme lue`);
+  
   return true;
 }
 
@@ -770,7 +750,7 @@ export function deleteNotification(userId, notificationId) {
   if (index === -1) return false;
 
   notifications.splice(index, 1);
-  console.log(`✅ [NOTIF] Notification ${notificationId} supprimée`);
+  
   return true;
 }
 
@@ -780,7 +760,7 @@ export function deleteNotification(userId, notificationId) {
  */
 export function clearUserNotifications(userId) {
   pendingNotifications.delete(userId);
-  console.log(`🧹 [NOTIF] Notifications de user=${userId} nettoyées`);
+  
 }
 
 /**
@@ -812,7 +792,7 @@ export function getNotificationStats() {
  * 2. Créer la fonction :
  * 
  * export async function notifyNewType(userId, noteId, noteTitle, ...params) {
- *   console.log(`🔔 [NOTIF] NewType: userId=${userId}, note="${noteTitle}"`);
+ *   
  *   
  *   return createNotification(NotificationType.NEW_TYPE, userId, {
  *     noteId,

@@ -40,9 +40,8 @@ export function useAuthRedirect(options?: { skipRedirect?: boolean }) {
         if (!isPublicPage && !options?.skipRedirect) router.push('/login');
       }
     } catch (e) {
-      // Network or other errors
-
-      console.error(e);
+      
+      
       setLocalAuth(false);
       if (!isPublicPage && !options?.skipRedirect) router.push('/login');
     } finally {

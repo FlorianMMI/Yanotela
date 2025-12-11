@@ -37,7 +37,7 @@ export default function NotificationBase({
                 await onDismiss(id);
                 refreshNotifications();
             } catch (error) {
-                console.error("Erreur lors de la suppression de la notification:", error);
+                
             }
         }
     };

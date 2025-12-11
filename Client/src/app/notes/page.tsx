@@ -27,7 +27,7 @@ export default function Home() {
       const response = await GetNotes();
       setNotes(response.notes || []);
     } catch (error) {
-      console.error("Error loading notes:", error);
+      
       setNotes([]);
     } finally {
       setLoading(false);

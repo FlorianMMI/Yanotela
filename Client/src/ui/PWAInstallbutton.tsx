@@ -54,7 +54,7 @@ export default function PWAInstallButton() {
         setIsInstalled(true);
       }
     } catch (error) {
-      console.error('Erreur lors de l\'installation:', error);
+      
     } finally {
       setDeferredPrompt(null);
       setIsInstalling(false);

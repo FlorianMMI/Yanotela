@@ -171,12 +171,7 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
       userRole === 1;                            // Admin de la note
 
     if (!canDelete) {
-      console.log('[deleteComment] Permission refusée:', {
-        userId,
-        commentAuthorId: comment.authorId,
-        userRole,
-        canDelete
-      });
+      
       return false;
     }
 

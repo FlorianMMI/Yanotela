@@ -7,9 +7,7 @@ function createEmailTransporter() {
 
   // Vérifier si les variables sont définies
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    console.error('❌ ERREUR: Variables d\'environnement manquantes!');
-    console.error('GMAIL_USER:', process.env.GMAIL_USER);
-    console.error('GMAIL_APP_PASSWORD:', process.env.GMAIL_APP_PASSWORD ? 'défini' : 'MANQUANT');
+
     throw new Error('Variables d\'environnement EMAIL manquantes');
   }
 
@@ -33,7 +31,7 @@ async function testTransporter() {
 
     return transporter;
   } catch (error) {
-    console.error('❌ SMTP Erreur:', error.message);
+    
     throw error;
   }
 }
@@ -204,7 +202,7 @@ async function sendValidationEmail(to, token) {
     return { success: true, message: 'Email de validation envoyé avec succès' };
     
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email de validation:', error);
+    
     throw new Error(`Échec de l'envoi de l'email: ${error.message}`);
   }
 }
@@ -368,7 +366,7 @@ async function sendResetPasswordEmail(to, token) {
     return { success: true, message: 'Email de réinitialisation envoyé avec succès' };
     
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
+    
     throw new Error(`Échec de l'envoi de l'email: ${error.message}`);
   }
 }
@@ -555,7 +553,7 @@ async function sendDeleteAccountEmail(to) {
     return { success: true, message: 'Email de suppression de compte envoyé avec succès' };
     
   }catch (error) {
-      console.error('Erreur lors de l\'envoi de l\'email de suppression de compte:', error);
+      
       throw new Error(`Échec de l'envoi de l'email: ${error.message}`);
     }
 }
@@ -751,7 +749,7 @@ async function sendNoteInvitationEmail(to, inviterName, noteTitle, noteId, role)
     return { success: true, message: 'Email d\'invitation envoyé avec succès' };
     
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email d\'invitation:', error);
+    
     throw new Error(`Échec de l'envoi de l'email: ${error.message}`);
   }
 }
@@ -908,7 +906,7 @@ async function a2fEmail(to, validationCode) {
     
   }
   catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email de code 2FA:', error);
+    
     throw new Error(`Échec de l'envoi de l'email: ${error.message}`);
   }
 }
@@ -1057,7 +1055,7 @@ async function userDataEmail(to, userData) {
     return { success: true, message: 'Email des données utilisateur envoyé avec succès' };
     
   }catch (error) {
-      console.error('Erreur lors de l\'envoi de l\'email des données utilisateur:', error);
+      
       throw new Error(`Échec de l'envoi de l'email: ${error.message}`);
     }
 }

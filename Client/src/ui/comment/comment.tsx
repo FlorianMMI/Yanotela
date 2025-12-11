@@ -29,16 +29,7 @@ export default function Comment({ variant = "user", author, date, text, id, auth
     if (!id || !onDelete) return;
     
     // Debug: afficher les valeurs pour comprendre le problème
-    console.log('[Comment] Tentative de suppression:', {
-      id,
-      userId,
-      authorId,
-      userRole,
-      isAuthor: userId === authorId,
-      isOwner: userRole === 0,
-      isAdmin: userRole === 1
-    });
-    
+
     onDelete(id);
   };
 

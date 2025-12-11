@@ -27,10 +27,10 @@ export function cleanupOldDismissedNotifications(userId: number): void {
     if (parsed.length > MAX_DISMISSED_ENTRIES) {
       const trimmed = parsed.slice(-MAX_DISMISSED_ENTRIES);
       localStorage.setItem(key, JSON.stringify(trimmed));
-      console.log(`[NotificationStorage] Nettoyé ${parsed.length - trimmed.length} notifications anciennes`);
+      
     }
   } catch (error) {
-    console.error('[NotificationStorage] Erreur nettoyage:', error);
+    
   }
 }
 
@@ -42,9 +42,9 @@ export function resetDismissedNotifications(userId: number): void {
   try {
     const key = `${DISMISSED_NOTIFICATIONS_KEY}_${userId}`;
     localStorage.removeItem(key);
-    console.log('[NotificationStorage] Notifications supprimées réinitialisées');
+    
   } catch (error) {
-    console.error('[NotificationStorage] Erreur réinitialisation:', error);
+    
   }
 }
 
@@ -61,7 +61,7 @@ export function getDismissedNotificationsCount(userId: number): number {
     const parsed = JSON.parse(stored);
     return Array.isArray(parsed) ? parsed.length : 0;
   } catch (error) {
-    console.error('[NotificationStorage] Erreur comptage:', error);
+    
     return 0;
   }
 }
@@ -79,7 +79,7 @@ export function exportDismissedNotifications(userId: number): string[] {
     const parsed = JSON.parse(stored);
     return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
-    console.error('[NotificationStorage] Erreur export:', error);
+    
     return [];
   }
 }

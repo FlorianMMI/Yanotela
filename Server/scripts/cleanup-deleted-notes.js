@@ -73,7 +73,7 @@ async function cleanupDeletedNotes() {
 
     console.log(`✅ ${result.count} note(s) supprimée(s) définitivement`);
   } catch (error) {
-    console.error("❌ Erreur lors du nettoyage :", error);
+    
     process.exit(1);
   } finally {
     await prisma.$disconnect();
@@ -87,6 +87,6 @@ cleanupDeletedNotes()
     process.exit(0);
   })
   .catch((error) => {
-    console.error("💥 Erreur fatale :", error);
+    
     process.exit(1);
   });

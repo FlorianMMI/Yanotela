@@ -52,7 +52,7 @@ export default function TagNote({ noteId, currentTagId, onTagUpdated }: TagNoteP
       }
     } catch (err) {
       setError('Erreur lors du chargement des tags');
-      console.error(err);
+      
     } finally {
       setIsLoading(false);
     }
@@ -74,13 +74,13 @@ export default function TagNote({ noteId, currentTagId, onTagUpdated }: TagNoteP
         // Déclencher un événement pour rafraîchir la liste des notes
         window.dispatchEvent(new Event('noteTagUpdated'));
       } else {
-        console.error("Erreur lors de la mise à jour du tag:", result.error);
+        
         setError(result.error || "Erreur lors de la mise à jour du tag");
         // Restaurer le tag précédent en cas d'erreur
         setSelectedTagId(currentTagId || null);
       }
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du tag:", error);
+      
       setError("Une erreur est survenue lors de la mise à jour du tag");
       // Restaurer le tag précédent en cas d'erreur
       setSelectedTagId(currentTagId || null);

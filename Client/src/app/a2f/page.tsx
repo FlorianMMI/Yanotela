@@ -19,7 +19,7 @@ export default function A2FPage() {
       }
     } catch (error) {
       setError('Une erreur est survenue. Veuillez réessayer plus tard.');
-      console.error('Erreur lors de la vérification A2F :', error);
+      
     }
   }
 

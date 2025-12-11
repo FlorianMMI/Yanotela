@@ -39,7 +39,7 @@ export default function GoogleAuthButton({
       // Redirection directe vers la route Google OAuth du serveur
       router.push(`${baseUrl}/auth/google`);
     } catch (error) {
-      console.error('Erreur lors de la connexion Google:', error);
+      
       setIsLoading(false);
     }
   };

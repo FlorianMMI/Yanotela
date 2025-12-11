@@ -71,11 +71,11 @@ export default function FolderMore({
                 await onUpdate(name.trim(), description.trim(), color);
                 onClose();
             } else {
-                console.error("Erreur lors de la mise à jour:", result.error);
+                
                 alert(result.error || "Erreur lors de la mise à jour du dossier");
             }
         } catch (error) {
-            console.error("Erreur lors de la sauvegarde:", error);
+            
             alert("Une erreur est survenue lors de la sauvegarde");
         } finally {
             setIsSaving(false);
@@ -90,11 +90,11 @@ export default function FolderMore({
                 onDelete(); // Appeler le callback parent
                 onClose();
             } else {
-                console.error("Erreur lors de la suppression:", result.error);
+                
                 alert(result.error || "Erreur lors de la suppression du dossier");
             }
         } catch (error) {
-            console.error("Erreur lors de la suppression:", error);
+            
             alert("Une erreur est survenue lors de la suppression");
         } finally {
             setIsDeleting(false);

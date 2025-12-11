@@ -52,22 +52,21 @@ function getOrCreateRoom(roomName) {
     };
     
     rooms.set(roomName, room);
-    console.log(`📄 [YJS] Room créée: ${roomName}`);
-    
+
     // Enregistrer dans le service de notifications
     if (isNotificationRoom(roomName)) {
       // Room de notifications pour un utilisateur
       const userId = extractUserIdFromNotificationRoom(roomName);
       if (userId) {
         registerNotificationRoom(userId, { awareness, doc, roomName, conns: room.conns });
-        console.log(`🔔 [YJS] Room de notifications enregistrée pour userId: ${userId}`);
+        
       }
     } else {
       // Room de collaboration pour une note
       const noteId = extractNoteIdFromRoom(roomName);
       if (noteId) {
         registerProvider(noteId, { awareness, doc, roomName, noteId });
-        console.log(`✅ [YJS] Provider enregistré pour noteId: ${noteId}`);
+        
       }
     }
   }
@@ -110,7 +109,7 @@ function send(conn, message) {
   }
   conn.send(message, (err) => {
     if (err) {
-      console.error('❌ [YJS] Erreur envoi message:', err);
+      
     }
   });
 }
@@ -122,8 +121,7 @@ function setupWSConnection(ws, req) {
   // Extraire le nom de la room depuis l'URL
   // Format y-websocket standard: ws://host:port/roomName (ex: /yanotela-abc123)
   // OU format query param: ws://host:port?room=roomName
-  console.log(`📥 [YJS] Connexion entrante: ${req.url}`);
-  
+
   const url = new URL(req.url, `http://${req.headers.host}`);
   
   // Essayer d'abord le path (format standard y-websocket)
@@ -137,12 +135,10 @@ function setupWSConnection(ws, req) {
   console.log(`🔍 [YJS] Room extraite: "${roomName}" (path: "${url.pathname}", query: "${url.searchParams.get('room')}")`);
 
   if (!roomName || roomName === '') {
-    console.warn('❌ [YJS] Connexion sans room, fermeture');
+    
     ws.close(1008, 'Room name required');
     return;
   }
-
-  console.log(`🔌 [YJS] Nouvelle connexion pour room: ${roomName}`);
 
   // Obtenir ou créer la room
   const room = getOrCreateRoom(roomName);
@@ -220,9 +216,7 @@ function setupWSConnection(ws, req) {
         const jsonBytes = dataArray.slice(1);
         const decoder = new TextDecoder();
         const notification = JSON.parse(decoder.decode(jsonBytes));
-        
-        console.log(`📥 [YJS] Notification reçue du backend:`, notification.type, `pour user=${notification.targetUserId}`);
-        
+
         // Broadcaster la notification via awareness à tous les clients de cette room
         const localState = awareness.getLocalState() || {};
         const notifications = localState.notifications || [];
@@ -248,8 +242,7 @@ function setupWSConnection(ws, req) {
         conns.forEach((conn) => {
           send(conn, awarenessMessage);
         });
-        
-        console.log(`📡 [YJS] Notification broadcastée à ${conns.size} clients dans room ${roomName}`);
+
         return;
       }
 
@@ -281,17 +274,16 @@ function setupWSConnection(ws, req) {
         }
         
         default:
-          console.warn(`⚠️ [YJS] Type de message inconnu: ${yjsMessageType}`);
+          
       }
     } catch (error) {
-      console.error('❌ [YJS] Erreur traitement message:', error);
+      
     }
   });
 
   // ===== ÉTAPE 4 : DÉCONNEXION =====
   ws.on('close', () => {
-    console.log(`🔌 [YJS] Déconnexion de room: ${roomName}`);
-    
+
     // Supprimer la connexion
     conns.delete(ws);
     
@@ -306,27 +298,26 @@ function setupWSConnection(ws, req) {
         const userId = extractUserIdFromNotificationRoom(roomName);
         if (userId) {
           unregisterNotificationRoom(userId);
-          console.log(`🧹 [YJS] Room de notifications désenregistrée pour userId: ${userId}`);
+          
         }
       } else {
         // Room de collaboration
         const noteId = extractNoteIdFromRoom(roomName);
         if (noteId) {
           unregisterProvider(noteId);
-          console.log(`🧹 [YJS] Provider désenregistré pour noteId: ${noteId}`);
+          
         }
       }
       
       rooms.delete(roomName);
       doc.destroy();
       awareness.destroy();
-      
-      console.log(`🧹 [YJS] Room nettoyée: ${roomName}`);
+
     }
   });
 
   ws.on('error', (error) => {
-    console.error('❌ [YJS] Erreur WebSocket:', error);
+    
   });
 }
 
@@ -357,18 +348,14 @@ function startServer() {
   wss.on('connection', setupWSConnection);
 
   wss.on('error', (error) => {
-    console.error('❌ [YJS] Erreur serveur WebSocket:', error);
+    
   });
 
-  console.log(`🚀 [YJS] Serveur WebSocket unifié démarré sur ${HOST}:${PORT}`);
-  console.log(`📝 [YJS] Collaboration temps réel : ACTIVÉE`);
-  console.log(`🔔 [YJS] Notifications temps réel : ACTIVÉES`);
-  console.log(`📡 [YJS] Protocole YJS complet (sync + awareness)`);
 }
 
 // Gérer l'arrêt gracieux
 process.on('SIGINT', () => {
-  console.log('\n👋 [YJS] Arrêt du serveur...');
+  
   rooms.forEach((room) => {
     room.doc.destroy();
     room.awareness.destroy();
@@ -378,7 +365,7 @@ process.on('SIGINT', () => {
 });
 
 process.on('SIGTERM', () => {
-  console.log('\n👋 [YJS] Arrêt du serveur...');
+  
   rooms.forEach((room) => {
     room.doc.destroy();
     room.awareness.destroy();

@@ -84,7 +84,7 @@ export default function ModificationProfil() {
         }, 5000);
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      
       setError('Erreur de connexion au serveur');
 
       // Faire disparaître le message d'erreur après 5 secondes
@@ -123,7 +123,7 @@ export default function ModificationProfil() {
         setError(result.error || 'Erreur lors de l\'envoi du mail de confirmation');
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      
       setError('Erreur de connexion au serveur');
     } finally {
       setLoading(false);
@@ -136,7 +136,7 @@ export default function ModificationProfil() {
         const { totalNotes } = await GetNotes();
         setTotalNotes(totalNotes);
       } catch (error) {
-        console.error("Error fetching total notes:", error);
+        
         setTotalNotes(0);
       }
 
@@ -144,7 +144,7 @@ export default function ModificationProfil() {
         const { totalFolders } = await GetFolders();
         setTotalFolders(totalFolders);
       } catch (error) {
-        console.error("Error fetching total folders:", error);
+        
         setTotalFolders(0);
       }
     }

@@ -51,7 +51,7 @@ docker compose up --build
 
 ### Sans Docker (dev local)
 
-1. Installer les dépendances :
+1. Installer les dépendances 
 
 ```bash
 # depuis la racine du repo

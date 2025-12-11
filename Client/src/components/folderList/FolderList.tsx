@@ -24,8 +24,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
         onFolderCreated(); // Déclencher le refresh des dossiers
       }
     } else {
-      console.error("Erreur : Impossible de créer le dossier.");
-      
+
     }
   };
 

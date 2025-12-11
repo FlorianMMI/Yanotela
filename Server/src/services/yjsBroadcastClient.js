@@ -126,8 +126,7 @@ export async function broadcastNotificationToUsers(userIds, notification) {
     if (success) sent++;
     else failed++;
   }
-  
-  console.log(`📡 [YJS Client] Broadcast: ${sent} envoyées, ${failed} échouées`);
+
   return { sent, failed };
 }
 

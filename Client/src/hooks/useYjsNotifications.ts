@@ -35,7 +35,7 @@ function loadDismissedNotifications(userId: number): Set<string> {
       return new Set(parsed);
     }
   } catch (error) {
-    console.error('[localStorage] Erreur lecture notifications supprimées:', error);
+    
   }
   return new Set();
 }
@@ -52,7 +52,7 @@ function saveDismissedNotification(userId: number, notificationId: string): void
       JSON.stringify(Array.from(dismissed))
     );
   } catch (error) {
-    console.error('[localStorage] Erreur sauvegarde notification supprimée:', error);
+    
   }
 }
 
@@ -236,7 +236,7 @@ export function useYjsNotifications(userId?: number) {
           });
         }
       } catch (error) {
-        console.error('[useYjsNotifications] Erreur chargement invitations:', error);
+        
       } finally {
         setLoading(false);
       }
@@ -285,7 +285,7 @@ export function useYjsNotifications(userId?: number) {
           });
         }
       } catch (error) {
-        console.error('[useYjsNotifications] Erreur refresh:', error);
+        
       }
     };
 
@@ -315,7 +315,7 @@ export function useYjsNotifications(userId?: number) {
           setAllNotifications((prev) => prev.filter((n) => n.id !== notificationId));
         }
       } catch (error) {
-        console.error('[markAsRead] Erreur:', error);
+        
       }
     } else {
       // Pour les autres types de notifications, juste marquer comme lue
@@ -345,7 +345,7 @@ export function useYjsNotifications(userId?: number) {
           credentials: 'include',
         });
       } catch (error) {
-        console.error('[deleteNotification] Erreur:', error);
+        
       }
     }
   }, [userId]);

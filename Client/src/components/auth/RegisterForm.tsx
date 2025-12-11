@@ -86,7 +86,7 @@ export default function RegisterForm({
         setError(result.error || "Erreur lors de l'inscription");
       }
     } catch (error) {
-      console.error("Erreur d'inscription:", error);
+      
       setError("Erreur de connexion au serveur: " + (error as Error).message);
     } finally {
       setIsLoading(false);

@@ -47,7 +47,7 @@ export function setAwarenessUserInfo(noteId: string, userName: string, userColor
   // AUTO-SYNC: Appeler le serveur pour auto-accepter la permission si nécessaire
   if (userId) {
     autoAcceptPermissionOnJoin(noteId).catch(err => {
-      console.warn(`[setAwarenessUserInfo] Erreur auto-accept pour note ${noteId}:`, err);
+      
     });
   }
   
@@ -66,15 +66,14 @@ async function autoAcceptPermissionOnJoin(noteId: string): Promise<void> {
     
     // Si une permission a été auto-acceptée, rafraîchir les notifications
     if (result.success && result.autoAccepted) {
-      console.log(`✅ Permission auto-acceptée pour note ${noteId}`);
-      
+
       // Déclencher le rafraîchissement des notifications en temps réel
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('refreshNotifications'));
       }
     }
   } catch (error) {
-    console.warn('[autoAcceptPermissionOnJoin] Erreur:', error);
+    
   }
 }
 

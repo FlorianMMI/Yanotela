@@ -167,7 +167,7 @@ export default function SaveFlashNoteButton({
         setTimeout(() => setError(null), 5000);
       }
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde Flash Note:', error);
+      
       setError('Erreur lors de la sauvegarde');
       setTimeout(() => setError(null), 5000);
     } finally {

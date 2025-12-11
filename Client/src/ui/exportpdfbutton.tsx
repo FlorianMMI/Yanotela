@@ -220,7 +220,7 @@ export default function ExportPDFButton({
       pdf.save(`${safeTitle}.pdf`);
 
     } catch (error) {
-      console.error('Erreur export PDF:', error);
+      
       alert('Erreur lors de l\'export PDF. Veuillez réessayer.');
     } finally {
       setIsExporting(false);

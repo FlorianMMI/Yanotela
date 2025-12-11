@@ -42,7 +42,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     if (!API_URL) {
-      console.error('❌ NEXT_PUBLIC_API_URL not configured');
+      
       setIsAuthenticated(false);
       setUser(null);
       setLoading(false);
@@ -57,7 +57,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         clearTimeout(timeout);
         return resp;
       } catch (e) {
-        console.error('❌ Auth check failed:', e);
+        
         return null;
       }
     };
@@ -78,7 +78,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         setUser(null);
       }
     } catch (err) {
-      console.error('❌ Auth check error:', err);
+      
       setIsAuthenticated(false);
       setUser(null);
     } finally {

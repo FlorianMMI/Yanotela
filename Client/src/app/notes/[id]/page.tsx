@@ -97,7 +97,7 @@ const theme = {
 };
 
 function onError(error: string | Error) {
-  console.error("[Lexical Error]", error);
+  
 }
 
 /**
@@ -219,15 +219,11 @@ function YjsSyncPlugin({
           hasChangesRef.current = false;
           setSyncStatus("synced");
         } else {
-          console.error(
-            "❌ [YjsSync] Erreur HTTP",
-            response.status,
-            await response.text()
-          );
+          
           setSyncStatus("error");
         }
       } catch (error) {
-        console.error("❌ [YjsSync] Erreur:", error);
+        
         setSyncStatus("error");
       }
     }, 2000);
@@ -279,7 +275,7 @@ function YjsSyncPlugin({
           setSyncStatus("error");
         }
       } catch (error) {
-        console.error("❌ [YjsSync] Erreur sync manuel:", error);
+        
         setSyncStatus("error");
       }
     };
@@ -314,7 +310,7 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
       const rootElement = editor.getRootElement();
 
       if (!rootElement) {
-        console.error("❌ [ReadOnly] RootElement introuvable après 500ms");
+        
         return;
       }
 
@@ -421,7 +417,7 @@ function LoadInitialContentPlugin({
         if (cancelled) return;
 
         if (!ydoc) {
-          console.warn('⚠️ [LoadContent] Y.Doc non trouvé après 1s');
+          
           return;
         }
 
@@ -432,14 +428,14 @@ function LoadInitialContentPlugin({
         editor.update(() => {
           const newEditorState = editor.parseEditorState(parsedContent);
           editor.setEditorState(newEditorState);
-          console.log('✅ [LoadContent] Contenu chargé depuis DB');
+          
         }, {
           tag: 'history-merge',
         });
 
         hasLoadedRef.current = true;
       } catch (err) {
-        console.error("❌ [LoadContent] Erreur parsing contenu:", err);
+        
       }
     })();
 
@@ -564,7 +560,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   const handleDrawingSave = useCallback(
     (drawingData: DrawingData) => {
       if (!editor) {
-        console.error("❌ Editor non disponible");
+        
         return;
       }
 
@@ -596,7 +592,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
             const jsonString = JSON.stringify(json);
 
             SaveNote(id, { Content: jsonString }).catch((error) => {
-              console.error("❌ Erreur sauvegarde après dessin:", error);
+              
             });
           });
         }
@@ -648,7 +644,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           setIsReadOnly(false);
         }
       } catch (error) {
-        console.error("❌ Erreur chargement note:", error);
+        
         setHasError(true);
       } finally {
         setIsLoading(false);
@@ -730,7 +726,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
       
       // Arrêter après le max d'essais
       if (attempts >= maxAttempts) {
-        console.warn('[Awareness] Provider non créé après 4s, abandon');
+        
         clearInterval(intervalId);
       }
     }, 200);
@@ -753,7 +749,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           router.replace(url.pathname);
         })
         .catch((error) => {
-          console.error("❌ Erreur assignation dossier:", error);
+          
         });
     }
   }, [searchParams, id, router, user]);

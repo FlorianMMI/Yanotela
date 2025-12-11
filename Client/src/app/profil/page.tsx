@@ -41,7 +41,7 @@ export default function Profil() {
       }
     } catch (err) {
       setError("Erreur de connexion");
-      console.error("Erreur:", err);
+      
     } finally {
       setLoading(false);
     }

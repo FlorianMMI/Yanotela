@@ -85,7 +85,7 @@ export const noteController = {
 
       res.status(200).json({ notes, totalNotes });
     } catch (error) {
-      console.error("Erreur lors de la récupération des notes:", error);
+      
       res
         .status(500)
         .json({
@@ -188,7 +188,7 @@ export const noteController = {
         redirectUrl: `/notes/${note.id}`,
       });
     } catch (error) {
-      console.error("Erreur lors de la création de la note:", error);
+      
       res
         .status(500)
         .json({
@@ -261,7 +261,7 @@ export const noteController = {
         redirectUrl: `/notes/${duplicatedNote.id}`,
       });
     } catch (error) {
-      console.error("Erreur lors de la duplication de la note:", error);
+      
       res
         .status(500)
         .json({
@@ -331,7 +331,7 @@ export const noteController = {
                 userRole = userPermission.role;
               }
             } else {
-              console.error("❌ Erreur lors de la création de la permission:", permError);
+              
               // Continuer quand même avec le rôle par défaut (3)
             }
           }
@@ -374,7 +374,7 @@ export const noteController = {
         isPublic: note.isPublic, // Indiquer si la note est publique
       });
     } catch (error) {
-      console.error("[getNoteById] Error:", error);
+      
       res
         .status(500)
         .json({
@@ -429,7 +429,7 @@ export const noteController = {
       
       res.status(200).json({ message: "Note mise à jour avec succès", note });
     } catch (error) {
-      console.error("❌ Erreur lors de la mise à jour de la note:", error);
+      
       res
         .status(500)
         .json({
@@ -480,7 +480,7 @@ export const noteController = {
       
       res.status(200).json({ notes });
     } catch (error) {
-      console.error("[getNoteNotAccepted] Error:", error);
+      
       res
         .status(500)
         .json({
@@ -518,7 +518,7 @@ export const noteController = {
 
       res.status(200).json({ message: "Invitation acceptée avec succès", noteId: id });
     } catch (error) {
-      console.error("Erreur lors de l'acceptation de l'invitation:", error);
+      
       res
         .status(500)
         .json({
@@ -583,7 +583,7 @@ export const noteController = {
 
       res.status(200).json({ message: "Invitation supprimée avec succès" });
     } catch (error) {
-      console.error("Erreur lors de la suppression de l'invitation:", error);
+      
       res
         .status(500)
         .json({
@@ -680,7 +680,7 @@ export const noteController = {
         noteFolder,
       });
     } catch (error) {
-      console.error("Erreur lors de l'assignation de la note au dossier:", error);
+      
       res.status(500).json({
         message: "Erreur lors de l'assignation de la note au dossier",
         error: error.message,
@@ -729,7 +729,7 @@ export const noteController = {
 
       res.status(200).json({ message: "Note retirée du dossier avec succès" });
     } catch (error) {
-      console.error("Erreur lors du retrait de la note du dossier:", error);
+      
       res.status(500).json({
         message: "Erreur lors du retrait de la note du dossier",
         error: error.message,
@@ -776,7 +776,7 @@ export const noteController = {
 
       res.status(200).json({ folder: noteFolder.folder });
     } catch (error) {
-      console.error("Erreur lors de la récupération du dossier de la note:", error);
+      
       res.status(500).json({
         message: "Erreur lors de la récupération du dossier de la note",
         error: error.message,
@@ -830,7 +830,7 @@ export const noteController = {
         });
         await notifyNoteDeleted(id, note.Titre, userId, actor?.pseudo || "Un utilisateur");
       } catch (notifError) {
-        console.error('[deleteNote] Erreur notification:', notifError);
+        
         // Ne pas bloquer la suppression si la notification échoue
       }
 
@@ -855,7 +855,7 @@ export const noteController = {
         noteId: deletedNote.id 
       });
     } catch (error) {
-      console.error("Erreur lors de la suppression de la note:", error);
+      
       res.status(500).json({
         message: "Erreur lors de la suppression de la note",
         error: error.message,
@@ -916,7 +916,7 @@ export const noteController = {
       try {
         await notifyUserLeft(id, note.Titre, leavingUser?.pseudo || "Un utilisateur", userId, note.isPublic);
       } catch (notifError) {
-        console.error('[leaveNote] Erreur notification:', notifError);
+        
         // Ne pas bloquer si la notification échoue
       }
 
@@ -925,7 +925,7 @@ export const noteController = {
         noteId: note.id 
       });
     } catch (error) {
-      console.error("Erreur lors de la sortie de la note:", error);
+      
       res.status(500).json({
         message: "Erreur lors de la sortie de la note",
         error: error.message,
@@ -959,7 +959,7 @@ export const noteController = {
         totalNotes: notes.length,
       });
     } catch (error) {
-      console.error("Erreur lors de la récupération des notes supprimées:", error);
+      
       res.status(500).json({
         message: "Erreur lors de la récupération des notes supprimées",
         error: error.message,
@@ -1009,7 +1009,7 @@ export const noteController = {
         note: restoredNote 
       });
     } catch (error) {
-      console.error("Erreur lors de la restauration de la note:", error);
+      
       res.status(500).json({
         message: "Erreur lors de la restauration de la note",
         error: error.message,
@@ -1063,7 +1063,7 @@ export const noteController = {
         ModifiedAt: updatedNote.ModifiedAt 
       });
     } catch (error) {
-      console.error("[syncNoteState] Erreur:", error);
+      
       res.status(500).json({
         message: "Erreur lors de la synchronisation",
         error: error.message,
@@ -1110,7 +1110,7 @@ export const noteController = {
         note = updated;
       }
     } catch (error) {
-      console.error("Erreur lors de la vérification de la note publique:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la vérification de la note publique",
         error: error.message,
@@ -1138,7 +1138,7 @@ export const noteController = {
       }
       res.status(200).json({ isPublic: note.isPublic });
     } catch (error) {
-      console.error("Erreur lors de la vérification de la note publique:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la vérification de la note publique",
         error: error.message,
@@ -1202,7 +1202,7 @@ export const noteController = {
         tagId: updatedNote.tagId 
       });
     } catch (error) {
-      console.error("[updateNoteTag] Erreur:", error);
+      
       res.status(500).json({
         message: "Erreur lors de la mise à jour du tag",
         error: error.message,

@@ -78,7 +78,7 @@ export default function TagManagementModal({ isOpen, onClose, onTagsUpdated }: T
       }
     } catch (err) {
       setError('Erreur lors du chargement des tags');
-      console.error(err);
+      
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +105,7 @@ export default function TagManagementModal({ isOpen, onClose, onTagsUpdated }: T
       }
     } catch (err) {
       setError('Erreur lors de la création du tag');
-      console.error(err);
+      
     } finally {
       setIsLoading(false);
     }
@@ -131,14 +131,13 @@ export default function TagManagementModal({ isOpen, onClose, onTagsUpdated }: T
       }
     } catch (err) {
       setError('Erreur lors de la modification du tag');
-      console.error(err);
+      
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteTag = async (tagId: string) => {
-    
 
     setIsLoading(true);
     setError(null);
@@ -153,7 +152,7 @@ export default function TagManagementModal({ isOpen, onClose, onTagsUpdated }: T
       }
     } catch (err) {
       setError('Erreur lors de la suppression du tag');
-      console.error(err);
+      
     } finally {
       setIsLoading(false);
     }
