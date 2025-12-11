@@ -99,5 +99,36 @@ model Tag {
   @@index([userId])
 }
 
+model NotificationType {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  userPreferences UserNotificationPreference[]
+
+  @@map("notification_type")
+}
+
+model UserNotificationPreference {
+  id                 Int              @id @default(autoincrement())
+  userId             Int              @map("user_id")
+  notificationTypeId Int              @map("notification_type_id")
+  appEnabled         Boolean          @default(true) @map("app_enabled")
+  mailEnabled        Boolean          @default(true) @map("mail_enabled")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  
+  notificationType   NotificationType @relation(fields: [notificationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationTypeId])
+  @@index([userId])
+  @@index([notificationTypeId])
+  @@map("user_notification_preference")
+}
+
 // Note: Les commentaires sont maintenant gérés via YJS (Y.Array partagé)
 // Voir: Client/src/hooks/useYjsComments.ts

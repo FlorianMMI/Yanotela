@@ -5,6 +5,7 @@ import React from "react";
 interface NotificationRowProps {
   id: string;
   name: string;
+  description?: string;
   appnotif: boolean;
   mailnotif: boolean;
   onAppNotifChange: (id: string, value: boolean) => void;
@@ -14,6 +15,7 @@ interface NotificationRowProps {
 export function NotificationRow({
   id,
   name,
+  description,
   appnotif,
   mailnotif,
   onAppNotifChange,
@@ -22,8 +24,15 @@ export function NotificationRow({
   return (
     <div className="w-full flex items-center gap-4">
       {/* Nom de la notification */}
-      <div className="flex-1 text-black text-xl font-normal ">
-        {name}
+      <div className="flex-1">
+        <div className="text-black text-xl font-normal">
+          {name}
+        </div>
+        {description && (
+          <div className="text-sm text-gray-600 mt-1">
+            {description}
+          </div>
+        )}
       </div>
 
       {/* Checkbox Par mail */}
