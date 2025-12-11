@@ -9,7 +9,7 @@ import AccountSupprSuccess from '@/ui/account-suppr-success';
 import ThemeSelector from '../theme/ThemeSelector';
 import PWAInstallButton from '@/ui/PWAInstallbutton';
 import RGPDBouton from '@/ui/RGPDBouton';
-import NotificationPage from '../notification/notification';
+import NotificationPage from '@/components/notification/notification';
 
 interface ParamModalProps {
     onClose: () => void;
