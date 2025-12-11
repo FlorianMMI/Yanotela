@@ -30,9 +30,7 @@ export default function GoogleAuthButton({
       // L'API serveur redirige automatiquement vers Google OAuth
       // puis gère l'inscription ou la connexion selon que l'utilisateur existe
       let baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      
-    
-      
+
       // Redirection directe vers la route Google OAuth du serveur
       router.push(`${baseUrl}/auth/google`);
     } catch (error) {
