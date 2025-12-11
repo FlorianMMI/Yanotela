@@ -43,6 +43,8 @@ jobs:
               result = result.replace(/console\.log\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
               result = result.replace(/console\.warn\s*\([^()]*\)\s*;?/g, '');
               result = result.replace(/console\.warn\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
+              result = result.replace(//console\.error\s*\([^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.error\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
               hasChanges = before !== result;
             }
             return result.replace(/\n\s*\n\s*\n/g, '\n\n');
@@ -96,6 +98,8 @@ jobs:
               result = result.replace(/console\.log\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
               result = result.replace(/console\.warn\s*\([^()]*\)\s*;?/g, '');
               result = result.replace(/console\.warn\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.error\s*\([^()]*\)\s*;?/g, '');
+              result = result.replace(/console\.error\s*\([^()]*\([^()]*\)[^()]*\)\s*;?/g, '');
               hasChanges = before !== result;
             }
             return result.replace(/\n\s*\n\s*\n/g, '\n\n');

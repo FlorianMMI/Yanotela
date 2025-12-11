@@ -156,7 +156,7 @@ export default function Folder({ folder, onFolderUpdated }: FolderProps) {
             if (isInTrash) return;
             openContextMenu();
           }}
-          className="absolute top-7 right-3 p-1 rounded hover:bg-[#0003] flex pointer-events-auto z-20"
+          className="absolute top-10 right-3 p-1 rounded hover:bg-[#0003] flex pointer-events-auto z-20"
           title="Options du dossier"
         >
           <KebabIcon className="text-white hover:text-gray-100 w-5 h-5" />

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, use, useCallback } from "react";
+import React, { useState, useEffect, use, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
@@ -29,6 +29,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
     const [tagColorFilter, setTagColorFilter] = useState("");
+    const hasFetched = useRef(false);
 
     const fetchFolderData = useCallback(async () => {
         try {
@@ -55,32 +56,9 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         }
     }, [id]);
 
-    const handleUpdateFolder = useCallback(async (name: string, description: string, color: string) => {
-        const response = await UpdateFolder(id, {
-            Nom: name,
-            Description: description,
-            CouleurTag: color,
-        });
-
-        if (response.success && response.folder) {
-            setFolder(response.folder);
-            // Émettre un événement pour synchroniser avec le Breadcrumb
-            window.dispatchEvent(new CustomEvent('folderTitleUpdated', {
-                detail: { folderId: id, title: name }
-            }));
-        } else {
-            console.error("Erreur lors de la sauvegarde:", response.error);
-            throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
-        }
-    }, [id]);
-
-    const handleDeleteFolder = useCallback(() => {
-        // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
-        // Rediriger vers la liste des dossiers
-        router.push("/dossiers");
-    }, [router]);
-
-        useEffect(() => {
+    useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
         fetchFolderData();
 
         // Écouter les événements de mise à jour depuis le breadcrumb
@@ -108,7 +86,32 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             window.removeEventListener('folderUpdateRequested', handleUpdateRequest);
             window.removeEventListener('folderDeleteRequested', handleDeleteRequest);
         };
-    }, [id, fetchFolderData, handleUpdateFolder, handleDeleteFolder]);
+    }, [id, fetchFolderData]);
+
+    const handleUpdateFolder = async (name: string, description: string, color: string) => {
+        const response = await UpdateFolder(id, {
+            Nom: name,
+            Description: description,
+            CouleurTag: color,
+        });
+
+        if (response.success && response.folder) {
+            setFolder(response.folder);
+            // Émettre un événement pour synchroniser avec le Breadcrumb
+            window.dispatchEvent(new CustomEvent('folderTitleUpdated', {
+                detail: { folderId: id, title: name }
+            }));
+        } else {
+            console.error("Erreur lors de la sauvegarde:", response.error);
+            throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
+        }
+    };
+
+    const handleDeleteFolder = () => {
+        // Cette fonction est appelée APRÈS la suppression réussie par FolderMore
+        // Rediriger vers la liste des dossiers
+        router.push("/dossiers");
+    };
 
     if (loading) {
         return (

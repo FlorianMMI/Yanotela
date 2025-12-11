@@ -16,6 +16,7 @@ import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { getPermission } from "./permissionController.js";
 import { migrateContentToYjs, needsMigration, extractContentFromYjs } from "../services/yjsMigration.js";
+import { notifyNoteDeleted, notifyUserLeft } from "../services/yjsNotificationService.js";
 
 const prisma = new PrismaClient();
 
@@ -820,6 +821,19 @@ export const noteController = {
         });
       }
 
+      // 🔔 Notifier tous les collaborateurs de la suppression AVANT la transaction
+      try {
+        // Récupérer le pseudo de l'utilisateur qui supprime
+        const actor = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { pseudo: true },
+        });
+        await notifyNoteDeleted(id, note.Titre, userId, actor?.pseudo || "Un utilisateur");
+      } catch (notifError) {
+        console.error('[deleteNote] Erreur notification:', notifError);
+        // Ne pas bloquer la suppression si la notification échoue
+      }
+
       // Soft delete: définir deletedAt à la date actuelle ET nettoyer les relations NoteFolder
       const deletedNote = await prisma.$transaction(async (prisma) => {
         // Supprimer les relations NoteFolder pour éviter les interférences avec les dossiers
@@ -881,6 +895,12 @@ export const noteController = {
         });
       }
 
+      // Récupérer les infos de l'utilisateur qui quitte pour la notification
+      const leavingUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { pseudo: true },
+      });
+
       // Supprimer la permission (l'utilisateur quitte la note)
       // La table Permission utilise une clé primaire composite (noteId, userId)
       await prisma.permission.delete({
@@ -891,6 +911,14 @@ export const noteController = {
           },
         },
       });
+
+      // 🔔 Notifier les admins que l'utilisateur a quitté (désactivé sur notes publiques)
+      try {
+        await notifyUserLeft(id, note.Titre, leavingUser?.pseudo || "Un utilisateur", userId, note.isPublic);
+      } catch (notifError) {
+        console.error('[leaveNote] Erreur notification:', notifError);
+        // Ne pas bloquer si la notification échoue
+      }
 
       res.status(200).json({ 
         message: "Vous avez quitté la note avec succès",

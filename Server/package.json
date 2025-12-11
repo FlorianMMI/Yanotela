@@ -17,6 +17,9 @@
     "create-test-user": "node scripts/create-test-user.js",
     "cleanup:notes": "node scripts/cleanup-deleted-notes.js"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
     "@prisma/client": "^6.18.0",
     "axios": "^1.4.0",
@@ -27,12 +30,17 @@
     "express": "^5.1.0",
     "express-session": "^1.18.0",
     "express-validator": "^7.0.1",
+    "axios": "^1.4.0",
     "googleapis": "^160.0.0",
     "helmet": "^7.1.0",
     "nodemailer": "^7.0.10",
-    "redis": "^5.10.0",
+      "redis": "^5.8.3",
+      "ws": "^8.13.0",
     "supertest": "^7.1.4",
-    "yjs": "^13.6.27"
+    "yjs": "^13.6.27",
+    "y-protocols": "^1.0.6",
+    "lib0": "^0.2.97",
+    "y-websocket": "^2.0.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

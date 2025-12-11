@@ -32,7 +32,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
   return (
     <main className="p-4">
       <div
-        className="grid gap-3 md:gap-4 max-w-full justify-items-center"
+        className="grid gap-3 md:gap-4 max-w-full"
         style={{
           gridTemplateColumns:
             'repeat(auto-fit, minmax(140px, 1fr))',
@@ -40,7 +40,7 @@ export default function FolderList({ folders, onFolderCreated, isLoading = false
       >
         {/* Add Folder Button - Toujours visible */}
         <div
-          className="relative group w-full aspect-[108/87] rounded-xl flex items-center justify-center transition-colors cursor-pointer text-primary"
+          className="relative group w-full rounded-xl flex items-center justify-center transition-colors cursor-pointer text-primary"
           style={{ minWidth: 0, minHeight: 0, maxWidth: 260 }}
         >
           <motion.svg
