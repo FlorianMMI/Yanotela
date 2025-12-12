@@ -151,13 +151,16 @@ export function unregisterNotificationRoom(userId) {
  */
 async function checkNotificationPreferences(userId, notificationCode) {
   try {
+    // Convertir en minuscules et remplacer _ par _ (pour correspondre au format DB)
+    const dbCode = notificationCode.toLowerCase();
+    
     // Trouver le type de notification par son code
     const notifType = await prisma.notificationType.findUnique({
-      where: { code: notificationCode },
+      where: { code: dbCode },
     });
 
     if (!notifType) {
-      console.warn(`[checkNotificationPreferences] Type de notification inconnu: ${notificationCode}`);
+      console.warn(`[checkNotificationPreferences] Type de notification inconnu: ${notificationCode} (recherché: ${dbCode})`);
       return { app: true, mail: true }; // Par défaut, tout activé
     }
 
@@ -325,7 +328,7 @@ export async function notifyInvitation(userId, noteId, noteTitle, role, actorPse
   const roleLabel = ROLE_LABELS[role] || 'Collaborateur';
   
   const notification = {
-    id: `invitation-${noteId}`, // ID unique basé sur noteId (comme dans le client)
+    id: `invitation-${noteId}-${Date.now()}`, // ID unique avec timestamp pour permettre ré-invitations
     type: NotificationType.INVITATION,
     targetUserId: userId,
     noteId,

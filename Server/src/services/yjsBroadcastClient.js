@@ -10,9 +10,13 @@
  * - Il met à jour son état Awareness avec les notifications
  */
 
-import { WebsocketProvider } from 'y-websocket';
-import * as Y from 'yjs';
 import WebSocket from 'ws';
+import * as Y from 'yjs';
+
+// ✅ CRITIQUE: Définir WebSocket en global pour y-websocket qui en a besoin en Node.js
+global.WebSocket = WebSocket;
+
+import { WebsocketProvider } from 'y-websocket';
 
 // URL du serveur YJS (dans Docker: yjs-server:1234, en local: localhost:1234)
 // IMPORTANT: Utiliser le nom du SERVICE (pas du container) pour la résolution DNS Docker

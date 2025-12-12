@@ -192,11 +192,12 @@ async function AddPermission(req, res) {
       return res.status(404).json({ error: "Utilisateur non trouvé" });
     }
 
-    // Vérifier si l'utilisateur a déjà une permission sur cette note
+    // Vérifier si l'utilisateur a déjà une permission acceptée sur cette note
     const existingPermission = await prisma.permission.findFirst({
       where: {
         userId: targetUser.id,
         noteId: noteId,
+        isAccepted: true, // ✅ Seules les permissions acceptées comptent
       },
     });
 
@@ -205,6 +206,15 @@ async function AddPermission(req, res) {
         .status(400)
         .json({ error: "L'utilisateur a déjà accès à cette note" });
     }
+
+    // ✅ Supprimer toute invitation non acceptée précédente
+    await prisma.permission.deleteMany({
+      where: {
+        userId: targetUser.id,
+        noteId: noteId,
+        isAccepted: false,
+      },
+    });
 
     // Valider le rôle (doit être inférieur à celui de l'admin)
     const targetRole = parseInt(role) || 3; // Par défaut: Lecteur
