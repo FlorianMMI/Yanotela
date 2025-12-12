@@ -161,7 +161,13 @@ function YjsSyncPlugin({
     }
 
     // Marquer qu'il y a eu des changements à chaque update
-    const unregister = editor.registerUpdateListener(() => {
+    // ✅ IMPORTANT: Ignorer les updates venant de la collaboration YJS pour éviter la boucle
+    const unregister = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, prevEditorState, tags }) => {
+      // Ignorer les updates provenant de YJS/collaboration
+      if (tags.has('skip-collab') || tags.has('collaboration') || tags.has('history-merge')) {
+        return;
+      }
+      
       hasChangesRef.current = true;
       setSyncStatus("pending");
     });
@@ -929,13 +935,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
                 <EditorRefPlugin onEditorReady={setEditor} />
 
-                {/* Charger le contenu initial depuis la base de données */}
-                <LoadInitialContentPlugin
-                  content={initialEditorContent}
-                  noteId={id}
-                />
-
-                {/* CollaborationPlugin pour synchronisation temps réel */}
+                {/* CollaborationPlugin pour synchronisation temps réel (shouldBootstrap=true charge le contenu) */}
                 <CollaborationPlugin
                   id={id}
                   providerFactory={providerFactory}
