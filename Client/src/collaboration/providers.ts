@@ -44,6 +44,12 @@ export function setAwarenessUserInfo(noteId: string, userName: string, userColor
     id: userId, // Inclure l'userId pour la synchronisation
   });
 
+  // ✅ CRITIQUE: Connecter le provider APRÈS avoir configuré l'awareness
+  // Ceci garantit que les autres clients reçoivent immédiatement les bonnes informations
+  if (!provider.wsconnected && !provider.wsconnecting) {
+    provider.connect();
+  }
+
   // AUTO-SYNC: Appeler le serveur pour auto-accepter la permission si nécessaire
   if (userId) {
     autoAcceptPermissionOnJoin(noteId).catch(err => {
@@ -102,7 +108,7 @@ export function createWebsocketProvider(
     `yanotela-${id}`,                   // Room name (préfixe + noteId)
     doc,
     {
-      connect: true,                    // Connecter immédiatement (géré par y-websocket)
+      connect: false,                   // Ne pas connecter immédiatement - attendre que l'awareness soit configurée
       // Paramètres de reconnexion
       resyncInterval: 10000,            // Resync toutes les 10s
       maxBackoffTime: 10000,            // Délai max entre reconnexions

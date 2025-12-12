@@ -23,6 +23,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: yanotela-redis-local
+    command: redis-server --requirepass redis_dev_password_123
     ports:
       - "6380:6379"
     healthcheck:
