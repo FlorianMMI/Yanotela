@@ -108,7 +108,7 @@ export function createWebsocketProvider(
     `yanotela-${id}`,                   // Room name (préfixe + noteId)
     doc,
     {
-      connect: false,                   // Ne pas connecter immédiatement - attendre que l'awareness soit configurée
+      connect: false,                   // Ne pas connecter immédiatement - attendre configuration awareness
       // Paramètres de reconnexion
       resyncInterval: 10000,            // Resync toutes les 10s
       maxBackoffTime: 10000,            // Délai max entre reconnexions

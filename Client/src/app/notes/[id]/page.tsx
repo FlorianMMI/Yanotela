@@ -701,16 +701,13 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
-    // Ne pas appeler setAwarenessUserInfo immédiatement
-    // Le provider sera créé par CollaborationPlugin, on attend qu'il soit prêt
-    
     // Récupérer l'userId pour la synchronisation automatique des permissions
     const userId = user ? user.id : undefined;
     
     // Attendre que le provider soit créé (après le montage du CollaborationPlugin)
-    // On utilise un intervalle pour vérifier régulièrement
+    // Intervalle optimisé: 50ms pour une connexion quasi-instantanée
     let attempts = 0;
-    const maxAttempts = 20; // 20 * 200ms = 4 secondes max
+    const maxAttempts = 40; // 40 * 50ms = 2 secondes max
     
     const intervalId = setInterval(() => {
       attempts++;
@@ -726,10 +723,10 @@ function NoteEditorContent({ params }: NoteEditorProps) {
       
       // Arrêter après le max d'essais
       if (attempts >= maxAttempts) {
-        
+        console.warn(`[YJS] Timeout: provider non disponible après ${maxAttempts * 50}ms pour noteId=${id}`);
         clearInterval(intervalId);
       }
-    }, 200);
+    }, 50); // Réduit de 200ms à 50ms pour une connexion plus rapide
     
     return () => clearInterval(intervalId);
   }, [userProfile, id, user]);
