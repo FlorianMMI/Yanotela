@@ -34,7 +34,7 @@
     "lexical": "^0.38.2",
     "lucide-react": "^0.552.0",
     "motion": "^12.23.21",
-    "next": "15.5.7",
+    "next": "15.5.9",
     "react": "19.1.2",
     "react-dom": "19.1.2",
     "tailwindcss": "^4",

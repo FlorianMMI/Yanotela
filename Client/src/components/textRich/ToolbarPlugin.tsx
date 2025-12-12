@@ -14,7 +14,6 @@ import { BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, FontColorIcon, 
 import { $createImageNode } from '@/components/flashnote/ImageNode';
 import { $createAudioNode } from '@/components/flashnote/AudioNode';
 import { $createVideoNode } from '@/components/flashnote/VideoNode';
-import ExportPDFButton from '@/ui/exportpdfbutton';
 
 import ColorPalette from './ColorPalette';
 
@@ -582,16 +581,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                     <div />
                     {/* Export PDF button */}
                 </div>
-                <div className="md:flex flex-wrap items-center gap-1">
-                <div className="w-px h-6 bg-gray-200 mx-1" /> {/* Separator */}
-                    <ExportPDFButton
-                        noteTitle={noteTitle}
-                        editorRef={editorContentRef}
-                        compact={true}
-                    />
-
-                </div>
-            </div>
+            </div> 
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
             <div
@@ -741,15 +731,6 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                                 buttonIcon={<span style={{ display: 'inline-block', width: 18, height: 18, background: backgroundColor, borderRadius: 2 }} />}
                                             />
                                         </div>
-                                    </div>
-                                    <div className="border-t border-gray-200 pt-2 mt-2">
-                                        <label className="text-xs text-gray-600 mb-2 block">Export</label>
-                                        <ExportPDFButton
-                                            noteTitle={noteTitle}
-                                            editorRef={editorContentRef}
-                                            compact={false}
-                                            className="w-full justify-center"
-                                        />
                                     </div>
                                 </div>
                             </>

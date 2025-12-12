@@ -12,7 +12,7 @@ interface ValidatePageProps {
 
 export default function ValidatePage({ params }: ValidatePageProps) {
   const router = useRouter();
-  const { token } = use(params);
+  const [token, setToken] = useState<string>('');
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const hasValidated = useRef(false);
