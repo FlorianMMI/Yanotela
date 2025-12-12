@@ -2,85 +2,67 @@
 
 import React, { useState, useEffect } from "react";
 import { NotificationRow } from "@/ui/choose-notif";
-
-interface NotificationSetting {
-  id: string; // 'activity' | 'invitation' | 'comment'
-  name: string;
-  description?: string;
-  appnotif: boolean;
-  mailnotif: boolean;
-}
-
-const NOTIFICATION_PREFS_KEY = 'yanotela_notification_prefs';
+import { 
+  NotificationSetting, 
+  NotificationPreferenceResponse,
+  NotificationPreferenceUpdate 
+} from "@/type/NotificationPreference";
 
 export default function NotificationPage() {
-  // État initial des notifications
-  const [notifications, setNotifications] = useState<NotificationSetting[]>([
-    {
-      id: "activity",
-      name: "Activité sur les notes",
-      description: "Suppressions de notes, ajouts de membres...",
-      appnotif: true,
-      mailnotif: false,
-    },
-    {
-      id: "invitation",
-      name: "Partage de notes",
-      description: "Invitations, exclusions, changements de rôle",
-      appnotif: true,
-      mailnotif: true,
-    },
-    {
-      id: "comment",
-      name: "Commentaires",
-      description: "Nouveaux commentaires sur vos notes",
-      appnotif: false,
-      mailnotif: true,
-    },
-  ]);
-
-  // Sauvegarde de l'état initial pour détecter les modifications
+  const [notifications, setNotifications] = useState<NotificationSetting[]>([]);
   const [initialNotifications, setInitialNotifications] = useState<NotificationSetting[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialiser l'état de référence au montage
+  // Charger les préférences depuis l'API au montage
   useEffect(() => {
-    const loadPrefs = () => {
-      try {
-        const stored = localStorage.getItem(NOTIFICATION_PREFS_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          // Merge stored prefs with default structure to ensure all fields exist
-          setNotifications(prev => prev.map(def => {
-            const saved = parsed.find((p: any) => p.id === def.id);
-            return saved ? { ...def, ...saved, name: def.name, description: def.description } : def;
-          }));
-        }
-      } catch (e) {
-        console.error("Failed to load notification prefs", e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadPrefs();
+    loadPreferences();
   }, []);
 
-  // Update initialNotifications when loading is done
-  useEffect(() => {
-    if (!isLoading) {
-      setInitialNotifications(JSON.parse(JSON.stringify(notifications)));
+  // Fonction pour charger les préférences depuis l'API
+  const loadPreferences = async () => {
+    try {
+      setIsLoading(true);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      
+      const response = await fetch(`${apiUrl}/notification-preference/get`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        const prefs: NotificationPreferenceResponse[] = await response.json();
+        
+        // Convertir les préférences en format NotificationSetting pour l'UI
+        const notifSettings: NotificationSetting[] = prefs.map(pref => ({
+          code: pref.code,
+          name: pref.name,
+          description: pref.description || '',
+          appnotif: pref.appEnabled,
+          mailnotif: pref.mailEnabled,
+        }));
+
+        setNotifications(notifSettings);
+        setInitialNotifications(JSON.parse(JSON.stringify(notifSettings)));
+      } else {
+        console.error('Erreur lors du chargement des préférences');
+      }
+    } catch (error) {
+      console.error('Erreur de chargement:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [isLoading]); // Only run when loading finishes
+  };
 
   // Détecter les modifications
   useEffect(() => {
-    if (isLoading) return;
+    if (initialNotifications.length === 0) return;
+    
     const changed = JSON.stringify(notifications) !== JSON.stringify(initialNotifications);
     setHasChanges(changed);
-  }, [notifications, initialNotifications, isLoading]);
+  }, [notifications, initialNotifications]);
 
   // Gestionnaire pour "Toutes les notifications"
   const handleToggleAll = (type: 'app' | 'mail', value: boolean) => {
@@ -93,19 +75,19 @@ export default function NotificationPage() {
   };
 
   // Gestionnaire pour les notifications par app
-  const handleAppNotifChange = (id: string, value: boolean) => {
+  const handleAppNotifChange = (code: string, value: boolean) => {
     setNotifications((prev) =>
       prev.map((notif) =>
-        notif.id === id ? { ...notif, appnotif: value } : notif
+        notif.code === code ? { ...notif, appnotif: value } : notif
       )
     );
   };
 
   // Gestionnaire pour les notifications par mail
-  const handleMailNotifChange = (id: string, value: boolean) => {
+  const handleMailNotifChange = (code: string, value: boolean) => {
     setNotifications((prev) =>
       prev.map((notif) =>
-        notif.id === id ? { ...notif, mailnotif: value } : notif
+        notif.code === code ? { ...notif, mailnotif: value } : notif
       )
     );
   };
@@ -114,23 +96,30 @@ export default function NotificationPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Save to localStorage
-      const prefsToSave = notifications.map(n => ({
-        id: n.id,
-        appnotif: n.appnotif,
-        mailnotif: n.mailnotif
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      
+      // Construire le tableau de mises à jour
+      const updates: NotificationPreferenceUpdate[] = notifications.map(notif => ({
+        code: notif.code,
+        appEnabled: notif.appnotif,
+        mailEnabled: notif.mailnotif,
       }));
+      
+      const response = await fetch(`${apiUrl}/notification-preference/update`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates)
+      });
 
-      localStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(prefsToSave));
-
-      // Dispatch event for other components (like useYjsNotifications)
-      window.dispatchEvent(new Event('notificationPrefsChanged'));
-
-      // Mettre à jour l'état initial après sauvegarde réussie
-      setInitialNotifications(JSON.parse(JSON.stringify(notifications)));
-      setHasChanges(false);
-
-      console.log('Notifications sauvegardées avec succès');
+      if (response.ok) {
+        // Mettre à jour l'état initial après sauvegarde réussie
+        setInitialNotifications(JSON.parse(JSON.stringify(notifications)));
+        setHasChanges(false);
+        console.log('✅ Préférences de notifications sauvegardées avec succès');
+      } else {
+        console.error('❌ Erreur lors de la sauvegarde');
+      }
     } catch (error) {
       console.error('❌ Erreur de sauvegarde:', error);
     } finally {
@@ -151,9 +140,9 @@ export default function NotificationPage() {
   }
 
   return (
-    <div className="mb-12">
+    <div className="mb-2">
       {/* En-têtes */}
-      <div className="flex items-center gap-4 mb-6 pb-4 border-b">
+      <div className="flex items-center gap-4 mb-3 pb-4 border-b">
         <div className="flex-1 text-xl font-semibold">
           Type de notification
         </div>
@@ -169,51 +158,52 @@ export default function NotificationPage() {
         </div>
       </div>
 
-      <div className="h-96 overflow-y-auto custom-scrollbar">
+      <div className="max-h-50 overflow-y-auto custom-scrollbar">
 
-        {/* Ligne "Toutes les notifications" */}
-        <div className="mb-6 pb-4 border-b border-dashed">
-          <NotificationRow
-            id="all"
-            name="Toutes les notifications"
-            description="Activer ou désactiver toutes les notifications d'un seul coup"
-            appnotif={allAppEnabled}
-            mailnotif={allMailEnabled}
-            onAppNotifChange={(_, value) => handleToggleAll('app', value)}
-            onMailNotifChange={(_, value) => handleToggleAll('mail', value)}
-          />
-        </div>
-
-        {/* Liste des notifications */}
-        <div className="space-y-4">
-          {notifications.map((notif) => (
-            <NotificationRow
-              key={notif.id}
-              id={notif.id}
-              name={notif.name}
-              description={notif.description}
-              appnotif={notif.appnotif}
-              mailnotif={notif.mailnotif}
-              onAppNotifChange={handleAppNotifChange}
-              onMailNotifChange={handleMailNotifChange}
-            />
-          ))}
-        </div>
+      {/* Ligne "Toutes les notifications" */}
+      <div className="mb-3 pb-4 border-b border-dashed">
+        <NotificationRow
+          id="all"
+          name="Toutes les notifications"
+          description="Activer ou désactiver toutes les notifications d'un seul coup"
+          appnotif={allAppEnabled}
+          mailnotif={allMailEnabled}
+          onAppNotifChange={(_, value) => handleToggleAll('app', value)}
+          onMailNotifChange={(_, value) => handleToggleAll('mail', value)}
+        />
       </div>
+
+      {/* Liste des notifications */}
+      <div className="space-y-4">
+        {notifications.map((notif) => (
+          <NotificationRow
+            key={notif.code}
+            id={notif.code}
+            name={notif.name}
+            description={notif.description}
+            appnotif={notif.appnotif}
+            mailnotif={notif.mailnotif}
+            onAppNotifChange={handleAppNotifChange}
+            onMailNotifChange={handleMailNotifChange}
+          />
+        ))}
+      </div>
+</div>
       {/* Bouton de sauvegarde */}
-      <div className="mt-8 flex justify-end">
+      <div className="mt-2 flex justify-end">
         <button
           onClick={handleSave}
           disabled={!hasChanges || isSaving}
-          className={`px-6 py-3 rounded-lg font-semibold transition-all ${hasChanges && !isSaving
-            ? 'bg-primary text-white hover:bg-primary/90 cursor-pointer'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+          className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+            hasChanges && !isSaving
+              ? 'bg-primary text-white hover:bg-primary/90 cursor-pointer'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           {isSaving ? 'Sauvegarde en cours...' : 'Sauvegarder'}
         </button>
       </div>
-
+      
     </div>
   );
 }
