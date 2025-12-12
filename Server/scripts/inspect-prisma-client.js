@@ -10,7 +10,7 @@ async function inspectClient() {
       
     });
   } catch (e) {
-    console.error('Error inspecting Prisma client:', e);
+    
   } finally {
     await prisma.$disconnect();
   }

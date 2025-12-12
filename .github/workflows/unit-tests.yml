@@ -29,6 +29,11 @@ jobs:
           cd Server
           npm ci --prefer-offline --no-audit --progress=false
 
+      - name: Generate Prisma Client
+        run: |
+          cd Server
+          npx prisma generate
+
       - name: Run Server Unit Tests
         run: |
           cd Server

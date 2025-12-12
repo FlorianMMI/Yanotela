@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef, useCallback } from "react";
 import { useState, useEffect, Suspense } from "react";
 import { Folder } from "@/type/Folder";
 import FolderHeader from "@/components/folderHeader/FolderHeader";
@@ -16,25 +16,27 @@ export default function FoldersPage() {
   
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasFetched = useRef(false);
 
-  // Charger les dossiers au montage du composant
-  useEffect(() => {
-    fetchFolders();
-  }, []);
-
-  const fetchFolders = async () => {
+  // Charger les dossiers au montage du composant (évite double appel en Strict Mode)
+  const fetchFolders = useCallback(async () => {
     try {
       setLoading(true);
-      
       const response = await GetFolders();
       setFolders(response.folders || []);
     } catch (error) {
-      console.error("Error loading folders:", error);
+      
       setFolders([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetchFolders();
+  }, [fetchFolders]);
 
   // Filtrer et trier les dossiers
   const filteredFolders = Array.isArray(folders) ? folders

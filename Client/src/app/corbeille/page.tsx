@@ -1,10 +1,9 @@
 "use client";
-import React from "react";
+import React, { useRef, useCallback } from "react";
 import { useState, useEffect } from "react";
 import { Note } from "@/type/Note";
 import { GetDeletedNotes, RestoreNote } from "@/loader/loader";
 import { TrashIcon, RefreshIcon, CloseIcon } from "@/libs/Icons";
-import ReturnButton from "@/ui/returnButton";
 
 export default function Corbeille() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -21,22 +20,27 @@ export default function Corbeille() {
     return Math.max(0, daysRemaining); // Ne pas retourner de valeur négative
   };
 
-  useEffect(() => {
-    fetchDeletedNotes();
-  }, []);
+  const hasFetched = useRef(false);
 
-  const fetchDeletedNotes = async () => {
+  // Charger les notes supprimées (évite double appel en Strict Mode)
+  const fetchDeletedNotes = useCallback(async () => {
     try {
       setLoading(true);
       const response = await GetDeletedNotes();
       setNotes(response.notes || []);
     } catch (error) {
-      console.error("Erreur lors du chargement des notes supprimées:", error);
+      
       setNotes([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetchDeletedNotes();
+  }, [fetchDeletedNotes]);
 
   const handleRestore = async (noteId: string) => {
     try {
@@ -54,7 +58,7 @@ export default function Corbeille() {
         alert(response.error || "Erreur lors de la restauration");
       }
     } catch (error) {
-      console.error("Erreur lors de la restauration:", error);
+      
       alert("Une erreur est survenue lors de la restauration");
     } finally {
       setRestoring(null);

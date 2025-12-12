@@ -39,7 +39,7 @@ class ConsoleLogRemover {
         }
 
       } catch (error) {
-        console.error(`❌ Error: ${filePath} - ${error.message}`);
+        
       }
     };
 
@@ -63,7 +63,7 @@ class ConsoleLogRemover {
           }
         });
       } catch (error) {
-        console.error(`❌ Error scanning: ${dir} - ${error.message}`);
+        
       }
     };
 
@@ -76,7 +76,7 @@ class ConsoleLogRemover {
 const targetDir = process.argv[2] || './src';
 
 if (!fs.existsSync(targetDir)) {
-  console.error(`❌ Directory not found: ${targetDir}`);
+  
   process.exit(1);
 }
 

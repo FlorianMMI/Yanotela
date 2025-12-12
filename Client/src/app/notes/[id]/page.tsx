@@ -50,9 +50,8 @@ import ToolbarPlugin from "@/components/textRich/ToolbarPlugin";
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { TitleSyncPlugin } from "@/components/collaboration/TitleSyncPlugin";
-import { MoreIcon, Comment } from "@/libs/Icons";
+import { MoreIcon } from "@/libs/Icons";
 import "@/components/textRich/EditorStyles.css";
-import CommentModal from "@/components/commentaire/commentModal";
 
 // Contexte pour partager l'état de synchronisation
 interface SyncContextType {
@@ -97,7 +96,7 @@ const theme = {
 };
 
 function onError(error: string | Error) {
-  console.error("[Lexical Error]", error);
+  
 }
 
 /**
@@ -219,15 +218,11 @@ function YjsSyncPlugin({
           hasChangesRef.current = false;
           setSyncStatus("synced");
         } else {
-          console.error(
-            "❌ [YjsSync] Erreur HTTP",
-            response.status,
-            await response.text()
-          );
+          
           setSyncStatus("error");
         }
       } catch (error) {
-        console.error("❌ [YjsSync] Erreur:", error);
+        
         setSyncStatus("error");
       }
     }, 2000);
@@ -279,7 +274,7 @@ function YjsSyncPlugin({
           setSyncStatus("error");
         }
       } catch (error) {
-        console.error("❌ [YjsSync] Erreur sync manuel:", error);
+        
         setSyncStatus("error");
       }
     };
@@ -314,7 +309,7 @@ function ReadOnlyPlugin({ isReadOnly }: { isReadOnly: boolean }) {
       const rootElement = editor.getRootElement();
 
       if (!rootElement) {
-        console.error("❌ [ReadOnly] RootElement introuvable après 500ms");
+        
         return;
       }
 
@@ -402,55 +397,44 @@ function LoadInitialContentPlugin({
 
     (async () => {
       try {
-        // Attendre que le CollaborationPlugin ait créé le Y.Doc
-        const { yjsDocuments } = await import("@/collaboration/providers");
+        // Wait for CollaborationPlugin to create the Y.Doc and bootstrap structure
+        const { yjsDocuments } = await import('@/collaboration/providers');
         let ydoc = yjsDocuments.get(noteId);
 
-        // Attendre brièvement que le provider soit créé
+        // Wait up to 1 second for Y.Doc to be created by CollaborationPlugin
         if (!ydoc) {
           const start = Date.now();
-          const maxWait = 500; // Augmenté à 500ms pour laisser le temps au CollaborationPlugin
+          const maxWait = 1000; // ms
           while (Date.now() - start < maxWait && !cancelled) {
-            await new Promise((r) => setTimeout(r, 50));
-            const { yjsDocuments: yjsDocumentsRetry } = await import(
-              "@/collaboration/providers"
-            );
+            await new Promise((r) => setTimeout(r, 100));
+            const { yjsDocuments: yjsDocumentsRetry } = await import('@/collaboration/providers');
             ydoc = yjsDocumentsRetry.get(noteId);
             if (ydoc) break;
           }
         }
 
-        if (ydoc) {
-          // Vérifier si le Y.Doc contient réellement du contenu
-          // Le CollaborationPlugin utilise 'root' comme clé pour le Y.XmlElement
-          const encodedState = Y.encodeStateAsUpdate(ydoc);
-          
-          // Un Y.Doc vide a généralement un état < 10 bytes
-          // Un Y.Doc avec du contenu (même un seul paragraphe) a > 10 bytes
-          if (encodedState.length > 10) {
-            // Y.Doc contient du contenu — ne pas écraser avec le JSON de la DB
-            hasLoadedRef.current = true;
-            return;
-          }
-        }
-
         if (cancelled) return;
 
+        if (!ydoc) {
+          
+          return;
+        }
+
+        // Y.Doc est disponible, charger le contenu depuis DB
+        // Note: On charge toujours car yjsState peut être obsolète
         const parsedContent = JSON.parse(content);
 
-        editor.update(
-          () => {
-            const newEditorState = editor.parseEditorState(parsedContent);
-            editor.setEditorState(newEditorState);
-          },
-          {
-            tag: "history-merge",
-          }
-        );
+        editor.update(() => {
+          const newEditorState = editor.parseEditorState(parsedContent);
+          editor.setEditorState(newEditorState);
+          
+        }, {
+          tag: 'history-merge',
+        });
 
         hasLoadedRef.current = true;
       } catch (err) {
-        console.error("❌ [LoadContent] Erreur parsing contenu:", err);
+        
       }
     })();
 
@@ -575,7 +559,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
   const handleDrawingSave = useCallback(
     (drawingData: DrawingData) => {
       if (!editor) {
-        console.error("❌ Editor non disponible");
+        
         return;
       }
 
@@ -607,7 +591,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
             const jsonString = JSON.stringify(json);
 
             SaveNote(id, { Content: jsonString }).catch((error) => {
-              console.error("❌ Erreur sauvegarde après dessin:", error);
+              
             });
           });
         }
@@ -643,6 +627,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
         setNoteTitle(note.Titre || "Sans titre");
 
         // Charger le contenu initial dans l'éditeur
+        // Le LoadInitialContentPlugin vérifie si Y.Doc a déjà des données avant de charger
         if (note.Content) {
           setInitialEditorContent(note.Content);
         } else {
@@ -658,7 +643,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           setIsReadOnly(false);
         }
       } catch (error) {
-        console.error("❌ Erreur chargement note:", error);
+        
         setHasError(true);
       } finally {
         setIsLoading(false);
@@ -715,13 +700,38 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
-    // Petit délai pour s'assurer que le provider est créé
-    setTimeout(() => {
-      setAwarenessUserInfo(id, userProfile.name, userProfile.color);
-    }, 500);
-
-    setAwarenessUserInfo(id, userProfile.name, userProfile.color);
-  }, [userProfile, id]);
+    // Ne pas appeler setAwarenessUserInfo immédiatement
+    // Le provider sera créé par CollaborationPlugin, on attend qu'il soit prêt
+    
+    // Récupérer l'userId pour la synchronisation automatique des permissions
+    const userId = user ? user.id : undefined;
+    
+    // Attendre que le provider soit créé (après le montage du CollaborationPlugin)
+    // On utilise un intervalle pour vérifier régulièrement
+    let attempts = 0;
+    const maxAttempts = 20; // 20 * 200ms = 4 secondes max
+    
+    const intervalId = setInterval(() => {
+      attempts++;
+      
+      // Essayer de mettre à jour l'awareness
+      const success = setAwarenessUserInfo(id, userProfile.name, userProfile.color, userId);
+      
+      // Si succès, arrêter l'intervalle
+      if (success) {
+        clearInterval(intervalId);
+        return;
+      }
+      
+      // Arrêter après le max d'essais
+      if (attempts >= maxAttempts) {
+        
+        clearInterval(intervalId);
+      }
+    }, 200);
+    
+    return () => clearInterval(intervalId);
+  }, [userProfile, id, user]);
 
   // Gestion des paramètres de recherche (assignation au dossier)
   useEffect(() => {
@@ -738,7 +748,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
           router.replace(url.pathname);
         })
         .catch((error) => {
-          console.error("❌ Erreur assignation dossier:", error);
+          
         });
     }
   }, [searchParams, id, router, user]);

@@ -248,7 +248,7 @@ export default function Note({ note, onNoteUpdated, searchTerm = "", searchMode 
 
       {/* Header - Titre et collaborateurs avec fond rouge */}
       <div className="flex justify-between m-2 items-center gap-3 p-1 rounded-lg" 
-      style={{ backgroundColor: note.tag || 'var(--primary)' }}>
+      style={{ backgroundColor: note.tag?.couleur || 'var(--primary)' }}>
 
         {/* Note Title */}
           <h3

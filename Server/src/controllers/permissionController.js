@@ -1,5 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import { sendNoteInvitationEmail } from "../services/emailService.js";
+import {
+  notifyRoleChanged,
+  notifyUserRemoved,
+  notifyInvitation,
+  notifySomeoneInvited,
+  notifyCollaboratorRemoved,
+} from "../services/yjsNotificationService.js";
 const prisma = new PrismaClient();
 
 //     {id: 1, role: 0}, // Propriétaire
@@ -17,13 +24,14 @@ const getPermission = async (userId, noteId) => {
     });
     return permission;
   } catch (error) {
-    console.error("Erreur lors de la récupération des permissions:", error);
+    
     throw new Error("Erreur lors de la récupération des permissions");
   }
 };
 
 export async function FetchPermission(req, res) {
   const { noteId } = req.params;
+  
   try {
     const permissions = await prisma.permission.findMany({
       where: {
@@ -39,9 +47,10 @@ export async function FetchPermission(req, res) {
         },
       },
     });
+    
     res.json({ permissions });
   } catch (error) {
-    console.error("Erreur lors de la récupération des permissions:", error);
+    
     res
       .status(500)
       .json({ error: "Erreur lors de la récupération des permissions" });
@@ -94,6 +103,8 @@ const UpdatePermission = async (req, res) => {
           .status(400)
           .json({ error: "Rôle cible invalide ou non autorisé." });
       }
+      const oldRole = userPermission.role;
+
       await prisma.permission.update({
         where: {
           noteId_userId: {
@@ -103,17 +114,42 @@ const UpdatePermission = async (req, res) => {
         },
         data: { role: newRole },
       });
+
+      // Notifier l'utilisateur du changement de rôle via YJS
+      try {
+        
+        const note = await prisma.note.findUnique({
+          where: { id: noteId },
+          select: { Titre: true },
+        });
+        const actor = await prisma.user.findUnique({
+          where: { id: connected },
+          select: { pseudo: true },
+        });
+        
+        await notifyRoleChanged(
+          parseInt(userId),
+          noteId,
+          note?.Titre || "Sans titre",
+          oldRole,
+          newRole,
+          actor?.pseudo || "Un administrateur"
+        );
+        
+      } catch (notifError) {
+        
+        // Ne pas bloquer la réponse si la notification échoue
+      }
+
       return res.json({ success: true, message: `Rôle modifié avec succès` });
     } else {
-      return res
-        .status(403)
-        .json({
-          error:
-            "Vous ne pouvez modifier que les utilisateurs ayant un rôle inférieur au vôtre.",
-        });
+      return res.status(403).json({
+        error:
+          "Vous ne pouvez modifier que les utilisateurs ayant un rôle inférieur au vôtre.",
+      });
     }
   } catch (error) {
-    console.error("Erreur lors de la mise à jour des permissions:", error);
+    
     return res
       .status(500)
       .json({ error: "Erreur serveur lors de la mise à jour des permissions" });
@@ -140,11 +176,9 @@ async function AddPermission(req, res) {
     });
     if (!adminPermission || adminPermission.role > 1) {
       // Seuls propriétaire et admin peuvent ajouter
-      return res
-        .status(403)
-        .json({
-          error: "Permissions insuffisantes pour ajouter des utilisateurs",
-        });
+      return res.status(403).json({
+        error: "Permissions insuffisantes pour ajouter des utilisateurs",
+      });
     }
 
     // Trouver l'utilisateur par email ou pseudo
@@ -175,11 +209,9 @@ async function AddPermission(req, res) {
     // Valider le rôle (doit être inférieur à celui de l'admin)
     const targetRole = parseInt(role) || 3; // Par défaut: Lecteur
     if (targetRole <= adminPermission.role) {
-      return res
-        .status(400)
-        .json({
-          error: "Vous ne pouvez attribuer qu'un rôle inférieur au vôtre",
-        });
+      return res.status(400).json({
+        error: "Vous ne pouvez attribuer qu'un rôle inférieur au vôtre",
+      });
     }
 
     // Créer la permission
@@ -213,11 +245,37 @@ async function AddPermission(req, res) {
       );
     } catch (emailError) {
       // L'email a échoué mais la permission a été créée avec succès
-      console.error(
-        "Erreur lors de l'envoi de l'email d'invitation:",
-        emailError
-      );
+      
       // On continue quand même car la permission est créée
+    }
+
+    // 🔔 Envoyer une notification temps réel via WebSocket YJS
+    try {
+      await notifyInvitation(
+        targetUser.id,
+        noteId,
+        note?.Titre || "Sans titre",
+        targetRole,
+        inviter?.pseudo || "Un utilisateur"
+      );
+    } catch (notifError) {
+      
+      // On continue quand même car la permission est créée
+    }
+
+    // 🔔 Notifier les autres admins qu'un utilisateur a été invité
+    try {
+      await notifySomeoneInvited(
+        noteId,
+        note?.Titre || "Sans titre",
+        targetUser.pseudo,
+        targetRole,
+        connected,
+        inviter?.pseudo || "Un utilisateur"
+      );
+    } catch (notifError) {
+      
+      // On continue quand même
     }
 
     res.json({
@@ -232,7 +290,7 @@ async function AddPermission(req, res) {
       emailSent: true, // Indiquer que l'email a été tenté
     });
   } catch (error) {
-    console.error("Erreur lors de l'ajout de permission:", error);
+    
     res
       .status(500)
       .json({ error: "Erreur serveur lors de l'ajout de l'utilisateur" });
@@ -256,11 +314,9 @@ async function RemovePermission(req, res) {
       },
     });
     if (!adminPermission || adminPermission.role > 1) {
-      return res
-        .status(403)
-        .json({
-          error: "Permissions insuffisantes pour retirer un utilisateur",
-        });
+      return res.status(403).json({
+        error: "Permissions insuffisantes pour retirer un utilisateur",
+      });
     }
 
     // Permission de l'utilisateur cible
@@ -271,13 +327,52 @@ async function RemovePermission(req, res) {
       },
     });
     if (adminPermission.role === 1 && userPermission.role === 1) {
-      return res
-        .status(403)
-        .json({
-          error:
-            "Un administrateur ne peut pas retirer un autre administrateur",
-        });
+      return res.status(403).json({
+        error: "Un administrateur ne peut pas retirer un autre administrateur",
+      });
     }
+
+    // Récupérer les infos nécessaires pour les notifications
+    const note = await prisma.note.findUnique({
+      where: { id: noteId },
+      select: { Titre: true },
+    });
+    const actor = await prisma.user.findUnique({
+      where: { id: connected },
+      select: { pseudo: true },
+    });
+    const removedUser = await prisma.user.findUnique({
+      where: { id: parseInt(userId) },
+      select: { pseudo: true },
+    });
+
+    // 🔔 Notifier l'utilisateur de son exclusion
+    try {
+      await notifyUserRemoved(
+        parseInt(userId),
+        noteId,
+        note?.Titre || "Sans titre",
+        actor?.pseudo || "Un administrateur"
+      );
+    } catch (notifError) {
+      
+      // Ne pas bloquer la suppression si la notification échoue
+    }
+
+    // 🔔 Notifier les autres admins qu'un collaborateur a été exclu
+    try {
+      await notifyCollaboratorRemoved(
+        noteId,
+        note?.Titre || "Sans titre",
+        removedUser?.pseudo || "Un utilisateur",
+        connected,
+        actor?.pseudo || "Un administrateur"
+      );
+    } catch (notifError) {
+      
+      // Ne pas bloquer si la notification échoue
+    }
+
     if (!userPermission) {
       return res
         .status(404)
@@ -299,7 +394,7 @@ async function RemovePermission(req, res) {
     });
     res.json({ success: true, message: "Permission retirée avec succès" });
   } catch (error) {
-    console.error("Erreur lors de la suppression de permission:", error);
+    
     res
       .status(500)
       .json({ error: "Erreur serveur lors de la suppression de permission" });

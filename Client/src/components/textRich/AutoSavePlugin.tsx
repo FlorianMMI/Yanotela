@@ -76,7 +76,7 @@ export function AutoSavePlugin({
         throw new Error('Échec de la sauvegarde');
       }
     } catch (error) {
-      console.error(`❌ [AutoSave] Erreur sauvegarde pour note ${noteId}:`, error);
+      
       onSaveError?.(error as Error);
     }
   }, [noteId, isReadOnly, onSaveSuccess, onSaveError]);

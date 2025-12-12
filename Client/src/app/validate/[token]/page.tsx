@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import "../../globals.css";
@@ -15,8 +15,19 @@ export default function ValidatePage({ params }: ValidatePageProps) {
   const { token } = use(params);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const hasValidated = useRef(false);
 
   useEffect(() => {
+    params.then(({ token: resolvedToken }) => {
+      setToken(resolvedToken);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (!token) return;
+    if (hasValidated.current) return;
+    hasValidated.current = true;
+
     const validateToken = async () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://yanotela.fr/api';
       
@@ -40,7 +51,7 @@ export default function ValidatePage({ params }: ValidatePageProps) {
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
             });
-          } catch (e) {
+          } catch {
             // ignore
           }
           setTimeout(() => {
@@ -51,7 +62,7 @@ export default function ValidatePage({ params }: ValidatePageProps) {
           setErrorMessage(data.error || 'Erreur lors de la validation du compte');
         }
       } catch (error) {
-        console.error('Erreur validation:', error);
+        
         setStatus('error');
         setErrorMessage('Erreur de connexion au serveur');
       }

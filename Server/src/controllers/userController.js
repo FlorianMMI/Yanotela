@@ -12,6 +12,9 @@
 
 import { PrismaClient } from "@prisma/client";
 import { sendDeleteAccountEmail } from "../services/emailService.js";
+import { a2fEmail, userDataEmail } from "../services/emailService.js";
+import client from '../config/redisConfig.js';
+
 const prisma = new PrismaClient();
 
 export const userController = {
@@ -45,28 +48,140 @@ export const userController = {
       }
 
       // Compter le nombre de notes de l'utilisateur
-      const noteCount = await prisma.note.count({
+      const notesCount = await prisma.note.count({
         where: {
           authorId: userId,
+          deletedAt: null,
         },
       });
 
-      // Ajouter le nombre de notes aux informations utilisateur
-      const userWithNoteCount = {
+      // Retourner les infos utilisateur + stats
+      res.json({
         ...user,
-        noteCount,
+        notesCount,
+      });
+    } catch (error) {
+      
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  },
+
+  // Récupérer les préférences de notification
+  getNotificationPreferences: async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      const userId = parseInt(req.session.userId, 10);
+      
+      // Récupérer tous les types de notification
+      const types = await prisma.notification_type.findMany();
+      
+      // Récupérer les préférences utilisateur
+      const prefs = await prisma.user_notification_preference.findMany({
+        where: { user_id: userId }
+      });
+
+      // Mapper vers le format attendu par le frontend (3 catégories)
+      const getPref = (code) => {
+        const type = types.find(t => t.code === code);
+        if (!type) return { app: true, mail: true };
+        const pref = prefs.find(p => p.notification_type_id === type.id);
+        return pref ? { app: pref.app_enabled, mail: pref.mail_enabled } : { app: true, mail: true };
       };
 
-      return res.status(200).json(userWithNoteCount);
+      // Pour simplifier, on prend la valeur de la première notification du groupe
+      const invitation = getPref('INVITATION');
+      const comment = getPref('COMMENT_ADDED');
+      const activity = getPref('ROLE_CHANGED');
+
+      const result = [
+        {
+          id: "invitation",
+          name: "Invitations et partages",
+          appnotif: invitation.app,
+          mailnotif: invitation.mail,
+        },
+        {
+          id: "comment",
+          name: "Commentaires",
+          appnotif: comment.app,
+          mailnotif: comment.mail,
+        },
+        {
+          id: "activity",
+          name: "Activités sur mes notes",
+          appnotif: activity.app,
+          mailnotif: activity.mail,
+        },
+      ];
+
+      res.json(result);
     } catch (error) {
-      console.error("Erreur getUserInfo:", error);
-      return res
-        .status(500)
-        .json({
-          message:
-            "Erreur lors de la récupération des informations utilisateur",
-          error: error.message,
+      
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  },
+
+  // Mettre à jour les préférences de notification
+  updateNotificationPreferences: async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    const { preferences } = req.body; // Array of { id, appnotif, mailnotif }
+
+    try {
+      const userId = parseInt(req.session.userId, 10);
+      const types = await prisma.notification_type.findMany();
+
+      const updateType = async (code, app, mail) => {
+        const type = types.find(t => t.code === code);
+        if (!type) return;
+
+        await prisma.user_notification_preference.upsert({
+          where: {
+            user_id_notification_type_id: {
+              user_id: userId,
+              notification_type_id: type.id
+            }
+          },
+          update: {
+            app_enabled: app,
+            mail_enabled: mail,
+            updated_at: new Date()
+          },
+          create: {
+            user_id: userId,
+            notification_type_id: type.id,
+            app_enabled: app,
+            mail_enabled: mail,
+            updated_at: new Date()
+          }
         });
+      };
+
+      for (const pref of preferences) {
+        if (pref.id === 'invitation') {
+          await updateType('INVITATION', pref.appnotif, pref.mailnotif);
+          await updateType('SOMEONE_INVITED', pref.appnotif, pref.mailnotif);
+          await updateType('USER_ADDED', pref.appnotif, pref.mailnotif);
+        } else if (pref.id === 'comment') {
+          await updateType('COMMENT_ADDED', pref.appnotif, pref.mailnotif);
+        } else if (pref.id === 'activity') {
+          await updateType('REMOVED', pref.appnotif, pref.mailnotif);
+          await updateType('NOTE_DELETED', pref.appnotif, pref.mailnotif);
+          await updateType('ROLE_CHANGED', pref.appnotif, pref.mailnotif);
+          await updateType('COLLABORATOR_REMOVED', pref.appnotif, pref.mailnotif);
+          await updateType('USER_LEFT', pref.appnotif, pref.mailnotif);
+        }
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      
+      res.status(500).json({ message: "Erreur serveur" });
     }
   },
 
@@ -110,10 +225,7 @@ export const userController = {
       try {
         await sendDeleteAccountEmail(email);
       } catch (emailError) {
-        console.error(
-          "Erreur lors de l'envoi de l'email de confirmation:",
-          emailError
-        );
+        
         // On continue le processus même si l'email échoue
       }
 
@@ -124,7 +236,7 @@ export const userController = {
       // 🚪 Détruire la session car l'utilisateur ne peut plus se connecter
       req.session.destroy((sessionError) => {
         if (sessionError) {
-          console.error("Erreur destruction session:", sessionError);
+          
         }
       });
 
@@ -134,7 +246,7 @@ export const userController = {
         deletionDate: deletionDate.toISOString(),
       });
     } catch (error) {
-      console.error("Erreur requestAccountDeletion:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la demande de suppression du compte",
         error: error.message,
@@ -193,7 +305,7 @@ export const userController = {
         message: "La suppression de votre compte a été annulée avec succès.",
       });
     } catch (error) {
-      console.error("Erreur cancelAccountDeletion:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de l'annulation de la suppression",
         error: error.message,
@@ -249,10 +361,7 @@ export const userController = {
 
           deletedCount++;
         } catch (deleteError) {
-          console.error(
-            `❌ Erreur lors de la suppression du compte ${user.id}:`,
-            deleteError
-          );
+          
         }
       }
 
@@ -262,7 +371,7 @@ export const userController = {
         deletedCount,
       });
     } catch (error) {
-      console.error("Erreur deleteExpiredAccounts:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la suppression des comptes expirés",
         error: error.message,
@@ -352,7 +461,6 @@ export const userController = {
         user: updatedUser,
       });
     } catch (error) {
-      console.error("Erreur updateUserInfo:", error);
 
       // Gestion des erreurs Prisma spécifiques
       if (error.code === "P2002") {
@@ -402,11 +510,119 @@ export const userController = {
         theme: updatedUser.theme,
       });
     } catch (error) {
-      console.error("Erreur updateUserTheme:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la mise à jour du thème",
         error: error.message,
       });
     }
   },
+
+  // Mettre en place le code 2FA pour l'utilisateur
+  setup2FA: async (req, res) => {
+
+    // Générer un code numérique (6 chiffres) sécurisé
+    const { randomInt } = await import("crypto");
+    const codeLength = 6; // changer si besoin
+    let a2f = Array.from({ length: codeLength }, () => randomInt(0, 10)).join('');
+  
+    if (!req.session.userId) {
+      return res.status(500).json({ message: "Un problèmes est survenu" });
+    }
+
+    // Écrire une clé
+    await client.set(`${req.session.userId}`, `${a2f}`, { EX: 900 }); // expire dans 15 minutes
+
+    // Récupérer l'email de l'utilisateur et envoyer le code 2FA par email
+    const userRecord = await prisma.user.findUnique({
+      where: { id: req.session.userId },
+      select: { email: true },
+    });
+
+    await a2fEmail(userRecord.email, a2f);
+
+    return res.status(200).json({ success: true, message: "Code 2FA envoyé par email" });
+
+  },
+
+  check2fa: async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    const { code } = req.body;
+
+    const storedCode = await client.get(`${req.session.userId}`);
+
+    if (storedCode == code){
+      try {
+        await userController.info2fa(req, res);
+      } catch (error) {
+        
+        return res.status(500).json({ 
+          success: false, 
+          message: "Erreur lors de l'envoi des informations utilisateur" 
+        });
+      }
+    }
+    else {
+      return res.status(400).json({ success: false, message: "Code 2FA invalide" });
+    }
+
+  },
+
+  // fonction qui récupère les infos utilisateur pour la récupération de données 
+
+  info2fa: async(req, res) => {
+
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
+    }
+
+    try {
+      const userId = parseInt(req.session.userId, 10);
+
+      const info = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        pseudo: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        _count: {
+        select: { notes: true },
+        },
+      },
+      });
+
+      if (!info) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+
+      // Envoyer l'email avec les informations utilisateur
+      await userDataEmail(
+        info.email,
+        {
+          "Pseudonyme": info.pseudo,
+          "Nom": info.nom,
+          "Prénom": info.prenom,
+          "E-mail": info.email,
+          "Nombre de notes": info._count.notes,
+        }
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Email d'informations envoyé avec succès"
+      });
+    } catch (error) {
+      
+      return res.status(500).json({
+      success: false,
+      message: "Erreur"
+      });
+    }
+
+  }
+
 };

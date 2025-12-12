@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 
-import Link from 'next/link';
 import { ForgotPassword } from '@/loader/loader';
 
 interface ForgotPasswordFormProps {
@@ -59,7 +58,7 @@ export default function ForgotPasswordForm({
         setError(result.error || 'Erreur lors de l\'envoi du lien de réinitialisation');
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      
       setError('Erreur de connexion au serveur');
     } finally {
       setLoading(false);

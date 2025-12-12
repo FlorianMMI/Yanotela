@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect } from "react";
 import { NoteShareUI, NoteInfoUI, NoteFolderUI, NoteDeleteConfirm } from "@/ui/note-modal";
 import TagNote from "@/ui/note-modal/note-tag";
+import TagManagementModal from "@/ui/note-modal/tag-management-modal";
 import { DeleteNote, LeaveNote, GetNoteById, DuplicateNote } from "@/loader/loader";
 import { useRouter } from "next/navigation";
-import { ArrowBarIcon, ExitIcon, DuplicateIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
-import NoteButton from '@/ui/note-modal/note-button';
+import { ArrowBarIcon, DupplicateIcon, ExitIcon, FolderIcon, InfoIcon, PaletteIcon, PartageIcon, TrashIcon } from "@/libs/Icons";
+import NoteButton from "@/ui/note-modal/note-button";
+
+import { Note } from "@/type/Note";
 
 interface NoteMoreProps {
     noteId: string;
     onClose: () => void;
-    onNoteUpdated?: (updatedNote?: any) => void; // Callback pour rafraîchir la liste (peut recevoir la note mise à jour)
+    onNoteUpdated?: (updatedNote?: Note) => void; // Callback pour rafraîchir la liste (peut recevoir la note mise à jour)
 }
 
 type ModalView = "menu" | "share" | "info" | "folder" | "tag" | "delete" | "leave";
@@ -18,8 +21,9 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
     const [currentView, setCurrentView] = useState<ModalView>("menu");
     const [isDeleting, setIsDeleting] = useState(false);
     const [noteTitle, setNoteTitle] = useState<string>("");
-    const [noteTag, setNoteTag] = useState<string>("");
+    const [noteTagId, setNoteTagId] = useState<string | null>(null);
     const [userRole, setUserRole] = useState<number | undefined>(undefined);
+    const [showTagManagement, setShowTagManagement] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
@@ -30,7 +34,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
             if (noteData && typeof noteData === 'object' && 'Titre' in noteData) {
                 setNoteTitle(noteData.Titre);
                 setUserRole(noteData.userRole);
-                setNoteTag(noteData.tag || '');
+                setNoteTagId(noteData.tagId || null);
             }
         };
         loadNoteInfo();
@@ -39,6 +43,11 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
     // Gérer les clics en dehors du modal
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            // Ne pas fermer si on clique dans le TagManagementModal
+            if (showTagManagement) {
+                return;
+            }
+            
             if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
                 onClose();
             }
@@ -48,7 +57,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [onClose]);
+    }, [onClose, showTagManagement]);
 
     const handleDeleteNote = async () => {
         setIsDeleting(true);
@@ -68,11 +77,11 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     router.push('/notes');
                 }
             } else {
-                console.error("Erreur lors de la suppression:", result.error);
+                
                 alert(result.error || "Erreur lors de la suppression de la note");
             }
         } catch (error) {
-            console.error("Erreur lors de la suppression:", error);
+            
             alert("Une erreur est survenue lors de la suppression");
         } finally {
             setIsDeleting(false);
@@ -97,11 +106,11 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     router.push('/notes');
                 }
             } else {
-                console.error("Erreur lors de la sortie:", result.error);
+                
                 alert(result.error || "Erreur lors de la sortie de la note");
             }
         } catch (error) {
-            console.error("Erreur lors de la sortie:", error);
+            
             alert("Une erreur est survenue lors de la sortie de la note");
         } finally {
             setIsDeleting(false);
@@ -116,11 +125,11 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     router.push(result.redirectUrl);
                 }
             } else {
-                console.error("Erreur lors de la duplication:", result.error);
+                
                 alert(result.error || "Erreur lors de la duplication de la note");
             }
         } catch (error) {
-            console.error("Erreur lors de la duplication:", error);
+            
             alert("Une erreur est survenue lors de la duplication de la note");
         }
     };
@@ -157,7 +166,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                                         const updated = await GetNoteById(noteId);
                                         onNoteUpdated(updated);
                                     }
-                                } catch (err) {
+                                } catch {
                                     // If fetching fails, still notify parent with no payload
                                     if (onNoteUpdated) onNoteUpdated();
                                 }
@@ -165,7 +174,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                         />
                     );
             case "tag":
-                return <TagNote noteId={noteId} currentTag={noteTag} onTagUpdated={onNoteUpdated} />;
+                return <TagNote noteId={noteId} currentTagId={noteTagId} onTagUpdated={onNoteUpdated} />;
             case "delete":
             case "leave":
                 return null; // Le modal sera rendu en dehors du contenu
@@ -174,10 +183,17 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     <div className="w-52 md:w-64">
                         <div className="flex flex-col gap-1 p-2">
                             <NoteButton Icon={FolderIcon} Title="Dossiers" modal="folder" setCurrentView={setCurrentView} borderTop={false} />
-                            <NoteButton Icon={PaletteIcon} Title="Tag couleur" modal="tag" setCurrentView={setCurrentView} />
+                            <NoteButton 
+                                Icon={PaletteIcon} 
+                                Title="Tag couleur" 
+                                modal="tag" 
+                                setCurrentView={setCurrentView}
+                                showEditIcon={true}
+                                onEditClick={() => setShowTagManagement(true)}
+                            />
                             <NoteButton Icon={PartageIcon} Title="Partager la note" modal="share" setCurrentView={setCurrentView} />
                             <NoteButton Icon={InfoIcon} Title="Infos de la note" modal="info" setCurrentView={setCurrentView} />
-                            <NoteButton Icon={DuplicateIcon} Title="Dupliquer la note" onClick={handleDuplicateNote} />
+                            <NoteButton Icon={DupplicateIcon} Title="Dupliquer la note" onClick={handleDuplicateNote} />
                             {/*  "Supprimer" pour Owner uniquement (0) / Quitter pour les autres */}
                             {userRole !== 0 ? (
                             <NoteButton Icon={ExitIcon} delete Title="Quitter la note" modal="leave" setCurrentView={setCurrentView} />
@@ -193,6 +209,13 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
 
     return (
         <>
+            {/* Modal de gestion des tags */}
+            <TagManagementModal 
+                isOpen={showTagManagement}
+                onClose={() => setShowTagManagement(false)}
+                onTagsUpdated={onNoteUpdated}
+            />
+
             {currentView === "delete" ? (
                 <NoteDeleteConfirm
                     noteTitle={noteTitle}
@@ -209,12 +232,12 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                     isLeaving={true}
                 />
             ) : (
-                <div 
+                <div
                     ref={modalRef}
                     className="bg-white rounded-xl w-52 md:w-64 shadow-lg overflow-hidden relative h-auto flex flex-col"
                 >
-                    
-                    <div className="p-2 gap-2 border-b border-element flex items-center">
+
+                    <div className="p-3 md:p-4 pb-2 border-b border-element flex items-center">
                         {currentView !== "menu" && (
                             <button
                                 className="rounded hover:bg-deskbackground transition-colors"
@@ -226,7 +249,7 @@ export default function NoteMore({ noteId, onClose, onNoteUpdated }: NoteMorePro
                         )}
                         <h3 className="text-base md:text-lg font-semibold text-foreground">{getModalTitle()}</h3>
                     </div>
-                    
+
                     {renderContent()}
                 </div>
             )}

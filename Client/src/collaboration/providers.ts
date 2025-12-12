@@ -6,6 +6,7 @@
 import { Provider } from '@lexical/yjs';
 import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
+import { AutoAcceptPermission } from '@/loader/loader';
 
 /**
  * Map globale des providers pour accès depuis les composants UI
@@ -25,18 +26,55 @@ export const yjsDocuments = new Map<string, Y.Doc>();
  * @param noteId - ID de la note
  * @param userName - Nom de l'utilisateur
  * @param userColor - Couleur du curseur
+ * @param userId - ID de l'utilisateur
+ * @returns true si le provider existe et a été mis à jour, false sinon
  */
-export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string) {
+export function setAwarenessUserInfo(noteId: string, userName: string, userColor: string, userId?: number): boolean {
   const provider = providerInstances.get(noteId);
   if (!provider) {
-    return;
+    // Ne pas logger en mode warning - c'est normal que le provider n'existe pas encore
+    // pendant l'initialisation (il sera créé par CollaborationPlugin)
+    return false;
   }
 
   const awareness = provider.awareness;
   awareness.setLocalStateField('user', {
     name: userName,
     color: userColor,
+    id: userId, // Inclure l'userId pour la synchronisation
   });
+
+  // AUTO-SYNC: Appeler le serveur pour auto-accepter la permission si nécessaire
+  if (userId) {
+    autoAcceptPermissionOnJoin(noteId).catch(err => {
+      
+    });
+  }
+  
+  return true;
+}
+
+/**
+ * Auto-accepte une permission quand l'utilisateur rejoint une note
+ * Déclenche aussi le rafraîchissement des notifications côté client
+ * 
+ * @param noteId - ID de la note rejointe
+ */
+async function autoAcceptPermissionOnJoin(noteId: string): Promise<void> {
+  try {
+    const result = await AutoAcceptPermission(noteId);
+    
+    // Si une permission a été auto-acceptée, rafraîchir les notifications
+    if (result.success && result.autoAccepted) {
+
+      // Déclencher le rafraîchissement des notifications en temps réel
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('refreshNotifications'));
+      }
+    }
+  } catch (error) {
+    
+  }
 }
 
 /**
@@ -64,7 +102,7 @@ export function createWebsocketProvider(
     `yanotela-${id}`,                   // Room name (préfixe + noteId)
     doc,
     {
-      connect: false,                   // Ne pas connecter immédiatement (géré par plugin)
+      connect: true,                    // Connecter immédiatement (géré par y-websocket)
       // Paramètres de reconnexion
       resyncInterval: 10000,            // Resync toutes les 10s
       maxBackoffTime: 10000,            // Délai max entre reconnexions

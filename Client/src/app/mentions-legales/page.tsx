@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { ArrowIcon } from '@/libs/Icons';
 export const noAuth = true;
 
 export default function MentionsLegalesPage() {

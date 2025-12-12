@@ -23,25 +23,25 @@ model User {
   notes         Note[]
   modifiedNotes Note[]        @relation("NoteModifier")
   permissions   Permission[]
-  commentaire   commentaire[]
   noteFolders   NoteFolder[]
+  tags          Tag[]
 }
 
 model Note {
   id          String        @id
   Titre       String
   Content     String
+  yjsState    Bytes?
+  tagId       String?      // Référence vers un Tag personnalisé (optionnel)
   authorId    Int
   ModifiedAt  DateTime      @default(now())
   modifierId  Int?
   deletedAt   DateTime?
-  yjsState    Bytes?
-  tag         String?
   isPublic    Boolean       @default(false)
-  author      User          @relation(fields: [authorId], references: [id])
-  modifier    User?         @relation("NoteModifier", fields: [modifierId], references: [id])
+  author      User         @relation(fields: [authorId], references: [id])
+  modifier    User?        @relation("NoteModifier", fields: [modifierId], references: [id])
+  tag         Tag?         @relation(fields: [tagId], references: [id], onDelete: SetNull)
   permissions Permission[]
-  commentaire commentaire[]
   noteFolder  NoteFolder?
 }
 
@@ -85,12 +85,50 @@ model NoteFolder {
   @@map("note_folder")
 }
 
-model commentaire {
-  id       String   @id
-  text     String
-  date     DateTime @default(now())
-  authorId Int
-  id_note  String
-  User     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  Note     Note     @relation(fields: [id_note], references: [id], onDelete: Cascade)
+model Tag {
+  id        String   @id @default(uuid())
+  nom       String
+  couleur   String
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     Note[]
+
+  @@unique([userId, nom])
+  @@index([userId])
 }
+
+model NotificationType {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  userPreferences UserNotificationPreference[]
+
+  @@map("notification_type")
+}
+
+model UserNotificationPreference {
+  id                 Int              @id @default(autoincrement())
+  userId             Int              @map("user_id")
+  notificationTypeId Int              @map("notification_type_id")
+  appEnabled         Boolean          @default(true) @map("app_enabled")
+  mailEnabled        Boolean          @default(true) @map("mail_enabled")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  
+  notificationType   NotificationType @relation(fields: [notificationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationTypeId])
+  @@index([userId])
+  @@index([notificationTypeId])
+  @@map("user_notification_preference")
+}
+
+// Note: Les commentaires sont maintenant gérés via YJS (Y.Array partagé)
+// Voir: Client/src/hooks/useYjsComments.ts

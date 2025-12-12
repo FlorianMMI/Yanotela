@@ -16,8 +16,8 @@ export interface YjsComment {
  * Les commentaires sont stockés dans un Y.Array partagé entre tous les clients
  * 
  * @param noteId - ID de la note
- * @param userId - ID de l'utilisateur courant
- * @param userPseudo - Pseudo de l'utilisateur courant
+ * @param userId - ID de l'utilisateur courant (optionnel pour les anonymes)
+ * @param userPseudo - Pseudo de l'utilisateur courant (optionnel pour les anonymes)
  */
 export function useYjsComments(noteId: string | null, userId?: number, userPseudo?: string) {
   const [comments, setComments] = useState<YjsComment[]>([]);
@@ -109,23 +109,42 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
 
   /**
    * Ajouter un commentaire (synchronisé via YJS)
+   * Permet aux utilisateurs non connectés de commenter en tant qu'anonyme
    */
-  const addComment = useCallback((text: string) => {
-    if (!yArrayRef.current || !userId || !userPseudo || !text.trim()) return false;
+  const addComment = useCallback(async (text: string) => {
+    if (!yArrayRef.current || !text.trim()) return false;
 
     const newComment: YjsComment = {
       id: crypto.randomUUID(),
       text: text.trim(),
-      authorId: userId,
-      authorPseudo: userPseudo,
+      authorId: userId || 0, // 0 pour les utilisateurs anonymes
+      authorPseudo: userPseudo || 'Anonyme',
       date: new Date().toISOString(),
     };
 
     // Ajouter au Y.Array (sera synchronisé automatiquement)
     yArrayRef.current.push([newComment]);
     
+    // Notifier le serveur si l'utilisateur est connecté
+    if (userId && noteId) {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        // Ne pas attendre la réponse pour ne pas bloquer l'UI
+        fetch(`${apiUrl}/notification/comment/${noteId}`, {
+          method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          commentPreview: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
+        }),
+      }).catch(() => {});
+    } catch (error) {      }
+    }
+    
     return true;
-  }, [userId, userPseudo]);
+  }, [userId, userPseudo, noteId]);
 
   /**
    * Supprimer un commentaire (synchronisé via YJS)
@@ -134,7 +153,7 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
    * @param userRole - Rôle de l'utilisateur (0=owner, 1=admin, etc.)
    */
   const deleteComment = useCallback((commentId: string, userRole?: number) => {
-    if (!yArrayRef.current || !userId) return false;
+    if (!yArrayRef.current) return false;
 
     const arr = yArrayRef.current.toArray();
     const index = arr.findIndex(c => c.id === commentId);
@@ -145,11 +164,14 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
     
     // Vérifier les permissions
     const canDelete = 
-      comment.authorId === userId || // Auteur du commentaire
-      userRole === 0 ||              // Propriétaire de la note
-      userRole === 1;                // Admin de la note
+      (userId && comment.authorId === userId) || // Auteur du commentaire (si connecté)
+      userRole === 0 ||                          // Propriétaire de la note
+      userRole === 1;                            // Admin de la note
 
-    if (!canDelete) return false;
+    if (!canDelete) {
+      
+      return false;
+    }
 
     // Supprimer du Y.Array
     yArrayRef.current.delete(index, 1);

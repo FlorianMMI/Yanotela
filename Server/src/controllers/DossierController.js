@@ -25,7 +25,7 @@ export const DossierController = {
         data: {
           Nom: Nom.trim(),
           Description: Description?.trim() || null,
-          CouleurTag: CouleurTag || "#882626",
+          CouleurTag: CouleurTag || "var(--primary)",
           authorId,
         },
       });
@@ -34,7 +34,7 @@ export const DossierController = {
         .status(201)
         .json({ message: "Dossier créé avec succès", folder: newFolder });
     } catch (error) {
-      console.error("[createFolder] Error:", error);
+      
       return res
         .status(500)
         .json({
@@ -113,7 +113,7 @@ export const DossierController = {
         totalFolders: foldersWithNoteCounts.length,
       });
     } catch (error) {
-      console.error("[getFolders] Error:", error);
+      
       return res
         .status(500)
         .json({
@@ -212,7 +212,7 @@ export const DossierController = {
         notes: notes,
       });
     } catch (error) {
-      console.error("[getFolderById] Error:", error);
+      
       return res
         .status(500)
         .json({
@@ -265,7 +265,7 @@ export const DossierController = {
         folder: updated,
       });
     } catch (error) {
-      console.error("[updateFolder] Error:", error);
+      
       return res.status(500).json({
         message: "Erreur lors de la mise à jour du dossier",
         error: error.message,
@@ -319,7 +319,7 @@ export const DossierController = {
         message: "Dossier supprimé définitivement avec succès",
       });
     } catch (error) {
-      console.error("Erreur lors de la suppression du dossier:", error);
+      
       res
         .status(500)
         .json({ error: "Erreur serveur lors de la suppression du dossier" });
@@ -406,7 +406,7 @@ export const DossierController = {
         assignment: assignment,
       });
     } catch (error) {
-      console.error("Erreur lors de l'ajout de la note au dossier:", error);
+      
       res
         .status(500)
         .json({
@@ -452,7 +452,7 @@ export const DossierController = {
         message: "Note retirée du dossier avec succès",
       });
     } catch (error) {
-      console.error("Erreur lors de la suppression de l'assignation:", error);
+      
       res
         .status(500)
         .json({
@@ -492,10 +492,7 @@ export const DossierController = {
 
       res.status(200).json({ folder: assignment.folder });
     } catch (error) {
-      console.error(
-        "Erreur lors de la récupération du dossier de la note:",
-        error
-      );
+      
       res
         .status(500)
         .json({ error: "Erreur serveur lors de la récupération du dossier" });
@@ -594,10 +591,7 @@ export const DossierController = {
         totalNotes: notes.length,
       });
     } catch (error) {
-      console.error(
-        "Erreur lors de la récupération des notes du dossier:",
-        error
-      );
+      
       res
         .status(500)
         .json({ error: "Erreur serveur lors de la récupération des notes" });

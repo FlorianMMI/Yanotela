@@ -1,7 +1,8 @@
 "use client";
 
 import ReturnButton from "@/ui/returnButton";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+
 import InputModified from "@/ui/inputModified";
 import { ForgotPassword, InfoUser, updateUser } from '@/loader/loader';
 import { CheckIcon, CloseIcon, KeyholeIcon } from "@/libs/Icons";
@@ -17,31 +18,34 @@ export default function ModificationProfil() {
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const hasFetched = useRef(false);
+
+  const loadUserInfo = useCallback(async () => {
+    try {
+      const result = await InfoUser();
+      if (result.success && result.user) {
+        setUserData({
+          pseudo: result.user.pseudo || "",
+          prenom: result.user.prenom || "",
+          nom: result.user.nom || "",
+          email: result.user.email || ""
+        });
+      } else {
+        setError("Impossible de charger les informations utilisateur");
+      }
+    } catch {
+      setError("Erreur lors du chargement des informations");
+    } finally {
+      setPageLoading(false);
+    }
+  }, []);
 
   // Charger les informations utilisateur au montage du composant
   useEffect(() => {
-    const loadUserInfo = async () => {
-      try {
-        const result = await InfoUser();
-        if (result.success && result.user) {
-          setUserData({
-            pseudo: result.user.pseudo || "",
-            prenom: result.user.prenom || "",
-            nom: result.user.nom || "",
-            email: result.user.email || ""
-          });
-        } else {
-          setError("Impossible de charger les informations utilisateur");
-        }
-      } catch (error) {
-        setError("Erreur lors du chargement des informations :" + error);
-      } finally {
-        setPageLoading(false);
-      }
-    };
-
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     loadUserInfo();
-  }, []);
+  }, [loadUserInfo]);
 
   // Fonction pour sauvegarder un champ spécifique
     const handleFieldSave = async (fieldName: keyof typeof userData, newValue: string) => {
@@ -76,7 +80,7 @@ export default function ModificationProfil() {
         }, 5000);
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      
       setError('Erreur de connexion au serveur');
       
       // Faire disparaître le message d'erreur après 5 secondes
@@ -115,7 +119,7 @@ export default function ModificationProfil() {
         setError(result.error || 'Erreur lors de l\'envoi du mail de confirmation');
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      
       setError('Erreur de connexion au serveur');
     } finally {
       setLoading(false);

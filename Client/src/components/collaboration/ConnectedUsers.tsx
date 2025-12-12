@@ -64,7 +64,7 @@ export default function ConnectedUsers({ noteId, className = '' }: ConnectedUser
         // Listen for changes
         awareness.on('change', updateUsersFromAwareness);
       } catch (error) {
-        console.error('[ConnectedUsers] Erreur lors de la récupération des users:', error);
+        
         setIsLoading(false);
       }
     }

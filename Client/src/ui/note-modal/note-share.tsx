@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FetchPermission, UpdatePermission, AddPermission, RemovePermission, IsPublic, setPublic } from "@/loader/loader";
-import { Permission } from "@/type/Permission";
+
 import { useAuth } from "@/hooks/useAuth";
-import { CheckIcon, CopyIcon, CopyLinkIcon, CrownIcon } from '@/libs/Icons';
+import { CopyIcon, CopyLinkIcon, CrownIcon } from '@/libs/Icons';
+import ConfirmRemoveUserModal from "./ConfirmRemoveUserModal";
 
 const ROLE_LABELS = ["Propriétaire", "Administrateur", "Éditeur", "Lecteur"];
 
@@ -22,8 +23,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     const [isTogglePublic, setIsTogglePublic] = useState(false); // false = privé par défaut
     const [copied, setCopied] = useState(false);
     const [currentUserRole, setCurrentUserRole] = useState<number | null>(null); // Rôle de l'utilisateur connecté
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
+    const [userToRemove, setUserToRemove] = useState<{ id: number; pseudo: string } | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -32,7 +32,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
             const perms = data && data.success && Array.isArray(data.permissions) ? data.permissions : [];
             setPermissions(perms);
             // Trouver le rôle de l'utilisateur connecté
-            const currentUserPerm = perms.find((perm: Permission) => perm.user?.id === connectedUserId);
+            const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
             setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
             setLoading(false);
         });
@@ -56,58 +56,42 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
     };
 
     return (
-        <div className="flex-1 overflow-y-auto scrollbar-custom  p-3 md:p-4">
-            { 
+        <div className="flex-1 overflow-y-auto p-4">
+            {
                 <>
-                <section className= "flex justify-between items-center mb-4">
-                <div className={` px-3 py-1 rounded-full text-sm inline-block ${currentUserRole === 0 ? 'bg-deskbackground text-primary' : 'bg-deskbackground text-element'}`}>
-                    {(() => {
-                        const label = (typeof currentUserRole === 'number' && ROLE_LABELS[currentUserRole]) ? ROLE_LABELS[currentUserRole] : null;
-                        return (
-                            <>
-                                <span>{label ? label.toLowerCase() : 'utilisateur'}</span>
-                            </>
-                        );
-                    })()}
-                </div>
-                
-                <div>
-                    <label className="flex items-center gap-3">
-                        {isTogglePublic ? (
-                        <span className="text-sm text-element">Publique</span>
-                        ) : (
-                        <span className="text-sm text-element">Privée</span>
-                        )}
-                        <div className="relative">
-                            <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                aria-label="Basculer public/privé"
-                                checked={isTogglePublic}
-                                disabled={currentUserRole !== null && currentUserRole > 1}
-                                onChange={(e) => {
-                                    if (currentUserRole !== null && currentUserRole <= 1) {
-                                        handleTogglePublic(e.target.checked);
-                                    }
-                                }}
-                            />
-                            <div className={`w-11 h-6 rounded-full transition-colors ${
-                                currentUserRole !== null && currentUserRole > 1 
-                                    ? 'bg-gray-300 cursor-not-allowed' 
-                                    : 'bg-deskbackground peer-checked:bg-primary cursor-pointer'
-                            }`} />
-                            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform peer-checked:translate-x-5 ${
-                                currentUserRole !== null && currentUserRole > 1 ? 'cursor-not-allowed' : ''
-                            }`} />
+                    <section className="flex justify-between items-center mb-4">
+                        <div className={` px-3 py-1 rounded-full text-sm inline-block ${currentUserRole === 0 ? 'bg-deskbackground text-primary' : 'bg-deskbackground text-element'}`}>
+                            {(() => {
+                                const label = (typeof currentUserRole === 'number' && ROLE_LABELS[currentUserRole]) ? ROLE_LABELS[currentUserRole] : null;
+                                return (
+                                    <span>Vous êtes {label ? label.toLowerCase() : 'utilisateur'}</span>
+                                );
+                            })()}
                         </div>
-                    </label>
-                    {currentUserRole !== null && currentUserRole > 1 && (
-                        <p className="text-xs text-gray-500 mt-1 text-right">
-                            Seuls les admins peuvent modifier ce paramètre
-                        </p>
-                    )}
-                </div>
-                </section>
+
+                        <div>
+                            <label className="flex items-center gap-3">
+                                {isTogglePublic ? (
+                                    <span className="text-sm text-element">Publique</span>
+                                ) : (
+                                    <span className="text-sm text-element">Privée</span>
+                                )}
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        aria-label="Basculer public/privé"
+                                        checked={isTogglePublic}
+                                        onChange={(e) => {
+                                            handleTogglePublic(e.target.checked);
+                                        }}
+                                    />
+                                    <div className="w-11 h-6 rounded-full bg-deskbackground peer-checked:bg-primary transition-colors" />
+                                    <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform peer-checked:translate-x-5" />
+                                </div>
+                            </label>
+                        </div>
+                    </section>
                 </>
             }
 
@@ -154,15 +138,15 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                                         style={item.user.id === connectedUserId ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                                                         onChange={async (e) => {
                                                             const newRole = parseInt(e.target.value);
-                                                                const result = await UpdatePermission(noteId, item.user.id, newRole);
-                                                                if (result.success) {
-                                                                    // Refresh permissions
-                                                                    const data = await FetchPermission(noteId);
-                                                                    if (data.success) {
-                                                                        const perms = data.permissions || [];
-                                                                        setPermissions(perms);
-                                                                        // Mettre à jour le rôle courant si nécessaire
-                                                                        const currentUserPerm = perms.find((perm: Permission) => perm.user?.id === connectedUserId);
+                                                            const result = await UpdatePermission(noteId, item.user.id, newRole);
+                                                            if (result.success) {
+                                                                // Refresh permissions
+                                                                const data = await FetchPermission(noteId);
+                                                                if (data.success) {
+                                                                    const perms = data.permissions || [];
+                                                                    setPermissions(perms);
+                                                                    // Mettre à jour le rôle courant si nécessaire
+                                                                    const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
                                                                     setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
                                                                 }
                                                                 // Appeler le callback pour rafraîchir la liste des notes
@@ -181,33 +165,15 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                                         <option value={2}>Éditeur</option>
                                                         <option value={3}>Lecteur</option>
                                                     </select>
+
                                                     <button
                                                         className="text-xs text-primary hover:text-primary-hover px-2 py-1 border border-primary hover:border-primary-hover rounded transition-colors w-full"
                                                         title="Retirer l'accès à la note"
                                                         disabled={item.user.id === connectedUserId}
                                                         style={item.user.id === connectedUserId ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                                                        onClick={async () => {
+                                                        onClick={() => {
                                                             if (item.user.id === connectedUserId) return;
-                                                            if (window.confirm(`Retirer ${item.user.pseudo} de la note ?`)) {
-                                                                const result = await RemovePermission(noteId, item.user.id);
-                                                                if (result.success) {
-                                                                    // Refresh permissions
-                                                                    const data = await FetchPermission(noteId);
-                                                                    if (data.success) {
-                                                                        const perms = data.permissions || [];
-                                                                        setPermissions(perms);
-                                                                        // Mettre à jour le rôle courant si nécessaire
-                                                                        const currentUserPerm = perms.find((perm: Permission) => perm.user?.id === connectedUserId);
-                                                                        setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
-                                                                    }
-                                                                    // Appeler le callback pour rafraîchir la liste des notes
-                                                                    if (onShareSuccess) {
-                                                                        onShareSuccess();
-                                                                    }
-                                                                } else {
-                                                                    alert(result.error || 'Erreur lors de la suppression');
-                                                                }
-                                                            }
+                                                            setUserToRemove({ id: item.user.id, pseudo: item.user.pseudo });
                                                         }}
                                                     >
                                                         Retirer
@@ -266,7 +232,7 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                                         const perms = data.permissions || [];
                                         setPermissions(perms);
                                         // Mettre à jour le rôle courant si nécessaire
-                                        const currentUserPerm = perms.find((perm: Permission) => perm.user?.id === connectedUserId);
+                                        const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
                                         setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
                                     }
                                     // Appeler le callback pour rafraîchir la liste des notes
@@ -284,22 +250,22 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
 
                         <button
                             onClick={async () => {
-                                
+
                                 try {
                                     const url = `${window.location.origin}/notes/${noteId}`;
                                     await navigator.clipboard.writeText(url);
                                     setCopied(true);
                                     setTimeout(() => setCopied(false), 2000);
                                 } catch (err) {
-                                    console.error('Erreur copie lien', err);
+                                    
                                     alert('Impossible de copier le lien.');
                                 }
                             }}
-                           
+
                             title="Copier le lien de la note"
                             className={`px-4 py-2 border border-element rounded text-sm text-foreground flex flex-col justify-center hover:bg-deskbackground transition-colors`}
                         >
-                            {copied ? <CopyIcon width={20} height={20} /> : <CopyLinkIcon/>}
+                            {copied ? <CopyIcon width={20} height={20} /> : <CopyLinkIcon />}
                         </button>
                     </div>
                 </div>
@@ -314,6 +280,34 @@ const NoteShareUI: React.FC<NoteShareUIProps> = ({ noteId, onShareSuccess }) => 
                     </p>
                 </div>
             )}
+
+            {/* Modale de confirmation de suppression */}
+            <ConfirmRemoveUserModal
+                isOpen={userToRemove !== null}
+                onClose={() => setUserToRemove(null)}
+                onConfirm={async () => {
+                    if (!userToRemove) return;
+                    const result = await RemovePermission(noteId, userToRemove.id);
+                    if (result.success) {
+                        // Refresh permissions
+                        const data = await FetchPermission(noteId);
+                        if (data.success) {
+                            const perms = data.permissions || [];
+                            setPermissions(perms);
+                            // Mettre à jour le rôle courant si nécessaire
+                            const currentUserPerm = perms.find((perm) => perm.user.id === connectedUserId);
+                            setCurrentUserRole(currentUserPerm ? currentUserPerm.role : null);
+                        }
+                        // Appeler le callback pour rafraîchir la liste des notes
+                        if (onShareSuccess) {
+                            onShareSuccess();
+                        }
+                    } else {
+                        alert(result.error || 'Erreur lors de la suppression');
+                    }
+                }}
+                userName={userToRemove?.pseudo || ""}
+            />
         </div>
     );
 };

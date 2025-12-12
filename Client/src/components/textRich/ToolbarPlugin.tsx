@@ -10,7 +10,7 @@ import { SELECTION_CHANGE_COMMAND, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, 
 import { $patchStyleText } from '@lexical/selection';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list';
 import { mergeRegister } from '@lexical/utils';
-import {BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, FontColorIcon, BackgroundColorIcon, ListUlIcon, ListOlIcon, TextLeftIcon, TextCenterIcon, TextRightIcon, TextJustifyIcon, MediaIcon, ModifIcon, } from '@/libs/Icons';
+import { BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, FontColorIcon, BackgroundColorIcon, ListUlIcon, ListOlIcon, TextLeftIcon, TextCenterIcon, TextRightIcon, TextJustifyIcon, MediaIcon, ModifIcon, } from '@/libs/Icons';
 import { $createImageNode } from '@/components/flashnote/ImageNode';
 import { $createAudioNode } from '@/components/flashnote/AudioNode';
 import { $createVideoNode } from '@/components/flashnote/VideoNode';
@@ -121,15 +121,15 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         setFontSize(fontSizes.size === 1 ? Array.from(fontSizes)[0] : fontSizes.size > 1 ? '' : '16px');
         setFontFamily(fontFamilies.size === 1 ? Array.from(fontFamilies)[0] : fontFamilies.size > 1 ? '' : 'Gantari');
         if (fontColors.size === 1) setFontColor(Array.from(fontColors)[0]);
-        if (backgroundColors.size === 1){
+        if (backgroundColors.size === 1) {
             const tempcolor = Array.from(backgroundColors)[0];
-            if (tempcolor == '#ffffff' || tempcolor == '#FFFFFF'){
+            if (tempcolor == '#ffffff' || tempcolor == '#FFFFFF') {
                 setBackgroundColor('#727272');
             }
-            else{
+            else {
                 setBackgroundColor(Array.from(backgroundColors)[0]);
             }
-             
+
         }
 
         // Format toggles
@@ -305,9 +305,9 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
     }, [applyStyleText]);
 
     const handleBackgroundColorChange = useCallback((color: string) => {
-        
+
         if (color == '#ffffff' || color == '#FFFFFF') {
-            
+
             setBackgroundColor('#727272');
             applyStyleText({ 'background-color': color });
         }
@@ -315,7 +315,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
             setBackgroundColor(color);
             applyStyleText({ 'background-color': color });
         }
-        
+
     }, [applyStyleText]);
 
     const handleFontSizeChange = useCallback((size: string) => {
@@ -359,9 +359,9 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
         }
 
         // Check file size (max 50MB for video, 10MB for audio, 5MB for images)
-        const maxSize= 10 * 1024 * 1024;
-        const maxSizeLabel= '10MB';
-       if (file.size > maxSize) {
+        const maxSize = 10 * 1024 * 1024;
+        const maxSizeLabel = '10MB';
+        if (file.size > maxSize) {
             alert(`Le fichier est trop volumineux (max ${maxSizeLabel})`);
             return;
         }
@@ -421,170 +421,176 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                 role="toolbar"
                 aria-label="Editor toolbar"
                 ref={toolbarRef}
-                className="hidden md:flex flex-wrap items-center gap-1 bg-white rounded-lg sticky top-4 z-10 p-2 mb-1 shadow-sm"
+                className="hidden md:flex flex-row justify-between items-center gap-1 bg-white rounded-lg sticky top-4 z-10 p-2 mb-1 shadow-sm"
             >
-                {/* Formatage */}
-                <button
-                    onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isBold ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    aria-label="Gras"
-                    title="Gras (Ctrl+B)">
-                    <BoldIcon width={20} height={20} />
+                <div className="md:flex flex-wrap items-center gap-1"
+                >
+                    {/* Formatage */}
+                    <button
+                        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isBold ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        aria-label="Gras"
+                        title="Gras (Ctrl+B)">
+                        <BoldIcon width={20} height={20} />
 
-                </button>
-                <button
-                    onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isItalic ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    aria-label="Italique"
-                    title="Italique (Ctrl+I)">
-                    <ItalicIcon width={20} height={20} />
-                </button>
-                <button
-                    onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isUnderline ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    aria-label="Souligner"
-                    title="Souligner (Ctrl+U)">
-                    <UnderlineIcon width={20} height={20} />
+                    </button>
+                    <button
+                        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isItalic ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        aria-label="Italique"
+                        title="Italique (Ctrl+I)">
+                        <ItalicIcon width={20} height={20} />
+                    </button>
+                    <button
+                        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isUnderline ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        aria-label="Souligner"
+                        title="Souligner (Ctrl+U)">
+                        <UnderlineIcon width={20} height={20} />
 
-                </button>
-                <button
-                    onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isStrikethrough ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    aria-label="Barré"
-                    title="Barré">
-                    <StrikethroughIcon width={20} height={20} />
+                    </button>
+                    <button
+                        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isStrikethrough ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        aria-label="Barré"
+                        title="Barré">
+                        <StrikethroughIcon width={20} height={20} />
 
-                </button>
+                    </button>
 
-                <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
-                
-                {/* Selection de la police d'écriture */}
-                <select
-                    value={fontFamily || ''}
-                    onChange={(e) => handleFontFamilyChange(e.target.value)}
-                    title="Police d'écriture"
-                    className="rounded-md border border-gray-200 bg-white px-2 py-1 text-sm focus:border-primary focus:outline-none transition-colors duration-200"
-                    style={{ fontFamily: fontFamily || 'Gantari' }}>
-                    <option value="" hidden>Mixte</option>
-                    <option value="Gantari" style={{ fontFamily: 'Gantari' }}>Gantari</option>
-                    <option value="Geologica" style={{ fontFamily: 'Geologica' }}>Geologica</option>
-                    <option value="Arial" style={{ fontFamily: 'Arial' }}>Arial</option>
-                    <option value="Times New Roman" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</option>
-                    <option value="Courier New" style={{ fontFamily: 'Courier New' }}>Courier New</option>
-                    <option value="Georgia" style={{ fontFamily: 'Georgia' }}>Georgia</option>
-                    <option value="Verdana" style={{ fontFamily: 'Verdana' }}>Verdana</option>
-                    <option value="Comic Sans MS" style={{ fontFamily: 'Comic Sans MS' }}>Comic Sans MS</option>
-                    <option value="monospace" style={{ fontFamily: 'monospace' }}>Monospace</option>
-                </select>
+                    <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
 
-                {/* Taille et couleur */}
-                <select
-                    value={fontSize || ''}
-                    onChange={(e) => handleFontSizeChange(e.target.value)}
-                    title="Taille de police"
-                    className="rounded-md border border-gray-200 bg-white px-2 py-1 text-sm focus:border-primary focus:outline-none transition-colors duration-200">
-                    <option value="" hidden>Mixte</option>
-                    <option value="12px">12px</option>
-                    <option value="14px">14px</option>
-                    <option value="16px">16px</option>
-                    <option value="18px">18px</option>
-                    <option value="20px">20px</option>
-                    <option value="24px">24px</option>
-                    <option value="28px">28px</option>
-                    <option value="36px">36px</option>
-                </select>
+                    {/* Selection de la police d'écriture */}
+                    <select
+                        value={fontFamily || ''}
+                        onChange={(e) => handleFontFamilyChange(e.target.value)}
+                        title="Police d'écriture"
+                        className="rounded-md border border-gray-200 bg-white px-2 py-1 text-sm focus:border-primary focus:outline-none transition-colors duration-200"
+                        style={{ fontFamily: fontFamily || 'Gantari' }}>
+                        <option value="" hidden>Mixte</option>
+                        <option value="Gantari" style={{ fontFamily: 'Gantari' }}>Gantari</option>
+                        <option value="Geologica" style={{ fontFamily: 'Geologica' }}>Geologica</option>
+                        <option value="Arial" style={{ fontFamily: 'Arial' }}>Arial</option>
+                        <option value="Times New Roman" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</option>
+                        <option value="Courier New" style={{ fontFamily: 'Courier New' }}>Courier New</option>
+                        <option value="Georgia" style={{ fontFamily: 'Georgia' }}>Georgia</option>
+                        <option value="Verdana" style={{ fontFamily: 'Verdana' }}>Verdana</option>
+                        <option value="Comic Sans MS" style={{ fontFamily: 'Comic Sans MS' }}>Comic Sans MS</option>
+                        <option value="monospace" style={{ fontFamily: 'monospace' }}>Monospace</option>
+                    </select>
 
-                <div className="relative flex items-center gap-2">
-                    <ColorPalette  value={fontColor} onChange={handleFontColorChange} asButton small buttonIcon={<FontColorIcon />} />
+                    {/* Taille et couleur */}
+                    <select
+                        value={fontSize || ''}
+                        onChange={(e) => handleFontSizeChange(e.target.value)}
+                        title="Taille de police"
+                        className="rounded-md border border-gray-200 bg-white px-2 py-1 text-sm focus:border-primary focus:outline-none transition-colors duration-200">
+                        <option value="" hidden>Mixte</option>
+                        <option value="12px">12px</option>
+                        <option value="14px">14px</option>
+                        <option value="16px">16px</option>
+                        <option value="18px">18px</option>
+                        <option value="20px">20px</option>
+                        <option value="24px">24px</option>
+                        <option value="28px">28px</option>
+                        <option value="36px">36px</option>
+                    </select>
+
+                    <div className="relative flex items-center gap-2">
+                        <ColorPalette value={fontColor} onChange={handleFontColorChange} asButton small buttonIcon={<FontColorIcon />} />
+                    </div>
+
+                    <div className="relative flex items-center gap-2">
+                        <ColorPalette value={backgroundColor} onChange={handleBackgroundColorChange} asButton small buttonIcon={<BackgroundColorIcon />} />
+                    </div>
+
+                    <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
+
+                    {/* Listes */}
+                    <button
+                        onClick={() => formatList('bullet')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isInBulletList ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        title="Liste à puces">
+                        <ListUlIcon width={20} height={20} />
+                    </button>
+                    <button
+                        onClick={() => formatList('number')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isInNumberedList ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        title="Liste numérotée">
+                        <ListOlIcon width={20} height={20} />
+                    </button>
+
+                    <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
+
+                    {/* Alignement */}
+                    <button
+                        onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'left' ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        title="Aligner à gauche">
+                        <TextLeftIcon width={20} height={20} />
+                    </button>
+                    <button
+                        onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'center' ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        title="Centrer">
+                        <TextCenterIcon width={20} height={20} />
+                    </button>
+                    <button
+                        onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'right' ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        title="Aligner à droite">
+                        <TextRightIcon width={20} height={20} />
+                    </button>
+                    <button
+                        onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify')}
+                        className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'justify' ? 'bg-background' : 'hover:bg-gray-100'}`}
+                        title="Justifier">
+                        <TextJustifyIcon width={20} height={20} />
+                    </button>
+
+                    <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
+
+                    {/* Media import button */}
+                    <button
+                        onClick={handleImageImport}
+                        className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
+                        aria-label="Importer un média"
+                        title="Importer un média (image, audio ou vidéo)">
+                        <MediaIcon width={20} height={20} />
+                    </button>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,audio/*,video/*,.mp3,.mp4,.webm"
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
+
+                    {/* Drawing Board button */}
+                    {onOpenDrawingBoard && (
+                        <>
+                            <div className="w-px h-6 bg-gray-200 mx-1" /> {/* Separator */}
+                            <button
+                                onClick={onOpenDrawingBoard}
+                                className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
+                                aria-label="Ouvrir le tableau de dessin"
+                                title="Tableau de dessin">
+                                <ModifIcon width={20} height={20} />
+                            </button>
+                        </>
+                    )}
+                    <div />
+                    {/* Export PDF button */}
                 </div>
-
-                <div className="relative flex items-center gap-2">
-                    <ColorPalette value={backgroundColor} onChange={handleBackgroundColorChange} asButton small buttonIcon={<BackgroundColorIcon />} />
-                </div>
-
-                <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
-
-                {/* Listes */}
-                <button
-                    onClick={() => formatList('bullet')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isInBulletList ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    title="Liste à puces">
-                    <ListUlIcon width={20} height={20} />
-                </button>
-                <button
-                    onClick={() => formatList('number')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${isInNumberedList ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    title="Liste numérotée">
-                    <ListOlIcon width={20} height={20} />
-                </button>
-
-                <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
-
-                {/* Alignement */}
-                <button
-                    onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'left' ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    title="Aligner à gauche">
-                    <TextLeftIcon width={20} height={20} />
-                </button>
-                <button
-                    onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'center' ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    title="Centrer">
-                    <TextCenterIcon width={20} height={20} />
-                </button>
-                <button
-                    onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'right' ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    title="Aligner à droite">
-                    <TextRightIcon width={20} height={20} />
-                </button>
-                <button
-                    onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify')}
-                    className={`flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 ${alignment === 'justify' ? 'bg-background' : 'hover:bg-gray-100'}`}
-                    title="Justifier">
-                    <TextJustifyIcon width={20} height={20} />
-                </button>
-
-                <span className="inline-block w-px h-7 mx-2 bg-gray-300 opacity-80" />
-
-                {/* Media import button */}
-                <button
-                    onClick={handleImageImport}
-                    className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
-                    aria-label="Importer un média"
-                    title="Importer un média (image, audio ou vidéo)">
-                    <MediaIcon width={20} height={20} />
-                </button>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,audio/*,video/*,.mp3,.mp4,.webm"
-                    onChange={handleFileChange}
-                    className="hidden"
-                />
-
-                {/* Drawing Board button */}
-                {onOpenDrawingBoard && (
-                    <>
-                        <div className="w-px h-6 bg-gray-200 mx-1" /> {/* Separator */}
-                        <button
-                            onClick={onOpenDrawingBoard}
-                            className="flex items-center justify-center rounded-md px-2 py-2 transition-colors duration-200 hover:bg-gray-100"
-                            aria-label="Ouvrir le tableau de dessin"
-                            title="Tableau de dessin">
-                            <ModifIcon width={20} height={20} />
-                        </button>
-                    </>
-                )}
-
-                {/* Export PDF button */}
+                <div className="md:flex flex-wrap items-center gap-1">
                 <div className="w-px h-6 bg-gray-200 mx-1" /> {/* Separator */}
-                <ExportPDFButton
-                    noteTitle={noteTitle}
-                    editorRef={editorContentRef}
-                    compact={true}
-                />
+                    <ExportPDFButton
+                        noteTitle={noteTitle}
+                        editorRef={editorContentRef}
+                        compact={true}
+                    />
+
+                </div>
             </div>
 
             {/* MOBILE TOOLBAR - Bottom fixed bar with submenus */}
@@ -617,7 +623,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                     className="fixed inset-0 z-40"
                                     onClick={() => setShowFormatMenu(false)}
                                 />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200">
+                                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200" style={{ marginLeft: 'max(-0.5rem, calc(50vw - 50% - 6rem))' }}>
                                     <button
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
@@ -671,7 +677,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showSizeMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Options">
                             <FontColorIcon width={26} height={26} />
-                            
+
                         </button>
 
                         {showSizeMenu && (
@@ -680,7 +686,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                     className="fixed inset-0 z-40"
                                     onClick={() => setShowSizeMenu(false)}
                                 />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-3 flex flex-col gap-3 z-50 border border-gray-200">
+                                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl p-3 flex flex-col gap-3 z-50 border border-gray-200" style={{ marginLeft: 'max(-0.5rem, calc(50vw - 50% - 6rem))' }}>
                                     <div>
                                         <label className="text-xs text-gray-600 mb-1 block">Taille</label>
                                         <select
@@ -762,7 +768,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${showListMenu ? 'bg-background' : 'hover:bg-gray-100'}`}
                             aria-label="Listes">
                             <ListUlIcon width={26} height={26} />
-                            
+
                         </button>
 
                         {showListMenu && (
@@ -771,14 +777,14 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                     className="fixed inset-0 z-40"
                                     onClick={() => setShowListMenu(false)}
                                 />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200">
+                                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200" style={{ marginLeft: 'max(-0.5rem, calc(50vw - 50% - 6rem))' }}>
                                     <button
                                         onClick={() => {
                                             formatList('bullet');
                                             setShowListMenu(false);
                                         }}
                                         className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${isInBulletList ? 'bg-background' : 'hover:bg-gray-100'}`}>
-                                        <ListUlIcon width={20} height={20}/>
+                                        <ListUlIcon width={20} height={20} />
                                         <span>Liste à puces</span>
                                     </button>
                                     <button
@@ -815,7 +821,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                                     className="fixed inset-0 z-40"
                                     onClick={() => setShowAlignMenu(false)}
                                 />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200">
+                                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-1 z-50 border border-gray-200" style={{ marginLeft: 'max(-0.5rem, calc(50vw - 50% - 6rem))' }}>
                                     <button
                                         onClick={() => {
                                             editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
@@ -863,7 +869,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                         className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
                         aria-label="Importer un média">
                         <MediaIcon width={26} height={26} />
-                        
+
                     </button>
 
                     {/* Drawing Board button for mobile */}
@@ -873,7 +879,7 @@ export default function ToolbarPlugin({ onOpenDrawingBoard, noteTitle = "Sans ti
                             className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors hover:bg-gray-100"
                             aria-label="Ouvrir le tableau de dessin">
                             <ModifIcon width={26} height={26} />
-                            
+
                         </button>
                     )}
                 </div>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, use, useCallback } from "react";
+import React, { useState, useEffect, use, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Folder } from "@/type/Folder";
 import { Note } from "@/type/Note";
@@ -29,6 +29,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
     const [collaborationFilter, setCollaborationFilter] = useState<"all" | "collaborative" | "solo">("all");
     const [tagColorFilter, setTagColorFilter] = useState("");
+    const hasFetched = useRef(false);
 
     const fetchFolderData = useCallback(async () => {
         try {
@@ -42,12 +43,12 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 setFolder(response.folder);
                 setNotes(Array.isArray(response.notes) ? response.notes : []);
             } else {
-                console.error("Dossier introuvable");
+                
                 setFolder(null);
                 setNotes([]);
             }
         } catch (error) {
-            console.error("Error loading folder:", error);
+            
             setFolder(null);
             setNotes([]);
         } finally {
@@ -69,7 +70,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 detail: { folderId: id, title: name }
             }));
         } else {
-            console.error("Erreur lors de la sauvegarde:", response.error);
+            
             throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
         }
     }, [id]);
@@ -80,7 +81,9 @@ export default function FolderDetail({ params }: FolderDetailProps) {
         router.push("/dossiers");
     }, [router]);
 
-        useEffect(() => {
+    useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
         fetchFolderData();
 
         // Écouter les événements de mise à jour depuis le breadcrumb
@@ -108,7 +111,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             window.removeEventListener('folderUpdateRequested', handleUpdateRequest);
             window.removeEventListener('folderDeleteRequested', handleDeleteRequest);
         };
-    }, [id, fetchFolderData, handleUpdateFolder, handleDeleteFolder]);
+    }, [id, fetchFolderData, handleDeleteFolder, handleUpdateFolder]);
 
     if (loading) {
         return (
@@ -163,7 +166,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             // Filtre couleur de tag
             const matchesTagColor = !tagColorFilter
                 ? true
-                : (note.tag === tagColorFilter || (!note.tag && tagColorFilter === "var(--primary)"));
+                : (note.tag?.couleur === tagColorFilter || (!note.tag?.couleur && tagColorFilter === "var(--primary)"));
 
             return matchesSearch && matchesCollaboration && matchesTagColor;
         })
@@ -178,7 +181,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
             {/* Header mobile avec filtres */}
             <FolderDetailHeader
                 folderName={folder?.Nom || ""}
-                folderColor={folder?.CouleurTag || "#882626"}
+                folderColor={folder?.CouleurTag || "var(--primary)"}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchMode={searchMode}

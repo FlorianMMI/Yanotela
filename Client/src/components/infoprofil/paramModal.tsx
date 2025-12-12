@@ -1,13 +1,15 @@
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
-import { CloseIcon, TrashIcon} from '@/libs/Icons';
+
+import { CloseIcon } from '@/libs/Icons';
 import AccountSupprConfirm from '@/ui/account-suppr-confirm';
 import { DeleteAccount } from '@/loader/loader';
 import AccountSupprSuccess from '@/ui/account-suppr-success';
 import ThemeSelector from '../theme/ThemeSelector';
 import PWAInstallButton from '@/ui/PWAInstallbutton';
+import RGPDBouton from '@/ui/RGPDBouton';
+import NotificationPage from '@/components/notification/notification';
 
 interface ParamModalProps {
     onClose: () => void;
@@ -21,8 +23,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
     const handleDeleteAccount = () => {
         setShowDeleteConfirm(true);
     };
-
-    const router = useRouter();
 
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
@@ -39,11 +39,11 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 setShowSuccessModal(true);
                 
             } else {
-                console.error('Erreur lors de la suppression:', response.error);
+                
                 alert('Erreur lors de la suppression du compte: ' + response.error);
             }
         } catch (error) {
-            console.error('Erreur lors de la suppression du compte:', error);
+            
             alert('Une erreur est survenue lors de la suppression du compte.');
         } finally {
             setIsDeleting(false);
@@ -79,6 +79,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 }}
                 className="fixed top-0 left-0 w-full md:w-[35%] h-full bg-background shadow-lg z-100"
             >
+
                 <div className='flex flex-col h-full w-full p-2 relative'>
 
                     {/* Close button */}
@@ -89,8 +90,12 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                         <CloseIcon width={35} height={35} className="absolute top-4 right-4 cursor-pointer text-clrprincipal hover:text-color-primary-hover transition-all duration-300" />
                     </div>
                     {/* Contenu du modal */}
-                    <div className='flex flex-col justify-end h-full w-fill p-2 relative mt-10'>
+                    <div className='flex flex-col h-full w-fill p-2 relative mt-10 justify-between'>
+
+                    <NotificationPage />
+
                     {/* Selectionner un theme  */}
+                    <div>
                     <ThemeSelector />
 
                     <section className="flex flex-col gap-4">
@@ -102,6 +107,10 @@ export default function ParamModal({ onClose }: ParamModalProps) {
 
                         <hr className="border-t border-primary w-full" />
 
+                        <div>
+                            <RGPDBouton />
+                        </div>
+                        
                         {/* Boutton suppression compte */}
                         <button
                             className="px-4 py-2 bg-primary text-white font-bold rounded hover:bg-primary-hover hover:shadow-lg transition-all duration-300 cursor-pointer"
@@ -113,6 +122,7 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                     </section>
                     {/* Autres paramètres peuvent être ajoutés ici */}
                     </div>
+                </div>
 
                 </div>
             </motion.div>

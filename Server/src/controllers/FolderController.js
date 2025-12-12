@@ -26,14 +26,14 @@ export const FolderController = {
         data: {
           Nom: Nom.trim(),
           Description: Description?.trim() || null,
-          CouleurTag: CouleurTag || "#882626",
+          CouleurTag: CouleurTag || "var(--primary)",
           authorId,
         },
       });
 
       return res.status(201).json({ message: "Dossier créé avec succès", folder: newFolder });
     } catch (error) {
-      console.error("[createFolder] Error:", error);
+      
       return res.status(500).json({ message: "Erreur lors de la création du dossier", error: error.message });
     }
   },
@@ -89,7 +89,7 @@ export const FolderController = {
 
       return res.status(200).json({ folders: foldersFormatted, totalFolders: foldersFormatted.length });
     } catch (error) {
-      console.error("[getFolders] Error:", error);
+      
       return res.status(500).json({ message: "Erreur lors de la récupération des dossiers", error: error.message, stack: error.stack });
     }
   },
@@ -170,7 +170,7 @@ export const FolderController = {
         notes 
       });
     } catch (error) {
-      console.error("[getFolderById] Error:", error);
+      
       return res.status(500).json({ message: "Erreur lors de la récupération du dossier", error: error.message });
     }
   },
@@ -206,7 +206,7 @@ export const FolderController = {
 
       return res.status(200).json({ message: "Dossier mis à jour avec succès", folder: updated });
     } catch (error) {
-      console.error("[updateFolder] Error:", error);
+      
       return res.status(500).json({ message: "Erreur lors de la mise à jour du dossier", error: error.message });
     }
   },
@@ -229,7 +229,7 @@ export const FolderController = {
       await prisma.folder.update({ where: { id }, data: { deletedAt: new Date() } });
       return res.status(200).json({ message: "Dossier supprimé avec succès" });
     } catch (error) {
-      console.error("[deleteFolder] Error:", error);
+      
       return res.status(500).json({ message: "Erreur lors de la suppression du dossier", error: error.message });
     }
   },

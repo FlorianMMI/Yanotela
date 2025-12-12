@@ -29,12 +29,12 @@ export default function GoogleAuthButton({
     try {
       // L'API serveur redirige automatiquement vers Google OAuth
       // puis gère l'inscription ou la connexion selon que l'utilisateur existe
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      
+      let baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
       // Redirection directe vers la route Google OAuth du serveur
       router.push(`${baseUrl}/auth/google`);
     } catch (error) {
-      console.error('Erreur lors de la connexion Google:', error);
+      
       setIsLoading(false);
     }
   };

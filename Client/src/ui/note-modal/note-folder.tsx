@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { GetFolders, AssignNoteToFolder, RemoveNoteFromFolder, GetNoteFolder } from "@/loader/loader";
 import { Folder } from "@/type/Folder";
 import { FolderIcon, TrashIcon, ChevronIcon, SearchIcon, XIcon, CheckIcon } from '@/libs/Icons';
@@ -24,7 +24,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
 
     useEffect(() => {
         fetchData();
-    }, [noteId]);
+    }, [noteId, fetchData]);
 
     // Calculer la position du dropdown et fermer quand on clique à l'extérieur
     useEffect(() => {
@@ -60,7 +60,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
         };
     }, [isDropdownOpen]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
 
@@ -79,12 +79,12 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                 setCurrentFolder(null);
             }
         } catch (err) {
-            console.error("Error fetching folder data:", err);
+            
             setError("Erreur lors du chargement des dossiers");
         } finally {
             setLoading(false);
         }
-    };
+    }, [noteId]);
 
     const handleFolderSelect = async (folderId: string) => {
         setSaving(true);
@@ -110,7 +110,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                 setError(response.error || "Erreur lors de l'assignation");
             }
         } catch (err) {
-            console.error("Error assigning note to folder:", err);
+            
             setError("Erreur de connexion au serveur");
         } finally {
             setSaving(false);
@@ -145,7 +145,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                 setError(response.error || "Erreur lors du retrait");
             }
         } catch (err) {
-            console.error("Error removing note from folder:", err);
+            
             setError("Erreur de connexion au serveur");
         } finally {
             setSaving(false);
@@ -294,7 +294,7 @@ export default function NoteFolderUI({ noteId, onFolderChange }: NoteFolderUIPro
                                                 >
                                                     <div 
                                                         className="shrink-0"
-                                                        style={{ color: folder.CouleurTag || '#882626' }}
+                                                        style={{ color: folder.CouleurTag || 'var(--primary)' }}
                                                     >
                                                         <FolderIcon width={24} height={24} />
                                                     </div>

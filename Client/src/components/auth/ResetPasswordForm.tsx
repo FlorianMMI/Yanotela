@@ -94,7 +94,7 @@ export default function ResetPasswordForm({
         setMessage(result.error || 'Erreur lors de la réinitialisation du mot de passe');
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      
       setStatus('error');
       setMessage('Erreur de connexion au serveur');
     }

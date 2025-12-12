@@ -40,7 +40,7 @@ async function debugNoteYjsState(noteId) {
     }
 
   } catch (error) {
-    console.error('❌ Error:', error);
+    
   } finally {
     await prisma.$disconnect();
   }

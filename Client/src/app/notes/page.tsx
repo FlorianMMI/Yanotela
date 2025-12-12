@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 
 import { useState, useEffect, Suspense, useCallback } from "react";
 import { Note } from "@/type/Note";
@@ -21,14 +20,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   
-  // Charger les notes au montage du composant
+  // Charger les notes au montage du composant (évite double appel en Strict Mode)
   const fetchNotes = useCallback(async () => {
     try {
       setLoading(true);
       const response = await GetNotes();
       setNotes(response.notes || []);
     } catch (error) {
-      console.error("Error loading notes:", error);
+      
       setNotes([]);
     } finally {
       setLoading(false);
@@ -82,9 +81,9 @@ export default function Home() {
       let matchesTagColor = true;
       if (tagColorFilter) {
         if (tagColorFilter === 'var(--primary)') {
-          matchesTagColor = !note.tag || note.tag === '' || note.tag === 'var(--primary)';
+          matchesTagColor = !note.tag || !note.tag.couleur;
         } else {
-          matchesTagColor = note.tag === tagColorFilter;
+          matchesTagColor = note.tag?.couleur === tagColorFilter;
         }
       }
 

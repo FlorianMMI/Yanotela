@@ -59,13 +59,13 @@ async function migrateNotes() {
         migrated++;
 
       } catch (error) {
-        console.error(`   ❌ Erreur: ${error.message}`);
+        
         errors++;
       }
     }
 
   } catch (error) {
-    console.error('❌ Erreur globale:', error);
+    
   } finally {
     await prisma.$disconnect();
   }

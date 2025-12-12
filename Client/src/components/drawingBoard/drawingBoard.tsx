@@ -28,6 +28,8 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
   
   // Track last points for quadratic curve smoothing
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const lastDrawTimeRef = useRef<number>(0);
+  const DRAW_THROTTLE_MS = 16; // ~60fps, increase to 25 for ~40fps
   
   // Use refs for current drawing style to avoid re-initializing canvas on color/width change
   const strokeColorRef = useRef(strokeColor);
@@ -202,6 +204,10 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const now = performance.now();
+    if (now - lastDrawTimeRef.current < DRAW_THROTTLE_MS) return;
+    lastDrawTimeRef.current = now;
+
     if (!isDrawing || !context || !lastPointRef.current) return;
 
     const canvas = canvasRef.current;
@@ -380,10 +386,11 @@ export default function DrawingBoard({ isOpen, onSave, onClose, initialImage }: 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 md:sticky md:top-4 z-30 w-screen h-screen md:w-full md:h-[calc(100vh-100px)] md:min-h-[600px] bg-white md:rounded-lg overflow-hidden shadow-xl md:mb-4 flex flex-col">
+    <div className="fixed inset-0 md:sticky md:top-4 z-30 w-screen h-[100dvh] md:w-full md:h-[calc(100vh-100px)] md:min-h-[600px] bg-white md:rounded-lg overflow-hidden shadow-xl md:mb-4 flex flex-col touch-none">
+      {/* Added touch-none to prevent scroll interference and h-[100dvh] for proper mobile height */}
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair flex"
+        className="w-full h-full cursor-crosshair flex touch-none"
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
