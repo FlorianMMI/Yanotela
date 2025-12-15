@@ -213,6 +213,7 @@ export const noteController = {
         where: { id: id },
         include: {
           permissions: true,
+          noteFolder: true, // Inclure l'info du dossier si présent
         },
       });
 
@@ -234,15 +235,24 @@ export const noteController = {
       // Générer un nouvel ID pour la note dupliquée
       const newUID = crypto.randomBytes(8).toString("hex");
 
-      // Copier directement l'état YJS (binaire) et le contenu
-      // Le YJS WebSocket server créera une nouvelle room pour ce nouveau noteId
-      // et le client appliquera cet état au Y.Doc lors de la première connexion
+      // Convertir le contenu Lexical JSON en yjsState pour que la collaboration fonctionne immédiatement
+      let yjsStateForDuplicate = null;
+      if (originalNote.yjsState) {
+        // Si la note originale a un yjsState, le copier directement
+        yjsStateForDuplicate = originalNote.yjsState;
+      } else if (originalNote.Content) {
+        // Sinon, générer le yjsState depuis le Content
+        const { migrateContentToYjs } = await import('../services/yjsMigration.js');
+        yjsStateForDuplicate = migrateContentToYjs(originalNote.Content);
+      }
+
       const duplicatedNote = await prisma.note.create({
         data: {
           id: newUID,
           Titre: `${originalNote.Titre} (copie)`,
           Content: originalNote.Content,
-          yjsState: originalNote.yjsState, // Copier le state YJS binaire
+          yjsState: yjsStateForDuplicate, // Copier ou générer le state YJS
+          tagId: originalNote.tagId, // Copier le tag si présent
           authorId: userId, // L'utilisateur devient le propriétaire de la copie
           modifierId: userId,
           permissions: {
@@ -252,6 +262,13 @@ export const noteController = {
               isAccepted: true,
             },
           },
+          // Copier la relation dossier si la note originale est dans un dossier
+          noteFolder: originalNote.noteFolder ? {
+            create: {
+              folderId: originalNote.noteFolder.folderId,
+              userId: userId,
+            },
+          } : undefined,
         },
       });
 
@@ -407,6 +424,12 @@ export const noteController = {
     }
 
     try {
+      // Récupérer la note actuelle pour vérifier le yjsState
+      const currentNote = await prisma.note.findUnique({
+        where: { id: id },
+        select: { yjsState: true }
+      });
+
       // Préparer l'objet de mise à jour avec seulement les champs fournis
       const updateData = {
         ModifiedAt: new Date(),
@@ -420,6 +443,9 @@ export const noteController = {
       if (Content !== undefined) {
         updateData.Content = Content;
         
+        // 🔧 NOTE: On ne génère PAS le yjsState ici pour les flashnotes
+        // Le CollaborationPlugin bootstrappera le contenu depuis le Content lors de la première connexion
+        // Cela évite les problèmes de conversion Lexical JSON → YJS qui perdent la structure
       }
 
       const note = await prisma.note.update({

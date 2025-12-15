@@ -44,6 +44,12 @@ export function setAwarenessUserInfo(noteId: string, userName: string, userColor
     id: userId, // Inclure l'userId pour la synchronisation
   });
 
+  // ✅ CRITIQUE: Connecter le provider APRÈS avoir configuré l'awareness
+  // Ceci garantit que les autres clients reçoivent immédiatement les bonnes informations
+  if (!provider.wsconnected && !provider.wsconnecting) {
+    provider.connect();
+  }
+
   // AUTO-SYNC: Appeler le serveur pour auto-accepter la permission si nécessaire
   if (userId) {
     autoAcceptPermissionOnJoin(noteId).catch(err => {
@@ -102,13 +108,22 @@ export function createWebsocketProvider(
     `yanotela-${id}`,                   // Room name (préfixe + noteId)
     doc,
     {
-      connect: true,                    // Connecter immédiatement (géré par y-websocket)
+      connect: false,                   // Ne pas connecter immédiatement - attendre configuration awareness ET preload
       // Paramètres de reconnexion
       resyncInterval: 10000,            // Resync toutes les 10s
       maxBackoffTime: 10000,            // Délai max entre reconnexions
       disableBc: false,                 // Activer BroadcastChannel pour tabs locales
     },
   );
+
+  // Pré-charger le Y.Doc avec le yjsState depuis la base de données AVANT de connecter
+  // Ceci garantit que le contenu est présent avant la sync avec le serveur
+  preloadYjsState(id, doc).then(() => {
+    // Une fois le state chargé, on peut connecter en toute sécurité
+    // Le setAwarenessUserInfo() déclenchera la connexion plus tard
+  }).catch(err => {
+    // En cas d'erreur, continuer quand même (la sync serveur prendra le relai)
+  });
 
   // Stocker le provider pour accès depuis les composants UI
   providerInstances.set(id, provider);
@@ -138,4 +153,47 @@ function getDocFromMap(id: string, yjsDocMap: Map<string, Y.Doc>): Y.Doc {
   }
 
   return doc;
+}
+/**
+ * Pré-charger le Y.Doc avec le yjsState depuis la base de données
+ * Ceci permet d'avoir le contenu immédiatement lors de la duplication
+ * 
+ * @param noteId - ID de la note
+ * @param doc - Document YJS à pré-charger
+ */
+async function preloadYjsState(noteId: string, doc: Y.Doc): Promise<void> {
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    
+    const response = await fetch(`${API_URL}/note/get/${noteId}`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      
+      return; // Silently fail, server sync will handle it
+    }
+
+    const data = await response.json();
+    
+    // Si yjsState existe dans la réponse, l'appliquer au Y.Doc
+    if (data.yjsState && Array.isArray(data.yjsState) && data.yjsState.length > 0) {
+      const uint8Array = new Uint8Array(data.yjsState);
+      
+      // Toujours appliquer l'update - YJS fusionnera intelligemment les états
+      // Même si le CollaborationPlugin a déjà initialisé une structure vide
+      try {
+        Y.applyUpdate(doc, uint8Array);
+        
+      } catch (applyError) {
+        
+      }
+    } else {
+      
+    }
+  } catch (error) {
+    
+    // Ignorer les erreurs - la sync via WebSocket prendra le relai
+  }
 }

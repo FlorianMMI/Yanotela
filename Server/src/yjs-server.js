@@ -21,9 +21,11 @@ import * as awarenessProtocol from 'y-protocols/awareness.js';
 import * as encoding from 'lib0/encoding.js';
 import * as decoding from 'lib0/decoding.js';
 import { registerProvider, unregisterProvider, registerNotificationRoom, unregisterNotificationRoom } from './services/yjsNotificationService.js';
+import { PrismaClient } from '@prisma/client';
 
 const PORT = process.env.PORT || 1234;
 const HOST = process.env.HOST || '0.0.0.0';
+const prisma = new PrismaClient();
 
 // Message types du protocole YJS
 const messageSync = 0;
@@ -37,13 +39,47 @@ const messageNotification = 99; // Message personnalisé pour les notifications 
 const rooms = new Map();
 
 /**
+ * Charger le yjsState depuis la DB et l'appliquer au document
+ * @param {Y.Doc} doc - Document YJS à initialiser
+ * @param {string} noteId - ID de la note
+ */
+async function loadYjsStateFromDB(doc, noteId) {
+  try {
+    const note = await prisma.note.findUnique({
+      where: { id: noteId },
+      select: { yjsState: true }
+    });
+
+    if (note && note.yjsState && note.yjsState.length > 0) {
+      // Appliquer le state binaire au document
+      const stateBuffer = Buffer.isBuffer(note.yjsState) ? note.yjsState : Buffer.from(note.yjsState);
+      Y.applyUpdate(doc, new Uint8Array(stateBuffer));
+      
+      return true;
+    } else {
+      
+      return false;
+    }
+  } catch (error) {
+    
+    return false;
+  }
+}
+
+/**
  * Obtenir ou créer une room complète (doc + awareness + connexions)
  */
-function getOrCreateRoom(roomName) {
+async function getOrCreateRoom(roomName) {
   let room = rooms.get(roomName);
   if (!room) {
     const doc = new Y.Doc();
     const awareness = new Awareness(doc);
+    
+    // 🔧 FIX: Charger le yjsState depuis la DB avant d'utiliser le document
+    const noteId = extractNoteIdFromRoom(roomName);
+    if (noteId && !isNotificationRoom(roomName)) {
+      await loadYjsStateFromDB(doc, noteId);
+    }
     
     room = {
       doc,
@@ -63,7 +99,6 @@ function getOrCreateRoom(roomName) {
       }
     } else {
       // Room de collaboration pour une note
-      const noteId = extractNoteIdFromRoom(roomName);
       if (noteId) {
         registerProvider(noteId, { awareness, doc, roomName, noteId });
         
@@ -117,7 +152,7 @@ function send(conn, message) {
 /**
  * Gérer une nouvelle connexion WebSocket
  */
-function setupWSConnection(ws, req) {
+async function setupWSConnection(ws, req) {
   // Extraire le nom de la room depuis l'URL
   // Format y-websocket standard: ws://host:port/roomName (ex: /yanotela-abc123)
   // OU format query param: ws://host:port?room=roomName
@@ -140,8 +175,8 @@ function setupWSConnection(ws, req) {
     return;
   }
 
-  // Obtenir ou créer la room
-  const room = getOrCreateRoom(roomName);
+  // Obtenir ou créer la room (avec chargement DB asynchrone)
+  const room = await getOrCreateRoom(roomName);
   const { doc, awareness, conns } = room;
   
   // Ajouter la connexion à la room

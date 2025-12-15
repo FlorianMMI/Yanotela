@@ -151,9 +151,12 @@ export function unregisterNotificationRoom(userId) {
  */
 async function checkNotificationPreferences(userId, notificationCode) {
   try {
+    // Convertir en minuscules et remplacer _ par _ (pour correspondre au format DB)
+    const dbCode = notificationCode.toLowerCase();
+    
     // Trouver le type de notification par son code
     const notifType = await prisma.notificationType.findUnique({
-      where: { code: notificationCode },
+      where: { code: dbCode },
     });
 
     if (!notifType) {
@@ -232,6 +235,7 @@ async function createAndBroadcastNotification(type, userId, data) {
   }, 24 * 60 * 60 * 1000);
 
   // ✅ ENVOYER AU SERVEUR YJS VIA WEBSOCKET
+  const sent = await sendNotificationToUser(userId, notification);
 
   // TODO: Gérer l'envoi d'email si preferences.mail === true
   // if (preferences.mail) {
@@ -318,7 +322,7 @@ export async function notifyInvitation(userId, noteId, noteTitle, role, actorPse
   const roleLabel = ROLE_LABELS[role] || 'Collaborateur';
   
   const notification = {
-    id: `invitation-${noteId}`, // ID unique basé sur noteId (comme dans le client)
+    id: `invitation-${noteId}-${Date.now()}`, // ID unique avec timestamp pour permettre ré-invitations
     type: NotificationType.INVITATION,
     targetUserId: userId,
     noteId,

@@ -74,11 +74,11 @@ export function connectNotificationProvider(userId: number): void {
   // Créer le Y.Doc pour les notifications
   notificationDoc = new Y.Doc();
 
-  // Détection auto: prod = wss://domaine/yjs, dev = ws://localhost:1234
+  // Détection auto: prod = wss://domaine/yjs/, dev = ws://localhost:1234
   const isProd = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
   const wsProtocol = isProd && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsHost = isProd ? window.location.host : 'localhost:1234';
-  const wsPath = isProd ? '/yjs' : '';
+  const wsPath = isProd ? '/yjs/' : ''; // Slash final pour éviter redirect
   const wsUrl = `${wsProtocol}//${wsHost}${wsPath}`;
 
   // Créer le provider WebSocket pour la room de notifications
@@ -87,10 +87,10 @@ export function connectNotificationProvider(userId: number): void {
     `yanotela-notifications-${userId}`, // Room unique par utilisateur
     notificationDoc,
     {
-      connect: true,
-      resyncInterval: 30000, // Resync toutes les 30s (moins fréquent que les notes)
-      maxBackoffTime: 10000,
-      disableBc: true, // Pas de BroadcastChannel pour les notifications
+      connect: true,              // Connexion automatique
+      resyncInterval: 10000,       // Resync toutes les 10s (même fréquence que collaboration)
+      maxBackoffTime: 5000,        // Reconnexion rapide
+      disableBc: false,            // Activer BroadcastChannel pour sync entre tabs
     }
   );
 
@@ -145,17 +145,24 @@ function handleAwarenessChange(): void {
   const seenIds = new Set<string>();
 
   // Parcourir tous les états d'awareness
-  states.forEach((state: AwarenessState) => {
+  states.forEach((state: AwarenessState, clientId: number) => {
     if (state.notifications && Array.isArray(state.notifications)) {
       state.notifications.forEach((notif: NotificationData) => {
         // Filtrer pour cet utilisateur et éviter les doublons
-        if (notif.targetUserId === currentUserId && !seenIds.has(notif.id)) {
+        // Aussi accepter les notifications sans targetUserId (anciennes notifications)
+        if ((!notif.targetUserId || notif.targetUserId === currentUserId) && !seenIds.has(notif.id)) {
           seenIds.add(notif.id);
           allNotifications.push(notif);
+          
         }
       });
     }
   });
+
+  // Log pour debugging si aucune notification
+  if (allNotifications.length === 0) {
+    
+  }
 
   // Trier par timestamp (plus récent en premier)
   allNotifications.sort((a, b) => b.timestamp - a.timestamp);
