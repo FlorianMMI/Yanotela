@@ -54,14 +54,14 @@ async function loadYjsStateFromDB(doc, noteId) {
       // Appliquer le state binaire au document
       const stateBuffer = Buffer.isBuffer(note.yjsState) ? note.yjsState : Buffer.from(note.yjsState);
       Y.applyUpdate(doc, new Uint8Array(stateBuffer));
-      console.log(`✅ [YJS Server] yjsState chargé depuis DB pour note ${noteId} (${stateBuffer.length} bytes)`);
+      
       return true;
     } else {
-      console.log(`⚠️ [YJS Server] Aucun yjsState trouvé en DB pour note ${noteId}`);
+      
       return false;
     }
   } catch (error) {
-    console.error(`❌ [YJS Server] Erreur lors du chargement du yjsState pour note ${noteId}:`, error);
+    
     return false;
   }
 }

@@ -47,10 +47,10 @@ export default function NotificationPage() {
         setNotifications(notifSettings);
         setInitialNotifications(JSON.parse(JSON.stringify(notifSettings)));
       } else {
-        console.error('Erreur lors du chargement des préférences');
+        
       }
     } catch (error) {
-      console.error('Erreur de chargement:', error);
+      
     } finally {
       setIsLoading(false);
     }
@@ -116,9 +116,9 @@ export default function NotificationPage() {
         // Mettre à jour l'état initial après sauvegarde réussie
         setInitialNotifications(JSON.parse(JSON.stringify(notifications)));
         setHasChanges(false);
-        console.log('✅ Préférences de notifications sauvegardées avec succès');
+        
       } else {
-        console.error('❌ Erreur lors de la sauvegarde');
+        
       }
     } catch (error) {
       

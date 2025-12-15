@@ -22,8 +22,6 @@ export function getOrCreateNoteSession(noteId) {
   };
 }
 
-
-
 /**
  * Ajouter un utilisateur à une room de note
  * @param {string} noteId - ID de la note

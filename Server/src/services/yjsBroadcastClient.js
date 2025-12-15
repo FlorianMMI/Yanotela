@@ -22,8 +22,6 @@ import { WebsocketProvider } from 'y-websocket';
 // IMPORTANT: Utiliser le nom du SERVICE (pas du container) pour la résolution DNS Docker
 const YJS_SERVER_URL = process.env.YJS_SERVER_URL || 'ws://yjs-server:1234';
 
-console.log(`🌐 [YJS Client] URL serveur YJS configurée: ${YJS_SERVER_URL}`);
-
 // Providers par room (pour éviter de recréer à chaque notification)
 const providers = new Map();
 
@@ -52,9 +50,7 @@ function getOrCreateProvider(userId) {
       maxBackoffTime: 5000,
     }
   );
-  
-  
-  
+
   providers.set(roomName, provider);
   return provider;
 }
@@ -72,11 +68,11 @@ export async function sendNotificationToUser(userId, notification) {
     
     // Attendre que la connexion soit établie (critique pour garantir l'envoi)
     if (!provider.wsconnected) {
-      console.log(`⏳ [YJS Client] Attente connexion pour room: yanotela-notifications-${userId}`);
+      
       await new Promise(resolve => {
         const onStatus = ({ status }) => {
           if (status === 'connected') {
-            console.log(`✅ [YJS Client] Connexion établie pour room: yanotela-notifications-${userId}`);
+            
             provider.off('status', onStatus);
             resolve();
           }
@@ -84,7 +80,7 @@ export async function sendNotificationToUser(userId, notification) {
         provider.on('status', onStatus);
         // Timeout de sécurité augmenté à 5s
         setTimeout(() => {
-            console.warn(`⏱️ [YJS Client] Timeout connexion pour room: yanotela-notifications-${userId}`);
+            
             provider.off('status', onStatus);
             resolve(); 
         }, 5000);

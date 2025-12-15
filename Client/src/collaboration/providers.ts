@@ -171,7 +171,7 @@ async function preloadYjsState(noteId: string, doc: Y.Doc): Promise<void> {
     });
 
     if (!response.ok) {
-      console.warn(`[YJS Preload] Échec fetch note ${noteId}: ${response.status}`);
+      
       return; // Silently fail, server sync will handle it
     }
 
@@ -185,15 +185,15 @@ async function preloadYjsState(noteId: string, doc: Y.Doc): Promise<void> {
       // Même si le CollaborationPlugin a déjà initialisé une structure vide
       try {
         Y.applyUpdate(doc, uint8Array);
-        console.log(`✅ [YJS Preload] State appliqué pour note ${noteId} (${data.yjsState.length} bytes)`);
+        
       } catch (applyError) {
-        console.error(`❌ [YJS Preload] Erreur lors de l'application du state:`, applyError);
+        
       }
     } else {
-      console.warn(`[YJS Preload] Pas de yjsState pour note ${noteId}`);
+      
     }
   } catch (error) {
-    console.error('[YJS Preload] Erreur:', error);
+    
     // Ignorer les erreurs - la sync via WebSocket prendra le relai
   }
 }

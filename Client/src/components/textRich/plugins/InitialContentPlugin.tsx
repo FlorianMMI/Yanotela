@@ -29,7 +29,7 @@ export default function InitialContentPlugin({ content, noteId }: InitialContent
           const firstChild = root.getFirstChild();
           // Vérifier si le contenu est vraiment vide (paragraph vide avec text vide)
           if (firstChild && $isElementNode(firstChild) && firstChild.getChildrenSize() > 0) {
-            console.log(`[InitialContent] Document déjà rempli par YJS pour note ${noteId}`);
+            
             setHasInitialized(true);
             return;
           }
@@ -40,8 +40,7 @@ export default function InitialContentPlugin({ content, noteId }: InitialContent
           const parsedContent = JSON.parse(content);
           
           if (parsedContent.root && parsedContent.root.children) {
-            console.log(`[InitialContent] Initialisation du contenu pour note ${noteId} (${content.length} chars)`);
-            
+
             // Vider le root actuel
             root.clear();
             
@@ -71,18 +70,17 @@ export default function InitialContentPlugin({ content, noteId }: InitialContent
                   root.append(paragraph);
                 } else {
                   // Pour les autres types de nodes, créer un paragraph simple avec le texte
-                  console.warn(`[InitialContent] Type de node non supporté: ${childNode.type}`);
+                  
                 }
               } catch (nodeError) {
-                console.error(`[InitialContent] Erreur lors de la création d'un node:`, nodeError);
+                
               }
             });
             
             setHasInitialized(true);
           }
         } catch (error) {
-          console.error(`[InitialContent] Erreur lors du parsing du contenu JSON:`, error);
-          
+
           // Fallback: créer un paragraph vide
           root.clear();
           const paragraph = $createParagraphNode();

@@ -729,7 +729,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
       
       // Arrêter après le max d'essais
       if (attempts >= maxAttempts) {
-        console.warn(`[YJS] Timeout: provider non disponible après ${maxAttempts * 50}ms pour noteId=${id}`);
+        
         clearInterval(intervalId);
       }
     }, 50); // Réduit de 200ms à 50ms pour une connexion plus rapide

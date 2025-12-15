@@ -236,8 +236,7 @@ async function createAndBroadcastNotification(type, userId, data) {
 
   // ✅ ENVOYER AU SERVEUR YJS VIA WEBSOCKET
   const sent = await sendNotificationToUser(userId, notification);
-  console.log(`${sent ? '✅' : '❌'} [createAndBroadcastNotification] ${type} créée pour user=${userId}, envoyée au serveur YJS=${sent}`);
-  
+
   // TODO: Gérer l'envoi d'email si preferences.mail === true
   // if (preferences.mail) {
   //   await sendNotificationEmail(userId, type, data);

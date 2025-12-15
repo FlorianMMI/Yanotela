@@ -81,8 +81,6 @@ export function connectNotificationProvider(userId: number): void {
   const wsPath = isProd ? '/yjs/' : ''; // Slash final pour éviter redirect
   const wsUrl = `${wsProtocol}//${wsHost}${wsPath}`;
 
-  console.log(`🔔 [NotificationProvider] Connexion à: ${wsUrl} (room: yanotela-notifications-${userId})`);
-
   // Créer le provider WebSocket pour la room de notifications
   notificationProvider = new WebsocketProvider(
     wsUrl,
@@ -155,7 +153,7 @@ function handleAwarenessChange(): void {
         if ((!notif.targetUserId || notif.targetUserId === currentUserId) && !seenIds.has(notif.id)) {
           seenIds.add(notif.id);
           allNotifications.push(notif);
-          console.log(`📩 [NotificationProvider] Notification reçue: ${notif.type} (id: ${notif.id}, client: ${clientId})`);
+          
         }
       });
     }
@@ -163,7 +161,7 @@ function handleAwarenessChange(): void {
 
   // Log pour debugging si aucune notification
   if (allNotifications.length === 0) {
-    console.log(`[NotificationProvider] Aucune notification trouvée (${states.size} états awareness)`);
+    
   }
 
   // Trier par timestamp (plus récent en premier)

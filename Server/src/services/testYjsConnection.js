@@ -10,8 +10,7 @@ import { sendNotificationToUser } from './yjsBroadcastClient.js';
  * @param {number} userId - ID de l'utilisateur test
  */
 export async function testYjsConnection(userId = 1) {
-  console.log(`🧪 [Test YJS] Test de connexion pour userId=${userId}`);
-  
+
   const testNotification = {
     id: `test-${Date.now()}`,
     type: 'TEST',
@@ -24,14 +23,14 @@ export async function testYjsConnection(userId = 1) {
     const success = await sendNotificationToUser(userId, testNotification);
     
     if (success) {
-      console.log(`✅ [Test YJS] Connexion réussie !`);
+      
     } else {
-      console.error(`❌ [Test YJS] Échec de l'envoi`);
+      
     }
     
     return success;
   } catch (error) {
-    console.error(`❌ [Test YJS] Erreur:`, error.message);
+    
     return false;
   }
 }
