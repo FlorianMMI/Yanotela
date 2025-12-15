@@ -1087,7 +1087,7 @@ async function sendCommentEmail(to, commenterName, noteTitle, commentPreview, no
     });
     return { success: true };
   } catch (error) {
-    console.error('Erreur envoi email commentaire:', error);
+    
     return { success: false, error };
   }
 }
@@ -1117,7 +1117,7 @@ async function sendRoleChangeEmail(to, noteTitle, newRoleLabel, noteId) {
     });
     return { success: true };
   } catch (error) {
-    console.error('Erreur envoi email rôle:', error);
+    
     return { success: false, error };
   }
 }
@@ -1145,7 +1145,7 @@ async function sendNoteDeletedEmail(to, noteTitle, deleterName) {
     });
     return { success: true };
   } catch (error) {
-    console.error('Erreur envoi email suppression:', error);
+    
     return { success: false, error };
   }
 }
@@ -1173,7 +1173,7 @@ async function sendUserRemovedEmail(to, noteTitle, removerName) {
     });
     return { success: true };
   } catch (error) {
-    console.error('Erreur envoi email exclusion:', error);
+    
     return { success: false, error };
   }
 }

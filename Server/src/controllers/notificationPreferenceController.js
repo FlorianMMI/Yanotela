@@ -22,7 +22,7 @@ export const getPreferences = async (req, res) => {
       where: { isActive: true },
       orderBy: { id: 'asc' },
     });
-    console.log(`🔍 [NotificationPreference] Types trouvés: ${allTypes.length}`);
+    
     console.log('📋 Types:', allTypes.map(t => `${t.code} (${t.name})`).join(', '));
 
     // Récupérer les préférences existantes de l'utilisateur
@@ -74,10 +74,9 @@ export const getPreferences = async (req, res) => {
       }
     }
 
-    console.log(`✅ [NotificationPreference] Préférences récupérées pour user=${userId}, total=${preferences.length}`);
     res.status(200).json(preferences);
   } catch (error) {
-    console.error('[NotificationPreference] Erreur getPreferences:', error);
+    
     res.status(500).json({ error: 'Erreur lors de la récupération des préférences' });
   }
 };
@@ -119,7 +118,7 @@ export const updatePreferences = async (req, res) => {
       });
 
       if (!notifType) {
-        console.warn(`[NotificationPreference] Type de notification inconnu: ${code}`);
+        
         continue;
       }
 
@@ -146,13 +145,12 @@ export const updatePreferences = async (req, res) => {
       updatedPrefs.push(pref);
     }
 
-    console.log(`✅ [NotificationPreference] ${updatedPrefs.length} préférences mises à jour pour user=${userId}`);
     res.status(200).json({ 
       message: 'Préférences mises à jour avec succès',
       count: updatedPrefs.length 
     });
   } catch (error) {
-    console.error('[NotificationPreference] Erreur updatePreferences:', error);
+    
     res.status(500).json({ error: 'Erreur lors de la mise à jour des préférences' });
   }
 };

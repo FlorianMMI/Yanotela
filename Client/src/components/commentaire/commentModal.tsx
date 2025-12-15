@@ -8,7 +8,6 @@ import { Send } from '@/libs/Icons';
 import { FetchPermission } from '@/loader/loader';
 import { useYjsComments } from '@/hooks/useYjsComments';
 
-
 import { useAuth } from '@/hooks/useAuth';
 import { usePathname } from 'next/navigation';
 

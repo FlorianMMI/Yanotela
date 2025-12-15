@@ -50,9 +50,9 @@ import ToolbarPlugin from "@/components/textRich/ToolbarPlugin";
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { TitleSyncPlugin } from "@/components/collaboration/TitleSyncPlugin";
+import InitialContentPlugin from "@/components/textRich/plugins/InitialContentPlugin";
 import { MoreIcon } from "@/libs/Icons";
 import "@/components/textRich/EditorStyles.css";
-
 
 // Contexte pour partager l'état de synchronisation
 interface SyncContextType {
@@ -945,6 +945,12 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                   }
                   cursorColor={isReadOnly ? "#999999" : userProfile.color}
                   cursorsContainerRef={containerRef}
+                />
+
+                {/* Plugin pour initialiser le contenu si YJS est vide */}
+                <InitialContentPlugin 
+                  content={initialEditorContent} 
+                  noteId={id}
                 />
 
                 {/* Plugins d'édition (désactivés en lecture seule) */}

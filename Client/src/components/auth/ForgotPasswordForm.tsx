@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 
-
 import { ForgotPassword } from '@/loader/loader';
 
 interface ForgotPasswordFormProps {

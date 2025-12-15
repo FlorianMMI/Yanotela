@@ -121,7 +121,7 @@ export default function NotificationPage() {
         console.error('❌ Erreur lors de la sauvegarde');
       }
     } catch (error) {
-      console.error('❌ Erreur de sauvegarde:', error);
+      
     } finally {
       setIsSaving(false);
     }

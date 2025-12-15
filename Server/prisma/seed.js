@@ -7,7 +7,6 @@ const prisma = new PrismaClient();
  * Lance avec: npx prisma db seed
  */
 async function main() {
-  console.log('🌱 Début du seed des types de notifications...');
 
   const notificationTypes = [
     {
@@ -88,11 +87,11 @@ async function main() {
       },
       create: type,
     });
-    console.log(`✅ Type de notification créé/mis à jour: ${result.code} (ID: ${result.id})`);
+    
   }
 
   const count = await prisma.notificationType.count();
-  console.log(`\n🎉 Seed terminé ! ${count} types de notifications en base de données.`);
+  
 }
 
 main()
@@ -100,7 +99,7 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error('❌ Erreur lors du seed:', e);
+    
     await prisma.$disconnect();
     process.exit(1);
   });

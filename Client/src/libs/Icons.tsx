@@ -1092,7 +1092,6 @@ export function PublicIcon(props: React.SVGProps<SVGSVGElement>) {
     )
   }
 
-
 export function Send(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg

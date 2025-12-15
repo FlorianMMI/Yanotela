@@ -39,7 +39,7 @@ export const notificationController = {
 
       res.json({ success: true });
     } catch (error) {
-      console.error("[notificationController] Erreur notifyComment:", error);
+      
       res.status(500).json({ error: "Erreur serveur lors de l'envoi de la notification" });
     }
   }

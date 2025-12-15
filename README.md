@@ -54,7 +54,7 @@ docker compose up --build
 1. Installer les dépendances 
 
 ```bash
-# depuis la racine du repo
+# depuis la racine du repoj
 cd Client && npm install
 cd ../Server && npm install
 ```
