@@ -54,7 +54,6 @@ import InitialContentPlugin from "@/components/textRich/plugins/InitialContentPl
 import { MoreIcon } from "@/libs/Icons";
 import "@/components/textRich/EditorStyles.css";
 
-
 // Contexte pour partager l'état de synchronisation
 interface SyncContextType {
   syncStatus: SyncStatus;

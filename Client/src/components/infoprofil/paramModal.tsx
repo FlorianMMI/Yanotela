@@ -80,10 +80,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                 className="fixed top-0 left-0 w-full md:w-[35%] h-full bg-background shadow-lg z-100"
             >
 
-
-
-
-                
                 <div className='flex flex-col h-full w-full p-2 relative'>
 
                     {/* Close button */}
@@ -108,8 +104,6 @@ export default function ParamModal({ onClose }: ParamModalProps) {
                         <div className="">
                             <PWAInstallButton />
                         </div>
-
-                        
 
                         <hr className="border-t border-primary w-full" />
 

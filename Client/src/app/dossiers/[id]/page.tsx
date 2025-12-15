@@ -70,7 +70,7 @@ export default function FolderDetail({ params }: FolderDetailProps) {
                 detail: { folderId: id, title: name }
             }));
         } else {
-            console.error("Erreur lors de la sauvegarde:", response.error);
+            
             throw new Error(response.error || "Erreur lors de la mise à jour du dossier");
         }
     }, [id]);
