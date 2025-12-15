@@ -8,7 +8,6 @@
 const DISMISSED_NOTIFICATIONS_KEY = 'yanotela_dismissed_notifications';
 const MAX_DISMISSED_ENTRIES = 500; // Limite pour éviter de remplir le localStorage
 
-
 /**
  * Nettoie les anciennes notifications supprimées (plus de 30 jours)
  * À appeler périodiquement ou au démarrage de l'app

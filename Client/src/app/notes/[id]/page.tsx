@@ -50,9 +50,9 @@ import ToolbarPlugin from "@/components/textRich/ToolbarPlugin";
 import { editorNodes } from "@/components/textRich/editorNodes";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { TitleSyncPlugin } from "@/components/collaboration/TitleSyncPlugin";
+import InitialContentPlugin from "@/components/textRich/plugins/InitialContentPlugin";
 import { MoreIcon } from "@/libs/Icons";
 import "@/components/textRich/EditorStyles.css";
-
 
 // Contexte pour partager l'état de synchronisation
 interface SyncContextType {
@@ -161,7 +161,13 @@ function YjsSyncPlugin({
     }
 
     // Marquer qu'il y a eu des changements à chaque update
-    const unregister = editor.registerUpdateListener(() => {
+    // ✅ IMPORTANT: Ignorer les updates venant de la collaboration YJS pour éviter la boucle
+    const unregister = editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, prevEditorState, tags }) => {
+      // Ignorer les updates provenant de YJS/collaboration
+      if (tags.has('skip-collab') || tags.has('collaboration') || tags.has('history-merge')) {
+        return;
+      }
+      
       hasChangesRef.current = true;
       setSyncStatus("pending");
     });
@@ -701,16 +707,13 @@ function NoteEditorContent({ params }: NoteEditorProps) {
 
   // ✅ CRITIQUE: Mettre à jour l'awareness dès que le profil change
   useEffect(() => {
-    // Ne pas appeler setAwarenessUserInfo immédiatement
-    // Le provider sera créé par CollaborationPlugin, on attend qu'il soit prêt
-    
     // Récupérer l'userId pour la synchronisation automatique des permissions
     const userId = user ? user.id : undefined;
     
     // Attendre que le provider soit créé (après le montage du CollaborationPlugin)
-    // On utilise un intervalle pour vérifier régulièrement
+    // Intervalle optimisé: 50ms pour une connexion quasi-instantanée
     let attempts = 0;
-    const maxAttempts = 20; // 20 * 200ms = 4 secondes max
+    const maxAttempts = 40; // 40 * 50ms = 2 secondes max
     
     const intervalId = setInterval(() => {
       attempts++;
@@ -726,10 +729,10 @@ function NoteEditorContent({ params }: NoteEditorProps) {
       
       // Arrêter après le max d'essais
       if (attempts >= maxAttempts) {
-        
+        console.warn(`[YJS] Timeout: provider non disponible après ${maxAttempts * 50}ms pour noteId=${id}`);
         clearInterval(intervalId);
       }
-    }, 200);
+    }, 50); // Réduit de 200ms à 50ms pour une connexion plus rapide
     
     return () => clearInterval(intervalId);
   }, [userProfile, id, user]);
@@ -932,13 +935,7 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                 {/* Plugin pour récupérer la référence de l'éditeur (pour dessins) */}
                 <EditorRefPlugin onEditorReady={setEditor} />
 
-                {/* Charger le contenu initial depuis la base de données */}
-                <LoadInitialContentPlugin
-                  content={initialEditorContent}
-                  noteId={id}
-                />
-
-                {/* CollaborationPlugin pour synchronisation temps réel */}
+                {/* CollaborationPlugin pour synchronisation temps réel (shouldBootstrap=true charge le contenu) */}
                 <CollaborationPlugin
                   id={id}
                   providerFactory={providerFactory}
@@ -948,6 +945,12 @@ function NoteEditorContent({ params }: NoteEditorProps) {
                   }
                   cursorColor={isReadOnly ? "#999999" : userProfile.color}
                   cursorsContainerRef={containerRef}
+                />
+
+                {/* Plugin pour initialiser le contenu si YJS est vide */}
+                <InitialContentPlugin 
+                  content={initialEditorContent} 
+                  noteId={id}
                 />
 
                 {/* Plugins d'édition (désactivés en lecture seule) */}

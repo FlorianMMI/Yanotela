@@ -7,13 +7,18 @@ const prisma = new PrismaClient();
  * Lance avec: npx prisma db seed
  */
 async function main() {
-  console.log('🌱 Début du seed des types de notifications...');
 
   const notificationTypes = [
     {
       code: 'INVITATION',
       name: 'Invitations à collaborer',
       description: 'Notification lorsque quelqu\'un vous invite à collaborer sur une note',
+      isActive: true,
+    },
+    {
+      code: 'USER_ADDED',
+      name: 'Ajout direct à une note',
+      description: 'Notification lorsque vous êtes directement ajouté à une note sans invitation préalable',
       isActive: true,
     },
     {
@@ -26,6 +31,18 @@ async function main() {
       code: 'NOTE_DELETED',
       name: 'Suppressions de notes',
       description: 'Notification lorsqu\'une note collaborative est supprimée',
+      isActive: true,
+    },
+    {
+      code: 'NOTE_DELETED_ADMIN',
+      name: 'Suppression de votre note (admin)',
+      description: 'Notification lorsque votre note (dont vous êtes propriétaire ou administrateur) est supprimée',
+      isActive: true,
+    },
+    {
+      code: 'NOTE_DELETED_MEMBER',
+      name: 'Suppression de note collaborative (membre)',
+      description: 'Notification lorsqu\'une note collaborative (dont vous êtes simple membre) est supprimée',
       isActive: true,
     },
     {
@@ -70,11 +87,11 @@ async function main() {
       },
       create: type,
     });
-    console.log(`✅ Type de notification créé/mis à jour: ${result.code} (ID: ${result.id})`);
+    
   }
 
   const count = await prisma.notificationType.count();
-  console.log(`\n🎉 Seed terminé ! ${count} types de notifications en base de données.`);
+  
 }
 
 main()
@@ -82,7 +99,7 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error('❌ Erreur lors du seed:', e);
+    
     await prisma.$disconnect();
     process.exit(1);
   });

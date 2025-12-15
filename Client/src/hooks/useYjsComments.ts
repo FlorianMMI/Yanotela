@@ -132,17 +132,15 @@ export function useYjsComments(noteId: string | null, userId?: number, userPseud
         // Ne pas attendre la réponse pour ne pas bloquer l'UI
         fetch(`${apiUrl}/notification/comment/${noteId}`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            commentPreview: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
-          }),
-        }).catch(err => console.error('[useYjsComments] Erreur notification:', err));
-      } catch (error) {
-        console.error('[useYjsComments] Erreur pré-notification:', error);
-      }
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          commentPreview: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
+        }),
+      }).catch(() => {});
+    } catch (error) {      }
     }
     
     return true;

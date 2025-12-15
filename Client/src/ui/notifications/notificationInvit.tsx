@@ -36,7 +36,9 @@ export default function Notification({
                 refreshNotifications();
                 // Si c'est une invitation, rediriger vers la note
                 if (id.startsWith('invitation-')) {
-                    const noteId = id.replace('invitation-', '');
+                    // Extraire noteId de 'invitation-{noteId}' ou 'invitation-{noteId}-{timestamp}'
+                    const parts = id.split('-');
+                    const noteId = parts[1]; // Le noteId est toujours le 2ème élément
                     router.push(`/notes/${noteId}`);
                 }
             } catch (error) {
