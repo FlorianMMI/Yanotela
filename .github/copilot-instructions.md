@@ -12,16 +12,22 @@ Yanotela is a full-stack collaborative note-taking application with real-time ed
 
 **Data Model** (`Server/prisma/schema.prisma`)
 ```prisma
-User → notes[], folders[], permissions[], noteFolders[]
-Note → id(String/UUID), Titre, Content(String), yjsState(Bytes?), authorId, modifierId?, deletedAt?
+User → notes[], folders[], permissions[], noteFolders[], tags[]
+Note → id(String/UUID), Titre, Content(String), yjsState(Bytes?), tagId?, authorId, modifierId?, deletedAt?, isPublic(Boolean)
 Permission → noteId+userId (composite key), role(Int 0-3), isAccepted(Boolean)
 Folder → id(UUID), Nom, Description?, CouleurTag, authorId, deletedAt?
 NoteFolder → noteId+folderId+userId (composite key, join table)
+Tag → id(UUID), nom, couleur, userId (custom tags per user)
+NotificationType → code(String), name, description, isActive (notification preferences)
+UserNotificationPreference → userId+notificationTypeId (composite key), appEnabled, mailEnabled
 ```
-- Note IDs are UUIDs (strings), User IDs are integers, Folder IDs are UUIDs
+- Note IDs are UUIDs (strings), User IDs are integers, Folder/Tag IDs are UUIDs
 - `yjsState` stores CRDT binary state (source of truth), `Content` field auto-synced for display
 - Soft deletes: `deletedAt` timestamp, cleanup service deletes after 30 days (runs every 24h)
 - Folders support color tagging via `CouleurTag` hex values (default: `#D4AF37`)
+- **Tags system**: User-specific custom tags (nom+couleur), unique per user. Note.tagId links to Tag model
+- **Comments via YJS**: No Comment model in DB — stored in Y.Array within shared Y.Doc (see `useYjsComments.ts`)
+- **Notifications**: Real-time via WebSocket (separate notificationProvider), types managed in DB, preferences per user
 
 ## Authentication & Session Management
 
@@ -55,6 +61,10 @@ fetch(`${apiUrl}/note/get`, {
   - `createWebsocketProvider(noteId, yjsDocMap)` — returns configured `WebsocketProvider`
   - Auto-detects: `ws://localhost:1234` (dev) or `wss://domain/yjs` (prod)
   - Room naming: `yanotela-${noteId}`
+- **Notification provider**: `Client/src/collaboration/notificationProvider.ts`
+  - Separate singleton WebSocket for real-time notifications (no polling)
+  - Room: `yanotela-notifications-${userId}` (one per user, not per note)
+  - Broadcasts via YJS awareness, types: INVITATION, ROLE_CHANGED, COMMENT_ADDED, etc.
 
 **Collaboration Flow**
 1. Client loads note via `GetNoteById(id)` API
@@ -62,11 +72,14 @@ fetch(`${apiUrl}/note/get`, {
 3. `CollaborationPlugin` connects to YJS WebSocket, syncs state
 4. `TitleSyncPlugin` syncs note title across users (custom Y.Text field)
 5. `OnChangeBehavior` plugin debounces saves to `/note/sync` endpoint (saves both `yjsState` + `Content`)
+6. **Comments**: Managed via `useYjsComments` hook → Y.Array in shared doc (no DB storage)
+7. **Notifications**: Separate WebSocket connection via `notificationProvider`, disconnects on logout
 
 **Key Implementation Details**
 - `Note.yjsState` is source of truth, `Note.Content` derived via `syncContentFromYjs()`
 - Migration utility: `Server/src/services/yjsMigration.js` (converts legacy JSON → YJS)
 - **No Socket.IO** — collaboration uses standard y-websocket protocol
+- **Comments are ephemeral**: Only exist in YJS doc lifetime, not persisted to DB independently
 
 ## API Conventions
 
@@ -218,9 +231,14 @@ scripts/                                # Utility scripts (cleanup, migration, t
 6. `cleanup-notes` — Cron job (24h interval): deletes notes where `deletedAt < now() - 30 days`
 
 **Production Flow** (GitHub Actions → Docker Hub → EC2)
-- Workflow: `.github/workflows/develop-ec2.yml` (or `production.yml` for main branch)
-- Build → Push to Docker Hub → SSH to EC2 → Pull images → Restart services
-- Required secrets: `DOCKER_USERNAME`, `EC2_HOST`, `EC2_SSH_PRIVATE_KEY`, `ENV_PROD_FILE`
+- Workflows: 
+  - `.github/workflows/develop-ec2.yml` (preprod branch)
+  - `.github/workflows/main-before-merge.yml` (main branch → production)
+  - `.github/workflows/unit-tests.yml` (reusable unit test workflow)
+  - `.github/workflows/cleanup-console-logs.yml` (removes console logs before deploy)
+- Pipeline: Cleanup → Unit Tests → Build → Push to Docker Hub → SSH to EC2 → Pull images → Restart services
+- Required secrets: `DOCKER_PASSWORD`, `EC2_HOST`, `EC2_SSH_PRIVATE_KEY`, `ENV_PROD_FILE`, `ENV_PREPROD_FILE`
+- Frontend build arg: `NEXT_PUBLIC_API_URL` (set at build time for static optimization)
 - Nginx reverse proxy: SSL termination + routing (config: `nginx/default.conf`)
 - Health checks: `http://localhost:3001/health` (backend), Next.js built-in (frontend)
 
@@ -261,6 +279,8 @@ NEXT_PUBLIC_API_URL=http://localhost:3001  # API base URL
 - Client API layer: `Client/src/loader/loader.tsx`
 - Auth redirect hook: `Client/src/hooks/useAuthRedirect.ts`
 - YJS provider factory: `Client/src/collaboration/providers.ts`
+- Notification provider: `Client/src/collaboration/notificationProvider.ts`
+- Comments hook: `Client/src/hooks/useYjsComments.ts`
 - Prisma schema: `Server/prisma/schema.prisma`
 - Test utilities: `Server/tests/testUtils.js`
 
@@ -309,4 +329,4 @@ docker exec yanotela-db-local psql -U yanotela_local -d yanotela_local -c \
 
 ---
 
-**Version Info**: Lexical 0.38.2, Next.js 15.5.3, Prisma 6.18.0, YJS 13.6.27, y-websocket 2.0.4
+**Version Info**: Lexical 0.38.2, Next.js 15.5.9, Prisma 6.18.0, YJS 13.6.27, y-websocket 2.0.4
