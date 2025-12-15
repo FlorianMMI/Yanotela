@@ -424,6 +424,12 @@ export const noteController = {
     }
 
     try {
+      // Récupérer la note actuelle pour vérifier le yjsState
+      const currentNote = await prisma.note.findUnique({
+        where: { id: id },
+        select: { yjsState: true }
+      });
+
       // Préparer l'objet de mise à jour avec seulement les champs fournis
       const updateData = {
         ModifiedAt: new Date(),
@@ -437,6 +443,9 @@ export const noteController = {
       if (Content !== undefined) {
         updateData.Content = Content;
         
+        // 🔧 NOTE: On ne génère PAS le yjsState ici pour les flashnotes
+        // Le CollaborationPlugin bootstrappera le contenu depuis le Content lors de la première connexion
+        // Cela évite les problèmes de conversion Lexical JSON → YJS qui perdent la structure
       }
 
       const note = await prisma.note.update({
