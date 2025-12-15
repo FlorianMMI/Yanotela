@@ -23,6 +23,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: yanotela-redis-local
+    command: redis-server --requirepass redis_dev_password_123
     ports:
       - "6380:6379"
     healthcheck:
@@ -48,6 +49,9 @@ services:
       - MAIL_SERVICE=gmail
       - GMAIL_USER=${GMAIL_USER}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+      - REDIS_HOST=yanotela-redis-local 
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis_dev_password_123
     volumes:
       # Mount source code for hot reload
       - ./Server/src:/app/src

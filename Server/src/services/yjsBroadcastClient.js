@@ -10,12 +10,19 @@
  * - Il met à jour son état Awareness avec les notifications
  */
 
-import { WebsocketProvider } from 'y-websocket';
-import * as Y from 'yjs';
 import WebSocket from 'ws';
+import * as Y from 'yjs';
+
+// ✅ CRITIQUE: Définir WebSocket en global pour y-websocket qui en a besoin en Node.js
+global.WebSocket = WebSocket;
+
+import { WebsocketProvider } from 'y-websocket';
 
 // URL du serveur YJS (dans Docker: yjs-server:1234, en local: localhost:1234)
+// IMPORTANT: Utiliser le nom du SERVICE (pas du container) pour la résolution DNS Docker
 const YJS_SERVER_URL = process.env.YJS_SERVER_URL || 'ws://yjs-server:1234';
+
+console.log(`🌐 [YJS Client] URL serveur YJS configurée: ${YJS_SERVER_URL}`);
 
 // Providers par room (pour éviter de recréer à chaque notification)
 const providers = new Map();
@@ -40,13 +47,13 @@ function getOrCreateProvider(userId) {
     doc,
     { 
       WebSocketPolyfill: WebSocket,
-      connect: true
+      connect: true,
+      resyncInterval: 10000,
+      maxBackoffTime: 5000,
     }
   );
   
-  provider.on('status', ({ status }) => {
-    
-  });
+  
   
   providers.set(roomName, provider);
   return provider;
@@ -63,21 +70,24 @@ export async function sendNotificationToUser(userId, notification) {
   try {
     const provider = getOrCreateProvider(userId);
     
-    // Attendre que la connexion soit établie (optionnel mais préférable)
+    // Attendre que la connexion soit établie (critique pour garantir l'envoi)
     if (!provider.wsconnected) {
+      console.log(`⏳ [YJS Client] Attente connexion pour room: yanotela-notifications-${userId}`);
       await new Promise(resolve => {
         const onStatus = ({ status }) => {
           if (status === 'connected') {
+            console.log(`✅ [YJS Client] Connexion établie pour room: yanotela-notifications-${userId}`);
             provider.off('status', onStatus);
             resolve();
           }
         };
         provider.on('status', onStatus);
-        // Timeout de sécurité
+        // Timeout de sécurité augmenté à 5s
         setTimeout(() => {
+            console.warn(`⏱️ [YJS Client] Timeout connexion pour room: yanotela-notifications-${userId}`);
             provider.off('status', onStatus);
             resolve(); 
-        }, 2000);
+        }, 5000);
       });
     }
 

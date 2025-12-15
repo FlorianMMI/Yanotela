@@ -22,11 +22,7 @@ export function getOrCreateNoteSession(noteId) {
   };
 }
 
-/**
- * ✅ SUPPRIMÉ: Plus besoin de ces fonctions Yjs car la sauvegarde 
- * est maintenant gérée directement via WebSocket dans app.js
- * Le JSON Lexical est préservé tel quel dans la base de données
- */
+
 
 /**
  * Ajouter un utilisateur à une room de note

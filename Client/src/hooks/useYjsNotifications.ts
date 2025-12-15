@@ -80,37 +80,49 @@ export type NotificationType =
   | 'COMMENT_ADDED';
 
 interface NotificationSetting {
-  id: string;
+  code: string;
+  name: string;
+  description: string;
   appnotif: boolean;
+  mailnotif: boolean;
 }
 
 function isNotificationEnabled(type: NotificationType, prefs: NotificationSetting[] | null): boolean {
   if (!prefs) return true; // Default to true if no prefs
 
-  let categoryId = '';
+  let categoryCode = '';
   switch (type) {
     case 'INVITATION':
+      categoryCode = 'invitation';
+      break;
     case 'REMOVED':
+      categoryCode = 'removed';
+      break;
     case 'ROLE_CHANGED':
+      categoryCode = 'role_changed';
+      break;
     case 'SOMEONE_INVITED':
+      categoryCode = 'someone_invited';
+      break;
     case 'COLLABORATOR_REMOVED':
+      categoryCode = 'collaborator_removed';
+      break;
     case 'USER_LEFT':
-      categoryId = 'invitation';
+      categoryCode = 'user_left';
       break;
     case 'COMMENT_ADDED':
-      categoryId = 'comment';
+      categoryCode = 'comment_added';
       break;
     case 'NOTE_DELETED':
     case 'NOTE_DELETED_ADMIN':
     case 'NOTE_DELETED_MEMBER':
-    case 'USER_ADDED':
-      categoryId = 'activity';
+      categoryCode = 'note_deleted';
       break;
     default:
       return true;
   }
 
-  const pref = prefs.find((p) => p.id === categoryId);
+  const pref = prefs.find((p) => p.code === categoryCode);
   return pref ? pref.appnotif : true;
 }
 
@@ -163,7 +175,15 @@ export function useYjsNotifications(userId?: number) {
 
   // Filtrer les notifications
   const notifications = useMemo(() => {
-    return allNotifications.filter(n => isNotificationEnabled(n.type, prefs));
+    const filtered = allNotifications.filter(n => {
+      const enabled = isNotificationEnabled(n.type, prefs);
+      if (!enabled) {
+        console.log(`🚫 [Notifications] Filtered out: ${n.type} (prefs:`, prefs?.find(p => p.code === n.type.toLowerCase()), ')');
+      }
+      return enabled;
+    });
+    console.log(`📊 [Notifications] Total: ${allNotifications.length}, Filtered: ${filtered.length}, Prefs loaded: ${!!prefs}`);
+    return filtered;
   }, [allNotifications, prefs]);
 
   // Connecter au provider de notifications et charger les invitations initiales
@@ -188,18 +208,26 @@ export function useYjsNotifications(userId?: number) {
 
     // 2. Écouter les notifications temps réel
     const removeListener = addNotificationListener((realTimeNotifs) => {
+      console.log(`🔄 [Notifications] Real-time update: ${realTimeNotifs.length} notifications from YJS`);
       setAllNotifications((prev) => {
+        console.log(`🔄 [Notifications] Current state: ${prev.length} notifications`);
         // Filtrer les notifications supprimées
         const filtered = realTimeNotifs.filter((n) => !dismissedNotificationsRef.current.has(n.id));
+        console.log(`🔄 [Notifications] After dismiss filter: ${filtered.length} (dismissed count: ${dismissedNotificationsRef.current.size})`);
         
         // Fusionner les notifications temps réel avec les existantes
         // en évitant les doublons (par ID)
         const existingIds = new Set(prev.map((n) => n.id));
         const newNotifs = filtered.filter((n) => !existingIds.has(n.id));
+        console.log(`🔄 [Notifications] New notifications to add: ${newNotifs.length}`);
         
-        if (newNotifs.length === 0) return prev;
+        if (newNotifs.length === 0) {
+          console.log(`🔄 [Notifications] No new notifications, keeping current state`);
+          return prev;
+        }
         
         const merged = [...prev, ...newNotifs];
+        console.log(`🔄 [Notifications] Merged state: ${merged.length} notifications`);
         // Trier par timestamp (plus récent en premier)
         return merged.sort((a, b) => b.timestamp - a.timestamp);
       });
@@ -215,8 +243,9 @@ export function useYjsNotifications(userId?: number) {
 
         if (response.ok) {
           const data = await response.json();
+          console.log(`📥 [Notifications] API returned ${data.notes?.length || 0} invitations:`, data.notes);
           const invitations: YjsNotification[] = (data.notes || []).map((n: { id: string; Titre: string; author: string }) => ({
-            id: `invitation-${n.id}`,
+            id: `invitation-${n.id}-${Date.now()}`,
             type: 'INVITATION' as const,
             noteId: n.id,
             noteTitle: n.Titre,
@@ -225,12 +254,13 @@ export function useYjsNotifications(userId?: number) {
             read: false,
           }));
           
-          // Filtrer les invitations supprimées + éviter doublons
+          // Filtrer les invitations supprimées + éviter doublons par noteId
           setAllNotifications((prev) => {
-            const existingIds = new Set(prev.map((n) => n.id));
+            const existingNoteIds = new Set(prev.filter(n => n.type === 'INVITATION').map((n) => n.noteId));
             const newInvitations = invitations.filter(
-              (n) => !existingIds.has(n.id) && !dismissedNotificationsRef.current.has(n.id)
+              (n) => !existingNoteIds.has(n.noteId)
             );
+            console.log(`➕ [Notifications] Adding ${newInvitations.length} new invitations (dismissed: ${dismissedNotificationsRef.current.size})`);
             if (newInvitations.length === 0) return prev;
             return [...prev, ...newInvitations].sort((a, b) => b.timestamp - a.timestamp);
           });
@@ -265,8 +295,9 @@ export function useYjsNotifications(userId?: number) {
 
         if (response.ok) {
           const data = await response.json();
+          console.log(`🔃 [Notifications] Refresh: API returned ${data.notes?.length || 0} invitations`);
           const invitations: YjsNotification[] = (data.notes || []).map((n: { id: string; Titre: string; author: string }) => ({
-            id: `invitation-${n.id}`,
+            id: `invitation-${n.id}-${Date.now()}`,
             type: 'INVITATION' as const,
             noteId: n.id,
             noteTitle: n.Titre,
@@ -275,13 +306,15 @@ export function useYjsNotifications(userId?: number) {
             read: false,
           }));
           
-          // Filtrer les invitations supprimées + remplacer les invitations actuelles
+          // Remplacer les invitations actuelles par celles de l'API (source de vérité)
+          // Les invitations de l'API sont basées sur les permissions non acceptées en DB
+          // donc on ne filtre PAS par dismissed - la DB est la source de vérité
           setAllNotifications((prev) => {
+            console.log(`🔃 [Notifications] Refresh: Current ${prev.length} (${prev.filter(n => n.type === 'INVITATION').length} invitations)`);
             const nonInvitations = prev.filter((n) => n.type !== 'INVITATION');
-            const filteredInvitations = invitations.filter(
-              (n) => !dismissedNotificationsRef.current.has(n.id)
-            );
-            return [...nonInvitations, ...filteredInvitations].sort((a, b) => b.timestamp - a.timestamp);
+            const newState = [...nonInvitations, ...invitations].sort((a, b) => b.timestamp - a.timestamp);
+            console.log(`🔃 [Notifications] Refresh: New state ${newState.length} (${invitations.length} invitations from API)`);
+            return newState;
           });
         }
       } catch (error) {
@@ -298,7 +331,9 @@ export function useYjsNotifications(userId?: number) {
 
     // Si c'est une invitation classique, appeler l'API et supprimer
     if (notificationId.startsWith('invitation-')) {
-      const noteId = notificationId.replace('invitation-', '');
+      // Extraire noteId de 'invitation-{noteId}' ou 'invitation-{noteId}-{timestamp}'
+      const parts = notificationId.split('-');
+      const noteId = parts[1]; // Le noteId est toujours le 2ème élément
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         const response = await fetch(`${apiUrl}/notification/accept/${noteId}`, {
