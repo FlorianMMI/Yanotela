@@ -17,6 +17,12 @@ async function main() {
       isActive: true,
     },
     {
+      code: 'USER_ADDED',
+      name: 'Ajout direct à une note',
+      description: 'Notification lorsque vous êtes directement ajouté à une note sans invitation préalable',
+      isActive: true,
+    },
+    {
       code: 'REMOVED',
       name: 'Exclusions de notes',
       description: 'Notification lorsque vous êtes retiré d\'une note partagée',
@@ -26,6 +32,18 @@ async function main() {
       code: 'NOTE_DELETED',
       name: 'Suppressions de notes',
       description: 'Notification lorsqu\'une note collaborative est supprimée',
+      isActive: true,
+    },
+    {
+      code: 'NOTE_DELETED_ADMIN',
+      name: 'Suppression de votre note (admin)',
+      description: 'Notification lorsque votre note (dont vous êtes propriétaire ou administrateur) est supprimée',
+      isActive: true,
+    },
+    {
+      code: 'NOTE_DELETED_MEMBER',
+      name: 'Suppression de note collaborative (membre)',
+      description: 'Notification lorsqu\'une note collaborative (dont vous êtes simple membre) est supprimée',
       isActive: true,
     },
     {

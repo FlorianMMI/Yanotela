@@ -67,7 +67,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: sh -c "npx prisma migrate deploy && npx nodemon index.js"
+    command: sh -c "npx prisma migrate deploy && npx prisma db seed && npx nodemon index.js"
 
   # Service de nettoyage automatique des notes supprimées (exécute tous les jours à 3h)
   cleanup-notes:

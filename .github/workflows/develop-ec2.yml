@@ -262,7 +262,7 @@ jobs:
                 networks:
                   - yanotela-dev
                 restart: unless-stopped
-                command: sh -c "npx prisma migrate deploy && npm start"
+                command: sh -c "npx prisma migrate deploy && npx prisma db seed && npm start"
               yjs-server:
                 image: node:18-alpine
                 container_name: yanotela-yjs-server
