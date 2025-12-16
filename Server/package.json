@@ -17,29 +17,36 @@
     "create-test-user": "node scripts/create-test-user.js",
     "cleanup:notes": "node scripts/cleanup-deleted-notes.js"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
-    "@prisma/client": "^6.18.0",
-    "bcrypt": "^5.1.1",
-    "connect-redis": "^7.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^5.1.0",
-    "express-session": "^1.18.0",
-    "express-validator": "^7.0.1",
-    "axios": "^1.4.0",
-    "googleapis": "^160.0.0",
-    "helmet": "^7.1.0",
-    "nodemailer": "^7.0.10",
-    "redis": "^5.8.3",
-    "supertest": "^7.1.4",
-    "yjs": "^13.6.27"
+    "@prisma/client": "6.18.0",
+    "bcrypt": "5.1.1",
+    "connect-redis": "7.1.1",
+    "cors": "2.8.5",
+    "dotenv": "16.4.5",
+    "express": "5.1.0",
+    "express-session": "1.18.0",
+    "express-validator": "7.0.1",
+    "axios": "1.4.0",
+    "googleapis": "160.0.0",
+    "helmet": "7.1.0",
+    "nodemailer": "7.0.10",
+      "redis": "5.8.3",
+      "ws": "8.13.0",
+    "supertest": "7.1.4",
+    "yjs": "13.6.27",
+    "y-protocols": "1.0.6",
+    "lib0": "0.2.97",
+    "y-websocket": "2.0.4"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0",
-    "@types/node": "^24.5.2",
-    "jest": "^30.1.3",
-    "nodemon": "^3.1.0",
-    "prisma": "^6.18.0",
-    "supertest": "^7.1.4"
+    "@playwright/test": "1.55.0",
+    "@types/node": "24.5.2",
+    "jest": "30.1.3",
+    "nodemon": "3.1.0",
+    "prisma": "6.18.0",
+    "supertest": "7.1.4"
   }
 }
